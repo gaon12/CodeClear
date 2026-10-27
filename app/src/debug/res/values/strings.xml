@@ -1,6 +1,6 @@
 <resources>
     <string name="probe_app_name">CodeClear · Capture probe</string>
-    <string name="probe_scope">Diagnostic build for capture feasibility. Translation and permanent history are not implemented. Nothing is uploaded. Consent resets when this process ends.</string>
+    <string name="probe_scope">Capture and local translation preview. Observations remain temporary; permanent history is not implemented. Alert text stays on this device. Capture consent resets when this process ends.</string>
     <string name="probe_device">Device and source candidates</string>
     <string name="probe_device_format">%1$s %2$s · Android %3$s · API %4$d</string>
     <string name="probe_build">Build: %1$s</string>
@@ -27,8 +27,8 @@
     <string name="probe_clear">Clear observations</string>
     <string name="probe_empty">No observations. This does not prove that no emergency alert was issued or received.</string>
     <string name="probe_consent_title">Allow this diagnostic capture route?</string>
-    <string name="probe_notification_disclosure">Android notification access can expose notifications from other apps. This probe filters to installed system emergency-receiver package candidates before reading text, plus shell test_alert fixtures only when you enable that option. It holds titles and bodies only in a bounded in-memory buffer for inspection. No network upload, saved file, translation, or automatic screen opening. You can withdraw consent here or revoke access in system settings. Consent ends with this process. Agree only if you want to test this route.</string>
-    <string name="probe_accessibility_disclosure">This probe uses accessibility to inspect only the declared system emergency-receiver package candidates. It reads the message resource field in the active matching window, with bounded traversal. It does not read arbitrary screens, perform gestures, dismiss alerts, or bypass protected content. Text stays only in a bounded in-memory inspection buffer; nothing is uploaded. This is not a disability accessibility tool. Withdraw consent here or revoke system access at any time. Consent ends with this process.</string>
+    <string name="probe_notification_disclosure">Android notification access can expose notifications from other apps. CodeClear filters to installed system emergency-receiver package candidates before reading text, plus shell test_alert fixtures only when you enable that option. Titles and bodies remain in bounded temporary memory for inspection and local translation. Alert text is not uploaded or saved to a file. No screen opens automatically. Withdraw consent here or revoke access in system settings. Consent ends with this process.</string>
+    <string name="probe_accessibility_disclosure">CodeClear uses accessibility only for the declared system emergency-receiver candidates. It reads the single message field in the active reviewed alert dialog, excluding history rows and other screens. It does not perform gestures, dismiss alerts, or bypass protected content. Text remains in bounded temporary memory for inspection and local translation; alert text is not uploaded. This is not a disability accessibility tool. Withdraw consent here or revoke system access at any time. Consent ends with this process.</string>
     <string name="probe_agree_settings">Agree and open settings</string>
     <string name="probe_cancel">Cancel</string>
     <string name="probe_yes">Yes</string>
