@@ -6,4 +6,4 @@
     android:canRetrieveWindowContent="true"
     android:description="@string/probe_accessibility_disclosure"
     android:notificationTimeout="500"
-    android:packageNames="com.android.cellbroadcastreceiver,com.google.android.cellbroadcastreceiver" />
+    android:packageNames="com.android.cellbroadcastreceiver,com.android.cellbroadcastreceiver.module,com.google.android.cellbroadcastreceiver" />

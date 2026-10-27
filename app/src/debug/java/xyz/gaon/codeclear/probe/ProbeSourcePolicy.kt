@@ -21,6 +21,7 @@ object ProbeSourcePolicy {
 
     val candidatePackages = setOf(
         "com.android.cellbroadcastreceiver",
+        "com.android.cellbroadcastreceiver.module",
         "com.google.android.cellbroadcastreceiver"
     )
 

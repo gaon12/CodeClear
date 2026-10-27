@@ -8,6 +8,17 @@ import org.junit.Test
 
 class ProbeRulesTest {
     @Test
+    fun aospModularReceiverNeedsItsOwnSystemVerifiedSourceProfile() {
+        val module = "com.android.cellbroadcastreceiver.module"
+        assertNull(ProbeSourcePolicy.classify(module, emptySet(), true))
+        assertEquals(
+            ProbeOrigin.SYSTEM_CANDIDATE,
+            ProbeSourcePolicy.classify(module, setOf(module), false)
+        )
+        assertNull(ProbeSourcePolicy.classify("example.$module", setOf("example.$module"), true))
+    }
+
+    @Test
     fun knownPlatformBoundariesAreWarningsRatherThanProofOfCompleteExtraction() {
         assertTrue(ProbeSourcePolicy.mayMatchNotificationTextBoundary(1024))
         assertTrue(ProbeSourcePolicy.mayMatchNotificationTextBoundary(5120))
