@@ -6,10 +6,12 @@ import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.os.SystemClock
 import android.service.notification.NotificationListenerService
+import android.util.Base64
 import android.view.WindowManager
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
@@ -68,6 +70,7 @@ class ProbeDeviceTest {
 
     @Test
     fun diagnosticScreenExplainsItsScopeAndProtectsItsWindow() {
+        compose.onNodeWithText(context.getString(R.string.preview_settings)).performClick()
         compose.onNodeWithText(context.getString(R.string.probe_scope)).assertIsDisplayed()
         val secure = onMain {
             compose.activity.window.attributes.flags and WindowManager.LayoutParams.FLAG_SECURE != 0
@@ -198,16 +201,12 @@ class ProbeDeviceTest {
                 descriptors.forEach { it.close() }
             }
         }
-        // Android 11 has no shell-stdin API. This temporary script contains synthetic data only.
-        val directory = requireNotNull(context.externalCacheDir)
-        val script = File.createTempFile("probe-fixture-", ".sh", directory)
-        try {
-            script.writeText(command + "\n", Charsets.UTF_8)
-            require(!script.absolutePath.contains(' '))
-            return readShellOutput(automation().executeShellCommand("sh ${script.absolutePath}"))
-        } finally {
-            check(script.delete()) { "Could not remove synthetic fixture script" }
-        }
+        // API 30 has no shell stdin, and scoped storage prevents shell from reading app cache.
+        // Runtime.exec splits whitespace: keep the script in one Base64 argument, then decode
+        // it inside sh. Literal IFS expansion supplies argument separators only inside that sh.
+        val encoded = Base64.encodeToString(command.toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
+        val script = "echo\${IFS}$encoded|base64\${IFS}-d|sh"
+        return readShellOutput(automation().executeShellCommand("sh -c $script"))
     }
 
     private fun readShellOutput(descriptor: ParcelFileDescriptor): String =

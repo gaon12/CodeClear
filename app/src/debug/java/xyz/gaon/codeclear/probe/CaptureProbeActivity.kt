@@ -22,14 +22,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,7 +42,6 @@ import androidx.compose.ui.unit.dp
 import java.text.DateFormat
 import java.util.Date
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.ui.theme.CodeClearTheme
 
 class CaptureProbeActivity : ComponentActivity() {
     private var environment by mutableStateOf<ProbeEnvironment?>(null)
@@ -55,8 +51,8 @@ class CaptureProbeActivity : ComponentActivity() {
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         enableEdgeToEdge()
         setContent {
-            CodeClearTheme {
-                environment?.let { ProbeScreen(it, ::openSettings) }
+            PreviewTheme {
+                environment?.let { CapturePreview(it, ::openSettings) }
             }
         }
     }
@@ -90,138 +86,124 @@ class CaptureProbeActivity : ComponentActivity() {
 }
 
 @Composable
-private fun ProbeScreen(environment: ProbeEnvironment, openSettings: (String) -> Unit) {
+internal fun ProbeSettings(environment: ProbeEnvironment, openSettings: (String) -> Unit) {
     val session = ProbeSession.state
     var consentRoute by remember { mutableStateOf<ProbeRoute?>(null) }
     var confirmOverride by remember { mutableStateOf(false) }
     val canConfigure = environment.radio == ProbeRadio.PRESENT || session.hardwareOverride
-    Scaffold { padding ->
-        Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
-            LazyColumn(
-                modifier = Modifier.widthIn(max = 840.dp).fillMaxWidth(),
-                contentPadding = PaddingValues(20.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        LazyColumn(
+            modifier = Modifier.widthIn(max = 840.dp).fillMaxWidth(),
+            contentPadding = PaddingValues(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                Text(
+                    stringResource(R.string.probe_app_name),
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                Text(stringResource(R.string.probe_scope))
+            }
+            if (ProbeLocalTranslation.enabled) {
                 item {
+                    TextButton(onClick = { ProbeLocalTranslation.enable(false) }) {
+                        Text(stringResource(R.string.preview_stop_local))
+                    }
+                }
+            }
+            item {
+                ProbeCard {
                     Text(
-                        stringResource(R.string.probe_app_name),
-                        style = MaterialTheme.typography.headlineMedium
+                        stringResource(R.string.probe_device),
+                        style = MaterialTheme.typography.titleMedium
                     )
-                    Text(stringResource(R.string.probe_scope))
-                }
-                item {
-                    ProbeCard {
-                        Text(
-                            stringResource(R.string.probe_device),
-                            style = MaterialTheme.typography.titleMedium
+                    Text(
+                        stringResource(
+                            R.string.probe_device_format,
+                            Build.MANUFACTURER,
+                            Build.MODEL,
+                            Build.VERSION.RELEASE,
+                            Build.VERSION.SDK_INT
                         )
-                        Text(
-                            stringResource(
-                                R.string.probe_device_format,
-                                Build.MANUFACTURER,
-                                Build.MODEL,
-                                Build.VERSION.RELEASE,
-                                Build.VERSION.SDK_INT
-                            )
-                        )
-                        Text(stringResource(R.string.probe_build, Build.ID))
-                        Text(
-                            stringResource(
-                                when (environment.radio) {
-                                    ProbeRadio.PRESENT -> R.string.probe_radio_present
-                                    ProbeRadio.ABSENT -> R.string.probe_radio_absent
-                                    ProbeRadio.UNKNOWN -> R.string.probe_radio_unknown
-                                }
-                            )
-                        )
-                        Text(
-                            stringResource(
-                                R.string.probe_sources,
-                                environment.systemPackages.sorted().joinToString().ifEmpty {
-                                    "—"
-                                }
-                            )
-                        )
-                        Text(stringResource(R.string.probe_sources_unverified))
-                    }
-                }
-                item {
-                    ProbeCard {
-                        Text(
-                            stringResource(R.string.probe_diagnostics),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        ProbeToggle(
-                            stringResource(R.string.probe_hardware_override),
-                            session.hardwareOverride
-                        ) {
-                            if (it) {
-                                confirmOverride = true
-                            } else {
-                                ProbeSession.setDiagnostics(
-                                    hardwareOverride = false
-                                )
+                    )
+                    Text(stringResource(R.string.probe_build, Build.ID))
+                    Text(
+                        stringResource(
+                            when (environment.radio) {
+                                ProbeRadio.PRESENT -> R.string.probe_radio_present
+                                ProbeRadio.ABSENT -> R.string.probe_radio_absent
+                                ProbeRadio.UNKNOWN -> R.string.probe_radio_unknown
                             }
-                        }
-                        ProbeToggle(
-                            stringResource(R.string.probe_shell_fixture),
-                            session.shellFixture
-                        ) {
-                            ProbeSession.setDiagnostics(shell = it)
-                        }
-                        Text(stringResource(R.string.probe_changes_clear))
-                    }
+                        )
+                    )
+                    Text(
+                        stringResource(
+                            R.string.probe_sources,
+                            environment.systemPackages.sorted().joinToString().ifEmpty {
+                                "—"
+                            }
+                        )
+                    )
+                    Text(stringResource(R.string.probe_sources_unverified))
                 }
-                item {
-                    ProbeCard {
-                        Text(
-                            stringResource(R.string.probe_access),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        ProbeAccessRow(
-                            title = stringResource(R.string.probe_notification_access),
-                            granted = environment.notificationGranted,
-                            connected = session.notificationConnected,
-                            consent = session.notificationConsent,
-                            canConfigure = canConfigure,
-                            configure = { consentRoute = ProbeRoute.NOTIFICATION },
-                            withdraw = { ProbeSession.configure(ProbeRoute.NOTIFICATION, false) }
-                        )
-                        ProbeAccessRow(
-                            title = stringResource(R.string.probe_accessibility_access),
-                            granted = environment.accessibilityGranted,
-                            connected = session.accessibilityConnected,
-                            consent = session.accessibilityConsent,
-                            canConfigure = canConfigure,
-                            configure = { consentRoute = ProbeRoute.ACCESSIBILITY },
-                            withdraw = { ProbeSession.configure(ProbeRoute.ACCESSIBILITY, false) }
-                        )
-                        Text(stringResource(R.string.probe_restricted_settings))
-                        OutlinedButton(onClick = {
-                            openSettings(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                        }) {
-                            Text(stringResource(R.string.probe_app_info))
+            }
+            item {
+                ProbeCard {
+                    Text(
+                        stringResource(R.string.probe_diagnostics),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    ProbeToggle(
+                        stringResource(R.string.probe_hardware_override),
+                        session.hardwareOverride
+                    ) {
+                        if (it) {
+                            confirmOverride = true
+                        } else {
+                            ProbeSession.setDiagnostics(
+                                hardwareOverride = false
+                            )
                         }
                     }
-                }
-                item {
-                    ProbeCard {
-                        Text(
-                            stringResource(R.string.probe_observations),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(stringResource(R.string.probe_not_history))
-                        OutlinedButton(
-                            onClick = ProbeSession::clear,
-                            enabled = session.records.isNotEmpty()
-                        ) {
-                            Text(stringResource(R.string.probe_clear))
-                        }
-                        if (session.records.isEmpty()) Text(stringResource(R.string.probe_empty))
+                    ProbeToggle(
+                        stringResource(R.string.probe_shell_fixture),
+                        session.shellFixture
+                    ) {
+                        ProbeSession.setDiagnostics(shell = it)
                     }
+                    Text(stringResource(R.string.probe_changes_clear))
                 }
-                items(session.records.asReversed(), key = { it.id }) { record ->
-                    ProbeObservationCard(record.observation)
+            }
+            item {
+                ProbeCard {
+                    Text(
+                        stringResource(R.string.probe_access),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    ProbeAccessRow(
+                        title = stringResource(R.string.probe_notification_access),
+                        granted = environment.notificationGranted,
+                        connected = session.notificationConnected,
+                        consent = session.notificationConsent,
+                        canConfigure = canConfigure,
+                        configure = { consentRoute = ProbeRoute.NOTIFICATION },
+                        withdraw = { ProbeSession.configure(ProbeRoute.NOTIFICATION, false) }
+                    )
+                    ProbeAccessRow(
+                        title = stringResource(R.string.probe_accessibility_access),
+                        granted = environment.accessibilityGranted,
+                        connected = session.accessibilityConnected,
+                        consent = session.accessibilityConsent,
+                        canConfigure = canConfigure,
+                        configure = { consentRoute = ProbeRoute.ACCESSIBILITY },
+                        withdraw = { ProbeSession.configure(ProbeRoute.ACCESSIBILITY, false) }
+                    )
+                    Text(stringResource(R.string.probe_restricted_settings))
+                    OutlinedButton(onClick = {
+                        openSettings(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    }) {
+                        Text(stringResource(R.string.probe_app_info))
+                    }
                 }
             }
         }
@@ -328,42 +310,5 @@ private fun ProbeAccessRow(
     if (consent) TextButton(onClick = withdraw) { Text(stringResource(R.string.probe_withdraw)) }
 }
 
-@Composable
-private fun ProbeObservationCard(observation: ProbeObservation) {
-    ProbeCard {
-        Text(observation.packageName, style = MaterialTheme.typography.titleSmall)
-        Text(
-            stringResource(
-                when {
-                    observation.origin == ProbeOrigin.SHELL_FIXTURE ->
-                        R.string.probe_fixture_observation
-
-                    observation.route == ProbeRoute.NOTIFICATION ->
-                        R.string.probe_notification_observation
-
-                    else -> R.string.probe_accessibility_observation
-                }
-            )
-        )
-        Text(stringResource(R.string.probe_captured_at, formatTime(observation.capturedAtMillis)))
-        observation.postedAtMillis?.let {
-            Text(stringResource(R.string.probe_posted_at, formatTime(it)))
-        }
-        Text(stringResource(R.string.probe_completeness_unknown))
-        if (observation.limited) Text(stringResource(R.string.probe_limited))
-        if (observation.platformBoundaryPossible) {
-            Text(
-                stringResource(R.string.probe_platform_boundary)
-            )
-        }
-        if (observation.groupSummary) Text(stringResource(R.string.probe_group_summary))
-        Text(stringResource(R.string.probe_title))
-        SelectionContainer { Text(observation.title.ifEmpty { "—" }) }
-        Text(stringResource(R.string.probe_body))
-        SelectionContainer {
-            Text(observation.body.ifEmpty { stringResource(R.string.probe_body_unavailable) })
-        }
-    }
-}
-
-private fun formatTime(millis: Long): String = DateFormat.getDateTimeInstance().format(Date(millis))
+internal fun formatTime(millis: Long): String =
+    DateFormat.getDateTimeInstance().format(Date(millis))
