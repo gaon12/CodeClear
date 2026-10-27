@@ -7,6 +7,47 @@ import org.junit.Test
 
 class SourcePayloadDeviceTest {
     @Test
+    fun baselineLayoutIsAcceptedAcrossAllReviewedPlatformVersions() {
+        for (sdk in 30..37) {
+            fixture {
+                writeMessage(this, "[DRILL] Reviewed platform $sdk")
+                setDataPosition(0)
+                assertEquals(
+                    "[DRILL] Reviewed platform $sdk",
+                    ProbeBroadcastPayload.readForPlatform(this, sdk)?.body
+                )
+            }
+        }
+    }
+
+    @Test
+    fun unreviewedPlatformVersionsFailClosed() {
+        for (sdk in listOf(29, 38, Int.MAX_VALUE)) {
+            fixture {
+                writeMessage(this, "[DRILL] Unknown platform")
+                setDataPosition(0)
+                assertNull(ProbeBroadcastPayload.readForPlatform(this, sdk))
+            }
+        }
+    }
+
+    @Test
+    fun extendedCmasRequiresTheReviewedPlatformProfile() {
+        for (sdk in 30..37) {
+            fixture {
+                writeMessage(this, "[DRILL] Platform extension", extendedCmas = true)
+                setDataPosition(0)
+                val decoded = ProbeBroadcastPayload.readForPlatform(this, sdk)
+                if (sdk == 37) {
+                    assertEquals("[DRILL] Platform extension", decoded?.body)
+                } else {
+                    assertNull(decoded)
+                }
+            }
+        }
+    }
+
+    @Test
     fun extendedCmasRequiresItsReviewedLayoutAndExactConsumption() = fixture {
         writeMessage(this, "[DRILL] Extended CMAS", extendedCmas = true)
         setDataPosition(0)

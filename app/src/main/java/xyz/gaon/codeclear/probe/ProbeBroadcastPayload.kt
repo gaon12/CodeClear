@@ -21,12 +21,14 @@ data class ProbeDecodedBroadcast(val body: String, val fields: ProbeBroadcastFie
  * Parcelable is public; the source message's binary schema is not a stable public contract.
  * Unknown layouts fail closed. Never call hidden getters, retain location, or guess offsets.
  * Source: AOSP frameworks/base/telephony/java/android/telephony/SmsCbMessage.java.
+ * The baseline and nested warning/location writers were reviewed for Android 11 through 16;
+ * accepting a known layout does not establish capture support for an untested source or firmware.
  * The extended CMAS fields were reviewed in the connected API 37 framework's
  * SmsCbCmasInfo.writeToParcel. Selection uses complete data layouts, not manufacturer names.
  */
 object ProbeBroadcastPayload {
     fun decode(message: Parcelable): ProbeDecodedBroadcast? {
-        if (Build.VERSION.SDK_INT !in setOf(30, 37) ||
+        if (Build.VERSION.SDK_INT !in 30..37 ||
             message.javaClass.name != "android.telephony.SmsCbMessage"
         ) {
             return null
@@ -35,20 +37,22 @@ object ProbeBroadcastPayload {
         return try {
             message.writeToParcel(parcel, 0)
             parcel.setDataPosition(0)
-            val aosp = readReviewedParcel(parcel)
-            if (Build.VERSION.SDK_INT == 37) {
-                parcel.setDataPosition(0)
-                val extended = readReviewedParcel(parcel, extendedCmas = true)
-                // Accept only one distinct result across the complete reviewed schemas.
-                listOfNotNull(aosp, extended).distinct().singleOrNull()
-            } else {
-                aosp
-            }
+            readForPlatform(parcel, Build.VERSION.SDK_INT)
         } catch (_: RuntimeException) {
             null
         } finally {
             parcel.recycle()
         }
+    }
+
+    internal fun readForPlatform(parcel: Parcel, sdk: Int): ProbeDecodedBroadcast? {
+        if (sdk !in 30..37) return null
+        val baseline = readReviewedParcel(parcel)
+        if (sdk != 37) return baseline
+        parcel.setDataPosition(0)
+        val extended = readReviewedParcel(parcel, extendedCmas = true)
+        // Accept only one distinct result across the complete reviewed schemas.
+        return listOfNotNull(baseline, extended).distinct().singleOrNull()
     }
 
     internal fun readReviewedParcel(
