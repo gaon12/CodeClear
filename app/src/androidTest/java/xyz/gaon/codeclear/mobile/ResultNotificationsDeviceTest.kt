@@ -98,6 +98,17 @@ class ResultNotificationsDeviceTest {
             )
             assertEquals(Notification.VISIBILITY_PRIVATE, notification.visibility)
             assertNull(notification.fullScreenIntent)
+            assertEquals("translation-results", notification.group)
+            await {
+                manager.activeNotifications.firstOrNull {
+                    it.tag == "translation-summary"
+                }?.notification?.contentIntent == notification.contentIntent
+            }
+            val summary = manager.activeNotifications.first {
+                it.tag == "translation-summary"
+            }.notification
+            assertTrue(summary.flags and Notification.FLAG_GROUP_SUMMARY != 0)
+            assertNull(summary.fullScreenIntent)
             val previous = notification.contentIntent
             owner.post(22, "de")
             await {
@@ -108,9 +119,24 @@ class ResultNotificationsDeviceTest {
             }
             val replaced = manager.activeNotifications.first { it.tag == "result-22" }.notification
             assertNotEquals(previous, replaced.contentIntent)
+            await {
+                manager.activeNotifications.firstOrNull {
+                    it.tag == "translation-summary"
+                }?.notification?.contentIntent == replaced.contentIntent
+            }
             owner.cancel(22)
             await { manager.activeNotifications.none { it.tag == "result-22" } }
             assertFalse(manager.activeNotifications.any { it.tag == "result-22" })
+            await {
+                val remaining = manager.activeNotifications.firstOrNull {
+                    it.tag == "translation-summary"
+                }?.notification?.contentIntent
+                remaining != null && remaining != replaced.contentIntent && remaining != previous
+            }
+            // A fresh owner must also retarget correctly using platform state after process restart.
+            val restored = ResultNotifications(context)
+            for (id in 3L..21L) restored.cancel(id)
+            await { manager.activeNotifications.none { it.tag == "translation-summary" } }
         } finally {
             owner.cancel(null)
         }
