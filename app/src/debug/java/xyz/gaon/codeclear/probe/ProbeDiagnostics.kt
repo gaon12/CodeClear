@@ -11,6 +11,7 @@ object ProbeDiagnostics {
         writer.println("notificationConnected=${state.notificationConnected}")
         writer.println("accessibilityConnected=${state.accessibilityConnected}")
         writer.println("recordCount=${state.records.size}")
+        writer.println("lastAccessibilityWindowClass=${state.lastAccessibilityWindowClass ?: "-"}")
         state.records.takeLast(5).forEach { record ->
             val observation = record.observation
             writer.println(
@@ -19,7 +20,27 @@ object ProbeDiagnostics {
                     "bodyLength=${observation.body.length} " +
                     "titleLength=${observation.title.length} " +
                     "limited=${observation.limited} groupSummary=${observation.groupSummary} " +
-                    "platformBoundaryPossible=${observation.platformBoundaryPossible}"
+                    "platformBoundaryPossible=${observation.platformBoundaryPossible} " +
+                    "windowClass=${observation.windowClass ?: "-"} " +
+                    "readDurationMillis=${observation.readDurationMillis ?: -1}"
+            )
+        }
+        val notification = state.records.lastOrNull {
+            it.observation.route == ProbeRoute.NOTIFICATION &&
+                it.observation.origin == ProbeOrigin.SYSTEM_CANDIDATE
+        }
+        val accessibility = state.records.lastOrNull {
+            it.observation.route == ProbeRoute.ACCESSIBILITY &&
+                it.observation.origin == ProbeOrigin.SYSTEM_CANDIDATE
+        }
+        if (notification != null && accessibility != null &&
+            notification.observation.packageName == accessibility.observation.packageName
+        ) {
+            writer.println(
+                "latestSystemCandidatePair notificationId=${notification.id} " +
+                    "accessibilityId=${accessibility.id} " +
+                    "nonemptyBodiesEqual=${notification.observation.body.isNotEmpty() &&
+                        notification.observation.body == accessibility.observation.body}"
             )
         }
         writer.flush()

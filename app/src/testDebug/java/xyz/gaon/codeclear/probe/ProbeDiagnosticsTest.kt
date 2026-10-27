@@ -9,6 +9,25 @@ import org.junit.Test
 
 class ProbeDiagnosticsTest {
     @Test
+    fun equalityDiagnosticComparesActualNonemptyBodiesWithoutPrintingThem() {
+        val first = record(1).let {
+            it.copy(observation = it.observation.copy(route = ProbeRoute.NOTIFICATION))
+        }
+        val second = record(2)
+        val matching = render(ProbeSessionState(records = listOf(first, second)))
+        assertTrue(matching.contains("nonemptyBodiesEqual=true"))
+        assertFalse(matching.contains("private-body-fixture"))
+        val different = second.copy(
+            observation = second.observation.copy(body = "private-body-fixturX")
+        )
+        assertEquals(first.observation.body.length, different.observation.body.length)
+        assertTrue(
+            render(ProbeSessionState(records = listOf(first, different)))
+                .contains("nonemptyBodiesEqual=false")
+        )
+    }
+
+    @Test
     fun diagnosticsExposeCountsAndFlagsWithoutRawTitlesOrBodies() {
         val state = ProbeSessionState(
             accessibilityConnected = true,

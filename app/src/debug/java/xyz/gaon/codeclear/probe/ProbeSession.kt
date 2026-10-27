@@ -12,7 +12,8 @@ data class ProbeSessionState(
     val accessibilityConnected: Boolean = false,
     val hardwareOverride: Boolean = false,
     val shellFixture: Boolean = false,
-    val records: List<ProbeRecord> = emptyList()
+    val records: List<ProbeRecord> = emptyList(),
+    val lastAccessibilityWindowClass: String? = null
 )
 
 /** Consent and temporary observations intentionally disappear when this diagnostic process ends. */
@@ -77,10 +78,23 @@ object ProbeSession {
         if (buffer.append(ticket, observation)) state = state.copy(records = buffer.snapshot())
     }
 
+    fun currentGeneration(): Long {
+        checkMainThread()
+        return buffer.generation
+    }
+
+    fun noteAccessibilityWindow(className: String) {
+        checkMainThread()
+        if (state.accessibilityConsent) {
+            val safeClass = className.takeIf { it.matches(Regex("[A-Za-z0-9_.$]{1,256}")) }
+            state = state.copy(lastAccessibilityWindowClass = safeClass)
+        }
+    }
+
     fun clear() {
         checkMainThread()
         buffer.clear()
-        state = state.copy(records = emptyList())
+        state = state.copy(records = emptyList(), lastAccessibilityWindowClass = null)
     }
 
     private fun checkMainThread() {

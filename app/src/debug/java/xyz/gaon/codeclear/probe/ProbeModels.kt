@@ -16,7 +16,9 @@ data class ProbeObservation(
     val postedAtMillis: Long? = null,
     val limited: Boolean = false,
     val groupSummary: Boolean = false,
-    val platformBoundaryPossible: Boolean = false
+    val platformBoundaryPossible: Boolean = false,
+    val windowClass: String? = null,
+    val readDurationMillis: Long? = null
 )
 
 data class ProbeRecord(val id: Long, val observation: ProbeObservation)
