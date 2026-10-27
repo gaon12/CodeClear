@@ -69,7 +69,10 @@ class ResultNotificationsDeviceTest {
                 notice.extras.getCharSequence(Notification.EXTRA_TITLE).toString()
             )
         } finally {
-            owner.cancel(71)
+            // Release this fixture owner's pending group update as well as its child.
+            // A following owner cannot cancel callbacks retained by this instance.
+            owner.cancel(null)
+            await { manager.activeNotifications.none(::isResult) }
         }
     }
 
@@ -150,16 +153,22 @@ class ResultNotificationsDeviceTest {
         try {
             for (id in 101L..106L) owner.post(id, "en")
             owner.cancel(null)
+            // Platform cancellation is asynchronous; first observe its completion, then
+            // allow enough time for a stale dispatch callback to expose a resurrection.
+            await { manager.activeNotifications.none(::isResult) }
             SystemClock.sleep(750)
             assertTrue(
-                manager.activeNotifications.none {
-                    it.tag?.startsWith("result-") == true || it.tag == "translation-summary"
-                }
+                "Cancelled result tags reappeared: " +
+                    manager.activeNotifications.filter(::isResult).map { it.tag },
+                manager.activeNotifications.none(::isResult)
             )
         } finally {
             owner.cancel(null)
         }
     }
+
+    private fun isResult(notice: android.service.notification.StatusBarNotification): Boolean =
+        notice.tag?.startsWith("result-") == true || notice.tag == "translation-summary"
 
     private fun await(timeoutMillis: Long = 3000, predicate: () -> Boolean) {
         val deadline = SystemClock.uptimeMillis() + timeoutMillis
