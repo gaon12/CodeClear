@@ -87,6 +87,9 @@ class ResultNotifications(private val context: Context) {
     }
 
     fun allowed(): Boolean = manager.areNotificationsEnabled() &&
+        manager.getNotificationChannel(
+            CHANNEL
+        )?.importance != NotificationManager.IMPORTANCE_NONE &&
         (
             Build.VERSION.SDK_INT < 33 ||
                 context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
@@ -106,6 +109,7 @@ class ResultNotifications(private val context: Context) {
         }
 
         fun destination(uri: Uri?): RecordDestination? {
+            if (uri != null && uri.toString().length > 128) return null
             if (uri == null || uri.scheme != "codeclear" || uri.authority != "record" ||
                 uri.query != null ||
                 uri.fragment != null

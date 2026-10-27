@@ -76,6 +76,10 @@ class CaptureProbeActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        if (!mobileRuntime.diagnosticsActive()) {
+            diagnosticScope?.close()
+            diagnosticScope = mobileRuntime.pauseForDiagnostics()
+        }
         val previous = environment
         val current = ProbeEnvironment.read(this)
         if (previous?.notificationGranted == true && !current.notificationGranted) {

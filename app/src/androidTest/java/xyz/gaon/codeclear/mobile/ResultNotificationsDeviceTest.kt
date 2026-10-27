@@ -18,6 +18,11 @@ class ResultNotificationsDeviceTest {
 
     @Test
     fun destinationsValidateIdLanguageAndAllUriParts() {
+        assertNull(
+            ResultNotifications.destination(
+                Uri.parse("codeclear://record/" + "1".repeat(1024) + "/en")
+            )
+        )
         assertEquals(
             RecordDestination(42, "zh-Hant"),
             ResultNotifications.destination(ResultNotifications.destinationUri(42, "zh-Hant"))

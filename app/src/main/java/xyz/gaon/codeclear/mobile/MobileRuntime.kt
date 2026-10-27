@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import xyz.gaon.codeclear.BuildConfig
 import xyz.gaon.codeclear.probe.MlKitLocalEngine
+import xyz.gaon.codeclear.probe.ProbeSession
 
 class MobileApplication : Application() {
     lateinit var runtime: MobileRuntime
@@ -29,6 +30,7 @@ class MobileRuntime(context: Context) {
     private val notifications = ResultNotifications(context)
     private val engine = MlKitLocalEngine()
     private var diagnosticOwners = 0
+    private var diagnosticGeneration = 0L
     val controller = MobileController(
         context,
         AlertHistoryStore(context),
@@ -51,15 +53,34 @@ class MobileRuntime(context: Context) {
 
     fun pauseForDiagnostics(): AutoCloseable {
         check(BuildConfig.DEBUG && Looper.myLooper() == Looper.getMainLooper())
+        val generation = diagnosticGeneration
         if (diagnosticOwners++ == 0) controller.pauseCapture(true)
         var closed = false
         return AutoCloseable {
             check(Looper.myLooper() == Looper.getMainLooper())
-            if (!closed) {
+            if (!closed && generation == diagnosticGeneration) {
                 closed = true
-                if (--diagnosticOwners == 0) controller.pauseCapture(false)
+                if (--diagnosticOwners == 0) {
+                    ProbeSession.setDiagnostics(false, false)
+                    controller.pauseCapture(false)
+                }
             }
         }
+    }
+
+    fun diagnosticsActive(): Boolean = diagnosticOwners > 0
+
+    fun resumeProduct() {
+        check(Looper.myLooper() == Looper.getMainLooper())
+        if (diagnosticOwners == 0 && !ProbeSession.state.hardwareOverride &&
+            !ProbeSession.state.shellFixture
+        ) {
+            return
+        }
+        diagnosticGeneration++
+        diagnosticOwners = 0
+        ProbeSession.setDiagnostics(false, false)
+        controller.pauseCapture(false)
     }
 }
 
