@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <queries>
-        <package android:name="com.android.cellbroadcastreceiver" />
-        <package android:name="com.android.cellbroadcastreceiver.module" />
-        <package android:name="com.google.android.cellbroadcastreceiver" />
-    </queries>
     <application android:label="@string/probe_app_name" tools:replace="android:label">
         <activity android:name="xyz.gaon.codeclear.MainActivity" tools:node="remove" />
         <activity
@@ -18,26 +11,5 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service
-            android:name="xyz.gaon.codeclear.probe.ProbeNotificationListener"
-            android:exported="false"
-            android:label="@string/probe_notification_access"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
-            <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService" />
-            </intent-filter>
-        </service>
-        <service
-            android:name="xyz.gaon.codeclear.probe.ProbeAccessibilityService"
-            android:exported="true"
-            android:label="@string/probe_accessibility_access"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-            </intent-filter>
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/probe_accessibility_service" />
-        </service>
     </application>
 </manifest>

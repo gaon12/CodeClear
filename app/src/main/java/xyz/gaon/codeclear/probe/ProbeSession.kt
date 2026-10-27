@@ -4,6 +4,13 @@ import android.os.Looper
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import xyz.gaon.codeclear.BuildConfig
+
+interface CaptureObserver {
+    fun added(generation: Long, record: ProbeRecord) {}
+    fun updated(generation: Long, record: ProbeRecord) {}
+    fun cleared(generation: Long) {}
+}
 
 data class ProbeSessionState(
     val notificationConsent: Boolean = false,
@@ -16,11 +23,22 @@ data class ProbeSessionState(
     val lastAccessibilityWindowClass: String? = null
 )
 
-/** Consent and temporary observations intentionally disappear when this diagnostic process ends. */
+/** In-memory coordination; persistent history and product consent restoration have separate owners. */
 object ProbeSession {
     private val buffer = ProbeBuffer()
+    private val observers = linkedSetOf<CaptureObserver>()
     var state by mutableStateOf(ProbeSessionState())
         private set
+
+    /** Observers must return promptly; persistence and translation belong on their own workers. */
+    fun observe(observer: CaptureObserver): AutoCloseable {
+        checkMainThread()
+        observers += observer
+        return AutoCloseable {
+            checkMainThread()
+            observers -= observer
+        }
+    }
 
     fun configure(route: ProbeRoute, consent: Boolean) {
         checkMainThread()
@@ -44,6 +62,7 @@ object ProbeSession {
         shell: Boolean = state.shellFixture
     ) {
         checkMainThread()
+        require(BuildConfig.DEBUG || (!hardwareOverride && !shell))
         clear()
         state = state.copy(hardwareOverride = hardwareOverride, shellFixture = shell)
     }
@@ -77,13 +96,18 @@ object ProbeSession {
         checkMainThread()
         if (!buffer.append(ticket, observation)) return null
         state = state.copy(records = buffer.snapshot())
-        return state.records.last().id
+        val record = state.records.last()
+        observers.toList().forEach { it.added(ticket, record) }
+        return record.id
     }
 
     fun annotateHeading(ticket: Long, recordId: Long, hint: ProbeHeadingKind) {
         checkMainThread()
         if (buffer.annotateHeading(ticket, recordId, hint)) {
             state = state.copy(records = buffer.snapshot())
+            state.records.find { it.id == recordId }?.let { record ->
+                observers.toList().forEach { it.updated(ticket, record) }
+            }
         }
     }
 
@@ -103,9 +127,9 @@ object ProbeSession {
     fun clear() {
         checkMainThread()
         ProbeSourceActions.clear()
-        ProbeLocalTranslation.select(null)
         buffer.clear()
         state = state.copy(records = emptyList(), lastAccessibilityWindowClass = null)
+        observers.toList().forEach { it.cleared(buffer.generation) }
     }
 
     private fun checkMainThread() {

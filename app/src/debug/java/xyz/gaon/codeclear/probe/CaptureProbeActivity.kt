@@ -45,9 +45,15 @@ import xyz.gaon.codeclear.R
 
 class CaptureProbeActivity : ComponentActivity() {
     private var environment by mutableStateOf<ProbeEnvironment?>(null)
+    private var observations: AutoCloseable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        observations = ProbeSession.observe(object : CaptureObserver {
+            override fun cleared(generation: Long) {
+                if (ProbeLocalTranslation.enabled) ProbeLocalTranslation.select(null)
+            }
+        })
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         enableEdgeToEdge()
         setContent {
@@ -57,6 +63,11 @@ class CaptureProbeActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        observations?.close()
+        super.onDestroy()
     }
 
     override fun onResume() {
