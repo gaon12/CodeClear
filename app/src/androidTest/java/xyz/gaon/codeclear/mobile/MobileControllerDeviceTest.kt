@@ -46,6 +46,30 @@ class MobileControllerDeviceTest {
     }
 
     @Test
+    fun notificationDetailKeepsItsSavedLanguageWhenTheDefaultChanges() {
+        val id = store.insert(capture("[DRILL] Pinned language"))!!
+        for (target in listOf("en", "de")) {
+            val ticket = store.beginTranslation(id, target)!!
+            store.finishTranslation(
+                ticket,
+                SavedTranslation(TranslationPhase.READY, "Saved $target", "fr")
+            )
+        }
+        start(local = false)
+        await { it.latest?.id == id }
+        onMain { controller!!.openDetail(id, "en") }
+        await { it.detail?.translation?.text == "Saved en" }
+        onMain {
+            controller!!.changeOptions(controller!!.state.options.copy(target = LocalTarget.GERMAN))
+        }
+        await {
+            it.options.target == LocalTarget.GERMAN && it.latest?.translation?.text == "Saved de" &&
+                it.detailTarget == "en" && it.detail?.translation?.text == "Saved en"
+        }
+        assertEquals(0, onMain { engine.calls })
+    }
+
+    @Test
     fun equalBodiesReuseTranslationWithoutMergingOccurrencesOrStartingTwoSdkJobs() {
         store.insert(capture("[DRILL] Same original"))
         store.insert(capture("[DRILL] Same original"))
@@ -147,7 +171,7 @@ class MobileControllerDeviceTest {
                 preferences,
                 engine,
                 changed = latest::set,
-                translated = { notices += it }
+                translated = { id, _ -> notices += id }
             ).also { it.start() }
         }
     }

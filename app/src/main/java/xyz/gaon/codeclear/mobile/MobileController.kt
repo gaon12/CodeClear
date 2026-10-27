@@ -14,6 +14,7 @@ import xyz.gaon.codeclear.probe.CaptureObserver
 import xyz.gaon.codeclear.probe.LocalEngine
 import xyz.gaon.codeclear.probe.LocalInput
 import xyz.gaon.codeclear.probe.LocalResult
+import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeNotificationListener
 import xyz.gaon.codeclear.probe.ProbeRadio
@@ -28,6 +29,7 @@ data class MobileState(
     val records: List<SavedAlert> = emptyList(),
     val latest: SavedAlert? = null,
     val detailId: Long? = null,
+    val detailTarget: String? = null,
     val detail: SavedAlert? = null,
     val query: String = "",
     val beforeId: Long = Long.MAX_VALUE,
@@ -42,7 +44,7 @@ class MobileController(
     private val preferences: OptionsStorage,
     private val engine: LocalEngine,
     private val changed: (MobileState) -> Unit,
-    private val translated: (Long) -> Unit = {},
+    private val translated: (Long, String) -> Unit = { _, _ -> },
     private val deleted: (Long?) -> Unit = {},
     private val releaseEngine: () -> Unit = {}
 ) : CaptureObserver,
@@ -77,6 +79,7 @@ class MobileController(
     private var active: Work? = null
     private var engineRunning = false
     private var handlingFailure = false
+    private var capturePaused = false
 
     @Volatile private var closed = false
     var state = MobileState()
@@ -119,7 +122,12 @@ class MobileController(
                     it.copy(translation = it.translation.takeUnless { changedTarget })
                 },
                 detail = state.detail?.let {
-                    it.copy(translation = it.translation.takeUnless { changedTarget })
+                    it.copy(
+                        translation = it.translation.takeUnless {
+                            changedTarget &&
+                                state.detailTarget == null
+                        }
+                    )
                 }
             )
         )
@@ -134,27 +142,45 @@ class MobileController(
     }
 
     private fun syncCaptureConsent(refreshSources: Boolean = false) {
+        if (capturePaused) return
         val options = state.options
+        val notification = options.notificationConsent && !capturePaused
+        val accessibility = options.accessibilityConsent && !capturePaused
         val notificationChanged =
-            ProbeSession.state.notificationConsent != options.notificationConsent
+            ProbeSession.state.notificationConsent != notification
         val accessibilityChanged =
-            ProbeSession.state.accessibilityConsent != options.accessibilityConsent
+            ProbeSession.state.accessibilityConsent != accessibility
         if (notificationChanged) {
-            ProbeSession.configure(ProbeRoute.NOTIFICATION, options.notificationConsent)
+            ProbeSession.configure(ProbeRoute.NOTIFICATION, notification)
         }
         if (accessibilityChanged) {
-            ProbeSession.configure(ProbeRoute.ACCESSIBILITY, options.accessibilityConsent)
+            ProbeSession.configure(ProbeRoute.ACCESSIBILITY, accessibility)
         }
-        if (options.notificationConsent &&
+        if (notification &&
             (notificationChanged || accessibilityChanged || refreshSources)
         ) {
             ProbeNotificationListener.inspectConsentedSources()
         }
     }
 
+    /** Debug diagnostics own temporary consent separately and must not write product history. */
+    fun pauseCapture(paused: Boolean) {
+        requireMain()
+        capturePaused = paused
+        if (paused) {
+            ProbeSession.configure(ProbeRoute.NOTIFICATION, false)
+            ProbeSession.configure(ProbeRoute.ACCESSIBILITY, false)
+        }
+        if (state.loaded) syncCaptureConsent(refreshSources = !paused)
+    }
+
     override fun added(generation: Long, record: ProbeRecord) {
         requireMain()
-        if (!state.loaded || closed || generation != captureGeneration.get()) return
+        if (!state.loaded || closed || capturePaused ||
+            generation != captureGeneration.get()
+        ) {
+            return
+        }
         val environment = ProbeEnvironment.read(context)
         val options = state.options
         val capture = record.toHistoryCapture(
@@ -187,7 +213,7 @@ class MobileController(
     }
 
     override fun updated(generation: Long, record: ProbeRecord) {
-        if (closed || generation != captureGeneration.get()) return
+        if (closed || capturePaused || generation != captureGeneration.get()) return
         io({
             if (generation == captureGeneration.get()) {
                 observationIds[record.id]?.let {
@@ -231,9 +257,10 @@ class MobileController(
         refresh()
     }
 
-    fun openDetail(id: Long?) {
+    fun openDetail(id: Long?, target: String? = null) {
         requireMain()
-        update(state.copy(detailId = id?.takeIf { it > 0 }, detail = null))
+        require(target == null || target in HistoryText.targets)
+        update(state.copy(detailId = id?.takeIf { it > 0 }, detailTarget = target, detail = null))
         refresh()
     }
 
@@ -254,7 +281,12 @@ class MobileController(
                     cancellation = cancellation
                 ),
                 store.page("", request.options.target.languageTag, limit = 1).firstOrNull(),
-                request.detailId?.let { store.find(it, request.options.target.languageTag) }
+                request.detailId?.let {
+                    store.find(
+                        it,
+                        request.detailTarget ?: request.options.target.languageTag
+                    )
+                }
             )
         }) { view ->
             if (revision == queryRevision) {
@@ -273,7 +305,13 @@ class MobileController(
 
     private fun prepareVisibleRecords() {
         if (!state.options.localConsent || state.storageError) return
-        val ids = listOfNotNull(state.latest, state.detail)
+        val ids = listOfNotNull(
+            state.latest,
+            state.detail.takeIf {
+                state.detailTarget == null ||
+                    state.detailTarget == state.options.target.languageTag
+            }
+        )
             .filter { it.translation == null }.map { it.id }.distinct()
         if (ids.isEmpty()) return
         val target = state.options.target.languageTag
@@ -304,13 +342,13 @@ class MobileController(
         }
     }
 
-    fun retry(id: Long) {
+    fun retry(id: Long, target: String = state.options.target.languageTag) {
         requireMain()
+        require(target in HistoryText.targets)
         if (!state.options.localConsent || active != null || selecting || closed) return
         selecting = true
         val epoch = workEpoch.get()
-        val target = state.options.target
-        io({ store.beginTranslation(id, target.languageTag, retry = true) }) { ticket ->
+        io({ store.beginTranslation(id, target, retry = true) }) { ticket ->
             selecting = false
             if (ticket != null && epoch == workEpoch.get()) run(Work(ticket, epoch)) else kick()
         }
@@ -369,7 +407,7 @@ class MobileController(
     private fun run(job: Work) {
         active = job
         refresh()
-        val target = state.options.target
+        val target = LocalTarget.entries.first { it.languageTag == job.ticket.target }
         // Model preparation is a separate explicit action; background translation never downloads.
         engineRunning = true
         engine.run(LocalInput(job.ticket.alertId, job.ticket.original, target), false) { result ->
@@ -398,7 +436,11 @@ class MobileController(
         }) { saved ->
             if (active == job) active = null
             if (saved && job.epoch == workEpoch.get()) {
-                if (result.phase == TranslationPhase.READY) translated(job.ticket.alertId)
+                if (result.phase ==
+                    TranslationPhase.READY
+                ) {
+                    translated(job.ticket.alertId, job.ticket.target)
+                }
                 refresh()
             }
             kick()

@@ -42,13 +42,16 @@ import androidx.compose.ui.unit.dp
 import java.text.DateFormat
 import java.util.Date
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.mobile.mobileRuntime
 
 class CaptureProbeActivity : ComponentActivity() {
     private var environment by mutableStateOf<ProbeEnvironment?>(null)
     private var observations: AutoCloseable? = null
+    private var diagnosticScope: AutoCloseable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        diagnosticScope = mobileRuntime.pauseForDiagnostics()
         observations = ProbeSession.observe(object : CaptureObserver {
             override fun cleared(generation: Long) {
                 if (ProbeLocalTranslation.enabled) ProbeLocalTranslation.select(null)
@@ -67,6 +70,7 @@ class CaptureProbeActivity : ComponentActivity() {
 
     override fun onDestroy() {
         observations?.close()
+        diagnosticScope?.close()
         super.onDestroy()
     }
 

@@ -1,5 +1,6 @@
 package xyz.gaon.codeclear
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,11 +12,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import xyz.gaon.codeclear.mobile.ResultNotifications
+import xyz.gaon.codeclear.mobile.mobileRuntime
 import xyz.gaon.codeclear.ui.theme.CodeClearTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        openDestination(intent)
         enableEdgeToEdge()
         setContent {
             CodeClearTheme {
@@ -26,6 +30,24 @@ class MainActivity : ComponentActivity() {
                     )
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        openDestination(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mobileRuntime.controller.start()
+        mobileRuntime.controller.refresh()
+    }
+
+    private fun openDestination(intent: Intent) {
+        ResultNotifications.destination(intent.data)?.let {
+            mobileRuntime.controller.openDetail(it.id, it.target)
         }
     }
 }

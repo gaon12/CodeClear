@@ -1,0 +1,5 @@
+<resources>
+    <string name="result_channel">Translation results</string>
+    <string name="result_title">Emergency alert translation ready</string>
+    <string name="result_body">Tap to view the original and on-device translation.</string>
+</resources>

@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import androidx.test.core.app.ActivityScenario
 import androidx.test.platform.app.InstrumentationRegistry
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -30,6 +31,7 @@ class SourceActionDeviceTest {
         )
         val completed = CountDownLatch(1)
         var returned: Intent? = null
+        val scenario = ActivityScenario.launch<CaptureProbeActivity>(intent)
         try {
             instrumentation.runOnMainSync {
                 pending.send(context, 0, null, { _, original, _, _, _ ->
@@ -42,6 +44,8 @@ class SourceActionDeviceTest {
             assertEquals(expected, returned?.getParcelableArrayListExtra<Uri>("synthetic_messages"))
         } finally {
             pending.cancel()
+            scenario.close()
+            instrumentation.waitForIdleSync()
         }
     }
 }
