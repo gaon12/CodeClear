@@ -8,6 +8,32 @@ import org.junit.Test
 
 class ProbeRulesTest {
     @Test
+    fun olderAndroidDoesNotRequireTheApi33RadioFeature() {
+        assertEquals(ProbeRadio.PRESENT, ProbeSourcePolicy.classifyRadio(true, null))
+        assertEquals(ProbeRadio.ABSENT, ProbeSourcePolicy.classifyRadio(false, null))
+    }
+
+    @Test
+    fun contradictoryHardwareFeaturesRemainUnknown() {
+        assertEquals(ProbeRadio.UNKNOWN, ProbeSourcePolicy.classifyRadio(true, false))
+        assertEquals(ProbeRadio.UNKNOWN, ProbeSourcePolicy.classifyRadio(false, true))
+        assertEquals(ProbeRadio.PRESENT, ProbeSourcePolicy.classifyRadio(true, true))
+        assertEquals(ProbeRadio.ABSENT, ProbeSourcePolicy.classifyRadio(false, false))
+    }
+
+    @Test
+    fun diagnosticHardwareOverrideNeverOverridesConsentOrSystemAccess() {
+        for (radio in ProbeRadio.entries) {
+            assertFalse(ProbeSourcePolicy.mayCollect(radio, false, true, true))
+            assertFalse(ProbeSourcePolicy.mayCollect(radio, true, false, true))
+            assertTrue(ProbeSourcePolicy.mayCollect(radio, true, true, true))
+        }
+        assertFalse(ProbeSourcePolicy.mayCollect(ProbeRadio.ABSENT, true, true, false))
+        assertFalse(ProbeSourcePolicy.mayCollect(ProbeRadio.UNKNOWN, true, true, false))
+        assertTrue(ProbeSourcePolicy.mayCollect(ProbeRadio.PRESENT, true, true, false))
+    }
+
+    @Test
     fun ordinaryNotificationsCannotEnterThroughAnAlertTitleOrTag() {
         assertNull(ProbeSourcePolicy.classify("example.chat", emptySet(), true, "test_alert"))
     }

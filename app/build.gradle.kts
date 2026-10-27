@@ -20,6 +20,9 @@ android {
     }
 
     buildTypes {
+        debug {
+            versionNameSuffix = "-capture-probe"
+        }
         release {
             optimization {
                 enable = true

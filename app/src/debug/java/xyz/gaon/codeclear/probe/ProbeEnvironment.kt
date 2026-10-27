@@ -1,0 +1,60 @@
+package xyz.gaon.codeclear.probe
+
+import android.accessibilityservice.AccessibilityServiceInfo
+import android.app.NotificationManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.UserManager
+import android.view.accessibility.AccessibilityManager
+
+data class ProbeEnvironment(
+    val radio: ProbeRadio,
+    val systemPackages: Set<String>,
+    val notificationGranted: Boolean,
+    val accessibilityGranted: Boolean
+) {
+    companion object {
+        fun read(context: Context): ProbeEnvironment {
+            val packageManager = context.packageManager
+            val telephony = packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)
+            val radioAccess = if (Build.VERSION.SDK_INT >= 33) {
+                packageManager.hasSystemFeature(
+                    PackageManager.FEATURE_TELEPHONY_RADIO_ACCESS
+                )
+            } else {
+                null
+            }
+            val radio = ProbeSourcePolicy.classifyRadio(telephony, radioAccess)
+            val systemPackages = ProbeSourcePolicy.candidatePackages.filterTo(mutableSetOf()) {
+                try {
+                    val info = packageManager.getApplicationInfo(it, 0)
+                    info.flags and (
+                        ApplicationInfo.FLAG_SYSTEM or
+                            ApplicationInfo.FLAG_UPDATED_SYSTEM_APP
+                        ) != 0
+                } catch (_: PackageManager.NameNotFoundException) {
+                    false
+                }
+            }
+            val listener = ComponentName(context, ProbeNotificationListener::class.java)
+            val accessibility = ComponentName(context, ProbeAccessibilityService::class.java)
+            val enabledServices = context.getSystemService(AccessibilityManager::class.java)
+                .getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+            return ProbeEnvironment(
+                radio = radio,
+                systemPackages = systemPackages,
+                notificationGranted = context.getSystemService(NotificationManager::class.java)
+                    .isNotificationListenerAccessGranted(listener),
+                accessibilityGranted = enabledServices.any {
+                    val info = it.resolveInfo.serviceInfo
+                    ComponentName(info.packageName, info.name) == accessibility
+                }
+            )
+        }
+    }
+}
+
+fun Context.isUnlocked(): Boolean = getSystemService(UserManager::class.java).isUserUnlocked

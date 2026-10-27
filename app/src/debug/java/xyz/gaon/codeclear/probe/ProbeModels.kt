@@ -4,6 +4,8 @@ enum class ProbeRoute { NOTIFICATION, ACCESSIBILITY }
 
 enum class ProbeOrigin { SYSTEM_CANDIDATE, SHELL_FIXTURE }
 
+enum class ProbeRadio { PRESENT, ABSENT, UNKNOWN }
+
 data class ProbeObservation(
     val packageName: String,
     val route: ProbeRoute,
