@@ -7,6 +7,8 @@ data class ProbeSourceActionState(
     val busy: Boolean = false,
     val returnedMessages: Int? = null,
     val recognizedTypes: Boolean = false,
+    val importedMessages: Int = 0,
+    val matchingObservedBodies: Int = 0,
     val failure: ProbeSourceActionFailure? = null
 )
 

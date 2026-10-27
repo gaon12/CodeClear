@@ -191,6 +191,14 @@ internal fun ProbeSettings(
                     ProbeSourceActions.state.returnedMessages?.let {
                         Text(stringResource(R.string.probe_returned_messages, it))
                     }
+                    if (ProbeSourceActions.state.importedMessages > 0) {
+                        Text(
+                            stringResource(
+                                R.string.probe_imported_messages,
+                                ProbeSourceActions.state.importedMessages
+                            )
+                        )
+                    }
                     if (ProbeSourceActions.state.failure != null) {
                         Text(stringResource(R.string.probe_source_action_unavailable))
                     }

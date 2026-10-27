@@ -143,7 +143,28 @@ internal fun CapturePreview(
                         selected.observation.postedAtMillis?.let {
                             Text(stringResource(R.string.probe_posted_at, formatTime(it)))
                         }
-                        Text(stringResource(R.string.preview_level_unknown))
+                        val broadcast = selected.observation.broadcastFields
+                        if (broadcast == null) {
+                            Text(stringResource(R.string.preview_level_unknown))
+                        } else {
+                            Text(
+                                stringResource(
+                                    R.string.probe_structured_fields,
+                                    broadcast.format,
+                                    broadcast.category,
+                                    broadcast.priority,
+                                    broadcast.cmasClass?.toString() ?: "—",
+                                    broadcast.etwsType?.toString() ?: "—"
+                                )
+                            )
+                            Text(
+                                stringResource(
+                                    R.string.probe_source_received,
+                                    formatTime(broadcast.receivedAtMillis)
+                                )
+                            )
+                            Text(stringResource(R.string.probe_parcel_profile_notice))
+                        }
                         Text(
                             selected.observation.packageName,
                             style = MaterialTheme.typography.bodySmall

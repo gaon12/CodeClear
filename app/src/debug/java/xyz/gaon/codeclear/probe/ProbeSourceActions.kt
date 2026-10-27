@@ -105,8 +105,16 @@ object ProbeSourceActions {
                         )
                         return@send
                     }
+                    val observedBodies = ProbeSession.state.records.mapNotNull {
+                        it.observation.takeIf { observation ->
+                            observation.packageName == action.packageName &&
+                                observation.bodyEvidence != ProbeBodyEvidence.UNVERIFIED &&
+                                observation.body.isNotBlank()
+                        }?.body
+                    }
                     try {
                         worker.execute {
+                            var decoded = emptyList<ProbeDecodedBroadcast>()
                             val result = try {
                                 // Use the public Intent/Parcelable APIs; never call hidden message getters.
                                 val messages = original.getParcelableArrayListExtra<Parcelable>(
@@ -121,14 +129,67 @@ object ProbeSourceActions {
                                         failure = ProbeSourceActionFailure.LIMITED
                                     )
                                 } else {
-                                    inspectSourcePayloadTypes(messages.map { it.javaClass.name })
+                                    val types =
+                                        inspectSourcePayloadTypes(
+                                            messages.map {
+                                                it.javaClass.name
+                                            }
+                                        )
+                                    if (types.recognizedTypes) {
+                                        val batch = messages.map {
+                                            ProbeBroadcastPayload.decode(it)
+                                        }
+                                        if (batch.all { it != null }) {
+                                            decoded = batch.filterNotNull()
+                                            types.copy(
+                                                importedMessages = decoded.size,
+                                                matchingObservedBodies = decoded.count {
+                                                    it.body in observedBodies
+                                                }
+                                            )
+                                        } else {
+                                            types.copy(
+                                                failure = ProbeSourceActionFailure.UNSUPPORTED
+                                            )
+                                        }
+                                    } else {
+                                        types.copy(failure = ProbeSourceActionFailure.UNSUPPORTED)
+                                    }
                                 }
                             } catch (_: RuntimeException) {
                                 ProbeSourceActionState(
                                     failure = ProbeSourceActionFailure.UNSUPPORTED
                                 )
                             }
-                            main.post { finish(result) }
+                            main.post {
+                                if (operation == attempt &&
+                                    ProbeSession.currentGeneration() == ticket &&
+                                    activity.isUnlocked() &&
+                                    ProbeSession.ticket(
+                                        ProbeRoute.NOTIFICATION,
+                                        ProbeEnvironment.read(activity)
+                                    ) ==
+                                    ticket
+                                ) {
+                                    decoded.forEach { message ->
+                                        ProbeSession.publish(
+                                            ticket,
+                                            ProbeObservation(
+                                                packageName = action.packageName,
+                                                route = ProbeRoute.NOTIFICATION,
+                                                origin = ProbeOrigin.SYSTEM_CANDIDATE,
+                                                title = "",
+                                                body = message.body,
+                                                capturedAtMillis = System.currentTimeMillis(),
+                                                bodyEvidence =
+                                                    ProbeBodyEvidence.SOURCE_NOTIFICATION_PAYLOAD,
+                                                broadcastFields = message.fields
+                                            )
+                                        )
+                                    }
+                                    finish(result)
+                                }
+                            }
                         }
                     } catch (_: RejectedExecutionException) {
                         finish(

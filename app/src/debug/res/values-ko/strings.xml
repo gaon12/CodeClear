@@ -47,7 +47,11 @@
     <string name="probe_title">관찰된 제목</string>
     <string name="probe_body">관찰된 본문 필드</string>
     <string name="probe_body_unavailable">읽을 수 있는 본문 필드가 노출되지 않았습니다. 내용을 임의로 복원하지 않습니다.</string>
-    <string name="probe_source_action_notice">진단 기능: 현재 알림을 확인한 뒤 원본 재난문자를 직접 열 수 있습니다. 원본 앱의 경고를 확인 처리하지 않습니다. 지금은 반환된 메시지 개수와 형식만 검사하며, 숨겨진 본문을 가져오지는 않습니다.</string>
+    <string name="probe_source_action_notice">진단 기능: 현재 알림을 확인한 뒤 원본 재난문자를 직접 열 수 있습니다. 원본 앱의 경고를 확인 처리하지 않습니다. 검토된 데이터 형식이면 반환된 본문을 각각 가져오며, 지원하지 않는 형식은 기존 수집 내용을 유지합니다.</string>
+    <string name="probe_imported_messages">개별 본문 %1$d개 가져옴</string>
+    <string name="probe_structured_fields">원본 메타데이터 · 형식 %1$d · 방송 분류 번호 %2$d · 우선순위 %3$d · CMAS 분류 %4$s · ETWS 유형 %5$s</string>
+    <string name="probe_source_received">원본 앱의 수신 시각: %1$s</string>
+    <string name="probe_parcel_profile_notice">실험적인 원본 데이터 어댑터입니다. 원본이 제공한 숫자 정보이며 국가별 위험도 해석은 아닙니다. 검토된 API 30/37 프로필에서만 이 내부 데이터 형식을 사용합니다.</string>
     <string name="probe_inspect_current">현재 시스템 알림 확인</string>
     <string name="probe_open_original">원본 재난문자 알림 열기</string>
     <string name="probe_returned_messages">원본 동작에서 메시지 객체 %1$d개 반환됨</string>

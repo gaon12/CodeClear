@@ -47,7 +47,11 @@
     <string name="probe_title">Observed title</string>
     <string name="probe_body">Observed body field</string>
     <string name="probe_body_unavailable">No readable body field exposed. No text has been reconstructed.</string>
-    <string name="probe_source_action_notice">Diagnostic: inspect current notifications, then explicitly open the original system alert. This opens the source app without dismissing its warning. Only returned message counts and types are inspected; this does not yet import hidden bodies.</string>
+    <string name="probe_source_action_notice">Diagnostic: inspect current notifications, then explicitly open the original system alert. This opens the source app without dismissing its warning. Reviewed payloads can recover each returned body; unsupported formats preserve existing observations.</string>
+    <string name="probe_imported_messages">Recovered %1$d individual bodies</string>
+    <string name="probe_structured_fields">Source metadata · format %1$d · category %2$d · priority %3$d · CMAS class %4$s · ETWS type %5$s</string>
+    <string name="probe_source_received">Received by the source: %1$s</string>
+    <string name="probe_parcel_profile_notice">Experimental source payload adapter. These are source-provided numeric fields, not a country-specific severity interpretation. This internal data layout is only enabled for reviewed API 30/37 profiles.</string>
     <string name="probe_inspect_current">Inspect current system notifications</string>
     <string name="probe_open_original">Open original alert notification</string>
     <string name="probe_returned_messages">Original action returned %1$d message objects</string>

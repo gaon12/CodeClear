@@ -20,6 +20,8 @@ object ProbeDiagnostics {
                 "sourceActionBusy=${sourceAction.busy} " +
                 "sourceReturnedMessages=${sourceAction.returnedMessages ?: -1} " +
                 "sourceKnownMessageTypes=${sourceAction.recognizedTypes} " +
+                "sourceImportedMessages=${sourceAction.importedMessages} " +
+                "sourceBodiesMatchingObserved=${sourceAction.matchingObservedBodies} " +
                 "sourceActionFailure=${sourceAction.failure ?: "-"}"
         )
         writer.println("lastAccessibilityWindowClass=${state.lastAccessibilityWindowClass ?: "-"}")
@@ -37,7 +39,12 @@ object ProbeDiagnostics {
                     "bodyEvidence=${observation.bodyEvidence} " +
                     "notificationChannel=${observation.notificationChannel} " +
                     "headingHint=${observation.headingHint} " +
-                    "reportedDialogQueueSize=${observation.reportedDialogQueueSize ?: -1}"
+                    "reportedDialogQueueSize=${observation.reportedDialogQueueSize ?: -1} " +
+                    "broadcastFormat=${observation.broadcastFields?.format ?: -1} " +
+                    "broadcastCategory=${observation.broadcastFields?.category ?: -1} " +
+                    "broadcastPriority=${observation.broadcastFields?.priority ?: -1} " +
+                    "cmasClass=${observation.broadcastFields?.cmasClass ?: -1} " +
+                    "etwsType=${observation.broadcastFields?.etwsType ?: -1}"
             )
         }
         val notification = state.records.lastOrNull {

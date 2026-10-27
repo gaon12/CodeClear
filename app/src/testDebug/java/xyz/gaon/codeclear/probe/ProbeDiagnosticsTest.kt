@@ -33,11 +33,21 @@ class ProbeDiagnosticsTest {
             accessibilityConnected = true,
             records = listOf(record(1))
         )
-        val output = render(state)
+        val output = render(
+            state,
+            ProbeSourceActionState(
+                returnedMessages = 2,
+                recognizedTypes = true,
+                importedMessages = 2,
+                matchingObservedBodies = 1
+            )
+        )
         assertTrue(output.contains("accessibilityConnected=true"))
         assertTrue(output.contains("recordCount=1"))
         assertTrue(output.contains("bodyLength=${state.records.single().observation.body.length}"))
         assertTrue(output.contains("platformBoundaryPossible=true"))
+        assertTrue(output.contains("sourceImportedMessages=2"))
+        assertTrue(output.contains("sourceBodiesMatchingObserved=1"))
         assertFalse(output.contains("private-title-fixture"))
         assertFalse(output.contains("private-body-fixture"))
     }
@@ -51,9 +61,12 @@ class ProbeDiagnosticsTest {
         assertFalse(output.contains("id=1 "))
     }
 
-    private fun render(state: ProbeSessionState): String {
+    private fun render(
+        state: ProbeSessionState,
+        action: ProbeSourceActionState = ProbeSourceActionState()
+    ): String {
         val output = StringWriter()
-        ProbeDiagnostics.write(state, PrintWriter(output))
+        ProbeDiagnostics.write(state, PrintWriter(output), action)
         return output.toString()
     }
 

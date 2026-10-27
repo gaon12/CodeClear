@@ -10,6 +10,7 @@ enum class ProbeBodyEvidence {
     VISIBLE_DIALOG_FIELD,
     EXPANDED_NOTIFICATION_FIELD,
     SHELL_FIXTURE_FIELD,
+    SOURCE_NOTIFICATION_PAYLOAD,
     UNVERIFIED
 }
 
@@ -37,7 +38,8 @@ data class ProbeObservation(
     val bodyEvidence: ProbeBodyEvidence = ProbeBodyEvidence.UNVERIFIED,
     val notificationChannel: ProbeNotificationChannel = ProbeNotificationChannel.UNKNOWN,
     val headingHint: ProbeHeadingKind = ProbeHeadingKind.UNKNOWN,
-    val reportedDialogQueueSize: Int? = null
+    val reportedDialogQueueSize: Int? = null,
+    val broadcastFields: ProbeBroadcastFields? = null
 )
 
 data class ProbeRecord(val id: Long, val observation: ProbeObservation)
