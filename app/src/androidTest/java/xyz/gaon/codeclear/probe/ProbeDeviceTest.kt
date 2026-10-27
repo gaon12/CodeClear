@@ -39,7 +39,8 @@ class ProbeDeviceTest {
 
     @Before
     fun prepareConsentedFixtureSession() {
-        // Default UiAutomation suppresses accessibility services and would invalidate this check.
+        // These fixtures exercise notifications with dialog collection explicitly paused.
+        // Reuse Compose automation flags; reconnecting mid-suite breaks some platform versions.
         automation()
         val environment = ProbeEnvironment.read(context)
         assertTrue("Unlock the device before running capture checks", context.isUnlocked())
@@ -239,8 +240,4 @@ private fun <T> onMain(action: () -> T): T {
     return value.get()
 }
 
-private fun automation(): UiAutomation {
-    val flags = UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES or
-        if (Build.VERSION.SDK_INT >= 31) UiAutomation.FLAG_DONT_USE_ACCESSIBILITY else 0
-    return InstrumentationRegistry.getInstrumentation().getUiAutomation(flags)
-}
+private fun automation(): UiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation

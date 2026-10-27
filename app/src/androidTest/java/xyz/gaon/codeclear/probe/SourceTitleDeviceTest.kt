@@ -38,7 +38,15 @@ class SourceTitleDeviceTest {
     @Test
     @SuppressLint("DiscouragedApi")
     fun differentSourceLocalesYieldTheSameExplicitlyInferredType() {
-        val packageName = "com.android.cellbroadcastreceiver.module"
+        val packageName = requireNotNull(
+            ProbeEnvironment.read(context).systemPackages.firstOrNull { candidate ->
+                context.createPackageContext(candidate, 0).resources.getIdentifier(
+                    "cmas_presidential_level_alert",
+                    "string",
+                    candidate
+                ) != 0
+            }
+        ) { "No installed reviewed source exposes the localized title fixture" }
         val source = context.createPackageContext(packageName, 0)
         fun title(language: String): String {
             val configuration = Configuration(source.resources.configuration).apply {
