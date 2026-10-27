@@ -132,7 +132,8 @@ class ProbeAccessibilityService : AccessibilityService() {
                     capturedAtMillis = System.currentTimeMillis(),
                     limited = body.limited,
                     windowClass = ProbeWindowTracker.ALERT_CLASS,
-                    readDurationMillis = SystemClock.elapsedRealtime() - startedAt
+                    readDurationMillis = SystemClock.elapsedRealtime() - startedAt,
+                    bodyEvidence = ProbeBodyEvidence.VISIBLE_DIALOG_FIELD
                 )
             } finally {
                 fields.forEach(::releaseNode)

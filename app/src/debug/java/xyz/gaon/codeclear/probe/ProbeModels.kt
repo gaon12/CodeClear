@@ -6,6 +6,21 @@ enum class ProbeOrigin { SYSTEM_CANDIDATE, SHELL_FIXTURE }
 
 enum class ProbeRadio { PRESENT, ABSENT, UNKNOWN }
 
+enum class ProbeBodyEvidence {
+    VISIBLE_DIALOG_FIELD,
+    EXPANDED_NOTIFICATION_FIELD,
+    SHELL_FIXTURE_FIELD,
+    UNVERIFIED
+}
+
+enum class ProbeNotificationChannel {
+    EMERGENCY_PRESENTATION,
+    HIGH_PRIORITY_PRESENTATION,
+    NON_EMERGENCY_PRESENTATION,
+    VOICE_CALL_PRESENTATION,
+    UNKNOWN
+}
+
 data class ProbeObservation(
     val packageName: String,
     val route: ProbeRoute,
@@ -18,10 +33,17 @@ data class ProbeObservation(
     val groupSummary: Boolean = false,
     val platformBoundaryPossible: Boolean = false,
     val windowClass: String? = null,
-    val readDurationMillis: Long? = null
+    val readDurationMillis: Long? = null,
+    val bodyEvidence: ProbeBodyEvidence = ProbeBodyEvidence.UNVERIFIED,
+    val notificationChannel: ProbeNotificationChannel = ProbeNotificationChannel.UNKNOWN
 )
 
 data class ProbeRecord(val id: Long, val observation: ProbeObservation)
+
+fun ProbeRecord.localInput(target: LocalTarget): LocalInput? = observation.takeIf {
+    it.bodyEvidence != ProbeBodyEvidence.UNVERIFIED && it.body.isNotBlank() &&
+        !it.groupSummary && !it.limited
+}?.let { LocalInput(id, it.body, target) }
 
 data class BoundedText(val value: String, val limited: Boolean) {
     companion object {

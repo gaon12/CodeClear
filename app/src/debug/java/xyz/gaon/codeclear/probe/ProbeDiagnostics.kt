@@ -22,7 +22,9 @@ object ProbeDiagnostics {
                     "limited=${observation.limited} groupSummary=${observation.groupSummary} " +
                     "platformBoundaryPossible=${observation.platformBoundaryPossible} " +
                     "windowClass=${observation.windowClass ?: "-"} " +
-                    "readDurationMillis=${observation.readDurationMillis ?: -1}"
+                    "readDurationMillis=${observation.readDurationMillis ?: -1} " +
+                    "bodyEvidence=${observation.bodyEvidence} " +
+                    "notificationChannel=${observation.notificationChannel}"
             )
         }
         val notification = state.records.lastOrNull {

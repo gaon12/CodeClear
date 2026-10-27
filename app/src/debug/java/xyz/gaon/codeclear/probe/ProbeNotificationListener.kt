@@ -44,9 +44,10 @@ class ProbeNotificationListener : NotificationListenerService() {
             val notification = sbn.notification
             val extras = notification.extras
             val title = BoundedText.read(extras.getCharSequence(Notification.EXTRA_TITLE), 256)
+            val expanded = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)
+            val groupSummary = notification.flags and Notification.FLAG_GROUP_SUMMARY != 0
             val body = BoundedText.read(
-                extras.getCharSequence(Notification.EXTRA_BIG_TEXT)
-                    ?: extras.getCharSequence(Notification.EXTRA_TEXT)
+                expanded ?: extras.getCharSequence(Notification.EXTRA_TEXT)
             )
             // Do not combine grouped lines into an invented individual alert body.
             ProbeSession.publish(
@@ -60,9 +61,18 @@ class ProbeNotificationListener : NotificationListenerService() {
                     capturedAtMillis = System.currentTimeMillis(),
                     postedAtMillis = sbn.postTime,
                     limited = title.limited || body.limited,
-                    groupSummary = notification.flags and Notification.FLAG_GROUP_SUMMARY != 0,
+                    groupSummary = groupSummary,
                     platformBoundaryPossible =
-                        ProbeSourcePolicy.mayMatchNotificationTextBoundary(body.value.length)
+                        ProbeSourcePolicy.mayMatchNotificationTextBoundary(body.value.length),
+                    bodyEvidence = ProbeNotificationMetadata.bodyEvidence(
+                        origin,
+                        expanded != null,
+                        groupSummary
+                    ),
+                    notificationChannel = ProbeNotificationMetadata.channel(
+                        origin,
+                        notification.channelId
+                    )
                 )
             )
         } catch (_: RuntimeException) {
