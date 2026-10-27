@@ -36,6 +36,7 @@
     <string name="mobile_notification_access">Benachrichtigungszugriff</string>
     <string name="mobile_accessibility_access">Zugriff über Bedienungshilfen</string>
     <string name="mobile_app_info">App-Info öffnen</string>
+    <string name="mobile_app_list">Android-App-Liste öffnen</string>
     <string name="mobile_tutorial">Anleitung zur Erfassung</string>
     <string name="mobile_translation_settings">Übersetzung auf dem Gerät</string>
     <string name="mobile_local_description">Übersetzen Sie mit ML Kit auf diesem Gerät. Chinesisch unterstützt vereinfachte und traditionelle Schrift.</string>
@@ -92,7 +93,7 @@
     <string name="mobile_close">Schließen</string>
     <string name="mobile_delete_title">Gespeicherten Verlauf löschen?</string>
     <string name="mobile_settings_missing">Öffnen Sie Android-Einstellungen → Apps → CodeClear und wählen Sie die betreffende Zugriffseinstellung.</string>
-    <string name="mobile_restricted">Ab Android 13 kann der Zugriff bei direkt installierten APKs eingeschränkt sein. Falls angeboten, öffnen Sie App-Info → Mehr → Eingeschränkte Einstellungen zulassen. Aktivieren Sie danach jeden Zugriff einzeln. Menüs und Einschränkungen können je nach Gerät und Administrator abweichen.</string>
+    <string name="mobile_restricted">Ab Android 13 kann der Zugriff bei direkt installierten APKs eingeschränkt sein. Öffnen Sie App-Info → Mehr → Eingeschränkte Einstellungen zulassen. Aktivieren Sie danach jeden Zugriff einzeln. Fehlt das Menü, öffnen Sie unten die Android-App-Liste, wählen Sie CodeClear und dort Mehr. Menüs können abweichen; Administratoren können Änderungen verhindern.</string>
     <string name="mobile_model_notice">Bereiten Sie die Modelle für Ausgangs- und Zielsprache über WLAN vor. Downloads benötigen Daten und Speicher. Android kann sie nach Verlassen dieses Bildschirms oder Widerruf der Zustimmung fortsetzen. Warntexte werden nicht hochgeladen. Die Übersetzung wird nur fortgesetzt, solange die Übersetzung auf dem Gerät aktiviert ist.</string>
     <string name="mobile_privacy_description">Originale und Übersetzungen bleiben bis zum Löschen im privaten Gerätespeicher. Es gibt kein Konto, keine Synchronisierung, keine Serverübersetzung und keinen Upload von Warntexten. App-Sicherung und Geräteübertragung sind deaktiviert.</string>
     <string name="mobile_compatibility_description">Ziel sind Smartphones und Tablets ab Android 11 mit Mobilfunkhardware. Die vollständige Erfassung hängt von Empfangs-App und Firmware ab. Getestete Profile belegen keine weltweite Kompatibilität. Die Erfassung beginnt nach dem ersten Entsperren nach einem Neustart.</string>

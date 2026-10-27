@@ -35,8 +35,9 @@
     <string name="mobile_collection">Alert capture</string>
     <string name="mobile_notification_access">Notification access</string>
     <string name="mobile_accessibility_access">Accessibility access</string>
-    <string name="mobile_restricted">Android 13+ may block access for directly installed APKs. If available, open App info → More → Allow restricted settings, then enable each access separately. Menu names vary; device administrators may restrict this.</string>
+    <string name="mobile_restricted">Android 13+ may block access for directly installed APKs. Open App info → More → Allow restricted settings, then enable each access separately. If the menu is missing, open the Android app list below, select CodeClear, and open More there. Menus vary; device administrators may prevent changes.</string>
     <string name="mobile_app_info">Open app info</string>
+    <string name="mobile_app_list">Open Android app list</string>
     <string name="mobile_tutorial">How capture works</string>
     <string name="mobile_translation_settings">Local translation</string>
     <string name="mobile_local_description">Translate on this device with ML Kit. Chinese script conversion supports simplified and traditional output.</string>

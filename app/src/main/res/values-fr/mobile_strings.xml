@@ -36,6 +36,7 @@
     <string name="mobile_notification_access">Accès aux notifications</string>
     <string name="mobile_accessibility_access">Accès via l’accessibilité</string>
     <string name="mobile_app_info">Ouvrir les informations de l’application</string>
+    <string name="mobile_app_list">Liste des applications Android</string>
     <string name="mobile_tutorial">Guide de collecte</string>
     <string name="mobile_translation_settings">Traduction sur l’appareil</string>
     <string name="mobile_local_description">Traduisez sur cet appareil avec ML Kit. La conversion chinoise propose les écritures simplifiée et traditionnelle.</string>
@@ -92,7 +93,7 @@
     <string name="mobile_close">Fermer</string>
     <string name="mobile_delete_title">Supprimer l’historique enregistré ?</string>
     <string name="mobile_settings_missing">Ouvrez Paramètres Android → Applications → CodeClear, puis sélectionnez l’accès concerné.</string>
-    <string name="mobile_restricted">Android 13 et versions ultérieures peuvent bloquer l’accès après une installation directe par APK. Si l’option existe, ouvrez Informations sur l’application → Plus → Autoriser les paramètres restreints, puis activez chaque accès séparément. Les menus et restrictions dépendent de l’appareil et de son administrateur.</string>
+    <string name="mobile_restricted">Android 13 et versions ultérieures peuvent bloquer l’accès après une installation directe par APK. Ouvrez Informations sur l’application → Plus → Autoriser les paramètres restreints, puis activez chaque accès séparément. Si le menu manque, ouvrez la liste des applications Android ci-dessous, sélectionnez CodeClear, puis Plus. Les menus varient et un administrateur peut empêcher les modifications.</string>
     <string name="mobile_model_notice">Préparez les modèles des langues source et cible via Wi-Fi. Les téléchargements utilisent des données et du stockage. Android peut les poursuivre après la fermeture de cet écran ou le retrait du consentement. Le texte des alertes n’est pas envoyé. La traduction reprend uniquement si la traduction sur l’appareil reste activée.</string>
     <string name="mobile_privacy_description">Les originaux et traductions restent dans le stockage privé de l’appareil jusqu’à leur suppression. Aucun compte, aucune synchronisation, traduction serveur ou transmission du texte des alertes. La sauvegarde et le transfert des données de l’application sont désactivés.</string>
     <string name="mobile_compatibility_description">L’application vise les téléphones et tablettes Android 11 et ultérieurs dotés d’une radio cellulaire. La collecte complète dépend du récepteur d’alertes et du micrologiciel. Les profils testés ne prouvent pas une compatibilité mondiale. La collecte commence après le premier déverrouillage suivant un redémarrage.</string>

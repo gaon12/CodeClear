@@ -36,6 +36,7 @@
     <string name="mobile_notification_access">通知存取權限</string>
     <string name="mobile_accessibility_access">無障礙存取權限</string>
     <string name="mobile_app_info">開啟應用程式資訊</string>
+    <string name="mobile_app_list">開啟 Android 應用程式清單</string>
     <string name="mobile_tutorial">擷取方式說明</string>
     <string name="mobile_translation_settings">裝置內翻譯</string>
     <string name="mobile_local_description">使用 ML Kit 在裝置內翻譯，中文支援簡體與繁體轉換。</string>
@@ -92,7 +93,7 @@
     <string name="mobile_close">關閉</string>
     <string name="mobile_delete_title">刪除已儲存的紀錄？</string>
     <string name="mobile_settings_missing">請開啟 Android 設定 → 應用程式 → CodeClear，然後選擇對應的存取設定。</string>
-    <string name="mobile_restricted">Android 13 以上版本可能限制直接透過 APK 安裝的應用程式。若有此選項，請開啟應用程式資訊 → 更多 → 允許受限制的設定，再分別開啟各項存取權限。選單與限制可能因裝置及管理員政策而異。</string>
+    <string name="mobile_restricted">Android 13 以上版本可能限制直接透過 APK 安裝的應用程式。請開啟應用程式資訊 → 更多 → 允許受限制的設定，再分別開啟各項存取權限。若選單中沒有此選項，請透過下方按鈕開啟 Android 應用程式清單，選擇 CodeClear，再開啟更多。選單因裝置而異，管理員也可能禁止變更。</string>
     <string name="mobile_model_notice">透過 Wi-Fi 準備原文語言與目標語言的模型。下載會消耗流量與儲存空間。離開此頁面或撤回同意後，Android 仍可能繼續下載。警報正文不會上傳。僅在裝置內翻譯保持啟用時才會恢復翻譯。</string>
     <string name="mobile_privacy_description">原文與譯文會保存在裝置私有儲存空間中，直到您刪除。無須帳號，不提供同步、伺服器翻譯或警報正文上傳。應用程式備份與裝置間資料移轉已停用。</string>
     <string name="mobile_compatibility_description">適用對象為具有行動通訊硬體的 Android 11 以上手機與平板電腦。能否完整擷取取決於警報接收應用程式與韌體。已測試的設定不代表全球相容性。重新啟動後首次解鎖才開始擷取。</string>

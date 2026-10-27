@@ -36,6 +36,7 @@
     <string name="mobile_notification_access">通知へのアクセス</string>
     <string name="mobile_accessibility_access">ユーザー補助へのアクセス</string>
     <string name="mobile_app_info">アプリ情報を開く</string>
+    <string name="mobile_app_list">Android のアプリ一覧を開く</string>
     <string name="mobile_tutorial">取得方法の案内</string>
     <string name="mobile_translation_settings">端末内の翻訳</string>
     <string name="mobile_local_description">ML Kitを使い、端末内で翻訳します。中国語は簡体字と繁体字の変換に対応しています。</string>
@@ -92,7 +93,7 @@
     <string name="mobile_close">閉じる</string>
     <string name="mobile_delete_title">保存された履歴を削除しますか？</string>
     <string name="mobile_settings_missing">Androidの設定 → アプリ → CodeClearから該当するアクセス設定を開いてください。</string>
-    <string name="mobile_restricted">Android 13以降では、APKから直接インストールしたアプリのアクセスが制限される場合があります。表示される場合は、アプリ情報 → その他 → 制限付き設定を許可を選び、その後それぞれのアクセスを有効にしてください。メニューや制限は端末や管理者によって異なります。</string>
+    <string name="mobile_restricted">Android 13以降では、APKから直接インストールしたアプリのアクセスが制限される場合があります。アプリ情報 → その他 → 制限付き設定を許可を選び、その後それぞれのアクセスを有効にしてください。メニューがない場合は、下のボタンからAndroidのアプリ一覧を開き、CodeClearを選んでその他を確認してください。端末や管理者によって変更が制限される場合があります。</string>
     <string name="mobile_model_notice">Wi-Fiで原文言語と翻訳先言語のモデルを準備します。データ通信と保存領域を使用します。この画面を閉じたり同意を撤回したりしても、Androidがダウンロードを続ける場合があります。警報の本文はアップロードしません。翻訳を再開するのは、端末内の翻訳が有効な場合だけです。</string>
     <string name="mobile_privacy_description">原文と翻訳は、削除するまで端末内の非公開領域に保存します。アカウント、同期、サーバー翻訳、警報本文のアップロードはありません。アプリのバックアップと端末間転送は無効です。</string>
     <string name="mobile_compatibility_description">携帯電話回線に対応したAndroid 11以降のスマートフォン・タブレットを対象としています。全文の取得可否は受信アプリやファームウェアに依存します。検証済みの環境だけで世界中の互換性を保証するものではありません。再起動後、最初のロック解除から取得を開始します。</string>

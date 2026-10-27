@@ -1,6 +1,8 @@
 package xyz.gaon.codeclear.mobile
 
 import android.graphics.Bitmap
+import android.os.Build
+import android.provider.Settings
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.CompositionLocalProvider
@@ -46,6 +48,7 @@ class MobileScreenDeviceTest {
     private var configured = MobileOptions()
     private var searched = ""
     private var settingsOpened = 0
+    private var lastSettingsAction = ""
     private var prepared = 0
     private var fontScale by mutableStateOf(1f)
     private val context get() = compose.activity
@@ -95,6 +98,7 @@ class MobileScreenDeviceTest {
                                 prepared++
                             }, settings = {
                                 settingsOpened++
+                                lastSettingsAction = it
                             }, openSource = {
                             }, notificationPermission = {
                             }, notificationsAllowed = true, older = {
@@ -204,6 +208,22 @@ class MobileScreenDeviceTest {
             text(R.string.mobile_withdraw)
         )[0].performScrollTo().performClick()
         compose.runOnIdle { assertEquals(false, configured.accessibilityConsent) }
+    }
+
+    @Test
+    fun restrictedSettingsFallbackOpensTheAppListWithoutChangingConsent() {
+        val previous = state.options
+        compose.onNodeWithText(text(R.string.mobile_settings)).performClick()
+        if (Build.VERSION.SDK_INT >= 33) {
+            compose.onNodeWithText(text(R.string.mobile_app_list)).performScrollTo().performClick()
+            compose.runOnIdle {
+                assertEquals(Settings.ACTION_APPLICATION_SETTINGS, lastSettingsAction)
+                assertEquals(1, settingsOpened)
+                assertEquals(previous, state.options)
+            }
+        } else {
+            compose.onAllNodesWithText(text(R.string.mobile_app_list)).assertCountEquals(0)
+        }
     }
 
     @Test

@@ -79,6 +79,9 @@ fun MobileSettings(
             TextButton(onClick = {
                 actions.settings(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
             }) { Text(stringResource(R.string.mobile_app_info)) }
+            TextButton(onClick = {
+                actions.settings(Settings.ACTION_APPLICATION_SETTINGS)
+            }) { Text(stringResource(R.string.mobile_app_list)) }
         }
         TextButton(onClick = tutorial) { Text(stringResource(R.string.mobile_tutorial)) }
     }
