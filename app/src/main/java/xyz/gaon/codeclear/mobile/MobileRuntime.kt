@@ -62,7 +62,10 @@ class MobileRuntime(context: Context) {
         }, controller::modelsPrepared)
 
     fun configure(options: MobileOptions) {
-        if (!options.localConsent && state.options.localConsent) models.withdraw()
+        if (!options.localConsent && state.options.localConsent) {
+            models.withdraw()
+            notifications.cancel(null)
+        }
         controller.changeOptions(options)
     }
 

@@ -81,7 +81,7 @@ class ResultNotificationsDeviceTest {
         owner.cancel(null)
         try {
             for (id in 1L..22L) owner.post(id, "en")
-            await {
+            await(timeoutMillis = 20_000) {
                 manager.activeNotifications.count { it.tag?.startsWith("result-") == true } ==
                     20 &&
                     manager.activeNotifications.none { it.tag == "result-1" }
@@ -142,8 +142,27 @@ class ResultNotificationsDeviceTest {
         }
     }
 
-    private fun await(predicate: () -> Boolean) {
-        val deadline = SystemClock.uptimeMillis() + 3000
+    @Test
+    fun cancellingHistoryPreventsQueuedResultsFromReappearing() {
+        val owner = ResultNotifications(context)
+        val manager = context.getSystemService(NotificationManager::class.java)
+        owner.cancel(null)
+        try {
+            for (id in 101L..106L) owner.post(id, "en")
+            owner.cancel(null)
+            SystemClock.sleep(750)
+            assertTrue(
+                manager.activeNotifications.none {
+                    it.tag?.startsWith("result-") == true || it.tag == "translation-summary"
+                }
+            )
+        } finally {
+            owner.cancel(null)
+        }
+    }
+
+    private fun await(timeoutMillis: Long = 3000, predicate: () -> Boolean) {
+        val deadline = SystemClock.uptimeMillis() + timeoutMillis
         while (!predicate() && SystemClock.uptimeMillis() < deadline) SystemClock.sleep(10)
         assertTrue("The notification service did not finish the expected operation", predicate())
     }

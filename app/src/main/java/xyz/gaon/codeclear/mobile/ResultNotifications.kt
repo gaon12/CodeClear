@@ -12,6 +12,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import xyz.gaon.codeclear.MainActivity
 import xyz.gaon.codeclear.R
 
@@ -25,6 +26,10 @@ class ResultNotifications(private val context: Context) {
     private val handler = Handler(Looper.getMainLooper())
     private var summaryTask: Runnable? = null
     private var summaryRevision = 0L
+    private val pending = linkedMapOf<String, Notification>()
+    private var dispatchTask: Runnable? = null
+    private var dispatchRevision = 0L
+    private var lastDispatchAt = 0L
 
     @Synchronized
     fun post(id: Long, target: String, strings: Context = context) {
@@ -39,17 +44,14 @@ class ResultNotifications(private val context: Context) {
                 .apply { setShowBadge(false) }
         )
         val tag = PREFIX + id
-        if (!restored) {
-            manager.activeNotifications.sortedBy { it.postTime }.mapNotNull { it.tag }
-                .filter { it.startsWith(PREFIX) }.forEach(posted::add)
-            restored = true
-        }
+        restorePosted()
         // The platform's active snapshot can lag rapid notify calls; track this process's posts too.
         posted.remove(tag)
         posted.add(tag)
         while (posted.size > 20) {
             val oldest = posted.first()
             posted.remove(oldest)
+            pending.remove(oldest)
             manager.cancel(oldest, ID)
         }
         val intent = Intent(context, MainActivity::class.java)
@@ -73,16 +75,14 @@ class ResultNotifications(private val context: Context) {
             .setOnlyAlertOnce(true)
             .setAutoCancel(true)
             .build()
-        try {
-            manager.notify(tag, ID, notification)
-            updateSummary(notification)
-        } catch (_: SecurityException) {
-            // Access can be withdrawn between the permission check and the platform call.
-        }
+        pending.remove(tag)
+        pending[tag] = notification
+        scheduleDispatch()
     }
 
     @Synchronized
     fun cancel(id: Long?) {
+        restorePosted()
         summaryRevision++
         summaryTask?.let(handler::removeCallbacks)
         summaryTask = null
@@ -91,13 +91,19 @@ class ResultNotifications(private val context: Context) {
                 .filter { it.startsWith(PREFIX) }.toSet() + posted
             tags.forEach { manager.cancel(it, ID) }
             posted.clear()
+            pending.clear()
+            dispatchRevision++
+            dispatchTask?.let(handler::removeCallbacks)
+            dispatchTask = null
             manager.cancel(SUMMARY, ID)
         } else {
             posted.remove(PREFIX + id)
+            pending.remove(PREFIX + id)
             manager.cancel(PREFIX + id, ID)
-            // Reuse the remaining child action so deleted records cannot remain the group destination.
+            // Active snapshots can still contain earlier cancellations from this batch.
+            // Only reuse actions whose tags remain in the restored process ledger.
             val latest = manager.activeNotifications.filter {
-                it.tag?.startsWith(PREFIX) == true && it.tag != PREFIX + id
+                it.tag in posted
             }.maxByOrNull { it.postTime }?.notification
             if (latest == null) {
                 manager.cancel(SUMMARY, ID)
@@ -109,6 +115,48 @@ class ResultNotifications(private val context: Context) {
                 }
             }
         }
+    }
+
+    private fun scheduleDispatch() {
+        if (dispatchTask != null || pending.isEmpty()) return
+        val revision = dispatchRevision
+        val task = Runnable {
+            synchronized(this) {
+                if (revision != dispatchRevision) return@synchronized
+                dispatchTask = null
+                if (!allowed()) {
+                    pending.clear()
+                    return@synchronized
+                }
+                val next = pending.entries.firstOrNull() ?: return@synchronized
+                val tag = next.key
+                val notification = next.value
+                pending.remove(tag)
+                lastDispatchAt = SystemClock.elapsedRealtime()
+                if (tag in posted) {
+                    try {
+                        manager.notify(tag, ID, notification)
+                        updateSummary(notification)
+                    } catch (_: SecurityException) {
+                        // Access can be withdrawn between the permission check and the platform call.
+                    }
+                }
+                scheduleDispatch()
+            }
+        }
+        dispatchTask = task
+        // One child and at most one summary per interval stays below Android's update-rate limit.
+        handler.postDelayed(
+            task,
+            (500 - (SystemClock.elapsedRealtime() - lastDispatchAt)).coerceAtLeast(0)
+        )
+    }
+
+    private fun restorePosted() {
+        if (restored) return
+        manager.activeNotifications.sortedBy { it.postTime }.mapNotNull { it.tag }
+            .filter { it.startsWith(PREFIX) }.forEach(posted::add)
+        restored = true
     }
 
     private fun updateSummary(latest: Notification) {
