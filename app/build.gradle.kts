@@ -46,6 +46,16 @@ android {
 }
 
 dependencies {
+    constraints {
+        implementation(libs.okhttp) {
+            because(
+                "ML Kit requests an obsolete HTTP client with known certificate vulnerabilities."
+            )
+        }
+        implementation(libs.okio) {
+            because("Use the patched I/O implementation for SDK-managed model downloads.")
+        }
+    }
     implementation(libs.androidx.appcompat)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

@@ -26,23 +26,29 @@ class MobileControllerDeviceTest {
     private val latest = AtomicReference(MobileState())
     private val engine = ControlledEngine()
     private val notices = mutableListOf<Long>()
+    private var diagnosticScope: AutoCloseable? = null
 
     @Before
     fun preparePrivateFixtureStore() {
         name = "controller-test-${UUID.randomUUID()}.db"
         store = AlertHistoryStore(context, name)
+        onMain { diagnosticScope = context.mobileRuntime.pauseForDiagnostics() }
     }
 
     @After
     fun closeBeforeRemovingOnlyTheFixtureDatabase() {
-        val owner = controller
-        if (owner != null) {
-            onMain { owner.close() }
-            assertTrue(owner.awaitClosed(5000))
-        } else {
-            store.close()
+        try {
+            val owner = controller
+            if (owner != null) {
+                onMain { owner.close() }
+                assertTrue(owner.awaitClosed(5000))
+            } else {
+                store.close()
+            }
+            context.deleteDatabase(name)
+        } finally {
+            onMain { diagnosticScope?.close() }
         }
-        context.deleteDatabase(name)
     }
 
     @Test

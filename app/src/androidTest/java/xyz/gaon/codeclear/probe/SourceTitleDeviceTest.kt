@@ -11,17 +11,28 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import xyz.gaon.codeclear.mobile.mobileRuntime
 
 @RunWith(AndroidJUnit4::class)
 class SourceTitleDeviceTest {
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()
     private val context get() = instrumentation.targetContext
+    private var diagnosticScope: AutoCloseable? = null
+
+    @Before
+    fun keepSyntheticSourceTitlesOutOfPersistentProductHistory() {
+        onMain { diagnosticScope = context.mobileRuntime.pauseForDiagnostics() }
+    }
 
     @After
     fun clearSyntheticObservations() {
-        onMain { ProbeSession.clear() }
+        onMain {
+            ProbeSession.clear()
+            diagnosticScope?.close()
+        }
     }
 
     @Test

@@ -1,12 +1,29 @@
 package xyz.gaon.codeclear.probe
 
 import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Before
 import org.junit.Test
+import xyz.gaon.codeclear.mobile.mobileRuntime
 
 class CaptureObserverDeviceTest {
+    private var diagnosticScope: AutoCloseable? = null
+
+    @Before
+    fun isolateTemporaryObserverFixtures() = onMain {
+        val runtime = InstrumentationRegistry.getInstrumentation().targetContext.mobileRuntime
+        diagnosticScope = runtime.pauseForDiagnostics()
+    }
+
+    @After
+    fun restoreProductCaptureAfterFixtures() = onMain {
+        ProbeSession.clear()
+        diagnosticScope?.close()
+    }
+
     @Test
     fun observersReceiveGenerationBoundUpdatesAndStopAfterClosing() = onMain {
         ProbeSession.configure(ProbeRoute.NOTIFICATION, false)
