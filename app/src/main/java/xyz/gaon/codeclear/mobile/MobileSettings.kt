@@ -44,6 +44,7 @@ fun MobileSettings(
     var disclosure by remember { mutableStateOf<String?>(null) }
     var targetPicker by remember { mutableStateOf(false) }
     var themePicker by remember { mutableStateOf(false) }
+    var uiLanguagePicker by remember { mutableStateOf(false) }
     SettingSection(stringResource(R.string.mobile_collection)) {
         AccessRow(
             stringResource(R.string.mobile_notification_access),
@@ -110,6 +111,16 @@ fun MobileSettings(
         OutlinedButton(onClick = {
             themePicker = true
         }) { Text(stringResource(themeLabel(options.theme))) }
+        OutlinedButton(onClick = { uiLanguagePicker = true }) {
+            val language = if (options.uiLanguage.isEmpty()) {
+                stringResource(
+                    R.string.mobile_system
+                )
+            } else {
+                languageName(options.uiLanguage)
+            }
+            Text(stringResource(R.string.mobile_ui_language, language))
+        }
     }
     SettingSection(stringResource(R.string.mobile_result_notifications)) {
         Text(
@@ -206,6 +217,19 @@ fun MobileSettings(
         ) {
             themePicker = false
             actions.configure(options.copy(theme = ThemeChoice.entries[it]))
+        }
+    }
+    if (uiLanguagePicker) {
+        val languages = listOf("") + UiLanguages.supported
+        ChoiceDialog(
+            stringResource(R.string.mobile_ui_language_title),
+            languages.map {
+                if (it.isEmpty()) stringResource(R.string.mobile_system) else languageName(it)
+            },
+            { uiLanguagePicker = false }
+        ) {
+            uiLanguagePicker = false
+            actions.configure(options.copy(uiLanguage = languages[it]))
         }
     }
 }

@@ -2,7 +2,9 @@ package xyz.gaon.codeclear.mobile
 
 import android.app.Notification
 import android.app.NotificationManager
+import android.content.res.Configuration
 import android.net.Uri
+import android.os.LocaleList
 import android.os.SystemClock
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
@@ -37,6 +39,37 @@ class ResultNotificationsDeviceTest {
             "codeclear://other/42/en"
         ).forEach {
             assertNull(ResultNotifications.destination(Uri.parse(it)))
+        }
+    }
+
+    @Test
+    fun localizedResourcesOverrideTheDefaultNotificationCopy() {
+        val english = context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply {
+                setLocales(LocaleList.forLanguageTags("en"))
+            }
+        )
+        val korean = context.createConfigurationContext(
+            Configuration(context.resources.configuration).apply {
+                setLocales(LocaleList.forLanguageTags("ko"))
+            }
+        )
+        val owner = ResultNotifications(english)
+        val manager = context.getSystemService(NotificationManager::class.java)
+        try {
+            owner.post(71, "de", korean)
+            await { manager.activeNotifications.any { it.tag == "result-71" } }
+            val notice = manager.activeNotifications.first { it.tag == "result-71" }.notification
+            assertEquals(
+                korean.getString(R.string.result_title),
+                notice.extras.getCharSequence(Notification.EXTRA_TITLE).toString()
+            )
+            assertNotEquals(
+                english.getString(R.string.result_title),
+                notice.extras.getCharSequence(Notification.EXTRA_TITLE).toString()
+            )
+        } finally {
+            owner.cancel(71)
         }
     }
 

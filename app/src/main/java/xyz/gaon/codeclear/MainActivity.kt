@@ -9,11 +9,12 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.WindowManager
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -27,12 +28,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.core.os.LocaleListCompat
 import xyz.gaon.codeclear.mobile.MobileActions
+import xyz.gaon.codeclear.mobile.MobileOptions
 import xyz.gaon.codeclear.mobile.MobileScreen
 import xyz.gaon.codeclear.mobile.MobileTheme
 import xyz.gaon.codeclear.mobile.ResultNotifications
 import xyz.gaon.codeclear.mobile.SavedAlert
 import xyz.gaon.codeclear.mobile.ThemeChoice
+import xyz.gaon.codeclear.mobile.UiLanguages
 import xyz.gaon.codeclear.mobile.mobileRuntime
 import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
@@ -42,7 +46,7 @@ import xyz.gaon.codeclear.probe.ProbeSourceActions
 private data class PendingDeletion(val id: Long?)
 private data class PendingPreparation(val alert: SavedAlert, val target: String)
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     private var environment by mutableStateOf<ProbeEnvironment?>(null)
     private var notificationsAllowed by mutableStateOf(false)
     private var notificationRequested = false
@@ -61,6 +65,28 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val runtime = mobileRuntime
+            LaunchedEffect(runtime.state.loaded) {
+                if (runtime.state.loaded) {
+                    if (Build.VERSION.SDK_INT < 33) {
+                        val saved = runtime.state.options.uiLanguage
+                        if (AppCompatDelegate.getApplicationLocales().toLanguageTags() != saved) {
+                            AppCompatDelegate.setApplicationLocales(
+                                LocaleListCompat.forLanguageTags(saved)
+                            )
+                        }
+                    } else {
+                        // System app-language preferences are authoritative on Android 13 and newer.
+                        val actual = UiLanguages.normalize(
+                            AppCompatDelegate.getApplicationLocales().toLanguageTags()
+                        )
+                        if (actual !=
+                            runtime.state.options.uiLanguage
+                        ) {
+                            runtime.configure(runtime.state.options.copy(uiLanguage = actual))
+                        }
+                    }
+                }
+            }
             val dark = runtime.state.options.theme == ThemeChoice.DARK ||
                 (runtime.state.options.theme == ThemeChoice.SYSTEM && isSystemInDarkTheme())
             LaunchedEffect(dark) {
@@ -97,7 +123,7 @@ class MainActivity : ComponentActivity() {
                         ProbeSourceActions.state.available,
                         runtime.preparation,
                         MobileActions(
-                            runtime::configure, controller::search, {
+                            ::configureOptions, controller::search, {
                                 controller.openDetail(it)
                             }, {
                                 deletion =
@@ -206,6 +232,16 @@ class MainActivity : ComponentActivity() {
     private fun refreshAccess() {
         environment = ProbeEnvironment.read(this)
         notificationsAllowed = ResultNotifications(this).allowed()
+    }
+
+    private fun configureOptions(options: MobileOptions) {
+        val languageChanged = options.uiLanguage != mobileRuntime.state.options.uiLanguage
+        mobileRuntime.configure(options)
+        if (languageChanged) {
+            AppCompatDelegate.setApplicationLocales(
+                LocaleListCompat.forLanguageTags(options.uiLanguage)
+            )
+        }
     }
 
     private fun openDestination(intent: Intent) {

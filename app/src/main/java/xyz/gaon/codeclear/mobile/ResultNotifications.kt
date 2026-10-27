@@ -22,13 +22,13 @@ class ResultNotifications(private val context: Context) {
     private var restored = false
 
     @Synchronized
-    fun post(id: Long, target: String) {
+    fun post(id: Long, target: String, strings: Context = context) {
         require(id > 0 && target in HistoryText.targets)
         if (!allowed()) return
         manager.createNotificationChannel(
             NotificationChannel(
                 CHANNEL,
-                context.getString(R.string.result_channel),
+                strings.getString(R.string.result_channel),
                 NotificationManager.IMPORTANCE_LOW
             )
                 .apply { setShowBadge(false) }
@@ -58,8 +58,8 @@ class ResultNotifications(private val context: Context) {
         )
         val notification = Notification.Builder(context, CHANNEL)
             .setSmallIcon(R.drawable.ic_result)
-            .setContentTitle(context.getString(R.string.result_title))
-            .setContentText(context.getString(R.string.result_body))
+            .setContentTitle(strings.getString(R.string.result_title))
+            .setContentText(strings.getString(R.string.result_body))
             .setContentIntent(action)
             .setVisibility(Notification.VISIBILITY_PRIVATE)
             .setCategory(Notification.CATEGORY_STATUS)

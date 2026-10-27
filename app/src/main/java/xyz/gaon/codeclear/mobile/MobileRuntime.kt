@@ -2,6 +2,9 @@ package xyz.gaon.codeclear.mobile
 
 import android.app.Application
 import android.content.Context
+import android.content.res.Configuration
+import android.os.Build
+import android.os.LocaleList
 import android.os.Looper
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,7 +40,19 @@ class MobileRuntime(context: Context) {
         MobileOptionsStorage(context),
         engine,
         changed = { state = it },
-        translated = notifications::post,
+        translated = { id, target ->
+            val language = state.options.uiLanguage
+            val localized = if (Build.VERSION.SDK_INT < 33 && language.isNotEmpty()) {
+                context.createConfigurationContext(
+                    Configuration(context.resources.configuration).apply {
+                        setLocales(LocaleList.forLanguageTags(language))
+                    }
+                )
+            } else {
+                context
+            }
+            notifications.post(id, target, localized)
+        },
         deleted = notifications::cancel,
         releaseEngine = engine::close
     )
