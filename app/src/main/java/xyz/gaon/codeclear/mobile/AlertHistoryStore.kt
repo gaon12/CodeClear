@@ -136,6 +136,16 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         ).use { if (it.moveToFirst()) readAlert(it) else null }
     }
 
+    fun updateHeading(id: Long, hint: String) {
+        require(hint.matches(Regex("[A-Z_]{1,40}")))
+        database.update(
+            "alerts",
+            ContentValues().apply { put("heading_hint", hint) },
+            "id=?",
+            arrayOf(id.toString())
+        )
+    }
+
     fun beginTranslation(id: Long, target: String, retry: Boolean = false): TranslationTicket? {
         require(target in HistoryText.targets)
         val db = database
@@ -168,6 +178,15 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         } finally {
             db.endTransaction()
         }
+    }
+
+    fun queueTranslation(id: Long, target: String) {
+        require(target in HistoryText.targets)
+        database.execSQL(
+            "INSERT OR IGNORE INTO translations(alert_id,target,revision,phase) " +
+                "SELECT id,?,0,? FROM alerts WHERE id=?",
+            arrayOf<Any>(target, TranslationPhase.QUEUED.name, id)
+        )
     }
 
     fun finishTranslation(ticket: TranslationTicket, result: SavedTranslation): Boolean {
@@ -204,9 +223,8 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
     fun nextQueued(target: String): Long? {
         require(target in HistoryText.targets)
         return database.rawQuery(
-            "SELECT a.id FROM alerts a LEFT JOIN translations t " +
-                "ON t.alert_id=a.id AND t.target=? " +
-                "WHERE t.phase IS NULL OR t.phase=? ORDER BY a.id DESC LIMIT 1",
+            "SELECT alert_id FROM translations WHERE target=? AND phase=? " +
+                "ORDER BY alert_id DESC LIMIT 1",
             arrayOf(target, TranslationPhase.QUEUED.name)
         ).use { if (it.moveToFirst()) it.getLong(0) else null }
     }
@@ -339,7 +357,7 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
     }
 
     private class HistoryDatabase(context: Context, name: String) :
-        SQLiteOpenHelper(context, name, null, 2) {
+        SQLiteOpenHelper(context, name, null, 3) {
         init {
             setWriteAheadLoggingEnabled(true)
         }
@@ -375,6 +393,7 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
                 """.trimIndent()
             )
             createIgnoredSources(db)
+            createQueueIndex(db)
         }
 
         override fun onOpen(db: SQLiteDatabase) {
@@ -382,8 +401,9 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            if (oldVersion == 1 && newVersion == 2) {
-                createIgnoredSources(db)
+            if (oldVersion in 1..2 && newVersion == 3) {
+                if (oldVersion == 1) createIgnoredSources(db)
+                createQueueIndex(db)
             } else {
                 throw SQLiteException("A preserving history migration is required")
             }
@@ -408,6 +428,10 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
                 "CREATE TABLE ignored_sources (fingerprint TEXT PRIMARY KEY NOT NULL, " +
                     "deleted_ms INTEGER NOT NULL)"
             )
+        }
+
+        fun createQueueIndex(db: SQLiteDatabase) {
+            db.execSQL("CREATE INDEX translation_queue ON translations(target,phase,alert_id DESC)")
         }
 
         fun pruneIgnored(db: SQLiteDatabase) {

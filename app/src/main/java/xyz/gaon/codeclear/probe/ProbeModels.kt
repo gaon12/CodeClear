@@ -39,7 +39,8 @@ data class ProbeObservation(
     val notificationChannel: ProbeNotificationChannel = ProbeNotificationChannel.UNKNOWN,
     val headingHint: ProbeHeadingKind = ProbeHeadingKind.UNKNOWN,
     val reportedDialogQueueSize: Int? = null,
-    val broadcastFields: ProbeBroadcastFields? = null
+    val broadcastFields: ProbeBroadcastFields? = null,
+    val sourceObservationKey: String? = null
 )
 
 data class ProbeRecord(val id: Long, val observation: ProbeObservation)

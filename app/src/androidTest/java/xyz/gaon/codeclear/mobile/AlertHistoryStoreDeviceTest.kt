@@ -38,6 +38,17 @@ class AlertHistoryStoreDeviceTest {
     }
 
     @Test
+    fun headingUpdatesPreserveTheOriginalAndCannotRestoreADeletedRow() {
+        val id = store.insert(capture("[DRILL] Heading metadata"))!!
+        store.updateHeading(id, "PUBLIC_SAFETY")
+        assertEquals("PUBLIC_SAFETY", store.find(id, "en")?.capture?.headingHint)
+        assertEquals("[DRILL] Heading metadata", store.find(id, "en")?.capture?.original)
+        store.delete(id)
+        store.updateHeading(id, "UNKNOWN")
+        assertNull(store.find(id, "en"))
+    }
+
+    @Test
     fun concurrentReplayAndDeletionCannotRestoreTheDeletedObservation() {
         val other = AlertHistoryStore(context, name)
         val threads = Executors.newFixedThreadPool(2)
@@ -118,6 +129,7 @@ class AlertHistoryStoreDeviceTest {
             SQLiteDatabase.OPEN_READWRITE
         ).use {
             it.execSQL("DROP TABLE ignored_sources")
+            it.execSQL("DROP INDEX translation_queue")
             it.version = 1
         }
         store = AlertHistoryStore(context, name)
@@ -204,6 +216,8 @@ class AlertHistoryStoreDeviceTest {
     @Test
     fun interruptedAndMissingModelWorkRequireValidNewRevisions() {
         val id = store.insert(capture("[DRILL] Do not cross."))!!
+        assertNull(store.nextQueued("en"))
+        store.queueTranslation(id, "en")
         assertEquals(id, store.nextQueued("en"))
         val interrupted = store.beginTranslation(id, "en")!!
         store.recoverInterruptedWork()

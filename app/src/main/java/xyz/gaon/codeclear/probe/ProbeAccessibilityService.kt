@@ -8,6 +8,9 @@ import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import java.io.FileDescriptor
 import java.io.PrintWriter
+import java.nio.ByteBuffer
+import java.security.MessageDigest
+import java.util.UUID
 import java.util.concurrent.Executors
 
 class ProbeAccessibilityService : AccessibilityService() {
@@ -18,6 +21,11 @@ class ProbeAccessibilityService : AccessibilityService() {
     private val pendingRead = Runnable { readPendingWindow() }
     private var nextReadAt = 0L
     private var destroyed = false
+    private val observationSession = UUID.randomUUID().toString()
+    private var visibleSession = 0L
+    private var bodyRevision = 0L
+    private data class BodyStamp(val digest: List<Byte>, val limited: Boolean, val queueSize: Int?)
+    private var lastBody: BodyStamp? = null
 
     override fun dump(fd: FileDescriptor, writer: PrintWriter, args: Array<out String>) {
         ProbeDiagnostics.write(ProbeSession.state, writer, ProbeSourceActions.state)
@@ -35,6 +43,8 @@ class ProbeAccessibilityService : AccessibilityService() {
         if (packageName !in ProbeSourcePolicy.candidatePackages) return
         when (event.eventType) {
             AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED -> {
+                visibleSession++
+                lastBody = null
                 val environment = ProbeEnvironment.read(this)
                 val ticket = ProbeSession.ticket(ProbeRoute.ACCESSIBILITY, environment) ?: return
                 if (packageName !in environment.systemPackages) return
@@ -93,7 +103,14 @@ class ProbeAccessibilityService : AccessibilityService() {
                         if (ProbeSession.ticket(ProbeRoute.ACCESSIBILITY, current) ==
                             request.consentGeneration
                         ) {
-                            ProbeSession.publish(request.consentGeneration, result)?.let { id ->
+                            val stamp = bodyStamp(result)
+                            if (lastBody != stamp) bodyRevision++
+                            lastBody = stamp
+                            val identified = result.copy(
+                                sourceObservationKey =
+                                    "dialog:$observationSession:$visibleSession:$bodyRevision"
+                            )
+                            ProbeSession.publish(request.consentGeneration, identified)?.let { id ->
                                 ProbeSourceTitleResources.enrich(
                                     this,
                                     request.consentGeneration,
@@ -107,6 +124,20 @@ class ProbeAccessibilityService : AccessibilityService() {
                 }
             }
         }
+    }
+
+    private fun bodyStamp(observation: ProbeObservation): BodyStamp {
+        // Preserve a stable observation key without keeping another raw body after history deletion.
+        val title = observation.title.toByteArray(Charsets.UTF_8)
+        val digest = MessageDigest.getInstance("SHA-256")
+        digest.update(ByteBuffer.allocate(4).putInt(title.size).array())
+        digest.update(title)
+        digest.update(observation.body.toByteArray(Charsets.UTF_8))
+        return BodyStamp(
+            digest.digest().toList(),
+            observation.limited,
+            observation.reportedDialogQueueSize
+        )
     }
 
     private fun readAlertBody(window: ProbeAlertWindow): ProbeObservation? {

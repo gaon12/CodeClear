@@ -26,6 +26,7 @@ class ProbeNotificationListener : NotificationListenerService() {
         connected = true
         current = WeakReference(this)
         ProbeSession.setConnected(ProbeRoute.NOTIFICATION, true)
+        inspectCurrent()
     }
 
     override fun onListenerDisconnected() {
@@ -98,7 +99,10 @@ class ProbeNotificationListener : NotificationListenerService() {
                     groupSummary,
                     channel
                 ),
-                notificationChannel = channel
+                notificationChannel = channel,
+                sourceObservationKey = sbn.key.takeIf { it.length <= 384 }?.let {
+                    "notification:$it:${sbn.postTime}"
+                }
             )
             ProbeSession.publish(ticket, observation)?.let { id ->
                 ProbeSourceTitleResources.enrich(this, ticket, id, observation)
@@ -116,11 +120,21 @@ class ProbeNotificationListener : NotificationListenerService() {
         if (!connected || snapshotPending || !isUnlocked()) return
         val ticket =
             ProbeSession.ticket(ProbeRoute.NOTIFICATION, ProbeEnvironment.read(this)) ?: return
+        val allowShell = ProbeSession.state.shellFixture
         snapshotPending = true
         try {
             snapshots.execute {
                 val found = try {
-                    activeNotifications?.take(100).orEmpty()
+                    activeNotifications.orEmpty().asSequence().filter {
+                        it.user == Process.myUserHandle() &&
+                            (
+                                it.packageName in ProbeSourcePolicy.candidatePackages ||
+                                    (
+                                        allowShell && it.packageName == "com.android.shell" &&
+                                            it.tag == "test_alert"
+                                        )
+                                )
+                    }.take(100).toList()
                 } catch (_: RuntimeException) {
                     emptyList()
                 }
@@ -139,7 +153,7 @@ class ProbeNotificationListener : NotificationListenerService() {
     companion object {
         private var current = WeakReference<ProbeNotificationListener>(null)
 
-        fun inspectFromUser() {
+        fun inspectConsentedSources() {
             current.get()?.inspectCurrent()
         }
     }

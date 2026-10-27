@@ -191,7 +191,7 @@ internal fun ProbeSettings(
                     Text(stringResource(R.string.probe_changes_clear))
                     Text(stringResource(R.string.probe_source_action_notice))
                     OutlinedButton(
-                        onClick = ProbeNotificationListener::inspectFromUser,
+                        onClick = ProbeNotificationListener::inspectConsentedSources,
                         enabled = session.notificationConsent && session.notificationConnected
                     ) { Text(stringResource(R.string.probe_inspect_current)) }
                     OutlinedButton(
