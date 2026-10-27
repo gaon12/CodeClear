@@ -204,6 +204,21 @@ class MobileScreenDeviceTest {
     }
 
     @Test
+    fun bottomDestinationsKeepIndependentScrollPositions() {
+        compose.onNodeWithTag(
+            "mobile-feed"
+        ).performScrollToNode(hasText(text(R.string.mobile_details)))
+        compose.onNodeWithText(text(R.string.mobile_settings)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_collection)).assertIsDisplayed()
+        val label = context.getString(R.string.mobile_ui_language, text(R.string.mobile_system))
+        compose.onNodeWithText(label).performScrollTo()
+        compose.onNodeWithText(text(R.string.mobile_home)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_details)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_history)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_search)).assertIsDisplayed()
+    }
+
+    @Test
     fun lightAndBlackThemesRenderSyntheticOriginalAndTranslation() {
         for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
             compose.runOnIdle {

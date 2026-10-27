@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -28,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -76,6 +78,23 @@ fun MobileScreen(
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var tutorial by rememberSaveable { mutableStateOf(false) }
     var step by rememberSaveable { mutableIntStateOf(0) }
+    val homeScroll = rememberLazyListState()
+    val historyScroll = rememberLazyListState()
+    val settingsScroll = rememberLazyListState()
+    val tutorialScroll = rememberLazyListState()
+    LaunchedEffect(tutorial, step) {
+        if (tutorial) tutorialScroll.scrollToItem(0)
+    }
+    LaunchedEffect(state.query, state.beforeId) { historyScroll.scrollToItem(0) }
+    val feedScroll = if (tutorial) {
+        tutorialScroll
+    } else {
+        when (tab) {
+            0 -> homeScroll
+            1 -> historyScroll
+            else -> settingsScroll
+        }
+    }
     MobileTheme(state.options.theme) {
         Scaffold(containerColor = MaterialTheme.colorScheme.background, bottomBar = {
             NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
@@ -109,6 +128,7 @@ fun MobileScreen(
             Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
                 LazyColumn(
                     Modifier.widthIn(max = 880.dp).fillMaxWidth().testTag("mobile-feed"),
+                    state = feedScroll,
                     contentPadding = PaddingValues(20.dp),
                     verticalArrangement = Arrangement.spacedBy(18.dp)
                 ) {
