@@ -102,6 +102,7 @@ object ProbeSession {
 
     fun clear() {
         checkMainThread()
+        ProbeSourceActions.clear()
         ProbeLocalTranslation.select(null)
         buffer.clear()
         state = state.copy(records = emptyList(), lastAccessibilityWindowClass = null)

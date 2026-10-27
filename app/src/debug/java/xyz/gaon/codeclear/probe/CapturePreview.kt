@@ -53,7 +53,11 @@ import androidx.compose.ui.unit.sp
 import xyz.gaon.codeclear.R
 
 @Composable
-internal fun CapturePreview(environment: ProbeEnvironment, openSettings: (String) -> Unit) {
+internal fun CapturePreview(
+    environment: ProbeEnvironment,
+    openSettings: (String) -> Unit,
+    openSource: () -> Unit = {}
+) {
     var destination by rememberSaveable { mutableStateOf(0) }
     var detailId by rememberSaveable { mutableStateOf<Long?>(null) }
     var showConsent by remember { mutableStateOf(false) }
@@ -104,7 +108,7 @@ internal fun CapturePreview(environment: ProbeEnvironment, openSettings: (String
 
                 1 -> PreviewHistory(session.records) { detailId = it }
 
-                else -> ProbeSettings(environment, openSettings)
+                else -> ProbeSettings(environment, openSettings, openSource)
             }
         }
     }

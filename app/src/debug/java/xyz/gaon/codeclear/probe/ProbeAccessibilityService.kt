@@ -20,7 +20,7 @@ class ProbeAccessibilityService : AccessibilityService() {
     private var destroyed = false
 
     override fun dump(fd: FileDescriptor, writer: PrintWriter, args: Array<out String>) {
-        ProbeDiagnostics.write(ProbeSession.state, writer)
+        ProbeDiagnostics.write(ProbeSession.state, writer, ProbeSourceActions.state)
     }
 
     override fun onServiceConnected() {

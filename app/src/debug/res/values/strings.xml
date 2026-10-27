@@ -47,4 +47,9 @@
     <string name="probe_title">Observed title</string>
     <string name="probe_body">Observed body field</string>
     <string name="probe_body_unavailable">No readable body field exposed. No text has been reconstructed.</string>
+    <string name="probe_source_action_notice">Diagnostic: inspect current notifications, then explicitly open the original system alert. This opens the source app without dismissing its warning. Only returned message counts and types are inspected; this does not yet import hidden bodies.</string>
+    <string name="probe_inspect_current">Inspect current system notifications</string>
+    <string name="probe_open_original">Open original alert notification</string>
+    <string name="probe_returned_messages">Original action returned %1$d message objects</string>
+    <string name="probe_source_action_unavailable">The source action was unavailable or returned an unsupported payload. Existing observations are preserved.</string>
 </resources>

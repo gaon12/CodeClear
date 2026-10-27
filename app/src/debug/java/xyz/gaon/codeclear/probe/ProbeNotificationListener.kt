@@ -1,31 +1,50 @@
 package xyz.gaon.codeclear.probe
 
 import android.app.Notification
+import android.os.Handler
+import android.os.Looper
+import android.os.Process
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import java.io.FileDescriptor
 import java.io.PrintWriter
+import java.lang.ref.WeakReference
+import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
 
 class ProbeNotificationListener : NotificationListenerService() {
+    private val main = Handler(Looper.getMainLooper())
+    private val snapshots = Executors.newSingleThreadExecutor()
+    private var snapshotPending = false
+    private var connected = false
+
     override fun dump(fd: FileDescriptor, writer: PrintWriter, args: Array<out String>) {
-        ProbeDiagnostics.write(ProbeSession.state, writer)
+        ProbeDiagnostics.write(ProbeSession.state, writer, ProbeSourceActions.state)
     }
 
     override fun onListenerConnected() {
+        connected = true
+        current = WeakReference(this)
         ProbeSession.setConnected(ProbeRoute.NOTIFICATION, true)
     }
 
     override fun onListenerDisconnected() {
+        connected = false
+        ProbeSourceActions.clear()
         ProbeSession.setConnected(ProbeRoute.NOTIFICATION, false)
     }
 
     override fun onDestroy() {
+        connected = false
+        if (current.get() === this) current.clear()
+        snapshots.shutdownNow()
+        ProbeSourceActions.clear()
         ProbeSession.setConnected(ProbeRoute.NOTIFICATION, false)
         super.onDestroy()
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
-        if (!isUnlocked()) return
+        if (!isUnlocked() || sbn.user != Process.myUserHandle()) return
         // Reject unrelated packages before reading any of their extras.
         if (sbn.packageName !in ProbeSourcePolicy.candidatePackages &&
             !(sbn.packageName == "com.android.shell" && ProbeSession.state.shellFixture)
@@ -47,6 +66,16 @@ class ProbeNotificationListener : NotificationListenerService() {
             val expanded = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)
             val groupSummary = notification.flags and Notification.FLAG_GROUP_SUMMARY != 0
             val channel = ProbeNotificationMetadata.channel(origin, notification.channelId)
+            if (origin == ProbeOrigin.SYSTEM_CANDIDATE &&
+                channel != ProbeNotificationChannel.UNKNOWN
+            ) {
+                ProbeSourceActions.offer(
+                    ticket,
+                    sbn.key,
+                    sbn.packageName,
+                    notification.contentIntent
+                )
+            }
             val body = BoundedText.read(
                 expanded ?: extras.getCharSequence(Notification.EXTRA_TEXT)
             )
@@ -76,6 +105,42 @@ class ProbeNotificationListener : NotificationListenerService() {
             }
         } catch (_: RuntimeException) {
             // Malformed Parcelable extras must not crash the listener or leak content to logs.
+        }
+    }
+
+    override fun onNotificationRemoved(sbn: StatusBarNotification) {
+        ProbeSourceActions.removed(sbn.key)
+    }
+
+    private fun inspectCurrent() {
+        if (!connected || snapshotPending || !isUnlocked()) return
+        val ticket =
+            ProbeSession.ticket(ProbeRoute.NOTIFICATION, ProbeEnvironment.read(this)) ?: return
+        snapshotPending = true
+        try {
+            snapshots.execute {
+                val found = try {
+                    activeNotifications?.take(100).orEmpty()
+                } catch (_: RuntimeException) {
+                    emptyList()
+                }
+                main.post {
+                    snapshotPending = false
+                    if (connected && ProbeSession.currentGeneration() == ticket) {
+                        found.forEach(::onNotificationPosted)
+                    }
+                }
+            }
+        } catch (_: RejectedExecutionException) {
+            snapshotPending = false
+        }
+    }
+
+    companion object {
+        private var current = WeakReference<ProbeNotificationListener>(null)
+
+        fun inspectFromUser() {
+            current.get()?.inspectCurrent()
         }
     }
 }

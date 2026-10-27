@@ -52,7 +52,9 @@ class CaptureProbeActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PreviewTheme {
-                environment?.let { CapturePreview(it, ::openSettings) }
+                environment?.let {
+                    CapturePreview(it, ::openSettings) { ProbeSourceActions.openFromUser(this) }
+                }
             }
         }
     }
@@ -86,7 +88,11 @@ class CaptureProbeActivity : ComponentActivity() {
 }
 
 @Composable
-internal fun ProbeSettings(environment: ProbeEnvironment, openSettings: (String) -> Unit) {
+internal fun ProbeSettings(
+    environment: ProbeEnvironment,
+    openSettings: (String) -> Unit,
+    openSource: () -> Unit
+) {
     val session = ProbeSession.state
     var consentRoute by remember { mutableStateOf<ProbeRoute?>(null) }
     var confirmOverride by remember { mutableStateOf(false) }
@@ -172,6 +178,22 @@ internal fun ProbeSettings(environment: ProbeEnvironment, openSettings: (String)
                         ProbeSession.setDiagnostics(shell = it)
                     }
                     Text(stringResource(R.string.probe_changes_clear))
+                    Text(stringResource(R.string.probe_source_action_notice))
+                    OutlinedButton(
+                        onClick = ProbeNotificationListener::inspectFromUser,
+                        enabled = session.notificationConsent && session.notificationConnected
+                    ) { Text(stringResource(R.string.probe_inspect_current)) }
+                    OutlinedButton(
+                        onClick = openSource,
+                        enabled =
+                            ProbeSourceActions.state.available && !ProbeSourceActions.state.busy
+                    ) { Text(stringResource(R.string.probe_open_original)) }
+                    ProbeSourceActions.state.returnedMessages?.let {
+                        Text(stringResource(R.string.probe_returned_messages, it))
+                    }
+                    if (ProbeSourceActions.state.failure != null) {
+                        Text(stringResource(R.string.probe_source_action_unavailable))
+                    }
                 }
             }
             item {
