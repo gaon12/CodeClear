@@ -54,7 +54,9 @@ class ProbeNotificationListener : NotificationListenerService() {
                     capturedAtMillis = System.currentTimeMillis(),
                     postedAtMillis = sbn.postTime,
                     limited = title.limited || body.limited,
-                    groupSummary = notification.flags and Notification.FLAG_GROUP_SUMMARY != 0
+                    groupSummary = notification.flags and Notification.FLAG_GROUP_SUMMARY != 0,
+                    platformBoundaryPossible =
+                        ProbeSourcePolicy.mayMatchNotificationTextBoundary(body.value.length)
                 )
             )
         } catch (_: RuntimeException) {

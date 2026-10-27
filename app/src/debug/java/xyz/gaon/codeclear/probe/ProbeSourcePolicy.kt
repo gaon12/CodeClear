@@ -2,6 +2,9 @@ package xyz.gaon.codeclear.probe
 
 /** Package candidates do not establish full-body capture support or public-alert provenance. */
 object ProbeSourcePolicy {
+    // A boundary match is only a warning; it cannot prove whether the original was longer.
+    fun mayMatchNotificationTextBoundary(length: Int): Boolean = length == 1024 || length == 5120
+
     fun classifyRadio(telephony: Boolean, radioAccess: Boolean?): ProbeRadio = when {
         radioAccess == null -> if (telephony) ProbeRadio.PRESENT else ProbeRadio.ABSENT
         telephony && radioAccess -> ProbeRadio.PRESENT

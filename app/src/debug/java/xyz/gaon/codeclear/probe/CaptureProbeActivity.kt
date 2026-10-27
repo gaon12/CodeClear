@@ -351,6 +351,11 @@ private fun ProbeObservationCard(observation: ProbeObservation) {
         }
         Text(stringResource(R.string.probe_completeness_unknown))
         if (observation.limited) Text(stringResource(R.string.probe_limited))
+        if (observation.platformBoundaryPossible) {
+            Text(
+                stringResource(R.string.probe_platform_boundary)
+            )
+        }
         if (observation.groupSummary) Text(stringResource(R.string.probe_group_summary))
         Text(stringResource(R.string.probe_title))
         SelectionContainer { Text(observation.title.ifEmpty { "—" }) }

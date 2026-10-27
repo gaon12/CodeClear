@@ -42,6 +42,7 @@
     <string name="probe_posted_at">OS notification post time: %1$s (not disaster occurrence time)</string>
     <string name="probe_completeness_unknown">Completeness unverified. Compare every character with the known original; visible text alone is not proof of full capture.</string>
     <string name="probe_limited">Extraction limit or multiple body fields encountered. Treat this as incomplete or ambiguous.</string>
+    <string name="probe_platform_boundary">This body matches a known Android notification text-length boundary. The original may have been shortened before reaching this app. Compare it with the system alert; this warning does not prove that text is missing.</string>
     <string name="probe_group_summary">Group summary: do not treat this as an individual alert body.</string>
     <string name="probe_title">Observed title</string>
     <string name="probe_body">Observed body field</string>

@@ -8,6 +8,15 @@ import org.junit.Test
 
 class ProbeRulesTest {
     @Test
+    fun knownPlatformBoundariesAreWarningsRatherThanProofOfCompleteExtraction() {
+        assertTrue(ProbeSourcePolicy.mayMatchNotificationTextBoundary(1024))
+        assertTrue(ProbeSourcePolicy.mayMatchNotificationTextBoundary(5120))
+        assertFalse(ProbeSourcePolicy.mayMatchNotificationTextBoundary(1023))
+        assertFalse(ProbeSourcePolicy.mayMatchNotificationTextBoundary(1025))
+        assertFalse(ProbeSourcePolicy.mayMatchNotificationTextBoundary(8192))
+    }
+
+    @Test
     fun olderAndroidDoesNotRequireTheApi33RadioFeature() {
         assertEquals(ProbeRadio.PRESENT, ProbeSourcePolicy.classifyRadio(true, null))
         assertEquals(ProbeRadio.ABSENT, ProbeSourcePolicy.classifyRadio(false, null))
