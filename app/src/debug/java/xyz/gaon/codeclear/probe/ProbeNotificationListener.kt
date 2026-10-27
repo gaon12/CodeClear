@@ -3,8 +3,14 @@ package xyz.gaon.codeclear.probe
 import android.app.Notification
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import java.io.FileDescriptor
+import java.io.PrintWriter
 
 class ProbeNotificationListener : NotificationListenerService() {
+    override fun dump(fd: FileDescriptor, writer: PrintWriter, args: Array<out String>) {
+        ProbeDiagnostics.write(ProbeSession.state, writer)
+    }
+
     override fun onListenerConnected() {
         ProbeSession.setConnected(ProbeRoute.NOTIFICATION, true)
     }

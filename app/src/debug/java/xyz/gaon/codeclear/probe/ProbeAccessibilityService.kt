@@ -6,10 +6,16 @@ import android.os.Looper
 import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import java.io.FileDescriptor
+import java.io.PrintWriter
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 class ProbeAccessibilityService : AccessibilityService() {
+    override fun dump(fd: FileDescriptor, writer: PrintWriter, args: Array<out String>) {
+        ProbeDiagnostics.write(ProbeSession.state, writer)
+    }
+
     private val worker = Executors.newSingleThreadExecutor()
     private val main = Handler(Looper.getMainLooper())
     private val reading = AtomicBoolean(false)
