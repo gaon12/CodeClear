@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasText
@@ -175,6 +176,34 @@ class MobileScreenDeviceTest {
         compose.onNodeWithText(text(R.string.mobile_next)).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_done)).performScrollTo().performClick()
         compose.runOnIdle { assertEquals(true, configured.setupComplete) }
+    }
+
+    @Test
+    fun wifiOnlySettingsAvoidAccessPromptsAndStillAllowWithdrawal() {
+        compose.runOnIdle {
+            environment = environment.copy(radio = ProbeRadio.ABSENT)
+            state = state.copy(
+                options = state.options.copy(
+                    notificationConsent = true,
+                    accessibilityConsent = true
+                )
+            )
+        }
+        compose.onNodeWithText(text(R.string.mobile_settings)).performClick()
+        compose.onAllNodesWithText(text(R.string.mobile_review_access)).assertCountEquals(0)
+        compose.onAllNodesWithText(text(R.string.mobile_withdraw)).assertCountEquals(2)
+        compose.onAllNodesWithText(
+            text(R.string.mobile_withdraw)
+        )[0].performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(false, configured.notificationConsent)
+            assertEquals(true, configured.accessibilityConsent)
+            assertEquals(0, settingsOpened)
+        }
+        compose.onAllNodesWithText(
+            text(R.string.mobile_withdraw)
+        )[0].performScrollTo().performClick()
+        compose.runOnIdle { assertEquals(false, configured.accessibilityConsent) }
     }
 
     @Test

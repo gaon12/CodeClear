@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
+import xyz.gaon.codeclear.probe.ProbeRadio
 import xyz.gaon.codeclear.probe.ProbeSessionState
 
 @Composable
@@ -45,12 +46,15 @@ fun MobileSettings(
     var targetPicker by remember { mutableStateOf(false) }
     var themePicker by remember { mutableStateOf(false) }
     var uiLanguagePicker by remember { mutableStateOf(false) }
+    val captureAvailable = environment.radio != ProbeRadio.ABSENT
     SettingSection(stringResource(R.string.mobile_collection)) {
+        if (!captureAvailable) Text(stringResource(R.string.mobile_wifi_only))
         AccessRow(
             stringResource(R.string.mobile_notification_access),
             options.notificationConsent,
             environment.notificationGranted,
             session.notificationConnected,
+            captureAvailable,
             {
                 disclosure = "notification"
             },
@@ -61,12 +65,13 @@ fun MobileSettings(
             options.accessibilityConsent,
             environment.accessibilityGranted,
             session.accessibilityConnected,
+            captureAvailable,
             {
                 disclosure = "accessibility"
             },
             { actions.configure(options.copy(accessibilityConsent = false)) }
         )
-        if (Build.VERSION.SDK_INT >= 33) {
+        if (captureAvailable && Build.VERSION.SDK_INT >= 33) {
             Text(
                 stringResource(R.string.mobile_restricted),
                 style = MaterialTheme.typography.bodySmall
@@ -240,6 +245,7 @@ private fun AccessRow(
     consent: Boolean,
     granted: Boolean,
     connected: Boolean,
+    captureAvailable: Boolean,
     enable: () -> Unit,
     withdraw: () -> Unit
 ) {
@@ -248,6 +254,7 @@ private fun AccessRow(
         Text(
             stringResource(
                 when {
+                    !captureAvailable -> R.string.mobile_wifi_only
                     !consent -> R.string.mobile_consent_needed
                     !granted -> R.string.mobile_access_needed
                     !connected -> R.string.mobile_reconnect_needed
@@ -257,7 +264,9 @@ private fun AccessRow(
             style = MaterialTheme.typography.bodyMedium
         )
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick = enable) { Text(stringResource(R.string.mobile_review_access)) }
+            if (captureAvailable) {
+                TextButton(onClick = enable) { Text(stringResource(R.string.mobile_review_access)) }
+            }
             if (consent) {
                 TextButton(onClick = withdraw) {
                     Text(stringResource(R.string.mobile_withdraw))
