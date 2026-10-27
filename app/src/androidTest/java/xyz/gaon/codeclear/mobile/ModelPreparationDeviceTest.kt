@@ -1,0 +1,88 @@
+package xyz.gaon.codeclear.mobile
+
+import androidx.test.platform.app.InstrumentationRegistry
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import xyz.gaon.codeclear.probe.LocalTarget
+
+class ModelPreparationDeviceTest {
+    private class Backend : ModelPreparationBackend {
+        var identification: ((String?) -> Unit)? = null
+        var completion: ((Boolean) -> Unit)? = null
+        var languages = emptySet<String>()
+        var identifications = 0
+        override fun identify(body: String, complete: (String?) -> Unit) {
+            identifications++
+            identification = complete
+        }
+        override fun download(languages: Set<String>, complete: (Boolean) -> Unit) {
+            this.languages = languages
+            completion = complete
+        }
+    }
+
+    @Test
+    fun downloadRequiresApprovalAndRejectsConcurrentPreparation() = onMain {
+        val backend = Backend()
+        val ready = mutableListOf<String>()
+        val owner = ModelPreparation(backend, {}, ready::add)
+        owner.prepare("[DRILL] Synthetic", LocalTarget.ENGLISH, false)
+        assertEquals(0, backend.identifications)
+        owner.prepare("[DRILL] Synthetic", LocalTarget.ENGLISH, true)
+        owner.prepare("[DRILL] Another", LocalTarget.GERMAN, true)
+        assertEquals(1, backend.identifications)
+        backend.identification!!("ko")
+        assertEquals(setOf("ko"), backend.languages)
+        assertEquals(PreparationPhase.WAITING_FOR_WIFI, owner.state.phase)
+        backend.completion!!(true)
+        assertEquals(listOf("en"), ready)
+    }
+
+    @Test
+    fun withdrawalDuringIdentificationDoesNotStartDownloads() = onMain {
+        val backend = Backend()
+        val owner =
+            ModelPreparation(backend, {}, { error("Withdrawn result must not resume work") })
+        owner.prepare("[DRILL] Synthetic", LocalTarget.FRENCH, true)
+        owner.withdraw()
+        backend.identification!!("ko")
+        assertTrue(backend.languages.isEmpty())
+        assertEquals(PreparationPhase.IDLE, owner.state.phase)
+    }
+
+    @Test
+    fun withdrawalDuringDownloadSuppressesReadyAndRetainsSingleSlot() = onMain {
+        val backend = Backend()
+        val owner =
+            ModelPreparation(backend, {}, { error("Withdrawn result must not resume work") })
+        owner.prepare("[DRILL] Synthetic", LocalTarget.GERMAN, true)
+        backend.identification!!("fr")
+        assertEquals(setOf("fr", "de"), backend.languages)
+        owner.withdraw()
+        owner.prepare("[DRILL] Duplicate", LocalTarget.GERMAN, true)
+        assertEquals(1, backend.identifications)
+        backend.completion!!(true)
+        assertEquals(PreparationPhase.IDLE, owner.state.phase)
+    }
+
+    @Test
+    fun sameModelLanguageNeedsNoDownloadAndFailureCanRetry() = onMain {
+        val backend = Backend()
+        val ready = mutableListOf<String>()
+        val owner = ModelPreparation(backend, {}, ready::add)
+        owner.prepare("Synthetic", LocalTarget.TRADITIONAL_CHINESE, true)
+        backend.identification!!("zh")
+        assertTrue(backend.languages.isEmpty())
+        assertEquals(listOf("zh-Hant"), ready)
+        owner.prepare("Synthetic", LocalTarget.FRENCH, true)
+        backend.identification!!("ko")
+        backend.completion!!(false)
+        assertEquals(PreparationPhase.FAILED, owner.state.phase)
+        owner.prepare("Synthetic", LocalTarget.FRENCH, true)
+        assertEquals(3, backend.identifications)
+    }
+
+    private fun onMain(block: () -> Unit) =
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(block)
+}
