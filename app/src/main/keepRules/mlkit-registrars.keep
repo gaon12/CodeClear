@@ -1,0 +1,5 @@
+# ML Kit discovers these classes from manifest metadata and calls their empty constructors.
+# Its older consumer rules keep class names but do not retain those constructors under R8 full mode.
+-keep class com.google.mlkit.** implements com.google.firebase.components.ComponentRegistrar {
+    public <init>();
+}
