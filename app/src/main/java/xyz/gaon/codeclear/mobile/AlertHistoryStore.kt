@@ -24,12 +24,12 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
             return helper.writableDatabase
         }
 
-    fun insertBatch(captures: List<CapturedAlert>): List<Long> {
+    fun insertBatch(captures: List<CapturedAlert>): List<Long?> {
         require(captures.size in 1..40)
         val db = database
         db.beginTransactionNonExclusive()
         try {
-            val ids = captures.map(::insert)
+            val ids = captures.map(::insertLocked)
             db.setTransactionSuccessful()
             return ids
         } finally {
@@ -37,8 +37,31 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         }
     }
 
-    fun insert(capture: CapturedAlert): Long {
+    /** A null result means this exact source observation was recently deleted by the owner. */
+    fun insert(capture: CapturedAlert): Long? {
+        val db = database
+        db.beginTransactionNonExclusive()
+        try {
+            val id = insertLocked(capture)
+            db.setTransactionSuccessful()
+            return id
+        } finally {
+            db.endTransaction()
+        }
+    }
+
+    private fun insertLocked(capture: CapturedAlert): Long? {
         val hash = originalHash(capture.original)
+        val db = database
+        capture.sourceIdentity?.let { identity ->
+            db.rawQuery(
+                "SELECT 1 FROM ignored_sources WHERE fingerprint=? AND deleted_ms>=? LIMIT 1",
+                arrayOf(
+                    sourceFingerprint(capture.sourcePackage, identity, hash),
+                    (System.currentTimeMillis() - IGNORE_LIFETIME_MILLIS).toString()
+                )
+            ).use { if (it.moveToFirst()) return null }
+        }
         val values = ContentValues().apply {
             put("source_package", capture.sourcePackage)
             put("source_kind", capture.source.name)
@@ -60,7 +83,6 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
                 put("etws_type", it.etwsType)
             }
         }
-        val db = database
         val inserted = db.insertWithOnConflict(
             "alerts",
             null,
@@ -165,7 +187,7 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
             put("source_language", result.sourceLanguage)
             put("search_text", result.text?.let(HistoryText::searchable))
         }
-        // Completion can update only the still-existing, still-current job. It cannot insert history.
+        // Complete only the still-existing current job; never insert history from a response.
         return database.update(
             "translations",
             values,
@@ -221,11 +243,52 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
     }
 
     fun delete(id: Long) {
-        database.delete("alerts", "id=?", arrayOf(id.toString()))
+        deleteMatching("id=?", arrayOf(id.toString()))
     }
 
     fun deleteAll() {
-        database.delete("alerts", null, null)
+        deleteMatching(null, null)
+    }
+
+    private fun deleteMatching(where: String?, args: Array<String>?) {
+        val db = database
+        db.beginTransactionNonExclusive()
+        try {
+            val matching = where?.let { " AND $it" }.orEmpty()
+            val deletedAt = System.currentTimeMillis()
+            // Keep no deleted title/body. Bound source fingerprints by age and count.
+            db.rawQuery(
+                "SELECT source_package, source_identity, original_hash FROM alerts " +
+                    "WHERE source_identity IS NOT NULL" + matching +
+                    " ORDER BY id DESC LIMIT 10000",
+                args
+            ).use { cursor ->
+                while (cursor.moveToNext()) {
+                    val values = ContentValues().apply {
+                        put(
+                            "fingerprint",
+                            sourceFingerprint(
+                                cursor.getString(0),
+                                cursor.getString(1),
+                                cursor.getString(2)
+                            )
+                        )
+                        put("deleted_ms", deletedAt)
+                    }
+                    db.insertWithOnConflict(
+                        "ignored_sources",
+                        null,
+                        values,
+                        SQLiteDatabase.CONFLICT_REPLACE
+                    )
+                }
+            }
+            db.delete("alerts", where, args)
+            pruneIgnored(db)
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
     }
 
     override fun close() {
@@ -276,7 +339,7 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
     }
 
     private class HistoryDatabase(context: Context, name: String) :
-        SQLiteOpenHelper(context, name, null, 1) {
+        SQLiteOpenHelper(context, name, null, 2) {
         init {
             setWriteAheadLoggingEnabled(true)
         }
@@ -311,13 +374,24 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
                 )
                 """.trimIndent()
             )
+            createIgnoredSources(db)
         }
 
-        override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int): Unit =
-            throw SQLiteException("A preserving history migration is required")
+        override fun onOpen(db: SQLiteDatabase) {
+            pruneIgnored(db)
+        }
+
+        override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+            if (oldVersion == 1 && newVersion == 2) {
+                createIgnoredSources(db)
+            } else {
+                throw SQLiteException("A preserving history migration is required")
+            }
+        }
     }
 
     private companion object {
+        const val IGNORE_LIFETIME_MILLIS = 30L * 24 * 60 * 60 * 1000
         const val SELECT_ALERT = "SELECT a.*, t.phase AS translation_phase, " +
             "t.text AS translation_text, t.source_language AS source_language, " +
             "t.revision AS translation_revision FROM alerts a LEFT JOIN translations t " +
@@ -325,5 +399,33 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
 
         fun originalHash(original: String): String = MessageDigest.getInstance("SHA-256")
             .digest(original.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
+
+        fun sourceFingerprint(source: String, identity: String, bodyHash: String): String =
+            originalHash(source + '\u0000' + identity + '\u0000' + bodyHash)
+
+        fun createIgnoredSources(db: SQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE ignored_sources (fingerprint TEXT PRIMARY KEY NOT NULL, " +
+                    "deleted_ms INTEGER NOT NULL)"
+            )
+        }
+
+        fun pruneIgnored(db: SQLiteDatabase) {
+            db.delete(
+                "ignored_sources",
+                "deleted_ms<?",
+                arrayOf(
+                    (
+                        System.currentTimeMillis() -
+                            IGNORE_LIFETIME_MILLIS
+                        ).toString()
+                )
+            )
+            db.execSQL(
+                "DELETE FROM ignored_sources WHERE fingerprint IN " +
+                    "(SELECT fingerprint FROM ignored_sources ORDER BY deleted_ms DESC " +
+                    "LIMIT -1 OFFSET 10000)"
+            )
+        }
     }
 }

@@ -1,11 +1,15 @@
 package xyz.gaon.codeclear.mobile
 
+import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
 import android.os.SystemClock
 import androidx.test.platform.app.InstrumentationRegistry
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -34,13 +38,101 @@ class AlertHistoryStoreDeviceTest {
     }
 
     @Test
+    fun concurrentReplayAndDeletionCannotRestoreTheDeletedObservation() {
+        val other = AlertHistoryStore(context, name)
+        val threads = Executors.newFixedThreadPool(2)
+        try {
+            repeat(20) { index ->
+                val original = capture(
+                    "[DRILL] Concurrent $index"
+                ).copy(sourceIdentity = "source:$index")
+                val id = store.insert(original)!!
+                other.find(id, "en")
+                val start = CountDownLatch(1)
+                val replay = threads.submit<Long?> {
+                    start.await()
+                    store.insert(original)
+                }
+                val deletion = threads.submit {
+                    start.await()
+                    other.delete(id)
+                }
+                start.countDown()
+                replay.get(5, TimeUnit.SECONDS)
+                deletion.get(5, TimeUnit.SECONDS)
+                assertTrue(store.page("Concurrent $index", "en").isEmpty())
+                assertNull(store.insert(original))
+            }
+        } finally {
+            threads.shutdownNow()
+            other.close()
+        }
+    }
+
+    @Test
+    fun deletionFingerprintsExpireWithoutRetainingDeletedText() {
+        val original = capture("[DRILL] Expiry").copy(sourceIdentity = "source:expiry")
+        store.delete(store.insert(original)!!)
+        store.close()
+        SQLiteDatabase.openDatabase(
+            context.getDatabasePath(name).path,
+            null,
+            SQLiteDatabase.OPEN_READWRITE
+        ).use {
+            it.execSQL(
+                "UPDATE ignored_sources SET deleted_ms=?",
+                arrayOf(System.currentTimeMillis() - 31L * 24 * 60 * 60 * 1000)
+            )
+        }
+        store = AlertHistoryStore(context, name)
+        assertNotNull(store.insert(original))
+    }
+
+    @Test
+    fun deletedSourceObservationsStayIgnoredAcrossRestartButUpdatesRemainEligible() {
+        val capture = capture(
+            "[DRILL] Stable source."
+        ).copy(sourceIdentity = "notification:42:1000")
+        val id = store.insert(capture)!!
+        store.delete(id)
+        store.close()
+        store = AlertHistoryStore(context, name)
+        assertNull(store.insert(capture))
+        assertNotNull(store.insert(capture.copy(sourceIdentity = "notification:42:2000")))
+        assertNotNull(store.insert(capture.copy(original = "[DRILL] Changed instructions.")))
+        assertNotNull(store.insert(capture.copy(sourceIdentity = null)))
+        store.deleteAll()
+        assertNull(store.insert(capture.copy(sourceIdentity = "notification:42:2000")))
+        assertNull(store.cachedTranslation(capture.original, "en"))
+    }
+
+    @Test
+    fun migrationFromVersionOnePreservesOriginalsAndTranslations() {
+        val id = store.insert(capture("[DRILL] Migration original."))!!
+        store.finishTranslation(store.beginTranslation(id, "en")!!, ready("Saved translation"))
+        store.close()
+        // Only this isolated fixture database is changed to reproduce the prior committed schema.
+        SQLiteDatabase.openDatabase(
+            context.getDatabasePath(name).path,
+            null,
+            SQLiteDatabase.OPEN_READWRITE
+        ).use {
+            it.execSQL("DROP TABLE ignored_sources")
+            it.version = 1
+        }
+        store = AlertHistoryStore(context, name)
+        assertEquals("[DRILL] Migration original.", store.find(id, "en")?.capture?.original)
+        assertEquals("Saved translation", store.find(id, "en")?.translation?.text)
+    }
+
+    @Test
     fun originalsAndKnownSourceFieldsSurviveReopen() {
         val original = capture("[DRILL] 서울 台北 東京 🚨. Do not enter. 14:05, 112.").copy(
             broadcast = BroadcastMetadata(1, 49, 4370, 3, 0, null),
             receivedAtMillis = 1700000000100L,
             sourceIdentity = "broadcast:49:1700000000100"
         )
-        val id = store.insert(original)
+        val id = store.insert(original)!!
         store.close()
         store = AlertHistoryStore(context, name)
         assertEquals(original, store.find(id, "en")?.capture)
@@ -50,7 +142,7 @@ class AlertHistoryStoreDeviceTest {
 
     @Test
     fun searchTreatsSqlAndLikeMetacharactersAsLiteralText() {
-        val literal = store.insert(capture("[DRILL] 100%_gate \\ north"))
+        val literal = store.insert(capture("[DRILL] 100%_gate \\ north"))!!
         store.insert(capture("[DRILL] 100xxgate south"))
         assertEquals(listOf(literal), store.page("100%_", "en").map { it.id })
         assertEquals(listOf(literal), store.page("\\ north", "en").map { it.id })
@@ -67,7 +159,7 @@ class AlertHistoryStoreDeviceTest {
     @Test
     fun exactSourceIdentityDeduplicatesWithoutMergingSeparateOccurrences() {
         val first = capture("[DRILL] Shelter now.").copy(sourceIdentity = "notification:1:1000")
-        val id = store.insert(first)
+        val id = store.insert(first)!!
         assertEquals(id, store.insert(first))
         assertNotEquals(id, store.insert(first.copy(sourceIdentity = "notification:1:2000")))
         assertNotEquals(id, store.insert(first.copy(sourceIdentity = null)))
@@ -76,7 +168,7 @@ class AlertHistoryStoreDeviceTest {
 
     @Test
     fun staleAndDuplicateCompletionsCannotReplaceNewerTargetWork() {
-        val id = store.insert(capture("[DRILL] Do not leave."))
+        val id = store.insert(capture("[DRILL] Do not leave."))!!
         val old = store.beginTranslation(id, "en")!!
         assertNull(store.beginTranslation(id, "en"))
         val fresh = store.beginTranslation(id, "en", retry = true)!!
@@ -92,12 +184,12 @@ class AlertHistoryStoreDeviceTest {
     @Test
     fun deletionCascadesAndLateResultsCannotRecreateHistoryOrCache() {
         val original = capture("[DRILL] Test original.")
-        val id = store.insert(original)
+        val id = store.insert(original)!!
         val working = store.beginTranslation(id, "en")!!
         store.delete(id)
         assertFalse(store.finishTranslation(working, ready("late")))
         assertNull(store.find(id, "en"))
-        val next = store.insert(original)
+        val next = store.insert(original)!!
         assertTrue(next > id)
         val ticket = store.beginTranslation(next, "en")!!
         store.finishTranslation(ticket, ready("cached copy"))
@@ -111,7 +203,7 @@ class AlertHistoryStoreDeviceTest {
 
     @Test
     fun interruptedAndMissingModelWorkRequireValidNewRevisions() {
-        val id = store.insert(capture("[DRILL] Do not cross."))
+        val id = store.insert(capture("[DRILL] Do not cross."))!!
         assertEquals(id, store.nextQueued("en"))
         val interrupted = store.beginTranslation(id, "en")!!
         store.recoverInterruptedWork()
