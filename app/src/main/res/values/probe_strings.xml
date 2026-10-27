@@ -1,4 +1,5 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <!-- Diagnostic-only copy is maintained in English and Korean; product UI has all seven locales. -->
     <string name="probe_app_name">CodeClear · Capture probe</string>
     <string name="probe_scope">Capture and local translation preview. Observations remain temporary; permanent history is not implemented. Alert text stays on this device. Capture consent resets when this process ends.</string>
     <string name="probe_device">Device and source candidates</string>

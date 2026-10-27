@@ -107,4 +107,12 @@
     <string name="mobile_delete_title">Delete saved history?</string>
     <string name="mobile_delete_notice">This removes the selected originals and translations from this app. It does not delete or dismiss system emergency alerts. This cannot be undone.</string>
     <string name="mobile_settings_missing">Open Android Settings → Apps → CodeClear and select the relevant access setting.</string>
+    <string name="mobile_notification_service_label">CodeClear · Emergency notifications</string>
+    <string name="mobile_accessibility_service_label">CodeClear · Emergency alert dialogs</string>
+    <string name="mobile_operator_defined">Operator-defined alert</string>
+    <string name="mobile_earthquake">Earthquake</string>
+    <string name="mobile_tsunami">Tsunami</string>
+    <string name="mobile_earthquake_tsunami">Earthquake and tsunami</string>
+    <string name="mobile_other_emergency">Other emergency</string>
+    <string name="mobile_other_alert">Other alert</string>
 </resources>

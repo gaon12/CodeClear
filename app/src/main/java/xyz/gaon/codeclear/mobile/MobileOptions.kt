@@ -18,18 +18,8 @@ data class MobileOptions(
 )
 
 fun defaultTarget(): LocalTarget {
-    val locale = Locale.getDefault()
-    return if (locale.language == "zh") {
-        if (locale.script == "Hant" ||
-            locale.country in setOf("TW", "HK", "MO")
-        ) {
-            LocalTarget.TRADITIONAL_CHINESE
-        } else {
-            LocalTarget.SIMPLIFIED_CHINESE
-        }
-    } else {
-        LocalTarget.entries.firstOrNull { it.languageTag == locale.language } ?: LocalTarget.ENGLISH
-    }
+    val language = UiLanguages.normalize(Locale.getDefault().toLanguageTag())
+    return LocalTarget.entries.firstOrNull { it.languageTag == language } ?: LocalTarget.ENGLISH
 }
 
 interface OptionsStorage {

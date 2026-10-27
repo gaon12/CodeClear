@@ -1,4 +1,5 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <!-- Diagnostic-only copy is maintained in English and Korean; product UI has all seven locales. -->
     <string name="preview_home">Home</string>
     <string name="preview_history">History</string>
     <string name="preview_settings">Settings</string>

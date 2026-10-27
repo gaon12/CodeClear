@@ -107,4 +107,12 @@
     <string name="mobile_delete_title">저장된 기록을 삭제할까요?</string>
     <string name="mobile_delete_notice">선택한 원문과 번역을 앱에서 삭제합니다. 시스템 재난문자를 삭제하거나 경고를 닫지 않습니다. 되돌릴 수 없습니다.</string>
     <string name="mobile_settings_missing">Android 설정 → 앱 → CodeClear에서 해당 접근 설정을 여세요.</string>
+    <string name="mobile_notification_service_label">CodeClear · 재난문자 알림</string>
+    <string name="mobile_accessibility_service_label">CodeClear · 재난문자 모달</string>
+    <string name="mobile_operator_defined">운영자 지정 경보</string>
+    <string name="mobile_earthquake">지진</string>
+    <string name="mobile_tsunami">쓰나미</string>
+    <string name="mobile_earthquake_tsunami">지진 및 쓰나미</string>
+    <string name="mobile_other_emergency">기타 긴급 상황</string>
+    <string name="mobile_other_alert">기타 경보</string>
 </resources>

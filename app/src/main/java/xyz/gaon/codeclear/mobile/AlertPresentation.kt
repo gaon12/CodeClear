@@ -190,6 +190,12 @@ fun AlertMetadata(alert: SavedAlert) {
             "PUBLIC_SAFETY" -> R.string.mobile_public_safety
             "AMBER" -> R.string.mobile_amber
             "TEST" -> R.string.mobile_test
+            "OPERATOR_DEFINED" -> R.string.mobile_operator_defined
+            "EARTHQUAKE" -> R.string.mobile_earthquake
+            "TSUNAMI" -> R.string.mobile_tsunami
+            "EARTHQUAKE_AND_TSUNAMI" -> R.string.mobile_earthquake_tsunami
+            "OTHER_EMERGENCY" -> R.string.mobile_other_emergency
+            "OTHER" -> R.string.mobile_other_alert
             else -> R.string.mobile_unknown
         }
         Text(stringResource(R.string.mobile_estimate, stringResource(category)))
