@@ -93,7 +93,14 @@ class ProbeAccessibilityService : AccessibilityService() {
                         if (ProbeSession.ticket(ProbeRoute.ACCESSIBILITY, current) ==
                             request.consentGeneration
                         ) {
-                            ProbeSession.publish(request.consentGeneration, result)
+                            ProbeSession.publish(request.consentGeneration, result)?.let { id ->
+                                ProbeSourceTitleResources.enrich(
+                                    this,
+                                    request.consentGeneration,
+                                    id,
+                                    result
+                                )
+                            }
                         }
                     }
                     schedulePendingRead()
@@ -123,17 +130,20 @@ class ProbeAccessibilityService : AccessibilityService() {
                 } else {
                     BoundedText("", fields.size > 1)
                 }
+                val title = readAuxiliaryField(root, window, "alertTitle")
+                val dismiss = readAuxiliaryField(root, window, "dismissButton")
                 return ProbeObservation(
                     packageName = window.packageName,
                     route = ProbeRoute.ACCESSIBILITY,
                     origin = ProbeOrigin.SYSTEM_CANDIDATE,
-                    title = "",
+                    title = title,
                     body = body.value,
                     capturedAtMillis = System.currentTimeMillis(),
                     limited = body.limited,
                     windowClass = ProbeWindowTracker.ALERT_CLASS,
                     readDurationMillis = SystemClock.elapsedRealtime() - startedAt,
-                    bodyEvidence = ProbeBodyEvidence.VISIBLE_DIALOG_FIELD
+                    bodyEvidence = ProbeBodyEvidence.VISIBLE_DIALOG_FIELD,
+                    reportedDialogQueueSize = ProbeDialogQueue.reportedMultipleCount(dismiss)
                 )
             } finally {
                 fields.forEach(::releaseNode)
@@ -141,6 +151,33 @@ class ProbeAccessibilityService : AccessibilityService() {
         } finally {
             releaseNode(root)
         }
+    }
+
+    private fun readAuxiliaryField(
+        root: AccessibilityNodeInfo,
+        window: ProbeAlertWindow,
+        resourceName: String
+    ): String = try {
+        val fields = root.findAccessibilityNodeInfosByViewId(
+            "${window.packageName}:id/$resourceName"
+        )
+        try {
+            val field = fields.singleOrNull()
+            if (field != null && field.isVisibleToUser &&
+                field.packageName?.toString() == window.packageName &&
+                field.windowId == window.windowId
+            ) {
+                val text = BoundedText.read(field.text, 256)
+                if (text.limited) "" else text.value
+            } else {
+                ""
+            }
+        } finally {
+            fields.forEach(::releaseNode)
+        }
+    } catch (_: RuntimeException) {
+        // Optional metadata must not discard an already readable original body.
+        ""
     }
 
     override fun onInterrupt() {

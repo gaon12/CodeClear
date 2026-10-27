@@ -4,11 +4,14 @@ object ProbeNotificationMetadata {
     fun bodyEvidence(
         origin: ProbeOrigin,
         hasExpandedBody: Boolean,
-        groupSummary: Boolean
+        groupSummary: Boolean,
+        channel: ProbeNotificationChannel = ProbeNotificationChannel.UNKNOWN
     ): ProbeBodyEvidence = when {
         groupSummary -> ProbeBodyEvidence.UNVERIFIED
 
         origin == ProbeOrigin.SHELL_FIXTURE -> ProbeBodyEvidence.SHELL_FIXTURE_FIELD
+
+        channel == ProbeNotificationChannel.UNKNOWN -> ProbeBodyEvidence.UNVERIFIED
 
         hasExpandedBody -> ProbeBodyEvidence.EXPANDED_NOTIFICATION_FIELD
 

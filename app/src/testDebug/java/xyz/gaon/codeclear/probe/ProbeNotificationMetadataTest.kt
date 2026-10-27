@@ -7,11 +7,30 @@ import org.junit.Test
 
 class ProbeNotificationMetadataTest {
     @Test
+    fun settingsUpdatesAndUnreviewedChannelsDoNotBecomeIndividualAlerts() {
+        val origin = ProbeOrigin.SYSTEM_CANDIDATE
+        assertEquals(
+            ProbeBodyEvidence.UNVERIFIED,
+            ProbeNotificationMetadata.bodyEvidence(origin, true, false)
+        )
+        assertEquals(
+            ProbeBodyEvidence.EXPANDED_NOTIFICATION_FIELD,
+            ProbeNotificationMetadata.bodyEvidence(
+                origin,
+                true,
+                false,
+                ProbeNotificationChannel.EMERGENCY_PRESENTATION
+            )
+        )
+    }
+
+    @Test
     fun unflaggedReceiverSummariesRemainUnverifiedWithoutAnExpandedBody() {
         val evidence = ProbeNotificationMetadata.bodyEvidence(
             ProbeOrigin.SYSTEM_CANDIDATE,
             false,
-            false
+            false,
+            ProbeNotificationChannel.EMERGENCY_PRESENTATION
         )
         assertEquals(ProbeBodyEvidence.UNVERIFIED, evidence)
         listOf("3 unread alerts", "미확인 경보 3건", "3件の未読アラート", "3 alertes non lues").forEach { title ->
@@ -35,7 +54,12 @@ class ProbeNotificationMetadataTest {
     fun groupSummariesNeverBecomeIndividualEvenWithAnExpandedField() {
         assertEquals(
             ProbeBodyEvidence.UNVERIFIED,
-            ProbeNotificationMetadata.bodyEvidence(ProbeOrigin.SYSTEM_CANDIDATE, true, true)
+            ProbeNotificationMetadata.bodyEvidence(
+                ProbeOrigin.SYSTEM_CANDIDATE,
+                true,
+                true,
+                ProbeNotificationChannel.EMERGENCY_PRESENTATION
+            )
         )
     }
 

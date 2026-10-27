@@ -46,35 +46,34 @@ class ProbeNotificationListener : NotificationListenerService() {
             val title = BoundedText.read(extras.getCharSequence(Notification.EXTRA_TITLE), 256)
             val expanded = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)
             val groupSummary = notification.flags and Notification.FLAG_GROUP_SUMMARY != 0
+            val channel = ProbeNotificationMetadata.channel(origin, notification.channelId)
             val body = BoundedText.read(
                 expanded ?: extras.getCharSequence(Notification.EXTRA_TEXT)
             )
             // Do not combine grouped lines into an invented individual alert body.
-            ProbeSession.publish(
-                ticket,
-                ProbeObservation(
-                    packageName = sbn.packageName,
-                    route = ProbeRoute.NOTIFICATION,
-                    origin = origin,
-                    title = title.value,
-                    body = body.value,
-                    capturedAtMillis = System.currentTimeMillis(),
-                    postedAtMillis = sbn.postTime,
-                    limited = title.limited || body.limited,
-                    groupSummary = groupSummary,
-                    platformBoundaryPossible =
-                        ProbeSourcePolicy.mayMatchNotificationTextBoundary(body.value.length),
-                    bodyEvidence = ProbeNotificationMetadata.bodyEvidence(
-                        origin,
-                        expanded != null,
-                        groupSummary
-                    ),
-                    notificationChannel = ProbeNotificationMetadata.channel(
-                        origin,
-                        notification.channelId
-                    )
-                )
+            val observation = ProbeObservation(
+                packageName = sbn.packageName,
+                route = ProbeRoute.NOTIFICATION,
+                origin = origin,
+                title = title.value,
+                body = body.value,
+                capturedAtMillis = System.currentTimeMillis(),
+                postedAtMillis = sbn.postTime,
+                limited = title.limited || body.limited,
+                groupSummary = groupSummary,
+                platformBoundaryPossible =
+                    ProbeSourcePolicy.mayMatchNotificationTextBoundary(body.value.length),
+                bodyEvidence = ProbeNotificationMetadata.bodyEvidence(
+                    origin,
+                    expanded != null,
+                    groupSummary,
+                    channel
+                ),
+                notificationChannel = channel
             )
+            ProbeSession.publish(ticket, observation)?.let { id ->
+                ProbeSourceTitleResources.enrich(this, ticket, id, observation)
+            }
         } catch (_: RuntimeException) {
             // Malformed Parcelable extras must not crash the listener or leak content to logs.
         }

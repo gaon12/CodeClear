@@ -46,4 +46,18 @@
     <string name="preview_fr">Français</string>
     <string name="preview_de">Deutsch</string>
     <string name="preview_individual_unknown">개별 경보 본문인지 확인되지 않았습니다. 여러 건을 묶은 알림일 수 있으니 시스템 재난문자를 열어 확인해주세요.</string>
+    <string name="preview_heading_hint">제목 기반 유형 추정 · %1$s</string>
+    <string name="preview_queued_alerts">이 시스템 모달에 경보 %1$d건이 대기 중이었습니다. 숨겨진 본문은 표시될 때 수집합니다. 남은 시스템 경보를 각각 확인해주세요. CodeClear가 확인 버튼을 대신 누르지는 않습니다.</string>
+    <string name="preview_kind_national">국가 경보 계열</string>
+    <string name="preview_kind_extreme">극심한 위협 경보 계열</string>
+    <string name="preview_kind_severe">심각한 위협 경보 계열</string>
+    <string name="preview_kind_amber">실종·아동 경보 계열</string>
+    <string name="preview_kind_public">안전 안내 경보 계열</string>
+    <string name="preview_kind_test">시험 경보 계열</string>
+    <string name="preview_kind_operator">통신사 지정 경보 계열</string>
+    <string name="preview_kind_earthquake">지진 경보 계열</string>
+    <string name="preview_kind_tsunami">해일 경보 계열</string>
+    <string name="preview_kind_earthquake_tsunami">지진·해일 경보 계열</string>
+    <string name="preview_kind_emergency">기타 긴급 경보 제목</string>
+    <string name="preview_kind_other">기타 방송 제목</string>
 </resources>

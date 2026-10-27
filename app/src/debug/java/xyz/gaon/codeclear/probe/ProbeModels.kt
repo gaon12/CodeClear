@@ -35,7 +35,9 @@ data class ProbeObservation(
     val windowClass: String? = null,
     val readDurationMillis: Long? = null,
     val bodyEvidence: ProbeBodyEvidence = ProbeBodyEvidence.UNVERIFIED,
-    val notificationChannel: ProbeNotificationChannel = ProbeNotificationChannel.UNKNOWN
+    val notificationChannel: ProbeNotificationChannel = ProbeNotificationChannel.UNKNOWN,
+    val headingHint: ProbeHeadingKind = ProbeHeadingKind.UNKNOWN,
+    val reportedDialogQueueSize: Int? = null
 )
 
 data class ProbeRecord(val id: Long, val observation: ProbeObservation)
@@ -82,5 +84,15 @@ class ProbeBuffer(private val capacity: Int = 40) {
     fun clear() {
         generation++
         records.clear()
+    }
+
+    fun annotateHeading(expectedGeneration: Long, recordId: Long, hint: ProbeHeadingKind): Boolean {
+        if (expectedGeneration != generation) return false
+        val index = records.indexOfFirst { it.id == recordId }
+        if (index < 0) return false
+        val record = records[index]
+        if (record.observation.headingHint == hint) return false
+        records[index] = record.copy(observation = record.observation.copy(headingHint = hint))
+        return true
     }
 }

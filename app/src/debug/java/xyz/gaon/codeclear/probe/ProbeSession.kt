@@ -73,9 +73,18 @@ object ProbeSession {
         }
     }
 
-    fun publish(ticket: Long, observation: ProbeObservation) {
+    fun publish(ticket: Long, observation: ProbeObservation): Long? {
         checkMainThread()
-        if (buffer.append(ticket, observation)) state = state.copy(records = buffer.snapshot())
+        if (!buffer.append(ticket, observation)) return null
+        state = state.copy(records = buffer.snapshot())
+        return state.records.last().id
+    }
+
+    fun annotateHeading(ticket: Long, recordId: Long, hint: ProbeHeadingKind) {
+        checkMainThread()
+        if (buffer.annotateHeading(ticket, recordId, hint)) {
+            state = state.copy(records = buffer.snapshot())
+        }
     }
 
     fun currentGeneration(): Long {

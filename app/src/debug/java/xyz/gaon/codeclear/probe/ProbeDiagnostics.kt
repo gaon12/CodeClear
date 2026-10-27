@@ -24,7 +24,9 @@ object ProbeDiagnostics {
                     "windowClass=${observation.windowClass ?: "-"} " +
                     "readDurationMillis=${observation.readDurationMillis ?: -1} " +
                     "bodyEvidence=${observation.bodyEvidence} " +
-                    "notificationChannel=${observation.notificationChannel}"
+                    "notificationChannel=${observation.notificationChannel} " +
+                    "headingHint=${observation.headingHint} " +
+                    "reportedDialogQueueSize=${observation.reportedDialogQueueSize ?: -1}"
             )
         }
         val notification = state.records.lastOrNull {

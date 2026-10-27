@@ -28,7 +28,7 @@
     <string name="probe_empty">관찰 데이터가 없습니다. 재난문자가 발송되거나 기기에 수신되지 않았다는 뜻은 아닙니다.</string>
     <string name="probe_consent_title">이 진단 수집 경로를 허용할까요?</string>
     <string name="probe_notification_disclosure">Android 알림 접근 권한으로는 다른 앱의 알림도 노출될 수 있습니다. CodeClear는 설치된 시스템 재난문자 수신기 후보 패키지로 먼저 필터링한 뒤 본문을 읽습니다. 별도 옵션을 켜면 셸의 test_alert 시험 알림도 허용합니다. 제목과 본문은 용량을 제한한 임시 메모리에서 확인하고 로컬 번역에 사용합니다. 경보 본문을 업로드하거나 파일로 저장하지 않으며 화면을 자동으로 열지 않습니다. 여기서 동의를 철회하거나 시스템 설정에서 권한을 끌 수 있으며, 프로세스가 종료되면 동의가 해제됩니다.</string>
-    <string name="probe_accessibility_disclosure">CodeClear는 접근성으로 지정한 시스템 재난문자 수신기 후보 패키지만 확인합니다. 검토된 활성 재난문자 모달의 단일 message 필드만 읽으며 기록 목록과 다른 화면은 제외합니다. 제스처 실행, 재난문자 닫기, 보호된 내용 우회는 하지 않습니다. 본문은 용량을 제한한 임시 메모리에서 확인하고 로컬 번역에 사용하며 경보 본문은 업로드하지 않습니다. 장애인 보조 접근성 도구로 선언하지 않습니다. 언제든 동의를 철회하거나 시스템 권한을 끌 수 있으며, 프로세스가 종료되면 동의가 해제됩니다.</string>
+    <string name="probe_accessibility_disclosure">CodeClear는 접근성으로 지정한 시스템 재난문자 수신기 후보 패키지만 확인합니다. 검토된 활성 재난문자 모달의 단일 message 필드와 제목·대기 건수 정보를 읽으며 기록 목록과 다른 화면은 제외합니다. 제스처 실행, 재난문자 닫기, 보호된 내용 우회는 하지 않습니다. 본문은 용량을 제한한 임시 메모리에서 확인하고 로컬 번역에 사용하며 경보 본문은 업로드하지 않습니다. 장애인 보조 접근성 도구로 선언하지 않습니다. 언제든 동의를 철회하거나 시스템 권한을 끌 수 있으며, 프로세스가 종료되면 동의가 해제됩니다.</string>
     <string name="probe_agree_settings">동의하고 설정 열기</string>
     <string name="probe_cancel">취소</string>
     <string name="probe_yes">예</string>

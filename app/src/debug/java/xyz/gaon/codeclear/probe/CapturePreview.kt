@@ -231,6 +231,16 @@ private fun PreviewHome(
             )
         }
         item { TargetPicker() }
+        val lastDialog = session.records.lastOrNull {
+            it.observation.route ==
+                ProbeRoute.ACCESSIBILITY
+        }
+            ?.observation
+        if (record?.observation?.reportedDialogQueueSize == null) {
+            lastDialog?.reportedDialogQueueSize?.let { count ->
+                item { Text(stringResource(R.string.preview_queued_alerts, count)) }
+            }
+        }
         if (environment.radio == ProbeRadio.ABSENT) {
             item {
                 Text(
@@ -349,6 +359,18 @@ private fun PreviewHome(
 
 @Composable
 private fun OriginalText(observation: ProbeObservation) {
+    if (observation.headingHint != ProbeHeadingKind.UNKNOWN) {
+        Text(
+            stringResource(R.string.preview_heading_hint, headingName(observation.headingHint)),
+            style = MaterialTheme.typography.labelLarge
+        )
+    }
+    observation.reportedDialogQueueSize?.let { count ->
+        Text(
+            stringResource(R.string.preview_queued_alerts, count),
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
     Text(
         stringResource(R.string.preview_original),
         style = MaterialTheme.typography.labelLarge,
@@ -378,6 +400,24 @@ private fun OriginalText(observation: ProbeObservation) {
         )
     }
 }
+
+@Composable
+private fun headingName(kind: ProbeHeadingKind): String = stringResource(
+    when (kind) {
+        ProbeHeadingKind.NATIONAL -> R.string.preview_kind_national
+        ProbeHeadingKind.EXTREME -> R.string.preview_kind_extreme
+        ProbeHeadingKind.SEVERE -> R.string.preview_kind_severe
+        ProbeHeadingKind.AMBER -> R.string.preview_kind_amber
+        ProbeHeadingKind.PUBLIC_SAFETY -> R.string.preview_kind_public
+        ProbeHeadingKind.TEST -> R.string.preview_kind_test
+        ProbeHeadingKind.OPERATOR_DEFINED -> R.string.preview_kind_operator
+        ProbeHeadingKind.EARTHQUAKE -> R.string.preview_kind_earthquake
+        ProbeHeadingKind.TSUNAMI -> R.string.preview_kind_tsunami
+        ProbeHeadingKind.EARTHQUAKE_AND_TSUNAMI -> R.string.preview_kind_earthquake_tsunami
+        ProbeHeadingKind.OTHER_EMERGENCY -> R.string.preview_kind_emergency
+        else -> R.string.preview_kind_other
+    }
+)
 
 @Composable
 private fun TranslationText(
