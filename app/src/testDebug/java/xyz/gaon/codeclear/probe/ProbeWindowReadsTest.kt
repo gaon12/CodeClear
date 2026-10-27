@@ -83,6 +83,26 @@ class ProbeWindowReadsTest {
         assertNull(queue.takeIfIdle())
     }
 
+    @Test
+    fun unavailableTreeRetriesAreBoundedAndDoNotReplaceANewerWindow() {
+        val queue = LatestProbeReadQueue()
+        queue.offer(request(1))
+        repeat(4) { attempt ->
+            val active = requireNotNull(queue.takeIfIdle())
+            assertEquals(attempt, active.attempt)
+            queue.complete()
+            queue.retryUnavailable(active)
+        }
+        assertFalse(queue.hasPending)
+        queue.offer(request(2))
+        val active = requireNotNull(queue.takeIfIdle())
+        val latest = request(3)
+        queue.offer(latest)
+        queue.complete()
+        queue.retryUnavailable(active)
+        assertEquals(latest, queue.takeIfIdle())
+    }
+
     private fun request(revision: Long) = ProbeReadRequest(
         ProbeAlertWindow(source, 1, revision),
         consentGeneration = 1

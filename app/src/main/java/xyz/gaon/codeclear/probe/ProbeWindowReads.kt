@@ -35,7 +35,11 @@ class ProbeWindowTracker {
     }
 }
 
-data class ProbeReadRequest(val window: ProbeAlertWindow, val consentGeneration: Long)
+data class ProbeReadRequest(
+    val window: ProbeAlertWindow,
+    val consentGeneration: Long,
+    val attempt: Int = 0
+)
 
 /** One active read and one replacement request; a busy worker never drops the latest window. */
 class LatestProbeReadQueue {
@@ -46,6 +50,15 @@ class LatestProbeReadQueue {
 
     fun offer(request: ProbeReadRequest) {
         pending = request
+    }
+
+    /** A not-yet-attached tree gets three retries; newer window events always take precedence. */
+    fun retryUnavailable(request: ProbeReadRequest) {
+        if (pending == null &&
+            request.attempt < 3
+        ) {
+            pending = request.copy(attempt = request.attempt + 1)
+        }
     }
 
     fun takeIfIdle(): ProbeReadRequest? {

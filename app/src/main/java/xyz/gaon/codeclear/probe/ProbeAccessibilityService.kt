@@ -24,11 +24,23 @@ class ProbeAccessibilityService : AccessibilityService() {
     private val observationSession = UUID.randomUUID().toString()
     private var visibleSession = 0L
     private var bodyRevision = 0L
+
+    @Volatile private var lastReadOutcome = "NONE"
+
+    @Volatile private var expectedWindowId = -1
+
+    @Volatile private var rootWindowId = -1
+    private var readAttempts = 0
     private data class BodyStamp(val digest: List<Byte>, val limited: Boolean, val queueSize: Int?)
     private var lastBody: BodyStamp? = null
 
     override fun dump(fd: FileDescriptor, writer: PrintWriter, args: Array<out String>) {
         ProbeDiagnostics.write(ProbeSession.state, writer, ProbeSourceActions.state)
+        // Report only read state and platform IDs, never window text or content fingerprints.
+        writer.println(
+            "dialogReadAttempts=$readAttempts dialogReadOutcome=$lastReadOutcome " +
+                "expectedWindowId=$expectedWindowId rootWindowId=$rootWindowId"
+        )
     }
 
     override fun onServiceConnected() {
@@ -87,36 +99,50 @@ class ProbeAccessibilityService : AccessibilityService() {
             return
         }
         nextReadAt = SystemClock.uptimeMillis() + 500
+        readAttempts++
+        expectedWindowId = request.window.windowId
+        rootWindowId = -1
+        lastReadOutcome = "PENDING"
         worker.execute {
             var observation: ProbeObservation? = null
             try {
                 observation = readAlertBody(request.window)
             } catch (_: RuntimeException) {
+                lastReadOutcome = "UNAVAILABLE"
                 // A stale or protected window is unavailable; never reconstruct its text.
             } finally {
                 val result = observation
                 main.post {
                     reads.complete()
                     if (destroyed) return@post
-                    if (result != null && isUnlocked() && windows.current == request.window) {
+                    if (isUnlocked() && windows.current == request.window) {
                         val current = ProbeEnvironment.read(this)
                         if (ProbeSession.ticket(ProbeRoute.ACCESSIBILITY, current) ==
                             request.consentGeneration
                         ) {
-                            val stamp = bodyStamp(result)
-                            if (lastBody != stamp) bodyRevision++
-                            lastBody = stamp
-                            val identified = result.copy(
-                                sourceObservationKey =
-                                    "dialog:$observationSession:$visibleSession:$bodyRevision"
-                            )
-                            ProbeSession.publish(request.consentGeneration, identified)?.let { id ->
-                                ProbeSourceTitleResources.enrich(
-                                    this,
-                                    request.consentGeneration,
-                                    id,
-                                    result
+                            if (result == null || result.body.isBlank()) {
+                                // WINDOW_STATE_CHANGED can precede attachment of the active tree.
+                                // Retry only this verified window, under the existing 2 Hz limit.
+                                reads.retryUnavailable(request)
+                            } else {
+                                val stamp = bodyStamp(result)
+                                if (lastBody != stamp) bodyRevision++
+                                lastBody = stamp
+                                val identified = result.copy(
+                                    sourceObservationKey =
+                                        "dialog:$observationSession:$visibleSession:$bodyRevision"
                                 )
+                                ProbeSession.publish(
+                                    request.consentGeneration,
+                                    identified
+                                )?.let { id ->
+                                    ProbeSourceTitleResources.enrich(
+                                        this,
+                                        request.consentGeneration,
+                                        id,
+                                        result
+                                    )
+                                }
                             }
                         }
                     }
@@ -142,11 +168,16 @@ class ProbeAccessibilityService : AccessibilityService() {
 
     private fun readAlertBody(window: ProbeAlertWindow): ProbeObservation? {
         val startedAt = SystemClock.elapsedRealtime()
-        val root = rootInActiveWindow ?: return null
+        val root = rootForAlert(window) ?: run {
+            lastReadOutcome = "NO_EVENT_ROOT"
+            return null
+        }
         try {
+            rootWindowId = root.windowId
             if (root.packageName?.toString() != window.packageName ||
                 root.windowId != window.windowId
             ) {
+                lastReadOutcome = "DIFFERENT_ROOT"
                 return null
             }
             // Query the declared dialog body directly instead of walking background list rows.
@@ -163,6 +194,7 @@ class ProbeAccessibilityService : AccessibilityService() {
                 }
                 val title = readAuxiliaryField(root, window, "alertTitle")
                 val dismiss = readAuxiliaryField(root, window, "dismissButton")
+                lastReadOutcome = if (body.value.isBlank()) "EMPTY_FIELD" else "BODY_AVAILABLE"
                 return ProbeObservation(
                     packageName = window.packageName,
                     route = ProbeRoute.ACCESSIBILITY,
@@ -181,6 +213,28 @@ class ProbeAccessibilityService : AccessibilityService() {
             }
         } finally {
             releaseNode(root)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun rootForAlert(window: ProbeAlertWindow): AccessibilityNodeInfo? {
+        // An emergency dialog can be visible while another window retains input focus.
+        // Inspect only window IDs; retrieve content solely for the verified event's window.
+        val displays = windowsOnAllDisplays
+        try {
+            var inspected = 0
+            for (display in 0 until minOf(displays.size(), 8)) {
+                for (candidate in displays.valueAt(display)) {
+                    if (++inspected > 64) return rootInActiveWindow
+                    if (candidate.id == window.windowId) return candidate.root
+                }
+            }
+            // Some receivers expose only the active window; the caller still checks its exact ID.
+            return rootInActiveWindow
+        } finally {
+            for (display in 0 until displays.size()) {
+                displays.valueAt(display).forEach { it.recycle() }
+            }
         }
     }
 
