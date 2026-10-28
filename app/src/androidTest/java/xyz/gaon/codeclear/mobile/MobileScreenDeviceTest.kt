@@ -137,7 +137,7 @@ class MobileScreenDeviceTest {
         compose.onAllNodesWithText("[DRILL] Original 1: Gate 3, 112.").fetchSemanticsNodes().also {
             assertEquals(1, it.size)
         }
-        compose.onNodeWithText(text(R.string.mobile_close)).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.mobile_close)).assertIsDisplayed().performClick()
         compose.onNodeWithText(
             "[DRILL] Original 2: Gate 3, 112."
         ).performScrollTo().assertIsDisplayed()
@@ -145,7 +145,7 @@ class MobileScreenDeviceTest {
 
     @Test
     fun historyDispatchesLiteralSearchAndModelsRequireAnExplicitAction() {
-        compose.onNodeWithText(text(R.string.mobile_history)).performClick()
+        compose.onNodeWithTag("destination-1").performClick()
         compose.onNodeWithText(text(R.string.mobile_search)).performTextInput("Gate_3%")
         compose.runOnIdle {
             assertEquals("Gate_3%", searched)
@@ -199,7 +199,7 @@ class MobileScreenDeviceTest {
 
     @Test
     fun accessDisclosurePrecedesSettingsAndDoesNotPretendToGrantPermission() {
-        compose.onNodeWithText(text(R.string.mobile_settings)).performClick()
+        compose.onNodeWithTag("destination-2").performClick()
         compose.onAllNodesWithText(
             text(R.string.mobile_review_access)
         )[0].performScrollTo().performClick()
@@ -215,6 +215,8 @@ class MobileScreenDeviceTest {
     @Test
     fun wifiOnlyNoticeAndThreeStepTutorialRemainUsable() {
         compose.runOnIdle { environment = environment.copy(radio = ProbeRadio.ABSENT) }
+        compose.onNodeWithTag("mobile-feed")
+            .performScrollToNode(hasText(text(R.string.mobile_wifi_only)))
         compose.onNodeWithText(text(R.string.mobile_wifi_only)).assertIsDisplayed()
         compose.onNodeWithText(text(R.string.mobile_tutorial)).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_next)).performScrollTo().performClick()
@@ -235,7 +237,7 @@ class MobileScreenDeviceTest {
                 )
             )
         }
-        compose.onNodeWithText(text(R.string.mobile_settings)).performClick()
+        compose.onNodeWithTag("destination-2").performClick()
         compose.onAllNodesWithText(text(R.string.mobile_review_access)).assertCountEquals(0)
         compose.onAllNodesWithText(text(R.string.mobile_withdraw)).assertCountEquals(2)
         compose.onAllNodesWithText(
@@ -255,7 +257,7 @@ class MobileScreenDeviceTest {
     @Test
     fun restrictedSettingsFallbackOpensTheAppListWithoutChangingConsent() {
         val previous = state.options
-        compose.onNodeWithText(text(R.string.mobile_settings)).performClick()
+        compose.onNodeWithTag("destination-2").performClick()
         if (Build.VERSION.SDK_INT >= 33) {
             compose.onNodeWithText(text(R.string.mobile_app_list)).performScrollTo().performClick()
             compose.runOnIdle {
@@ -275,8 +277,8 @@ class MobileScreenDeviceTest {
             "mobile-feed"
         ).performScrollToNode(hasText(text(R.string.mobile_details)))
         compose.onNodeWithText(text(R.string.mobile_details)).performClick()
-        compose.onNodeWithText(text(R.string.mobile_close)).performScrollTo().performClick()
-        compose.onNodeWithText(text(R.string.mobile_settings)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_close)).assertIsDisplayed().performClick()
+        compose.onNodeWithTag("destination-2").performClick()
         compose.onAllNodesWithText(
             text(R.string.mobile_review_access)
         )[0].performScrollTo().performClick()
@@ -295,17 +297,40 @@ class MobileScreenDeviceTest {
     }
 
     @Test
+    fun longAlertDetailsKeepTheCloseActionOutsideTheScrollingBody() {
+        compose.runOnIdle {
+            fontScale = 1.8f
+            val alert = record(1)
+            state = state.copy(
+                detailId = 1,
+                detail = alert.copy(
+                    capture = alert.capture.copy(
+                        original = "[DRILL] Long original. 112. ".repeat(150)
+                    ),
+                    translation = alert.translation!!.copy(
+                        text = "[DRILL] Long translation. 112. ".repeat(150)
+                    )
+                )
+            )
+        }
+        compose.onNodeWithText(text(R.string.mobile_close)).assertIsDisplayed().performClick()
+        compose.runOnIdle { assertEquals(null, state.detailId) }
+    }
+
+    @Test
     fun bottomDestinationsKeepIndependentScrollPositions() {
         compose.onNodeWithTag(
             "mobile-feed"
         ).performScrollToNode(hasText(text(R.string.mobile_details)))
-        compose.onNodeWithText(text(R.string.mobile_settings)).performClick()
-        compose.onNodeWithText(text(R.string.mobile_collection)).assertIsDisplayed()
+        compose.onNodeWithTag("destination-2").performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_collection)
+        ).performScrollTo().assertIsDisplayed()
         val label = context.getString(R.string.mobile_ui_language, text(R.string.mobile_system))
         compose.onNodeWithText(label).performScrollTo()
-        compose.onNodeWithText(text(R.string.mobile_home)).performClick()
+        compose.onNodeWithTag("destination-0").performClick()
         compose.onNodeWithText(text(R.string.mobile_details)).assertIsDisplayed()
-        compose.onNodeWithText(text(R.string.mobile_history)).performClick()
+        compose.onNodeWithTag("destination-1").performClick()
         compose.onNodeWithText(text(R.string.mobile_search)).assertIsDisplayed()
     }
 

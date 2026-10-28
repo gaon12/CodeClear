@@ -3,11 +3,13 @@ package xyz.gaon.codeclear.mobile
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,11 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -39,7 +38,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -98,63 +96,48 @@ fun MobileScreen(
     }
     MobileTheme(state.options.theme) {
         Scaffold(containerColor = MaterialTheme.colorScheme.background, bottomBar = {
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                listOf(
-                    R.string.mobile_home,
-                    R.string.mobile_history,
-                    R.string.mobile_settings
-                ).forEachIndexed {
-                        index,
-                        label
-                    ->
-                    NavigationBarItem(selected = tab == index, onClick = {
-                        tab = index
-                        tutorial =
-                            false
-                    }, icon = {
-                        Icon(
-                            painterResource(
-                                listOf(
-                                    R.drawable.ic_home,
-                                    R.drawable.ic_history,
-                                    R.drawable.ic_settings
-                                )[index]
-                            ),
-                            null
-                        )
-                    }, label = { Text(stringResource(label)) })
-                }
+            MobileNavigation(tab) {
+                tab = it
+                tutorial = false
             }
         }) { padding ->
-            Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
+            BoxWithConstraints(
+                Modifier.fillMaxSize().padding(padding),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                val headingHeight = if (maxHeight >= 560.dp) 160.dp else 88.dp
                 LazyColumn(
                     Modifier.widthIn(max = 880.dp).fillMaxWidth().testTag("mobile-feed"),
                     state = feedScroll,
-                    contentPadding = PaddingValues(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(18.dp)
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     item {
-                        Text(
-                            "CodeClear",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    item {
-                        Text(
-                            stringResource(
-                                if (tutorial) {
-                                    R.string.mobile_tutorial
+                        Box(
+                            Modifier.fillMaxWidth().heightIn(
+                                min = headingHeight
+                            ).padding(vertical = 20.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                if (!tutorial && tab == 0) {
+                                    "CodeClear"
                                 } else {
-                                    listOf(
-                                        R.string.mobile_home,
-                                        R.string.mobile_history,
-                                        R.string.mobile_settings
-                                    )[tab]
-                                }
-                            ),
-                            style = MaterialTheme.typography.headlineLarge
-                        )
+                                    stringResource(
+                                        if (tutorial) {
+                                            R.string.mobile_tutorial
+                                        } else {
+                                            listOf(
+                                                R.string.mobile_home,
+                                                R.string.mobile_history,
+                                                R.string.mobile_settings
+                                            )[tab]
+                                        }
+                                    )
+                                },
+                                style = MaterialTheme.typography.headlineLarge
+                            )
+                        }
                     }
                     if (!state.loaded) {
                         item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
@@ -227,6 +210,40 @@ fun MobileScreen(
 
                         tab == 0 -> {
                             item {
+                                Text(
+                                    stringResource(R.string.mobile_last_saved),
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                            }
+                            val latest = state.latest
+                            if (latest == null) {
+                                item { Text(stringResource(R.string.mobile_empty)) }
+                            } else {
+                                item {
+                                    AlertPresentation(
+                                        latest,
+                                        state.options.target.languageTag,
+                                        state.options.localConsent,
+                                        {
+                                            actions.retry(
+                                                latest.id,
+                                                state.options.target.languageTag,
+                                                state.options.engine
+                                            )
+                                        },
+                                        {
+                                            actions.prepare(
+                                                latest,
+                                                state.options.target.languageTag,
+                                                state.options.engine
+                                            )
+                                        },
+                                        { actions.detail(latest.id) },
+                                        engine = state.options.engine
+                                    )
+                                }
+                            }
+                            item {
                                 SettingSection(stringResource(R.string.mobile_capture_status)) {
                                     Text(
                                         stringResource(
@@ -290,40 +307,6 @@ fun MobileScreen(
                                     Button(onClick = actions.openSource) {
                                         Text(stringResource(R.string.mobile_open_source))
                                     }
-                                }
-                            }
-                            item {
-                                Text(
-                                    stringResource(R.string.mobile_last_saved),
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                            }
-                            val latest = state.latest
-                            if (latest == null) {
-                                item { Text(stringResource(R.string.mobile_empty)) }
-                            } else {
-                                item {
-                                    AlertPresentation(
-                                        latest,
-                                        state.options.target.languageTag,
-                                        state.options.localConsent,
-                                        {
-                                            actions.retry(
-                                                latest.id,
-                                                state.options.target.languageTag,
-                                                state.options.engine
-                                            )
-                                        },
-                                        {
-                                            actions.prepare(
-                                                latest,
-                                                state.options.target.languageTag,
-                                                state.options.engine
-                                            )
-                                        },
-                                        { actions.detail(latest.id) },
-                                        engine = state.options.engine
-                                    )
                                 }
                             }
                         }
@@ -434,39 +417,43 @@ fun MobileScreen(
                     shape = RoundedCornerShape(28.dp),
                     modifier = Modifier.padding(16.dp).widthIn(max = 880.dp)
                 ) {
-                    Column(
-                        Modifier.verticalScroll(rememberScrollState()).padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(18.dp)
-                    ) {
-                        val alert = state.detail
-                        if (alert ==
-                            null
+                    Column(Modifier.padding(12.dp)) {
+                        Column(
+                            Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
+                            verticalArrangement = Arrangement.spacedBy(18.dp)
                         ) {
-                            Text(
-                                stringResource(
-                                    if (state.loading) {
-                                        R.string.mobile_working
-                                    } else {
-                                        R.string.mobile_deleted
-                                    }
+                            val alert = state.detail
+                            if (alert ==
+                                null
+                            ) {
+                                Text(
+                                    stringResource(
+                                        if (state.loading) {
+                                            R.string.mobile_working
+                                        } else {
+                                            R.string.mobile_deleted
+                                        }
+                                    )
                                 )
-                            )
-                        } else {
-                            val target = state.detailTarget ?: state.options.target.languageTag
-                            val engine = state.detailEngine ?: state.options.engine
-                            val active =
-                                state.options.localConsent && engine == state.options.engine
-                            AlertPresentation(alert, target, active, {
-                                actions.retry(alert.id, target, engine)
-                            }, { actions.prepare(alert, target, engine) }, engine = engine)
-                            AlertMetadata(alert)
-                            TextButton(onClick = {
-                                actions.delete(alert.id)
-                            }) { Text(stringResource(R.string.mobile_delete)) }
+                            } else {
+                                val target = state.detailTarget ?: state.options.target.languageTag
+                                val engine = state.detailEngine ?: state.options.engine
+                                val active =
+                                    state.options.localConsent && engine == state.options.engine
+                                AlertPresentation(alert, target, active, {
+                                    actions.retry(alert.id, target, engine)
+                                }, { actions.prepare(alert, target, engine) }, engine = engine)
+                                AlertMetadata(alert)
+                                TextButton(onClick = {
+                                    actions.delete(alert.id)
+                                }) { Text(stringResource(R.string.mobile_delete)) }
+                            }
                         }
                         TextButton(onClick = {
                             actions.detail(null)
-                        }) { Text(stringResource(R.string.mobile_close)) }
+                        }, modifier = Modifier.fillMaxWidth()) {
+                            Text(stringResource(R.string.mobile_close))
+                        }
                     }
                 }
             }

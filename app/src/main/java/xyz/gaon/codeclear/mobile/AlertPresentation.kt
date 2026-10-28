@@ -1,5 +1,6 @@
 package xyz.gaon.codeclear.mobile
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -49,6 +51,7 @@ fun AlertPresentation(
     engine: LocalEngineKind = alert.translation?.engine ?: LocalEngineKind.ML_KIT
 ) {
     Card(
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
@@ -58,7 +61,7 @@ fun AlertPresentation(
                     painterResource(R.drawable.ic_result),
                     null,
                     Modifier.size(28.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.error
                 )
                 Column {
                     Text(
@@ -87,7 +90,8 @@ fun AlertPresentation(
                             alert.translation?.text
                                 ?: stringResource(
                                     phaseLabel(alert.translation?.phase, consent, engine)
-                                )
+                                ),
+                            translated = true
                         )
                         alert.translation?.takeIf {
                             it.phase == TranslationPhase.READY
@@ -166,12 +170,22 @@ fun AlertPresentation(
 }
 
 @Composable
-private fun MessagePanel(label: String, body: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+private fun MessagePanel(label: String, body: String, translated: Boolean = false) {
+    val modifier = if (translated) {
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp))
+            .background(MaterialTheme.colorScheme.secondaryContainer).padding(16.dp)
+    } else {
+        Modifier.fillMaxWidth()
+    }
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             label,
             style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.primary
+            color = if (translated) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurfaceVariant
+            }
         )
         SelectionContainer { Text(body, style = MaterialTheme.typography.bodyLarge) }
     }
