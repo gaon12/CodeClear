@@ -1,11 +1,17 @@
 package xyz.gaon.codeclear.probe
 
+import android.os.Bundle
+import android.os.Process
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.android.gms.tasks.Tasks
+import com.google.mlkit.common.model.RemoteModelManager
+import com.google.mlkit.nl.translate.TranslateRemoteModel
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -26,6 +32,45 @@ class LocalEngineDeviceTest {
         assertEquals(
             LocalResult.Ready(expected, "zh", true),
             runEngine(body, LocalTarget.TRADITIONAL_CHINESE)
+        )
+    }
+
+    @Test
+    fun preparedTranslationRunsInTheSelectedAbiWithoutDownloadingModels() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val arguments = InstrumentationRegistry.getArguments()
+        if (arguments.getString("require32Bit") == "true") assertFalse(Process.is64Bit())
+        fun downloaded(): Set<String> = Tasks.await(
+            RemoteModelManager.getInstance().getDownloadedModels(TranslateRemoteModel::class.java),
+            15,
+            TimeUnit.SECONDS
+        ).map { it.language }.toSet()
+        val before = downloaded()
+        if (arguments.getString("requireNativeTranslation") == "true") assertTrue("ko" in before)
+        val result = runEngine(
+            "[DRILL] Stay inside. Keep away from windows and call 112 for help.",
+            LocalTarget.KOREAN
+        )
+        if ("ko" in before) {
+            assertTrue(result is LocalResult.Ready)
+            val translated = result as LocalResult.Ready
+            assertEquals("en", translated.source)
+            assertFalse(translated.sameLanguage)
+            assertTrue(
+                translated.text.contains("112") && translated.text.any {
+                    it in '\uac00'..'\ud7a3'
+                }
+            )
+        } else {
+            assertEquals(LocalResult.NeedsModels, result)
+        }
+        assertEquals(before, downloaded())
+        instrumentation.sendStatus(
+            0,
+            Bundle().apply {
+                putBoolean("codeclear_native_64_bit", Process.is64Bit())
+                putBoolean("codeclear_native_output_ready", result is LocalResult.Ready)
+            }
         )
     }
 
