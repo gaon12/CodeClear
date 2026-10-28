@@ -125,4 +125,16 @@
     <string name="mobile_result_mlkit">Local result · ML Kit</string>
     <string name="mobile_result_same_language">The source language matches the target. Chinese script conversion may apply.</string>
     <string name="mobile_not_translated">No result for this engine and language yet. Tap Retry to translate this record.</string>
+    <string name="mobile_engine">Translation engine: %1$s</string>
+    <string name="mobile_engine_title">Translation engine</string>
+    <string name="mobile_engine_mlkit">ML Kit</string>
+    <string name="mobile_engine_system">Android system translation</string>
+    <string name="mobile_system_description">Use ready on-device language pairs from the installed system service. Chinese script conversion supports simplified and traditional output.</string>
+    <string name="mobile_system_disclosure">Use the installed Android system service for captured alert text through the public on-device translation API. Only language pairs reported as ready receive text. CodeClear does not upload alert text to an app translation server. Review the service privacy information and prepare models in its own settings. Turning this off stops new work and preserves history.</string>
+    <string name="mobile_engine_checking">Checking system translation support…</string>
+    <string name="mobile_engine_unavailable">No compatible system translation service is available. Choose ML Kit or review the system service settings.</string>
+    <string name="mobile_engine_pairs">For %1$s: ready pairs %2$d; pairs needing preparation %3$d. Source-language support is checked for each alert.</string>
+    <string name="mobile_engine_pair_missing">The system service does not report a language pair for %1$s. Choose another target language or ML Kit.</string>
+    <string name="mobile_engine_refresh">Refresh support</string>
+    <string name="mobile_engine_switch_notice">Changing engines keeps the current translation on/off choice. Existing results retain their producing engine.</string>
 </resources>

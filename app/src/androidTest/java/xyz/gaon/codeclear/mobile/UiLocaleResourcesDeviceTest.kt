@@ -35,11 +35,20 @@ class UiLocaleResourcesDeviceTest {
             val metadata = localized.getString(R.string.mobile_numeric_metadata, 4372, 3, "1", "—")
             assertTrue(metadata.contains("4372"))
             assertFalse(metadata.contains("%1"))
+            val support = localized.getString(R.string.mobile_engine_pairs, "TEST_LANG", 12, 34)
+            assertTrue(
+                support.contains("TEST_LANG") && support.contains("12") && support.contains("34")
+            )
+            assertFalse(support.contains("%1"))
+            assertTrue(
+                localized.getString(R.string.mobile_engine, "TEST_ENGINE").contains("TEST_ENGINE")
+            )
             for (id in listOf(
                 R.string.mobile_notification_disclosure,
                 R.string.mobile_accessibility_disclosure,
                 R.string.mobile_local_disclosure,
-                R.string.mobile_model_notice
+                R.string.mobile_model_notice,
+                R.string.mobile_system_disclosure
             )) {
                 assertTrue(localized.getString(id).length > 40)
             }

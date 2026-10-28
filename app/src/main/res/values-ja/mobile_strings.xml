@@ -125,4 +125,16 @@
     <string name="mobile_result_mlkit">ローカル結果 · ML Kit</string>
     <string name="mobile_result_same_language">原文と翻訳先の言語が同じです。中国語は簡体字・繁体字が変換される場合があります。</string>
     <string name="mobile_not_translated">このエンジンと言語の結果はまだありません。再試行して翻訳してください。</string>
+    <string name="mobile_engine">翻訳エンジン：%1$s</string>
+    <string name="mobile_engine_title">翻訳エンジン</string>
+    <string name="mobile_engine_mlkit">ML Kit</string>
+    <string name="mobile_engine_system">Android システム翻訳</string>
+    <string name="mobile_system_description">インストール済みシステムサービスで準備できた端末内の言語ペアを使用します。中国語の簡体字・繁体字変換も適用します。</string>
+    <string name="mobile_system_disclosure">Android の公開された端末内翻訳 API を通して、収集した警報文をインストール済みのシステムサービスに渡します。準備済みと報告された言語ペアにのみ原文を渡し、CodeClear は警報文をアプリの翻訳サーバーへ送信しません。サービスのプライバシー案内を確認し、その設定でモデルを準備してください。無効にすると新しい翻訳を停止し、履歴は保持します。</string>
+    <string name="mobile_engine_checking">システム翻訳の対応状況を確認中…</string>
+    <string name="mobile_engine_unavailable">対応するシステム翻訳サービスがありません。ML Kit を選ぶか、システムサービスの設定を確認してください。</string>
+    <string name="mobile_engine_pairs">%1$sへの翻訳：準備済み %2$d、準備が必要 %3$d の言語ペア。原文の言語への対応は警報ごとに確認します。</string>
+    <string name="mobile_engine_pair_missing">システムサービスに%1$sへの言語ペアがありません。別の翻訳先言語か ML Kit を選んでください。</string>
+    <string name="mobile_engine_refresh">対応状況を更新</string>
+    <string name="mobile_engine_switch_notice">エンジンを変更しても翻訳の有効・無効は維持されます。既存の結果には生成したエンジンが引き続き表示されます。</string>
 </resources>

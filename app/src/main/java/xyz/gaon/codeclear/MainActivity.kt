@@ -54,6 +54,7 @@ class MainActivity : AppCompatActivity() {
     private var notificationsAllowed by mutableStateOf(false)
     private var notificationRequested = false
     private var systemSettingsRequest = 0L
+    private var systemSettingsOpened = false
     private val notificationRequest =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             notificationRequested = true
@@ -63,6 +64,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         notificationRequested = savedInstanceState?.getBoolean("notification_requested") ?: false
+        systemSettingsOpened = savedInstanceState?.getBoolean("system_settings_opened") ?: false
         mobileRuntime.resumeProduct()
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         openDestination(intent)
@@ -151,7 +153,10 @@ class MainActivity : AppCompatActivity() {
                             notificationsAllowed,
                             controller::older,
                             controller::newest,
-                            controller::retryStorage
+                            controller::retryStorage,
+                            runtime.systemAvailability,
+                            { runtime.systemEngine.refreshCapabilities(force = it) },
+                            ::openSystemTranslationSettings
                         )
                     )
                 }
@@ -234,6 +239,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putBoolean("notification_requested", notificationRequested)
+        outState.putBoolean("system_settings_opened", systemSettingsOpened)
         super.onSaveInstanceState(outState)
     }
 
@@ -243,6 +249,12 @@ class MainActivity : AppCompatActivity() {
         refreshAccess()
         mobileRuntime.controller.start()
         mobileRuntime.controller.refresh()
+        if (systemSettingsOpened || mobileRuntime.systemAvailability.loaded ||
+            mobileRuntime.state.options.engine == LocalEngineKind.SYSTEM
+        ) {
+            mobileRuntime.systemEngine.refreshCapabilities(force = systemSettingsOpened)
+        }
+        systemSettingsOpened = false
     }
 
     override fun onPause() {
@@ -277,11 +289,18 @@ class MainActivity : AppCompatActivity() {
         val requestedAt = SystemClock.uptimeMillis()
         mobileRuntime.systemEngine.requestSettings { action ->
             if (request == systemSettingsRequest && !isFinishing && !isDestroyed &&
-                lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) &&
-                mobileRuntime.state.options.engine == LocalEngineKind.SYSTEM &&
-                mobileRuntime.state.options.localConsent
+                lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
             ) {
-                if (SystemClock.uptimeMillis() - requestedAt > 10_000 || action?.invoke() != true) {
+                val opened = if (SystemClock.uptimeMillis() - requestedAt <= 10_000 &&
+                    action != null
+                ) {
+                    systemSettingsOpened = true
+                    action.invoke()
+                } else {
+                    false
+                }
+                if (!opened) {
+                    systemSettingsOpened = false
                     Toast.makeText(
                         this,
                         R.string.mobile_system_settings_unavailable,

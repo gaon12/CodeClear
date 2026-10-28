@@ -125,4 +125,16 @@
     <string name="mobile_result_mlkit">Résultat local · ML Kit</string>
     <string name="mobile_result_same_language">La langue source et la langue cible sont identiques. Une conversion des caractères chinois peut être appliquée.</string>
     <string name="mobile_not_translated">Aucun résultat pour ce moteur et cette langue. Appuyez sur Réessayer pour traduire cet avertissement.</string>
+    <string name="mobile_engine">Moteur de traduction : %1$s</string>
+    <string name="mobile_engine_title">Moteur de traduction</string>
+    <string name="mobile_engine_mlkit">ML Kit</string>
+    <string name="mobile_engine_system">Traduction système Android</string>
+    <string name="mobile_system_description">Utiliser les paires de langues prêtes sur cet appareil dans le service installé. La conversion entre chinois simplifié et traditionnel est aussi appliquée.</string>
+    <string name="mobile_system_disclosure">Le texte des alertes est confié au service système installé via l’API publique de traduction sur appareil Android, uniquement pour les paires signalées comme prêtes. CodeClear ne transmet pas ces textes à un serveur de traduction de l’application. Consultez les informations de confidentialité du service et préparez les modèles dans ses paramètres. La désactivation arrête les nouvelles traductions et conserve l’historique.</string>
+    <string name="mobile_engine_checking">Vérification de la traduction système…</string>
+    <string name="mobile_engine_unavailable">Aucun service système compatible. Choisissez ML Kit ou consultez les paramètres du service système.</string>
+    <string name="mobile_engine_pairs">Vers %1$s : paires prêtes %2$d ; paires à préparer %3$d. La prise en charge de la langue source est vérifiée pour chaque alerte.</string>
+    <string name="mobile_engine_pair_missing">Le service système ne propose pas de paire vers %1$s. Choisissez une autre langue cible ou ML Kit.</string>
+    <string name="mobile_engine_refresh">Actualiser la compatibilité</string>
+    <string name="mobile_engine_switch_notice">Changer de moteur conserve l’état activé ou désactivé. Les résultats existants gardent le nom du moteur qui les a produits.</string>
 </resources>

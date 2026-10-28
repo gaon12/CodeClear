@@ -50,6 +50,7 @@ import xyz.gaon.codeclear.probe.ProbeBodyEvidence
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeRadio
 import xyz.gaon.codeclear.probe.ProbeSessionState
+import xyz.gaon.codeclear.probe.SystemEngineAvailability
 
 class MobileActions(
     val configure: (MobileOptions) -> Unit,
@@ -64,7 +65,10 @@ class MobileActions(
     val notificationsAllowed: Boolean,
     val older: () -> Unit,
     val newest: () -> Unit,
-    val retryStorage: () -> Unit
+    val retryStorage: () -> Unit,
+    val systemAvailability: SystemEngineAvailability = SystemEngineAvailability(),
+    val refreshSystem: (Boolean) -> Unit = {},
+    val systemSettings: () -> Unit = {}
 )
 
 @Composable
@@ -83,14 +87,18 @@ fun MobileScreen(
     val historyScroll = rememberLazyListState()
     val settingsScroll = rememberLazyListState()
     val tutorialScroll = rememberLazyListState()
-    LaunchedEffect(tutorial, step) {
-        if (tutorial) tutorialScroll.scrollToItem(0)
+    // A lazy item provider can update before its parent replaces the attached scroll state.
+    val currentTab = tab
+    val showTutorial = tutorial
+    val currentStep = step
+    LaunchedEffect(showTutorial, currentStep) {
+        if (showTutorial) tutorialScroll.scrollToItem(0)
     }
     LaunchedEffect(state.query, state.beforeId) { historyScroll.scrollToItem(0) }
-    val feedScroll = if (tutorial) {
+    val feedScroll = if (showTutorial) {
         tutorialScroll
     } else {
-        when (tab) {
+        when (currentTab) {
             0 -> homeScroll
             1 -> historyScroll
             else -> settingsScroll
@@ -98,7 +106,7 @@ fun MobileScreen(
     }
     MobileTheme(state.options.theme) {
         Scaffold(containerColor = MaterialTheme.colorScheme.background, bottomBar = {
-            MobileNavigation(tab) {
+            MobileNavigation(currentTab) {
                 tab = it
                 tutorial = false
             }
@@ -122,18 +130,18 @@ fun MobileScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                if (!tutorial && tab == 0) {
+                                if (!showTutorial && currentTab == 0) {
                                     "CodeClear"
                                 } else {
                                     stringResource(
-                                        if (tutorial) {
+                                        if (showTutorial) {
                                             R.string.mobile_tutorial
                                         } else {
                                             listOf(
                                                 R.string.mobile_home,
                                                 R.string.mobile_history,
                                                 R.string.mobile_settings
-                                            )[tab]
+                                            )[currentTab]
                                         }
                                     )
                                 },
@@ -155,14 +163,14 @@ fun MobileScreen(
                         }
                     }
                     when {
-                        tutorial -> item {
+                        showTutorial -> item {
                             SettingSection(
                                 stringResource(
                                     listOf(
                                         R.string.mobile_tutorial_receive,
                                         R.string.mobile_tutorial_read,
                                         R.string.mobile_tutorial_translate
-                                    )[step]
+                                    )[currentStep]
                                 )
                             ) {
                                 Text(
@@ -171,11 +179,11 @@ fun MobileScreen(
                                             R.string.mobile_tutorial_receive_body,
                                             R.string.mobile_tutorial_read_body,
                                             R.string.mobile_tutorial_translate_body
-                                        )[step]
+                                        )[currentStep]
                                     )
                                 )
                                 Row {
-                                    if (step >
+                                    if (currentStep >
                                         0
                                     ) {
                                         TextButton(onClick = {
@@ -196,7 +204,7 @@ fun MobileScreen(
                                     }) {
                                         Text(
                                             stringResource(
-                                                if (step ==
+                                                if (currentStep ==
                                                     2
                                                 ) {
                                                     R.string.mobile_done
@@ -210,7 +218,7 @@ fun MobileScreen(
                             }
                         }
 
-                        tab == 0 -> {
+                        currentTab == 0 -> {
                             item {
                                 Text(
                                     stringResource(R.string.mobile_last_saved),
@@ -313,7 +321,7 @@ fun MobileScreen(
                             }
                         }
 
-                        tab == 1 -> {
+                        currentTab == 1 -> {
                             item {
                                 OutlinedTextField(
                                     value = state.query,
@@ -327,8 +335,10 @@ fun MobileScreen(
                                         Icon(painterResource(R.drawable.ic_search), null)
                                     },
                                     colors = OutlinedTextFieldDefaults.colors(
-                                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                        focusedContainerColor =
+                                            MaterialTheme.colorScheme.surface,
+                                        unfocusedContainerColor =
+                                            MaterialTheme.colorScheme.surface,
                                         unfocusedBorderColor = Color.Transparent
                                     ),
                                     modifier = Modifier.fillMaxWidth()

@@ -125,4 +125,16 @@
     <string name="mobile_result_mlkit">本地结果 · ML Kit</string>
     <string name="mobile_result_same_language">原文与目标语言相同。中文可能经过简繁转换。</string>
     <string name="mobile_not_translated">此引擎和语言尚无结果。请点按重试以翻译这条记录。</string>
+    <string name="mobile_engine">翻译引擎：%1$s</string>
+    <string name="mobile_engine_title">翻译引擎</string>
+    <string name="mobile_engine_mlkit">ML Kit</string>
+    <string name="mobile_engine_system">Android 系统翻译</string>
+    <string name="mobile_system_description">使用已安装系统服务中就绪的设备端语言对，并进行简体与繁体转换。</string>
+    <string name="mobile_system_disclosure">通过 Android 公开的设备端翻译 API 将已采集的警报文本交给已安装的系统服务。仅向报告为就绪的语言对提供原文。CodeClear 不会将警报文本上传到应用翻译服务器。请查看服务的隐私说明，并在其设置中准备模型。关闭后停止新翻译，历史记录仍会保留。</string>
+    <string name="mobile_engine_checking">正在检查系统翻译支持…</string>
+    <string name="mobile_engine_unavailable">没有兼容的系统翻译服务。请选择 ML Kit 或查看系统服务设置。</string>
+    <string name="mobile_engine_pairs">翻译为%1$s：就绪语言对 %2$d，需要准备的语言对 %3$d。每条警报都会单独检查源语言支持。</string>
+    <string name="mobile_engine_pair_missing">系统服务未提供翻译为%1$s的语言对。请选择其他目标语言或 ML Kit。</string>
+    <string name="mobile_engine_refresh">刷新支持状态</string>
+    <string name="mobile_engine_switch_notice">切换引擎会保留当前翻译开关状态。已有结果仍标明原来的翻译引擎。</string>
 </resources>

@@ -125,4 +125,16 @@
     <string name="mobile_result_mlkit">Lokales Ergebnis · ML Kit</string>
     <string name="mobile_result_same_language">Quell- und Zielsprache sind gleich. Die chinesische Schrift kann umgewandelt werden.</string>
     <string name="mobile_not_translated">Für diese Engine und Sprache liegt noch kein Ergebnis vor. Tippe auf Erneut versuchen, um die Meldung zu übersetzen.</string>
+    <string name="mobile_engine">Übersetzungsmodul: %1$s</string>
+    <string name="mobile_engine_title">Übersetzungsmodul</string>
+    <string name="mobile_engine_mlkit">ML Kit</string>
+    <string name="mobile_engine_system">Android-Systemübersetzung</string>
+    <string name="mobile_system_description">Verwendet vorbereitete Sprachpaare des installierten Systemdienstes auf diesem Gerät. Die Umwandlung zwischen vereinfachtem und traditionellem Chinesisch wird ebenfalls angewendet.</string>
+    <string name="mobile_system_disclosure">Erfasste Warntexte werden über die öffentliche Android-API für Übersetzungen auf dem Gerät an den installierten Systemdienst übergeben. Nur als bereit gemeldete Sprachpaare erhalten den Originaltext. CodeClear lädt Warntexte nicht auf einen Übersetzungsserver der App hoch. Prüfen Sie die Datenschutzhinweise des Dienstes und bereiten Sie Modelle in dessen Einstellungen vor. Beim Ausschalten werden neue Übersetzungen gestoppt; der Verlauf bleibt erhalten.</string>
+    <string name="mobile_engine_checking">Systemübersetzung wird geprüft…</string>
+    <string name="mobile_engine_unavailable">Kein kompatibler Systemdienst verfügbar. Wählen Sie ML Kit oder prüfen Sie die Einstellungen des Systemdienstes.</string>
+    <string name="mobile_engine_pairs">Nach %1$s: bereit %2$d; noch vorzubereiten %3$d Sprachpaare. Die Ausgangssprache wird für jede Warnung gesondert geprüft.</string>
+    <string name="mobile_engine_pair_missing">Der Systemdienst meldet kein Sprachpaar für %1$s. Wählen Sie eine andere Zielsprache oder ML Kit.</string>
+    <string name="mobile_engine_refresh">Unterstützung aktualisieren</string>
+    <string name="mobile_engine_switch_notice">Beim Modulwechsel bleibt die Übersetzung ein- oder ausgeschaltet. Bestehende Ergebnisse behalten die Angabe des ursprünglichen Moduls.</string>
 </resources>

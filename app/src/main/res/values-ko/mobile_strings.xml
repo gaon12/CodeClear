@@ -125,4 +125,16 @@
     <string name="mobile_result_mlkit">로컬 결과 · ML Kit</string>
     <string name="mobile_result_same_language">원문과 번역 대상 언어가 같습니다. 중국어는 간체·번체가 변환될 수 있습니다.</string>
     <string name="mobile_not_translated">이 엔진과 언어로 번역한 결과가 없습니다. 다시 시도를 눌러 번역하세요.</string>
+    <string name="mobile_engine">번역 엔진: %1$s</string>
+    <string name="mobile_engine_title">번역 엔진</string>
+    <string name="mobile_engine_mlkit">ML Kit</string>
+    <string name="mobile_engine_system">Android 시스템 번역</string>
+    <string name="mobile_system_description">설치된 시스템 서비스의 기기 내 번역 언어 쌍을 사용합니다. 중국어 간체·번체 변환도 적용합니다.</string>
+    <string name="mobile_system_disclosure">수집한 재난문자를 Android의 공개 기기 내 번역 API를 통해 설치된 시스템 서비스에 전달합니다. 준비 완료로 보고된 언어 쌍에만 원문을 전달하며, CodeClear는 원문을 앱의 번역 서버로 업로드하지 않습니다. 서비스의 개인정보 안내를 확인하고 해당 서비스 설정에서 모델을 준비하세요. 끄면 새 번역을 중지하고 기록은 보관합니다.</string>
+    <string name="mobile_engine_checking">시스템 번역 지원 여부 확인 중…</string>
+    <string name="mobile_engine_unavailable">호환되는 시스템 번역 서비스가 없습니다. ML Kit를 선택하거나 시스템 서비스 설정을 확인하세요.</string>
+    <string name="mobile_engine_pairs">%1$s 번역: 준비 완료 %2$d개, 준비 필요 %3$d개 언어 쌍. 원문 언어 지원 여부는 재난문자마다 확인합니다.</string>
+    <string name="mobile_engine_pair_missing">시스템 서비스에서 %1$s 번역 언어 쌍을 제공하지 않습니다. 다른 대상 언어나 ML Kit를 선택하세요.</string>
+    <string name="mobile_engine_refresh">지원 상태 새로고침</string>
+    <string name="mobile_engine_switch_notice">엔진을 바꿔도 현재 번역 켜짐·꺼짐 상태를 유지합니다. 기존 결과의 번역 엔진 표시는 바뀌지 않습니다.</string>
 </resources>

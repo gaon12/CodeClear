@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeRadio
 import xyz.gaon.codeclear.probe.ProbeSessionState
@@ -43,7 +42,6 @@ fun MobileSettings(
 ) {
     val options = state.options
     var disclosure by remember { mutableStateOf<String?>(null) }
-    var targetPicker by remember { mutableStateOf(false) }
     var themePicker by remember { mutableStateOf(false) }
     var uiLanguagePicker by remember { mutableStateOf(false) }
     val captureAvailable = environment.radio != ProbeRadio.ABSENT
@@ -86,36 +84,7 @@ fun MobileSettings(
         }
         TextButton(onClick = tutorial) { Text(stringResource(R.string.mobile_tutorial)) }
     }
-    SettingSection(stringResource(R.string.mobile_translation_settings)) {
-        Text(stringResource(R.string.mobile_local_description))
-        TextButton(onClick = {
-            if (options.localConsent) {
-                actions.configure(options.copy(localConsent = false))
-            } else {
-                disclosure =
-                    "local"
-            }
-        }) {
-            Text(
-                stringResource(
-                    if (options.localConsent) {
-                        R.string.mobile_disable_translation
-                    } else {
-                        R.string.mobile_enable_translation
-                    }
-                )
-            )
-        }
-        OutlinedButton(onClick = {
-            targetPicker = true
-        }) {
-            Text(stringResource(R.string.mobile_target, languageName(options.target.languageTag)))
-        }
-        Text(
-            stringResource(R.string.mobile_model_notice),
-            style = MaterialTheme.typography.bodySmall
-        )
-    }
+    LocalTranslationSettings(options, actions)
     SettingSection(stringResource(R.string.mobile_appearance)) {
         OutlinedButton(onClick = {
             themePicker = true
@@ -166,8 +135,7 @@ fun MobileSettings(
                         stringResource(
                             when (route) {
                                 "notification" -> R.string.mobile_notification_disclosure
-                                "accessibility" -> R.string.mobile_accessibility_disclosure
-                                else -> R.string.mobile_local_disclosure
+                                else -> R.string.mobile_accessibility_disclosure
                             }
                         )
                     )
@@ -182,12 +150,10 @@ fun MobileSettings(
                             actions.settings(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
                         }
 
-                        "accessibility" -> {
+                        else -> {
                             actions.configure(options.copy(accessibilityConsent = true))
                             actions.settings(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                         }
-
-                        else -> actions.configure(options.copy(localConsent = true))
                     }
                 }) { Text(stringResource(R.string.mobile_agree)) }
             },
@@ -197,21 +163,6 @@ fun MobileSettings(
                 }) { Text(stringResource(R.string.mobile_cancel)) }
             }
         )
-    }
-    if (targetPicker) {
-        ChoiceDialog(
-            stringResource(R.string.mobile_translation_settings),
-            LocalTarget.entries.map {
-                languageName(it.languageTag)
-            },
-            {
-                targetPicker =
-                    false
-            }
-        ) {
-            targetPicker = false
-            actions.configure(options.copy(target = LocalTarget.entries[it]))
-        }
     }
     if (themePicker) {
         ChoiceDialog(
