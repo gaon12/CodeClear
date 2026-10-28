@@ -116,4 +116,13 @@
     <string name="mobile_earthquake_tsunami">Séisme et tsunami</string>
     <string name="mobile_other_emergency">Autre urgence</string>
     <string name="mobile_other_alert">Autre alerte</string>
+    <string name="mobile_system_unavailable">La traduction système est indisponible. Choisissez ML Kit dans les paramètres ou vérifiez le service de traduction système.</string>
+    <string name="mobile_pair_unsupported">Le moteur choisi ne prend pas en charge cette paire de langues. Changez de moteur ou de langue cible.</string>
+    <string name="mobile_system_models_missing">Préparez les modèles de langue dans les paramètres de traduction système, puis réessayez.</string>
+    <string name="mobile_system_models_action">Paramètres de traduction système</string>
+    <string name="mobile_system_settings_unavailable">Les paramètres de traduction système sont indisponibles ou occupés. Réessayez ou choisissez ML Kit.</string>
+    <string name="mobile_result_system">Résultat local · Service système Android</string>
+    <string name="mobile_result_mlkit">Résultat local · ML Kit</string>
+    <string name="mobile_result_same_language">La langue source et la langue cible sont identiques. Une conversion des caractères chinois peut être appliquée.</string>
+    <string name="mobile_not_translated">Aucun résultat pour ce moteur et cette langue. Appuyez sur Réessayer pour traduire cet avertissement.</string>
 </resources>

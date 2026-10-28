@@ -211,7 +211,11 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         require(result.phase !in setOf(TranslationPhase.QUEUED, TranslationPhase.WORKING))
         if (ticket.engine != result.engine) return false
         require(
-            result.sourceLanguage == null || result.sourceLanguage.matches(Regex("[A-Za-z-]{1,32}"))
+            result.sourceLanguage == null ||
+                (
+                    result.sourceLanguage.length <= 32 &&
+                        result.sourceLanguage.matches(Regex("[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*"))
+                    )
         )
         if (result.phase == TranslationPhase.READY) {
             require(!result.text.isNullOrBlank() && result.text.length <= 16384)

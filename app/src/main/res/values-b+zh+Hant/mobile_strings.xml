@@ -116,4 +116,13 @@
     <string name="mobile_earthquake_tsunami">地震與海嘯</string>
     <string name="mobile_other_emergency">其他緊急警報</string>
     <string name="mobile_other_alert">其他警報</string>
+    <string name="mobile_system_unavailable">系統翻譯無法使用。請在設定中選擇 ML Kit，或檢查系統翻譯服務。</string>
+    <string name="mobile_pair_unsupported">所選引擎不支援這組語言。請更換引擎或目標語言。</string>
+    <string name="mobile_system_models_missing">請先在系統翻譯設定中準備語言模型，然後重試。</string>
+    <string name="mobile_system_models_action">系統翻譯設定</string>
+    <string name="mobile_system_settings_unavailable">系統翻譯設定無法使用或正在忙碌。請重試或選擇 ML Kit。</string>
+    <string name="mobile_result_system">本機結果 · Android 系統服務</string>
+    <string name="mobile_result_mlkit">本機結果 · ML Kit</string>
+    <string name="mobile_result_same_language">原文與目標語言相同。中文可能經過簡繁轉換。</string>
+    <string name="mobile_not_translated">此引擎和語言尚無結果。請點選重試以翻譯這筆記錄。</string>
 </resources>

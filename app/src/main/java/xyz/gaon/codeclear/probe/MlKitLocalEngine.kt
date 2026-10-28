@@ -11,6 +11,7 @@ import com.google.mlkit.nl.translate.TranslateRemoteModel
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.TranslatorOptions
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 /** Does not download models until the coordinator supplies a per-request user approval. */
 class MlKitLocalEngine : LocalEngine {
@@ -44,7 +45,9 @@ class MlKitLocalEngine : LocalEngine {
 
     private fun translate(input: LocalInput, allowModelDownload: Boolean): LocalResult {
         val source = LanguageIdentification.getClient().use { identifier ->
-            TranslateLanguage.fromLanguageTag(Tasks.await(identifier.identifyLanguage(input.body)))
+            TranslateLanguage.fromLanguageTag(
+                Tasks.await(identifier.identifyLanguage(input.body), 15, TimeUnit.SECONDS)
+            )
         } ?: return LocalResult.UnknownLanguage
         if (source == input.target.modelCode) return ready(input.body, input, source, true)
         val options = TranslatorOptions.Builder().setSourceLanguage(source)
@@ -53,7 +56,9 @@ class MlKitLocalEngine : LocalEngine {
             val downloaded = Tasks.await(
                 RemoteModelManager.getInstance().getDownloadedModels(
                     TranslateRemoteModel::class.java
-                )
+                ),
+                15,
+                TimeUnit.SECONDS
             ).map { it.language }.toSet()
             val required = setOf(source, input.target.modelCode) - "en"
             if (!downloaded.containsAll(required)) {
@@ -61,10 +66,17 @@ class MlKitLocalEngine : LocalEngine {
                 Tasks.await(
                     translator.downloadModelIfNeeded(
                         DownloadConditions.Builder().requireWifi().build()
-                    )
+                    ),
+                    3,
+                    TimeUnit.MINUTES
                 )
             }
-            return ready(Tasks.await(translator.translate(input.body)), input, source, false)
+            return ready(
+                Tasks.await(translator.translate(input.body), 20, TimeUnit.SECONDS),
+                input,
+                source,
+                false
+            )
         }
     }
 
@@ -86,7 +98,7 @@ class MlKitLocalEngine : LocalEngine {
     fun close() {
         check(Looper.myLooper() == Looper.getMainLooper())
         closed = true
-        // SDK Tasks have no cancellation contract. Keep their one worker slot until completion.
+        // The active bounded operation owns client cleanup before its worker is shut down.
         if (!busy) worker.shutdown()
     }
 }

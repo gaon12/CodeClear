@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.ProbeBodyEvidence
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeRadio
@@ -55,8 +56,8 @@ class MobileActions(
     val search: (String) -> Unit,
     val detail: (Long?) -> Unit,
     val delete: (Long?) -> Unit,
-    val retry: (Long, String) -> Unit,
-    val prepare: (SavedAlert, String) -> Unit,
+    val retry: (Long, String, LocalEngineKind) -> Unit,
+    val prepare: (SavedAlert, String, LocalEngineKind) -> Unit,
     val settings: (String) -> Unit,
     val openSource: () -> Unit,
     val notificationPermission: () -> Unit,
@@ -309,16 +310,19 @@ fun MobileScreen(
                                         {
                                             actions.retry(
                                                 latest.id,
-                                                state.options.target.languageTag
+                                                state.options.target.languageTag,
+                                                state.options.engine
                                             )
                                         },
                                         {
                                             actions.prepare(
                                                 latest,
-                                                state.options.target.languageTag
+                                                state.options.target.languageTag,
+                                                state.options.engine
                                             )
                                         },
-                                        { actions.detail(latest.id) }
+                                        { actions.detail(latest.id) },
+                                        engine = state.options.engine
                                     )
                                 }
                             }
@@ -352,12 +356,21 @@ fun MobileScreen(
                                     state.options.target.languageTag,
                                     state.options.localConsent,
                                     {
-                                        actions.retry(alert.id, state.options.target.languageTag)
+                                        actions.retry(
+                                            alert.id,
+                                            state.options.target.languageTag,
+                                            state.options.engine
+                                        )
                                     },
                                     {
-                                        actions.prepare(alert, state.options.target.languageTag)
+                                        actions.prepare(
+                                            alert,
+                                            state.options.target.languageTag,
+                                            state.options.engine
+                                        )
                                     },
-                                    { actions.detail(alert.id) }
+                                    { actions.detail(alert.id) },
+                                    engine = state.options.engine
                                 )
                             }
                             item {
@@ -386,8 +399,8 @@ fun MobileScreen(
                             }
                         }
                     }
-                    if (preparation.phase !=
-                        PreparationPhase.IDLE
+                    if (preparation.phase != PreparationPhase.IDLE &&
+                        state.options.engine == LocalEngineKind.ML_KIT
                     ) {
                         item {
                             Text(
@@ -440,9 +453,12 @@ fun MobileScreen(
                             )
                         } else {
                             val target = state.detailTarget ?: state.options.target.languageTag
-                            AlertPresentation(alert, target, state.options.localConsent, {
-                                actions.retry(alert.id, target)
-                            }, { actions.prepare(alert, target) })
+                            val engine = state.detailEngine ?: state.options.engine
+                            val active =
+                                state.options.localConsent && engine == state.options.engine
+                            AlertPresentation(alert, target, active, {
+                                actions.retry(alert.id, target, engine)
+                            }, { actions.prepare(alert, target, engine) }, engine = engine)
                             AlertMetadata(alert)
                             TextButton(onClick = {
                                 actions.delete(alert.id)

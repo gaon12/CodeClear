@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.provider.Settings
 import android.view.WindowManager
 import android.widget.Toast
@@ -29,6 +30,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.core.os.LocaleListCompat
+import androidx.lifecycle.Lifecycle
 import xyz.gaon.codeclear.mobile.MobileActions
 import xyz.gaon.codeclear.mobile.MobileOptions
 import xyz.gaon.codeclear.mobile.MobileScreen
@@ -38,6 +40,7 @@ import xyz.gaon.codeclear.mobile.SavedAlert
 import xyz.gaon.codeclear.mobile.ThemeChoice
 import xyz.gaon.codeclear.mobile.UiLanguages
 import xyz.gaon.codeclear.mobile.mobileRuntime
+import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeSession
@@ -50,6 +53,7 @@ class MainActivity : AppCompatActivity() {
     private var environment by mutableStateOf<ProbeEnvironment?>(null)
     private var notificationsAllowed by mutableStateOf(false)
     private var notificationRequested = false
+    private var systemSettingsRequest = 0L
     private val notificationRequest =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             notificationRequested = true
@@ -129,8 +133,18 @@ class MainActivity : AppCompatActivity() {
                                 deletion =
                                     PendingDeletion(it)
                             }, controller::retry,
-                            { alert, target ->
-                                preparation = PendingPreparation(alert, target)
+                            { alert, target, engine ->
+                                if (runtime.state.options.localConsent &&
+                                    engine == runtime.state.options.engine
+                                ) {
+                                    if (engine ==
+                                        LocalEngineKind.SYSTEM
+                                    ) {
+                                        openSystemTranslationSettings()
+                                    } else {
+                                        preparation = PendingPreparation(alert, target)
+                                    }
+                                }
                             }, ::openSettings, {
                                 ProbeSourceActions.openFromUser(this)
                             }, ::requestNotifications,
@@ -186,7 +200,9 @@ class MainActivity : AppCompatActivity() {
                         confirmButton = {
                             TextButton(onClick = {
                                 preparation = null
-                                if (runtime.state.options.localConsent) {
+                                if (runtime.state.options.localConsent &&
+                                    runtime.state.options.engine == LocalEngineKind.ML_KIT
+                                ) {
                                     runtime.models.prepare(
                                         request.alert.capture.original,
                                         LocalTarget.entries.first {
@@ -229,6 +245,11 @@ class MainActivity : AppCompatActivity() {
         mobileRuntime.controller.refresh()
     }
 
+    override fun onPause() {
+        systemSettingsRequest++
+        super.onPause()
+    }
+
     private fun refreshAccess() {
         environment = ProbeEnvironment.read(this)
         notificationsAllowed = ResultNotifications(this).allowed()
@@ -246,8 +267,28 @@ class MainActivity : AppCompatActivity() {
 
     private fun openDestination(intent: Intent) {
         ResultNotifications.destination(intent.data)?.let {
-            mobileRuntime.controller.openDetail(it.id, it.target)
+            mobileRuntime.controller.openDetail(it.id, it.target, it.engine)
             intent.data = null
+        }
+    }
+
+    private fun openSystemTranslationSettings() {
+        val request = ++systemSettingsRequest
+        val requestedAt = SystemClock.uptimeMillis()
+        mobileRuntime.systemEngine.requestSettings { action ->
+            if (request == systemSettingsRequest && !isFinishing && !isDestroyed &&
+                lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) &&
+                mobileRuntime.state.options.engine == LocalEngineKind.SYSTEM &&
+                mobileRuntime.state.options.localConsent
+            ) {
+                if (SystemClock.uptimeMillis() - requestedAt > 10_000 || action?.invoke() != true) {
+                    Toast.makeText(
+                        this,
+                        R.string.mobile_system_settings_unavailable,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
         }
     }
 

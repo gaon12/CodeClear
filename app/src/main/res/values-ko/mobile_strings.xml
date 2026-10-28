@@ -116,4 +116,13 @@
     <string name="mobile_earthquake_tsunami">지진 및 쓰나미</string>
     <string name="mobile_other_emergency">기타 긴급 상황</string>
     <string name="mobile_other_alert">기타 경보</string>
+    <string name="mobile_system_unavailable">시스템 번역을 사용할 수 없습니다. 설정에서 ML Kit를 선택하거나 시스템 번역 서비스를 확인하세요.</string>
+    <string name="mobile_pair_unsupported">선택한 번역 엔진이 이 언어 조합을 지원하지 않습니다. 엔진이나 번역 언어를 바꿔주세요.</string>
+    <string name="mobile_system_models_missing">시스템 번역 설정에서 언어 모델을 준비한 뒤 다시 시도하세요.</string>
+    <string name="mobile_system_models_action">시스템 번역 설정</string>
+    <string name="mobile_system_settings_unavailable">시스템 번역 설정을 열 수 없거나 처리 중입니다. 다시 시도하거나 ML Kit를 선택하세요.</string>
+    <string name="mobile_result_system">로컬 결과 · Android 시스템 서비스</string>
+    <string name="mobile_result_mlkit">로컬 결과 · ML Kit</string>
+    <string name="mobile_result_same_language">원문과 번역 대상 언어가 같습니다. 중국어는 간체·번체가 변환될 수 있습니다.</string>
+    <string name="mobile_not_translated">이 엔진과 언어로 번역한 결과가 없습니다. 다시 시도를 눌러 번역하세요.</string>
 </resources>

@@ -10,7 +10,12 @@ enum class LocalTarget(val languageTag: String, val modelCode: String) {
     GERMAN("de", "de")
 }
 
-data class LocalInput(val recordId: Long, val body: String, val target: LocalTarget) {
+data class LocalInput(
+    val recordId: Long,
+    val body: String,
+    val target: LocalTarget,
+    val engine: LocalEngineKind = LocalEngineKind.ML_KIT
+) {
     init {
         require(body.isNotBlank() && body.length <= 8192)
     }

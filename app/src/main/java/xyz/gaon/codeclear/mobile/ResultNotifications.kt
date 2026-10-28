@@ -15,8 +15,13 @@ import android.os.Looper
 import android.os.SystemClock
 import xyz.gaon.codeclear.MainActivity
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.probe.LocalEngineKind
 
-data class RecordDestination(val id: Long, val target: String)
+data class RecordDestination(
+    val id: Long,
+    val target: String,
+    val engine: LocalEngineKind = LocalEngineKind.ML_KIT
+)
 
 /** No raw alert, translated text, or source heading enters the notification payload. */
 class ResultNotifications(private val context: Context) {
@@ -30,9 +35,17 @@ class ResultNotifications(private val context: Context) {
     private var dispatchTask: Runnable? = null
     private var dispatchRevision = 0L
     private var lastDispatchAt = 0L
+    private val cancelled = linkedSetOf<String>()
+    private var cancellationTask: Runnable? = null
+    private var cancellationRevision = 0L
 
     @Synchronized
-    fun post(id: Long, target: String, strings: Context = context) {
+    fun post(
+        id: Long,
+        target: String,
+        strings: Context = context,
+        engine: LocalEngineKind = LocalEngineKind.ML_KIT
+    ) {
         require(id > 0 && target in HistoryText.targets)
         if (!allowed()) return
         manager.createNotificationChannel(
@@ -44,18 +57,22 @@ class ResultNotifications(private val context: Context) {
                 .apply { setShowBadge(false) }
         )
         val tag = PREFIX + id
+        cancelled.remove(tag)
         restorePosted()
         // The platform's active snapshot can lag rapid notify calls; track this process's posts too.
         posted.remove(tag)
         posted.add(tag)
+        val evicted = mutableListOf<String>()
         while (posted.size > 20) {
             val oldest = posted.first()
             posted.remove(oldest)
             pending.remove(oldest)
             manager.cancel(oldest, ID)
+            evicted += oldest
         }
+        if (evicted.isNotEmpty()) rememberCancellation(evicted)
         val intent = Intent(context, MainActivity::class.java)
-            .setData(destinationUri(id, target))
+            .setData(destinationUri(id, target, engine))
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         val action = PendingIntent.getActivity(
             context,
@@ -86,9 +103,13 @@ class ResultNotifications(private val context: Context) {
         summaryRevision++
         summaryTask?.let(handler::removeCallbacks)
         summaryTask = null
-        if (id == null) {
-            val tags = manager.activeNotifications.mapNotNull { it.tag }
+        val tags = if (id == null) {
+            manager.activeNotifications.mapNotNull { it.tag }
                 .filter { it.startsWith(PREFIX) }.toSet() + posted
+        } else {
+            setOf(PREFIX + id)
+        }
+        if (id == null) {
             tags.forEach { manager.cancel(it, ID) }
             posted.clear()
             pending.clear()
@@ -115,6 +136,40 @@ class ResultNotifications(private val context: Context) {
                 }
             }
         }
+        rememberCancellation(tags)
+    }
+
+    private fun rememberCancellation(tags: Collection<String>) {
+        cancelled.addAll(tags)
+        while (cancelled.size > 64) cancelled.remove(cancelled.first())
+        cancellationRevision++
+        cancellationTask?.let(handler::removeCallbacks)
+        checkCancellation(2)
+    }
+
+    /** Active snapshots can include enqueued posts whose first cancellation is still deferred. */
+    private fun checkCancellation(remaining: Int) {
+        val revision = cancellationRevision
+        val task = Runnable {
+            synchronized(this) {
+                if (revision != cancellationRevision) return@synchronized
+                cancellationTask = null
+                val active = manager.activeNotifications.mapNotNull { it.tag }.toSet()
+                cancelled.filter {
+                    it in active && it !in posted
+                }.forEach { manager.cancel(it, ID) }
+                val liveChildren = active.any { it.startsWith(PREFIX) && it !in cancelled }
+                // A different owner can have posted a new child since the original cancellation.
+                if (!liveChildren && posted.isEmpty() &&
+                    pending.isEmpty()
+                ) {
+                    manager.cancel(SUMMARY, ID)
+                }
+                if (remaining > 1) checkCancellation(remaining - 1) else cancelled.clear()
+            }
+        }
+        cancellationTask = task
+        handler.postDelayed(task, if (remaining == 2) 500 else 1000)
     }
 
     private fun scheduleDispatch() {
@@ -200,11 +255,18 @@ class ResultNotifications(private val context: Context) {
         private const val SUMMARY = "translation-summary"
         private const val ID = 1
 
-        fun destinationUri(id: Long, target: String): Uri {
+        fun destinationUri(
+            id: Long,
+            target: String,
+            engine: LocalEngineKind = LocalEngineKind.ML_KIT
+        ): Uri {
             require(id > 0 && target in HistoryText.targets)
             return Uri.Builder().scheme(
                 "codeclear"
-            ).authority("record").appendPath(id.toString()).appendPath(target).build()
+            ).authority(
+                "record"
+            ).appendPath(id.toString()).appendPath(target).appendPath(engine.key)
+                .build()
         }
 
         fun destination(uri: Uri?): RecordDestination? {
@@ -216,9 +278,14 @@ class ResultNotifications(private val context: Context) {
                 return null
             }
             val parts = uri.pathSegments
-            if (parts.size != 2 || parts[1] !in HistoryText.targets) return null
+            if (parts.size !in 2..3 || parts[1] !in HistoryText.targets) return null
             val id = parts[0].toLongOrNull()?.takeIf { it > 0 } ?: return null
-            return RecordDestination(id, parts[1])
+            val engine = if (parts.size == 2) {
+                LocalEngineKind.ML_KIT
+            } else {
+                LocalEngineKind.entries.firstOrNull { it.key == parts[2] } ?: return null
+            }
+            return RecordDestination(id, parts[1], engine)
         }
     }
 }

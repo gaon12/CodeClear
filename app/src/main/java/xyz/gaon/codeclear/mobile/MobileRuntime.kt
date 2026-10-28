@@ -10,8 +10,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import xyz.gaon.codeclear.BuildConfig
+import xyz.gaon.codeclear.probe.LocalEngine
+import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.MlKitLocalEngine
 import xyz.gaon.codeclear.probe.ProbeSession
+import xyz.gaon.codeclear.probe.SystemEngineAvailability
+import xyz.gaon.codeclear.probe.SystemLocalEngine
 
 class MobileApplication : Application() {
     lateinit var runtime: MobileRuntime
@@ -31,7 +35,16 @@ class MobileRuntime(context: Context) {
     var preparation by mutableStateOf(PreparationState())
         private set
     private val notifications = ResultNotifications(context)
-    private val engine = MlKitLocalEngine()
+    private val mlKit = MlKitLocalEngine()
+    var systemAvailability by mutableStateOf(SystemEngineAvailability())
+        private set
+    val systemEngine = SystemLocalEngine(context) { systemAvailability = it }
+    private val engine = LocalEngine { input, download, complete ->
+        when (input.engine) {
+            LocalEngineKind.ML_KIT -> mlKit.run(input, download, complete)
+            LocalEngineKind.SYSTEM -> systemEngine.run(input, download, complete)
+        }
+    }
     private var diagnosticOwners = 0
     private var diagnosticGeneration = 0L
     val controller = MobileController(
@@ -40,7 +53,7 @@ class MobileRuntime(context: Context) {
         MobileOptionsStorage(context),
         engine,
         changed = { state = it },
-        translated = { id, target ->
+        translated = { id, target, producer ->
             val language = state.options.uiLanguage
             val localized = if (Build.VERSION.SDK_INT < 33 && language.isNotEmpty()) {
                 context.createConfigurationContext(
@@ -51,21 +64,24 @@ class MobileRuntime(context: Context) {
             } else {
                 context
             }
-            notifications.post(id, target, localized)
+            notifications.post(id, target, localized, producer)
         },
         deleted = notifications::cancel,
-        releaseEngine = engine::close
+        releaseEngine = {
+            mlKit.close()
+            systemEngine.close()
+        },
+        cancelEngine = systemEngine::cancel
     )
     val models =
         ModelPreparation(MlKitModelPreparationBackend(), {
             preparation = it
-        }, controller::modelsPrepared)
+        }, { controller.modelsPrepared(it) })
 
     fun configure(options: MobileOptions) {
-        if (!options.localConsent && state.options.localConsent) {
-            models.withdraw()
-            notifications.cancel(null)
-        }
+        val withdrawn = !options.localConsent && state.options.localConsent
+        if (withdrawn || options.engine != state.options.engine) models.withdraw()
+        if (withdrawn) notifications.cancel(null)
         controller.changeOptions(options)
     }
 

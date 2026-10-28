@@ -47,7 +47,16 @@ data class CapturedAlert(
     }
 }
 
-enum class TranslationPhase { QUEUED, WORKING, READY, NEEDS_MODELS, UNKNOWN_LANGUAGE, FAILED }
+enum class TranslationPhase {
+    QUEUED,
+    WORKING,
+    READY,
+    NEEDS_MODELS,
+    UNKNOWN_LANGUAGE,
+    UNAVAILABLE,
+    UNSUPPORTED_PAIR,
+    FAILED
+}
 
 data class SavedTranslation(
     val phase: TranslationPhase,

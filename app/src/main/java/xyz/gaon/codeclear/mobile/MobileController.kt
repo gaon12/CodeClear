@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import xyz.gaon.codeclear.probe.CaptureObserver
 import xyz.gaon.codeclear.probe.LocalEngine
+import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalInput
 import xyz.gaon.codeclear.probe.LocalResult
 import xyz.gaon.codeclear.probe.LocalTarget
@@ -30,6 +31,7 @@ data class MobileState(
     val latest: SavedAlert? = null,
     val detailId: Long? = null,
     val detailTarget: String? = null,
+    val detailEngine: LocalEngineKind? = null,
     val detail: SavedAlert? = null,
     val query: String = "",
     val beforeId: Long = Long.MAX_VALUE,
@@ -44,9 +46,10 @@ class MobileController(
     private val preferences: OptionsStorage,
     private val engine: LocalEngine,
     private val changed: (MobileState) -> Unit,
-    private val translated: (Long, String) -> Unit = { _, _ -> },
+    private val translated: (Long, String, LocalEngineKind) -> Unit = { _, _, _ -> },
     private val deleted: (Long?) -> Unit = {},
-    private val releaseEngine: () -> Unit = {}
+    private val releaseEngine: () -> Unit = {},
+    private val cancelEngine: () -> Unit = {}
 ) : CaptureObserver,
     AutoCloseable {
     private data class Work(val ticket: TranslationTicket, val epoch: Long)
@@ -105,27 +108,32 @@ class MobileController(
         requireMain()
         if (!state.loaded || closed) return
         val changedTarget = options.target != state.options.target
-        if (changedTarget) {
+        val changedEngine = options.engine != state.options.engine
+        val changedOutput = changedTarget || changedEngine
+        if (changedOutput) {
             queryRevision++
             queryCancellation?.cancel()
         }
-        val changedWork = changedTarget || options.localConsent != state.options.localConsent
-        if (changedWork) workEpoch.incrementAndGet()
+        val changedWork = changedOutput || options.localConsent != state.options.localConsent
+        if (changedWork) {
+            workEpoch.incrementAndGet()
+            cancelEngine()
+        }
         update(
             state.copy(
                 options = options,
                 storageError = false,
                 records = state.records.map {
-                    it.copy(translation = it.translation.takeUnless { changedTarget })
+                    it.copy(translation = it.translation.takeUnless { changedOutput })
                 },
                 latest = state.latest?.let {
-                    it.copy(translation = it.translation.takeUnless { changedTarget })
+                    it.copy(translation = it.translation.takeUnless { changedOutput })
                 },
                 detail = state.detail?.let {
                     it.copy(
                         translation = it.translation.takeUnless {
-                            changedTarget &&
-                                state.detailTarget == null
+                            (changedTarget && state.detailTarget == null) ||
+                                (changedEngine && state.detailEngine == null)
                         }
                     )
                 }
@@ -200,7 +208,7 @@ class MobileController(
         io({
             if (generation != captureGeneration.get()) return@io null
             store.insert(capture)?.also { id ->
-                store.queueTranslation(id, options.target.languageTag)
+                store.queueTranslation(id, options.target.languageTag, options.engine)
                 observationIds[record.id] = id
                 if (observationIds.size > 128) observationIds.remove(observationIds.keys.first())
             }
@@ -257,10 +265,24 @@ class MobileController(
         refresh()
     }
 
-    fun openDetail(id: Long?, target: String? = null) {
+    fun openDetail(id: Long?, target: String? = null, engine: LocalEngineKind? = null) {
         requireMain()
         require(target == null || target in HistoryText.targets)
-        update(state.copy(detailId = id?.takeIf { it > 0 }, detailTarget = target, detail = null))
+        val validId = id?.takeIf { it > 0 }
+        update(
+            state.copy(
+                detailId = validId,
+                detailTarget = target.takeIf { validId != null },
+                detailEngine = if (validId ==
+                    null
+                ) {
+                    null
+                } else {
+                    engine ?: target?.let { LocalEngineKind.ML_KIT }
+                },
+                detail = null
+            )
+        )
         refresh()
     }
 
@@ -278,13 +300,21 @@ class MobileController(
                     request.query,
                     request.options.target.languageTag,
                     request.beforeId,
-                    cancellation = cancellation
+                    cancellation = cancellation,
+                    engine = request.options.engine
                 ),
-                store.page("", request.options.target.languageTag, limit = 1).firstOrNull(),
+                store.page(
+                    "",
+                    request.options.target.languageTag,
+                    limit = 1,
+                    engine = request.options.engine
+                )
+                    .firstOrNull(),
                 request.detailId?.let {
                     store.find(
                         it,
-                        request.detailTarget ?: request.options.target.languageTag
+                        request.detailTarget ?: request.options.target.languageTag,
+                        request.detailEngine ?: request.options.engine
                     )
                 }
             )
@@ -308,20 +338,25 @@ class MobileController(
         val ids = listOfNotNull(
             state.latest,
             state.detail.takeIf {
-                state.detailTarget == null ||
-                    state.detailTarget == state.options.target.languageTag
+                (
+                    state.detailTarget == null ||
+                        state.detailTarget == state.options.target.languageTag
+                    ) &&
+                    (state.detailEngine == null || state.detailEngine == state.options.engine)
             }
         )
             .filter { it.translation == null }.map { it.id }.distinct()
         if (ids.isEmpty()) return
         val target = state.options.target.languageTag
+        val selectedEngine = state.options.engine
         // A target change prepares visible records, not an unrequested translation of all history.
-        io({ ids.forEach { store.queueTranslation(it, target) } }) { kick() }
+        io({ ids.forEach { store.queueTranslation(it, target, selectedEngine) } }) { kick() }
     }
 
     fun delete(id: Long?) {
         requireMain()
         workEpoch.incrementAndGet()
+        cancelEngine()
         queryRevision++
         queryCancellation?.cancel()
         ProbeSession.clear()
@@ -342,20 +377,33 @@ class MobileController(
         }
     }
 
-    fun retry(id: Long, target: String = state.options.target.languageTag) {
+    fun retry(
+        id: Long,
+        target: String = state.options.target.languageTag,
+        selectedEngine: LocalEngineKind = state.options.engine
+    ) {
         requireMain()
         require(target in HistoryText.targets)
-        if (!state.options.localConsent || active != null || selecting || closed) return
+        if (!state.options.localConsent || selectedEngine != state.options.engine ||
+            active != null || selecting || closed
+        ) {
+            return
+        }
         selecting = true
         val epoch = workEpoch.get()
-        io({ store.beginTranslation(id, target, retry = true) }) { ticket ->
+        io({
+            store.beginTranslation(id, target, retry = true, engine = selectedEngine)
+        }) { ticket ->
             selecting = false
             if (ticket != null && epoch == workEpoch.get()) run(Work(ticket, epoch)) else kick()
         }
     }
 
-    fun modelsPrepared(target: String = state.options.target.languageTag) {
-        io({ store.requeueMissingModels(target) }) {
+    fun modelsPrepared(
+        target: String = state.options.target.languageTag,
+        selectedEngine: LocalEngineKind = LocalEngineKind.ML_KIT
+    ) {
+        io({ store.requeueMissingModels(target, selectedEngine) }) {
             refresh()
             kick()
         }
@@ -380,10 +428,18 @@ class MobileController(
         selecting = true
         val epoch = workEpoch.get()
         val target = state.options.target
+        val selectedEngine = state.options.engine
         io({
-            store.nextQueued(target.languageTag)?.let { id ->
-                store.beginTranslation(id, target.languageTag)?.let { ticket ->
-                    Candidate(ticket, store.cachedTranslation(ticket.original, target.languageTag))
+            store.nextQueued(target.languageTag, selectedEngine)?.let { id ->
+                store.beginTranslation(
+                    id,
+                    target.languageTag,
+                    engine = selectedEngine
+                )?.let { ticket ->
+                    Candidate(
+                        ticket,
+                        store.cachedTranslation(ticket.original, target.languageTag, selectedEngine)
+                    )
                 }
             }
         }) { candidate ->
@@ -410,22 +466,31 @@ class MobileController(
         val target = LocalTarget.entries.first { it.languageTag == job.ticket.target }
         // Model preparation is a separate explicit action; background translation never downloads.
         engineRunning = true
-        engine.run(LocalInput(job.ticket.alertId, job.ticket.original, target), false) { result ->
+        engine.run(
+            LocalInput(job.ticket.alertId, job.ticket.original, target, job.ticket.engine),
+            false
+        ) { result ->
             engineRunning = false
             val saved = when (result) {
                 is LocalResult.Ready -> SavedTranslation(
                     TranslationPhase.READY,
                     result.text,
-                    result.source
+                    result.source,
+                    engine = job.ticket.engine,
+                    sameLanguage = result.sameLanguage
                 )
 
                 LocalResult.NeedsModels -> SavedTranslation(TranslationPhase.NEEDS_MODELS)
 
                 LocalResult.UnknownLanguage -> SavedTranslation(TranslationPhase.UNKNOWN_LANGUAGE)
 
+                LocalResult.Unavailable -> SavedTranslation(TranslationPhase.UNAVAILABLE)
+
+                LocalResult.UnsupportedPair -> SavedTranslation(TranslationPhase.UNSUPPORTED_PAIR)
+
                 else -> SavedTranslation(TranslationPhase.FAILED)
             }
-            finish(job, saved)
+            finish(job, saved.copy(engine = job.ticket.engine))
         }
     }
 
@@ -439,7 +504,7 @@ class MobileController(
                 if (result.phase ==
                     TranslationPhase.READY
                 ) {
-                    translated(job.ticket.alertId, job.ticket.target)
+                    translated(job.ticket.alertId, job.ticket.target, job.ticket.engine)
                 }
                 refresh()
             }
@@ -472,6 +537,7 @@ class MobileController(
         initializing = false
         selecting = false
         workEpoch.incrementAndGet()
+        cancelEngine()
         queryRevision++
         queryCancellation?.cancel()
         if (!engineRunning) active = null

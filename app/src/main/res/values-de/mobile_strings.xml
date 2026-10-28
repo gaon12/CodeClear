@@ -116,4 +116,13 @@
     <string name="mobile_earthquake_tsunami">Erdbeben und Tsunami</string>
     <string name="mobile_other_emergency">Anderer Notfall</string>
     <string name="mobile_other_alert">Andere Warnung</string>
+    <string name="mobile_system_unavailable">Die Systemübersetzung ist nicht verfügbar. Wähle ML Kit in den Einstellungen oder prüfe den Systemübersetzungsdienst.</string>
+    <string name="mobile_pair_unsupported">Die gewählte Engine unterstützt dieses Sprachpaar nicht. Wähle eine andere Engine oder Zielsprache.</string>
+    <string name="mobile_system_models_missing">Bereite die Sprachmodelle in den Einstellungen der Systemübersetzung vor und versuche es erneut.</string>
+    <string name="mobile_system_models_action">Einstellungen der Systemübersetzung</string>
+    <string name="mobile_system_settings_unavailable">Die Einstellungen der Systemübersetzung sind nicht verfügbar oder belegt. Versuche es erneut oder wähle ML Kit.</string>
+    <string name="mobile_result_system">Lokales Ergebnis · Android-Systemdienst</string>
+    <string name="mobile_result_mlkit">Lokales Ergebnis · ML Kit</string>
+    <string name="mobile_result_same_language">Quell- und Zielsprache sind gleich. Die chinesische Schrift kann umgewandelt werden.</string>
+    <string name="mobile_not_translated">Für diese Engine und Sprache liegt noch kein Ergebnis vor. Tippe auf Erneut versuchen, um die Meldung zu übersetzen.</string>
 </resources>

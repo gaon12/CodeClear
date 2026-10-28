@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import java.text.DateFormat
 import java.util.Date
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
 
 fun languageName(tag: String): String = when (tag) {
@@ -44,7 +45,8 @@ fun AlertPresentation(
     consent: Boolean,
     retry: () -> Unit,
     prepare: () -> Unit,
-    details: (() -> Unit)? = null
+    details: (() -> Unit)? = null,
+    engine: LocalEngineKind = alert.translation?.engine ?: LocalEngineKind.ML_KIT
 ) {
     Card(
         shape = RoundedCornerShape(28.dp),
@@ -83,8 +85,30 @@ fun AlertPresentation(
                         MessagePanel(
                             stringResource(R.string.mobile_translation, languageName(target)),
                             alert.translation?.text
-                                ?: stringResource(phaseLabel(alert.translation?.phase, consent))
+                                ?: stringResource(
+                                    phaseLabel(alert.translation?.phase, consent, engine)
+                                )
                         )
+                        alert.translation?.takeIf {
+                            it.phase == TranslationPhase.READY
+                        }?.let { result ->
+                            Text(
+                                stringResource(
+                                    if (result.engine == LocalEngineKind.SYSTEM) {
+                                        R.string.mobile_result_system
+                                    } else {
+                                        R.string.mobile_result_mlkit
+                                    }
+                                ),
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                            if (result.sameLanguage) {
+                                Text(
+                                    stringResource(R.string.mobile_result_same_language),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
                         if (consent && alert.translation?.phase != TranslationPhase.READY &&
                             alert.translation?.phase != TranslationPhase.WORKING
                         ) {
@@ -102,7 +126,11 @@ fun AlertPresentation(
                                         if (alert.translation?.phase ==
                                             TranslationPhase.NEEDS_MODELS
                                         ) {
-                                            R.string.mobile_prepare
+                                            if (engine == LocalEngineKind.SYSTEM) {
+                                                R.string.mobile_system_models_action
+                                            } else {
+                                                R.string.mobile_prepare
+                                            }
                                         } else {
                                             R.string.mobile_retry
                                         }
@@ -149,18 +177,34 @@ private fun MessagePanel(label: String, body: String) {
     }
 }
 
-private fun phaseLabel(phase: TranslationPhase?, consent: Boolean): Int = if (!consent) {
-    R.string.mobile_translation_off
-} else {
-    when (phase) {
-        TranslationPhase.QUEUED, null -> R.string.mobile_queued
-        TranslationPhase.WORKING -> R.string.mobile_working
-        TranslationPhase.NEEDS_MODELS -> R.string.mobile_models_missing
-        TranslationPhase.UNKNOWN_LANGUAGE -> R.string.mobile_unknown_language
-        TranslationPhase.FAILED -> R.string.mobile_failed
-        TranslationPhase.READY -> R.string.mobile_failed
+private fun phaseLabel(phase: TranslationPhase?, consent: Boolean, engine: LocalEngineKind): Int =
+    if (!consent) {
+        R.string.mobile_translation_off
+    } else {
+        when (phase) {
+            null -> R.string.mobile_not_translated
+
+            TranslationPhase.QUEUED -> R.string.mobile_queued
+
+            TranslationPhase.WORKING -> R.string.mobile_working
+
+            TranslationPhase.NEEDS_MODELS -> if (engine == LocalEngineKind.SYSTEM) {
+                R.string.mobile_system_models_missing
+            } else {
+                R.string.mobile_models_missing
+            }
+
+            TranslationPhase.UNKNOWN_LANGUAGE -> R.string.mobile_unknown_language
+
+            TranslationPhase.UNAVAILABLE -> R.string.mobile_system_unavailable
+
+            TranslationPhase.UNSUPPORTED_PAIR -> R.string.mobile_pair_unsupported
+
+            TranslationPhase.FAILED -> R.string.mobile_failed
+
+            TranslationPhase.READY -> R.string.mobile_failed
+        }
     }
-}
 
 fun dateTime(time: Long): String =
     DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(time))

@@ -33,6 +33,7 @@ import org.junit.Rule
 import org.junit.Test
 import xyz.gaon.codeclear.MainActivity
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeRadio
 import xyz.gaon.codeclear.probe.ProbeSessionState
@@ -50,6 +51,7 @@ class MobileScreenDeviceTest {
     private var settingsOpened = 0
     private var lastSettingsAction = ""
     private var prepared = 0
+    private var preparedEngine: LocalEngineKind? = null
     private var fontScale by mutableStateOf(1f)
     private val context get() = compose.activity
     private fun text(id: Int) = context.getString(id)
@@ -93,9 +95,10 @@ class MobileScreenDeviceTest {
                                 state = state.copy(detailId = id, detail = id?.let(::record))
                             },
                             delete = {
-                            }, retry = { _, _ ->
-                            }, prepare = { _, _ ->
+                            }, retry = { _, _, _ ->
+                            }, prepare = { _, _, engine ->
                                 prepared++
+                                preparedEngine = engine
                             }, settings = {
                                 settingsOpened++
                                 lastSettingsAction = it
@@ -153,6 +156,45 @@ class MobileScreenDeviceTest {
         }
         compose.onNodeWithText(text(R.string.mobile_prepare)).performScrollTo().performClick()
         compose.runOnIdle { assertEquals(1, prepared) }
+    }
+
+    @Test
+    fun systemModelsUseTheirSettingsActionAndResultsNameTheActualProducer() {
+        compose.runOnIdle {
+            state = state.copy(
+                options = state.options.copy(engine = LocalEngineKind.SYSTEM),
+                latest = record(1).copy(
+                    translation = SavedTranslation(
+                        TranslationPhase.NEEDS_MODELS,
+                        engine = LocalEngineKind.SYSTEM
+                    )
+                )
+            )
+        }
+        compose.onNodeWithText(
+            text(R.string.mobile_system_models_action)
+        ).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(1, prepared)
+            assertEquals(LocalEngineKind.SYSTEM, preparedEngine)
+            state = state.copy(
+                latest = record(1).copy(
+                    translation = SavedTranslation(
+                        TranslationPhase.READY,
+                        "[DRILL] System result",
+                        "en",
+                        engine = LocalEngineKind.SYSTEM,
+                        sameLanguage = true
+                    )
+                )
+            )
+        }
+        compose.onNodeWithText(
+            text(R.string.mobile_result_system)
+        ).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(
+            text(R.string.mobile_result_same_language)
+        ).performScrollTo().assertIsDisplayed()
     }
 
     @Test

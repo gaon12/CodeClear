@@ -14,6 +14,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.probe.LocalEngineKind
 
 class ResultNotificationsDeviceTest {
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
@@ -29,6 +30,16 @@ class ResultNotificationsDeviceTest {
             RecordDestination(42, "zh-Hant"),
             ResultNotifications.destination(ResultNotifications.destinationUri(42, "zh-Hant"))
         )
+        assertEquals(
+            RecordDestination(42, "en"),
+            ResultNotifications.destination(Uri.parse("codeclear://record/42/en"))
+        )
+        assertEquals(
+            RecordDestination(42, "en", LocalEngineKind.SYSTEM),
+            ResultNotifications.destination(
+                ResultNotifications.destinationUri(42, "en", LocalEngineKind.SYSTEM)
+            )
+        )
         listOf(
             "https://record/42/en",
             "codeclear://record/0/en",
@@ -36,9 +47,59 @@ class ResultNotificationsDeviceTest {
             "codeclear://record/42/en?body=secret",
             "codeclear://record/42/en#fragment",
             "codeclear://record/9223372036854775808/en",
-            "codeclear://other/42/en"
+            "codeclear://other/42/en",
+            "codeclear://record/42/en/unknown",
+            "codeclear://record/42/en/system/extra"
         ).forEach {
             assertNull(ResultNotifications.destination(Uri.parse(it)))
+        }
+    }
+
+    @Test
+    fun changingTheProducerReplacesTheActionForTheSameRecord() {
+        val owner = ResultNotifications(context)
+        val manager = context.getSystemService(NotificationManager::class.java)
+        owner.cancel(null)
+        try {
+            owner.post(88, "en", engine = LocalEngineKind.SYSTEM)
+            await { manager.activeNotifications.any { it.tag == "result-88" } }
+            val previous = manager.activeNotifications.first {
+                it.tag == "result-88"
+            }.notification.contentIntent
+            owner.post(88, "en", engine = LocalEngineKind.ML_KIT)
+            await {
+                manager.activeNotifications.firstOrNull { it.tag == "result-88" }
+                    ?.notification?.contentIntent != previous
+            }
+            assertEquals(1, manager.activeNotifications.count { it.tag == "result-88" })
+        } finally {
+            owner.cancel(null)
+            await { manager.activeNotifications.none(::isResult) }
+        }
+    }
+
+    @Test
+    fun aNewResultForTheSameRecordSurvivesDeferredCancellationCleanup() {
+        val owner = ResultNotifications(context)
+        val manager = context.getSystemService(NotificationManager::class.java)
+        owner.cancel(null)
+        try {
+            owner.post(89, "en", engine = LocalEngineKind.SYSTEM)
+            await { manager.activeNotifications.any { it.tag == "result-89" } }
+            val previous = manager.activeNotifications.first { it.tag == "result-89" }
+                .notification.contentIntent
+            owner.cancel(89)
+            owner.post(89, "de", engine = LocalEngineKind.ML_KIT)
+            await {
+                val notice = manager.activeNotifications.firstOrNull { it.tag == "result-89" }
+                notice != null && notice.notification.contentIntent != previous
+            }
+            SystemClock.sleep(1700)
+            val current = manager.activeNotifications.single { it.tag == "result-89" }
+            assertNotEquals(previous, current.notification.contentIntent)
+        } finally {
+            owner.cancel(null)
+            await { manager.activeNotifications.none(::isResult) }
         }
     }
 
