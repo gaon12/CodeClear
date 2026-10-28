@@ -77,6 +77,8 @@ class MobileScreenDeviceTest {
     private var lastSettingsAction = ""
     private var prepared = 0
     private var preparedEngine: LocalEngineKind? = null
+    private var retriedEngine: LocalEngineKind? = null
+    private var retried = 0
     private var fontScale by mutableStateOf(1f)
     private var previewLanguage by mutableStateOf<String?>(null)
     private var systemSupport by mutableStateOf(SystemEngineAvailability(loaded = true))
@@ -161,7 +163,9 @@ class MobileScreenDeviceTest {
                                 state = state.copy(detailId = id, detail = id?.let(::record))
                             },
                             delete = {
-                            }, retry = { _, _, _ ->
+                            }, retry = { _, _, engine ->
+                                retried++
+                                retriedEngine = engine
                             }, prepare = { _, _, engine ->
                                 prepared++
                                 preparedEngine = engine
@@ -243,9 +247,12 @@ class MobileScreenDeviceTest {
         compose.onNodeWithText(
             text(R.string.mobile_system_models_action)
         ).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.mobile_retry)).performScrollTo().performClick()
         compose.runOnIdle {
             assertEquals(1, prepared)
             assertEquals(LocalEngineKind.SYSTEM, preparedEngine)
+            assertEquals(1, retried)
+            assertEquals(LocalEngineKind.SYSTEM, retriedEngine)
             state = state.copy(
                 latest = record(1).copy(
                     translation = SavedTranslation(

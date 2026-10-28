@@ -144,6 +144,13 @@ fun AlertPresentation(
                                     )
                                 )
                             }
+                            if (engine == LocalEngineKind.SYSTEM &&
+                                alert.translation?.phase == TranslationPhase.NEEDS_MODELS
+                            ) {
+                                TextButton(onClick = retry) {
+                                    Text(stringResource(R.string.mobile_retry))
+                                }
+                            }
                         }
                     }
                 }
