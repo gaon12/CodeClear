@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.os.CancellationSignal
 import android.os.Looper
 import java.security.MessageDigest
+import xyz.gaon.codeclear.probe.LocalEngineKind
 
 /** App-private, credential-encrypted SQLite history. Call every operation from a worker thread. */
 class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoCloseable {
@@ -107,10 +108,11 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         target: String,
         beforeId: Long = Long.MAX_VALUE,
         limit: Int = 50,
-        cancellation: CancellationSignal? = null
+        cancellation: CancellationSignal? = null,
+        engine: LocalEngineKind = LocalEngineKind.ML_KIT
     ): List<SavedAlert> {
         require(target in HistoryText.targets && query.length <= 256 && limit in 1..50)
-        val args = mutableListOf(target, beforeId.toString())
+        val args = mutableListOf(target, engine.key, beforeId.toString())
         val matching = if (query.isBlank()) {
             ""
         } else {
@@ -128,11 +130,15 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         ).use { cursor -> buildList { while (cursor.moveToNext()) add(readAlert(cursor)) } }
     }
 
-    fun find(id: Long, target: String): SavedAlert? {
+    fun find(
+        id: Long,
+        target: String,
+        engine: LocalEngineKind = LocalEngineKind.ML_KIT
+    ): SavedAlert? {
         require(target in HistoryText.targets)
         return database.rawQuery(
             SELECT_ALERT + " WHERE a.id=? LIMIT 1",
-            arrayOf(target, id.toString())
+            arrayOf(target, engine.key, id.toString())
         ).use { if (it.moveToFirst()) readAlert(it) else null }
     }
 
@@ -146,18 +152,25 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         )
     }
 
-    fun beginTranslation(id: Long, target: String, retry: Boolean = false): TranslationTicket? {
+    fun beginTranslation(
+        id: Long,
+        target: String,
+        retry: Boolean = false,
+        engine: LocalEngineKind = LocalEngineKind.ML_KIT
+    ): TranslationTicket? {
         require(target in HistoryText.targets)
         val db = database
         db.beginTransactionNonExclusive()
         try {
-            val alert = find(id, target) ?: return null
+            val alert = find(id, target, engine) ?: return null
             val previous = alert.translation
             if (!retry && previous != null && previous.phase != TranslationPhase.QUEUED) return null
             val revision = (previous?.revision ?: 0) + 1
             val values = ContentValues().apply {
                 put("alert_id", id)
                 put("target", target)
+                put("engine", engine.key)
+                put("same_language", 0)
                 put("revision", revision)
                 put("phase", TranslationPhase.WORKING.name)
                 putNull("text")
@@ -174,24 +187,29 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
                     -1L
             )
             db.setTransactionSuccessful()
-            return TranslationTicket(id, target, revision, alert.capture.original)
+            return TranslationTicket(id, target, revision, alert.capture.original, engine)
         } finally {
             db.endTransaction()
         }
     }
 
-    fun queueTranslation(id: Long, target: String) {
+    fun queueTranslation(
+        id: Long,
+        target: String,
+        engine: LocalEngineKind = LocalEngineKind.ML_KIT
+    ) {
         require(target in HistoryText.targets)
         database.execSQL(
-            "INSERT OR IGNORE INTO translations(alert_id,target,revision,phase) " +
-                "SELECT id,?,0,? FROM alerts WHERE id=?",
-            arrayOf<Any>(target, TranslationPhase.QUEUED.name, id)
+            "INSERT OR IGNORE INTO translations(alert_id,target,engine,revision,phase) " +
+                "SELECT id,?,?,0,? FROM alerts WHERE id=?",
+            arrayOf<Any>(target, engine.key, TranslationPhase.QUEUED.name, id)
         )
     }
 
     fun finishTranslation(ticket: TranslationTicket, result: SavedTranslation): Boolean {
         require(ticket.target in HistoryText.targets)
         require(result.phase !in setOf(TranslationPhase.QUEUED, TranslationPhase.WORKING))
+        if (ticket.engine != result.engine) return false
         require(
             result.sourceLanguage == null || result.sourceLanguage.matches(Regex("[A-Za-z-]{1,32}"))
         )
@@ -204,41 +222,60 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
             put("phase", result.phase.name)
             put("text", result.text)
             put("source_language", result.sourceLanguage)
+            put("same_language", result.sameLanguage)
             put("search_text", result.text?.let(HistoryText::searchable))
         }
         // Complete only the still-existing current job; never insert history from a response.
         return database.update(
             "translations",
             values,
-            "alert_id=? AND target=? AND revision=? AND phase=?",
+            "alert_id=? AND target=? AND engine=? AND revision=? AND phase=?",
             arrayOf(
                 ticket.alertId.toString(),
                 ticket.target,
+                ticket.engine.key,
                 ticket.revision.toString(),
                 TranslationPhase.WORKING.name
             )
         ) == 1
     }
 
-    fun nextQueued(target: String): Long? {
+    fun nextQueued(target: String, engine: LocalEngineKind = LocalEngineKind.ML_KIT): Long? {
         require(target in HistoryText.targets)
         return database.rawQuery(
-            "SELECT alert_id FROM translations WHERE target=? AND phase=? " +
+            "SELECT alert_id FROM translations WHERE target=? AND engine=? AND phase=? " +
                 "ORDER BY alert_id DESC LIMIT 1",
-            arrayOf(target, TranslationPhase.QUEUED.name)
+            arrayOf(target, engine.key, TranslationPhase.QUEUED.name)
         ).use { if (it.moveToFirst()) it.getLong(0) else null }
     }
 
-    fun cachedTranslation(original: String, target: String): SavedTranslation? {
+    fun cachedTranslation(
+        original: String,
+        target: String,
+        engine: LocalEngineKind = LocalEngineKind.ML_KIT
+    ): SavedTranslation? {
         require(original.length <= 8192 && target in HistoryText.targets)
         return database.rawQuery(
-            "SELECT t.text, t.source_language FROM translations t " +
+            "SELECT t.text, t.source_language, t.same_language FROM translations t " +
                 "JOIN alerts a ON a.id=t.alert_id " +
-                "WHERE a.original_hash=? AND a.original=? AND t.target=? AND t.phase=? LIMIT 1",
-            arrayOf(originalHash(original), original, target, TranslationPhase.READY.name)
+                "WHERE a.original_hash=? AND a.original=? AND t.target=? AND t.engine=? " +
+                "AND t.phase=? LIMIT 1",
+            arrayOf(
+                originalHash(original),
+                original,
+                target,
+                engine.key,
+                TranslationPhase.READY.name
+            )
         ).use {
             if (it.moveToFirst()) {
-                SavedTranslation(TranslationPhase.READY, it.getString(0), it.getString(1))
+                SavedTranslation(
+                    TranslationPhase.READY,
+                    it.getString(0),
+                    it.getString(1),
+                    engine = engine,
+                    sameLanguage = it.getInt(2) != 0
+                )
             } else {
                 null
             }
@@ -252,11 +289,17 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         )
     }
 
-    fun requeueMissingModels(target: String) {
+    fun requeueMissingModels(target: String, engine: LocalEngineKind = LocalEngineKind.ML_KIT) {
         require(target in HistoryText.targets)
         database.execSQL(
-            "UPDATE translations SET phase=?, revision=revision+1 WHERE target=? AND phase=?",
-            arrayOf(TranslationPhase.QUEUED.name, target, TranslationPhase.NEEDS_MODELS.name)
+            "UPDATE translations SET phase=?, revision=revision+1 " +
+                "WHERE target=? AND engine=? AND phase=?",
+            arrayOf(
+                TranslationPhase.QUEUED.name,
+                target,
+                engine.key,
+                TranslationPhase.NEEDS_MODELS.name
+            )
         )
     }
 
@@ -335,7 +378,9 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
                 TranslationPhase.valueOf(it),
                 text("translation_text"),
                 text("source_language"),
-                number("translation_revision")
+                number("translation_revision"),
+                LocalEngineKind.entries.single { kind -> kind.key == text("translation_engine") },
+                number("same_language") != 0L
             )
         }
         SavedAlert(
@@ -357,7 +402,7 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
     }
 
     private class HistoryDatabase(context: Context, name: String) :
-        SQLiteOpenHelper(context, name, null, 3) {
+        SQLiteOpenHelper(context, name, null, 4) {
         init {
             setWriteAheadLoggingEnabled(true)
         }
@@ -382,16 +427,7 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
                 """.trimIndent()
             )
             db.execSQL("CREATE INDEX alert_original_hash ON alerts(original_hash)")
-            db.execSQL(
-                """
-                CREATE TABLE translations (
-                    alert_id INTEGER NOT NULL REFERENCES alerts(id) ON DELETE CASCADE,
-                    target TEXT NOT NULL, revision INTEGER NOT NULL, phase TEXT NOT NULL,
-                    text TEXT, source_language TEXT, search_text TEXT,
-                    PRIMARY KEY(alert_id, target)
-                )
-                """.trimIndent()
-            )
+            createTranslations(db)
             createIgnoredSources(db)
             createQueueIndex(db)
         }
@@ -401,8 +437,20 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            if (oldVersion in 1..2 && newVersion == 3) {
+            if (oldVersion in 1..3 && newVersion == 4) {
                 if (oldVersion == 1) createIgnoredSources(db)
+                db.execSQL("ALTER TABLE translations RENAME TO previous_translations")
+                createTranslations(db)
+                // Older results were produced only by the default engine. Preserve them verbatim.
+                db.execSQL(
+                    "INSERT INTO translations " +
+                        "(alert_id,target,engine,revision,phase,text," +
+                        "source_language,search_text) " +
+                        "SELECT alert_id,target,'mlkit',revision,phase,text," +
+                        "source_language,search_text " +
+                        "FROM previous_translations"
+                )
+                db.execSQL("DROP TABLE previous_translations")
                 createQueueIndex(db)
             } else {
                 throw SQLiteException("A preserving history migration is required")
@@ -414,8 +462,9 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         const val IGNORE_LIFETIME_MILLIS = 30L * 24 * 60 * 60 * 1000
         const val SELECT_ALERT = "SELECT a.*, t.phase AS translation_phase, " +
             "t.text AS translation_text, t.source_language AS source_language, " +
-            "t.revision AS translation_revision FROM alerts a LEFT JOIN translations t " +
-            "ON t.alert_id=a.id AND t.target=?"
+            "t.revision AS translation_revision, t.engine AS translation_engine, " +
+            "t.same_language AS same_language FROM alerts a LEFT JOIN translations t " +
+            "ON t.alert_id=a.id AND t.target=? AND t.engine=?"
 
         fun originalHash(original: String): String = MessageDigest.getInstance("SHA-256")
             .digest(original.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
@@ -431,7 +480,24 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         }
 
         fun createQueueIndex(db: SQLiteDatabase) {
-            db.execSQL("CREATE INDEX translation_queue ON translations(target,phase,alert_id DESC)")
+            db.execSQL(
+                "CREATE INDEX translation_queue ON translations(engine,target,phase,alert_id DESC)"
+            )
+        }
+
+        fun createTranslations(db: SQLiteDatabase) {
+            db.execSQL(
+                """
+                CREATE TABLE translations (
+                    alert_id INTEGER NOT NULL REFERENCES alerts(id) ON DELETE CASCADE,
+                    target TEXT NOT NULL, engine TEXT NOT NULL DEFAULT 'mlkit',
+                    revision INTEGER NOT NULL, phase TEXT NOT NULL,
+                    text TEXT, source_language TEXT, search_text TEXT,
+                    same_language INTEGER NOT NULL DEFAULT 0,
+                    PRIMARY KEY(alert_id, target, engine)
+                )
+                """.trimIndent()
+            )
         }
 
         fun pruneIgnored(db: SQLiteDatabase) {

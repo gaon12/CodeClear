@@ -3,6 +3,7 @@ package xyz.gaon.codeclear.mobile
 import android.content.Context
 import android.os.Looper
 import java.util.Locale
+import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
 
 enum class ThemeChoice { SYSTEM, LIGHT, DARK }
@@ -14,7 +15,8 @@ data class MobileOptions(
     val target: LocalTarget = defaultTarget(),
     val theme: ThemeChoice = ThemeChoice.SYSTEM,
     val uiLanguage: String = "",
-    val setupComplete: Boolean = false
+    val setupComplete: Boolean = false,
+    val engine: LocalEngineKind = LocalEngineKind.ML_KIT
 )
 
 fun defaultTarget(): LocalTarget {
@@ -39,6 +41,8 @@ class MobileOptionsStorage(
         check(Looper.myLooper() != Looper.getMainLooper())
         val saved = context.getSharedPreferences(name, Context.MODE_PRIVATE)
         val currentDisclosure = saved.getInt("disclosure_version", 0) == 1
+        val engineKey = saved.getString("local_engine", LocalEngineKind.ML_KIT.key)
+        val engine = LocalEngineKind.entries.firstOrNull { it.key == engineKey }
         val target =
             LocalTarget.entries.firstOrNull { it.name == saved.getString("target", null) }
                 ?: defaultTarget()
@@ -54,11 +58,13 @@ class MobileOptionsStorage(
                 currentDisclosure && saved.getBoolean("notification_consent", false),
             accessibilityConsent =
                 currentDisclosure && saved.getBoolean("accessibility_consent", false),
-            localConsent = currentDisclosure && saved.getBoolean("local_consent", false),
+            localConsent =
+                currentDisclosure && engine != null && saved.getBoolean("local_consent", false),
             target = target,
             theme = theme,
             uiLanguage = language,
-            setupComplete = currentDisclosure && saved.getBoolean("setup_complete", false)
+            setupComplete = currentDisclosure && saved.getBoolean("setup_complete", false),
+            engine = engine ?: LocalEngineKind.ML_KIT
         )
     }
 
@@ -70,6 +76,7 @@ class MobileOptionsStorage(
             .putBoolean("notification_consent", options.notificationConsent)
             .putBoolean("accessibility_consent", options.accessibilityConsent)
             .putBoolean("local_consent", options.localConsent)
+            .putString("local_engine", options.engine.key)
             .putBoolean("setup_complete", options.setupComplete)
             .putString("target", options.target.name).putString("theme", options.theme.name)
             .putString("ui_language", options.uiLanguage).commit()

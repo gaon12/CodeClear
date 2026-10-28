@@ -19,6 +19,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import xyz.gaon.codeclear.probe.LocalEngineKind
 
 class AlertHistoryStoreDeviceTest {
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
@@ -119,6 +120,20 @@ class AlertHistoryStoreDeviceTest {
 
     @Test
     fun migrationFromVersionOnePreservesOriginalsAndTranslations() {
+        verifyMigration(1)
+    }
+
+    @Test
+    fun migrationFromVersionTwoPreservesOriginalsAndTranslations() {
+        verifyMigration(2)
+    }
+
+    @Test
+    fun migrationFromVersionThreePreservesOriginalsAndTranslations() {
+        verifyMigration(3)
+    }
+
+    private fun verifyMigration(version: Int) {
         val id = store.insert(capture("[DRILL] Migration original."))!!
         store.finishTranslation(store.beginTranslation(id, "en")!!, ready("Saved translation"))
         store.close()
@@ -128,13 +143,87 @@ class AlertHistoryStoreDeviceTest {
             null,
             SQLiteDatabase.OPEN_READWRITE
         ).use {
-            it.execSQL("DROP TABLE ignored_sources")
             it.execSQL("DROP INDEX translation_queue")
-            it.version = 1
+            it.execSQL("ALTER TABLE translations RENAME TO current_translations")
+            it.execSQL(
+                "CREATE TABLE translations (" +
+                    "alert_id INTEGER NOT NULL REFERENCES alerts(id) ON DELETE CASCADE," +
+                    "target TEXT NOT NULL, revision INTEGER NOT NULL, phase TEXT NOT NULL," +
+                    "text TEXT, source_language TEXT, search_text TEXT, PRIMARY KEY(alert_id,target))"
+            )
+            it.execSQL(
+                "INSERT INTO translations SELECT alert_id,target,revision,phase,text," +
+                    "source_language,search_text FROM current_translations"
+            )
+            it.execSQL("DROP TABLE current_translations")
+            if (version == 1) it.execSQL("DROP TABLE ignored_sources")
+            if (version == 3) {
+                it.execSQL(
+                    "CREATE INDEX translation_queue ON translations(target,phase,alert_id DESC)"
+                )
+            }
+            it.version = version
         }
         store = AlertHistoryStore(context, name)
         assertEquals("[DRILL] Migration original.", store.find(id, "en")?.capture?.original)
         assertEquals("Saved translation", store.find(id, "en")?.translation?.text)
+        assertEquals(LocalEngineKind.ML_KIT, store.find(id, "en")?.translation?.engine)
+        assertNull(store.find(id, "en", LocalEngineKind.SYSTEM)?.translation)
+        val system = store.beginTranslation(id, "en", engine = LocalEngineKind.SYSTEM)!!
+        assertTrue(
+            store.finishTranslation(system, ready("System result").copy(engine = system.engine))
+        )
+        assertEquals("Saved translation", store.find(id, "en")?.translation?.text)
+    }
+
+    @Test
+    fun enginesKeepIndependentQueuesRevisionsAndExactCaches() {
+        val system = LocalEngineKind.SYSTEM
+        val original = capture("[DRILL] Independent engine results")
+        val id = store.insert(original)!!
+        store.queueTranslation(id, "en", system)
+        assertNull(store.nextQueued("en"))
+        assertEquals(id, store.nextQueued("en", system))
+        val systemTicket = store.beginTranslation(id, "en", engine = system)!!
+        val defaultTicket = store.beginTranslation(id, "en")!!
+        assertFalse(store.finishTranslation(systemTicket, ready("Wrong producer")))
+        assertTrue(store.finishTranslation(defaultTicket, ready("Default result")))
+        assertNull(store.cachedTranslation(original.original, "en", system))
+        val systemResult = ready("System result").copy(engine = system, sameLanguage = true)
+        assertTrue(store.finishTranslation(systemTicket, systemResult))
+        assertEquals("Default result", store.cachedTranslation(original.original, "en")?.text)
+        assertEquals(systemResult, store.cachedTranslation(original.original, "en", system))
+        assertEquals(systemResult.copy(revision = 1), store.find(id, "en", system)?.translation)
+        assertEquals(id, store.page("System result", "en").single().id)
+        assertEquals(
+            "System result",
+            store.page("", "en", engine = system).single().translation?.text
+        )
+        val retry = store.beginTranslation(id, "en", retry = true, engine = system)!!
+        store.recoverInterruptedWork()
+        assertFalse(store.finishTranslation(retry, systemResult))
+        assertEquals(id, store.nextQueued("en", system))
+        assertNull(store.nextQueued("en"))
+        val late = store.beginTranslation(id, "en", engine = system)!!
+        store.delete(id)
+        assertFalse(store.finishTranslation(late, systemResult))
+        assertNull(store.cachedTranslation(original.original, "en", system))
+        assertNull(store.cachedTranslation(original.original, "en"))
+    }
+
+    @Test
+    fun modelPreparationRequeuesOnlyTheSelectedEngine() {
+        val id = store.insert(capture("[DRILL] Missing models"))!!
+        LocalEngineKind.entries.forEach { engine ->
+            val ticket = store.beginTranslation(id, "en", engine = engine)!!
+            store.finishTranslation(
+                ticket,
+                SavedTranslation(TranslationPhase.NEEDS_MODELS, engine = engine)
+            )
+        }
+        store.requeueMissingModels("en", LocalEngineKind.SYSTEM)
+        assertEquals(id, store.nextQueued("en", LocalEngineKind.SYSTEM))
+        assertNull(store.nextQueued("en"))
     }
 
     @Test
