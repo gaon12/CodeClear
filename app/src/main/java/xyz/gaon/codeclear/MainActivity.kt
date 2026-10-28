@@ -19,7 +19,6 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
@@ -32,6 +31,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.Lifecycle
 import xyz.gaon.codeclear.mobile.MobileActions
+import xyz.gaon.codeclear.mobile.MobileConfirmationDialog
 import xyz.gaon.codeclear.mobile.MobileOptions
 import xyz.gaon.codeclear.mobile.MobileScreen
 import xyz.gaon.codeclear.mobile.MobileTheme
@@ -156,7 +156,7 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
                 deletion?.let { request ->
-                    AlertDialog(
+                    MobileConfirmationDialog(
                         onDismissRequest = {
                             deletion = null
                         },
@@ -184,7 +184,7 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
                 preparation?.let { request ->
-                    AlertDialog(
+                    MobileConfirmationDialog(
                         onDismissRequest = {
                             preparation = null
                         },

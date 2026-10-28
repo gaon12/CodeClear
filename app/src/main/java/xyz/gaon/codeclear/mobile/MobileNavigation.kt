@@ -10,12 +10,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -38,6 +40,7 @@ fun MobileNavigation(selected: Int, select: (Int) -> Unit) {
                         Box(
                             Modifier.weight(1f).heightIn(min = 64.dp)
                                 .testTag("destination-$index")
+                                .clip(RoundedCornerShape(24.dp))
                                 .selectable(selected == index, role = Role.Tab) { select(index) }
                                 .padding(horizontal = 8.dp, vertical = 18.dp),
                             contentAlignment = Alignment.Center

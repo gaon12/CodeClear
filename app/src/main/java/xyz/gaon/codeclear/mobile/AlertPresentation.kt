@@ -19,13 +19,16 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import java.text.DateFormat
 import java.util.Date
+import java.util.TimeZone
 import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
@@ -220,8 +223,18 @@ private fun phaseLabel(phase: TranslationPhase?, consent: Boolean, engine: Local
         }
     }
 
-fun dateTime(time: Long): String =
-    DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(Date(time))
+@Composable
+fun dateTime(time: Long): String {
+    val locale = LocalConfiguration.current.locales[0]
+    val zone = TimeZone.getDefault().id
+    return remember(time, locale, zone) {
+        DateFormat.getDateTimeInstance(
+            DateFormat.MEDIUM,
+            DateFormat.SHORT,
+            locale
+        ).format(Date(time))
+    }
+}
 
 @Composable
 fun AlertMetadata(alert: SavedAlert) {

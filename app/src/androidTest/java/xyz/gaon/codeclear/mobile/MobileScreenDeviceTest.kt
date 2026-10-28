@@ -1,15 +1,26 @@
 package xyz.gaon.codeclear.mobile
 
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Build
 import android.provider.Settings
+import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.inspector.WindowInspector
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
@@ -22,12 +33,16 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.window.DialogWindowProvider
 import java.io.File
+import java.util.Locale
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -53,6 +68,7 @@ class MobileScreenDeviceTest {
     private var prepared = 0
     private var preparedEngine: LocalEngineKind? = null
     private var fontScale by mutableStateOf(1f)
+    private var previewLanguage by mutableStateOf<String?>(null)
     private val context get() = compose.activity
     private fun text(id: Int) = context.getString(id)
 
@@ -70,8 +86,45 @@ class MobileScreenDeviceTest {
                 )
             context.setContent {
                 val density = LocalDensity.current
+                val dark = state.options.theme == ThemeChoice.DARK ||
+                    (state.options.theme == ThemeChoice.SYSTEM && isSystemInDarkTheme())
+                LaunchedEffect(dark) {
+                    val transparent = android.graphics.Color.TRANSPARENT
+                    context.enableEdgeToEdge(
+                        statusBarStyle = if (dark) {
+                            SystemBarStyle.dark(
+                                transparent
+                            )
+                        } else {
+                            SystemBarStyle.light(transparent, transparent)
+                        },
+                        navigationBarStyle = if (dark) {
+                            SystemBarStyle.dark(
+                                android.graphics.Color.BLACK
+                            )
+                        } else {
+                            SystemBarStyle.light(
+                                android.graphics.Color.WHITE,
+                                android.graphics.Color.WHITE
+                            )
+                        }
+                    )
+                }
+                val base = LocalContext.current
+                val configuration = LocalConfiguration.current
+                val localized = remember(base, configuration, previewLanguage) {
+                    previewLanguage?.let {
+                        base.createConfigurationContext(
+                            Configuration(configuration).apply {
+                                setLocale(Locale.forLanguageTag(it))
+                            }
+                        )
+                    } ?: base
+                }
                 CompositionLocalProvider(
-                    LocalDensity provides Density(density.density, fontScale)
+                    LocalDensity provides Density(density.density, fontScale),
+                    LocalContext provides localized,
+                    LocalConfiguration provides localized.resources.configuration
                 ) {
                     MobileScreen(
                         state,
@@ -204,6 +257,7 @@ class MobileScreenDeviceTest {
             text(R.string.mobile_review_access)
         )[0].performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_notification_disclosure)).assertIsDisplayed()
+        assertDecisionWindowAtBottom()
         compose.runOnIdle { assertEquals(0, settingsOpened) }
         compose.onNodeWithText(text(R.string.mobile_agree)).performClick()
         compose.runOnIdle {
@@ -351,6 +405,77 @@ class MobileScreenDeviceTest {
                     it
                 )
             }
+        }
+    }
+
+    @Test
+    fun koreanScreensShowTheOriginalAndEnglishResultInBothThemes() {
+        val original = "[훈련] 오늘 밤 많은 비가 예상됩니다. 하천 주변 접근을 피하세요."
+        val translated = "[DRILL] Heavy rain tonight. Stay away from rivers."
+        compose.runOnIdle {
+            previewLanguage = "ko"
+            val alert = record(1).let {
+                it.copy(
+                    capture = it.capture.copy(title = "[훈련] 안전 안내 문자", original = original),
+                    translation = it.translation!!.copy(text = translated)
+                )
+            }
+            state = state.copy(latest = alert, records = listOf(alert))
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+        for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
+            compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            compose.onNodeWithTag("mobile-feed").performScrollToNode(hasText(translated))
+            compose.onNodeWithText(original).assertIsDisplayed()
+            compose.onNodeWithText(translated).assertIsDisplayed()
+            savePreview("mobile-ko-${theme.name.lowercase()}")
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("mobile-feed").performScrollToIndex(0)
+        savePreview("mobile-ko-history")
+        compose.onNodeWithTag("destination-2").performClick()
+        compose.onNodeWithTag("mobile-feed").performScrollToIndex(0)
+        savePreview("mobile-ko-settings")
+    }
+
+    private fun savePreview(name: String) {
+        compose.mainClock.advanceTimeBy(600)
+        compose.waitForIdle()
+        // Framework press ripples also use render-thread time outside the Compose test clock.
+        android.os.SystemClock.sleep(350)
+        File(context.cacheDir, "$name.png").outputStream().use {
+            compose.onRoot().captureToImage().asAndroidBitmap().compress(
+                Bitmap.CompressFormat.PNG,
+                100,
+                it
+            )
+        }
+    }
+
+    private fun assertDecisionWindowAtBottom() {
+        compose.runOnIdle {
+            val views = ArrayDeque<View>().apply { addAll(WindowInspector.getGlobalWindowViews()) }
+            var provider: DialogWindowProvider? = null
+            var remaining = 256
+            while (views.isNotEmpty() && remaining-- > 0) {
+                val view = views.removeFirst()
+                if (view is DialogWindowProvider) {
+                    provider = view
+                    break
+                }
+                if (view is ViewGroup) {
+                    for (index in 0 until view.childCount) views.addLast(view.getChildAt(index))
+                }
+            }
+            val decor = checkNotNull(provider).window.decorView
+            val location = IntArray(2)
+            decor.getLocationOnScreen(location)
+            val screenBottom = context.windowManager.maximumWindowMetrics.bounds.bottom
+            val allowance = 80 * context.resources.displayMetrics.density
+            assertTrue(
+                "The decision window must end near the lower screen edge",
+                location[1] + decor.height >= screenBottom - allowance
+            )
         }
     }
 

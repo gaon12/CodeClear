@@ -11,10 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -60,6 +60,7 @@ fun MobileSettings(
             },
             { actions.configure(options.copy(notificationConsent = false)) }
         )
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         AccessRow(
             stringResource(R.string.mobile_accessibility_access),
             options.accessibilityConsent,
@@ -154,7 +155,7 @@ fun MobileSettings(
         Text(stringResource(R.string.mobile_compatibility_description))
     }
     disclosure?.let { route ->
-        AlertDialog(
+        MobileConfirmationDialog(
             onDismissRequest = {
                 disclosure = null
             },
@@ -281,21 +282,28 @@ private fun AccessRow(
 
 @Composable
 fun SettingSection(title: String, content: @Composable () -> Unit) {
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Text(title, style = MaterialTheme.typography.titleLarge)
-            content()
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            title,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Card(
+            shape = RoundedCornerShape(26.dp),
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                content()
+            }
         }
     }
 }
 
 @Composable
 fun ChoiceDialog(title: String, choices: List<String>, dismiss: () -> Unit, choose: (Int) -> Unit) {
-    AlertDialog(onDismissRequest = dismiss, title = { Text(title) }, text = {
+    MobileConfirmationDialog(onDismissRequest = dismiss, title = { Text(title) }, text = {
         Column(Modifier.verticalScroll(rememberScrollState())) {
             choices.forEachIndexed { index, label ->
                 TextButton(onClick = {
