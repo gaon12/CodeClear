@@ -53,7 +53,7 @@ class SystemTranslationOperation(
         if (cancelled.get()) return LocalResult.Failed
         return try {
             if (!backend.supported) return LocalResult.Unavailable
-            val source = backend.identify(input.body)?.takeIf(::validLanguage)
+            val source = backend.identify(input.body)?.takeIf(::validSystemLanguage)
                 ?: return LocalResult.UnknownLanguage
             if (cancelled.get()) return LocalResult.Failed
             val capabilities = backend.capabilities().asSequence().supportedSystemPairs()
@@ -164,10 +164,6 @@ class SystemTranslationOperation(
     }
 
     companion object {
-        private fun validLanguage(tag: String): Boolean = tag.length in 2..32 &&
-            tag.matches(Regex("[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*")) &&
-            Locale.forLanguageTag(tag).language !in setOf("", "und")
-
         internal fun selectPair(
             capabilities: List<SystemLanguagePair>,
             source: String,
@@ -178,7 +174,7 @@ class SystemTranslationOperation(
             return capabilities.filter { pair ->
                 val from = Locale.forLanguageTag(pair.source)
                 val to = Locale.forLanguageTag(pair.target)
-                validLanguage(pair.source) && validLanguage(pair.target) &&
+                validSystemLanguage(pair.source) && validSystemLanguage(pair.target) &&
                     from.language == sourceLocale.language &&
                     (from.script.isEmpty() || from.script == sourceLocale.script) &&
                     to.language == target.modelCode &&

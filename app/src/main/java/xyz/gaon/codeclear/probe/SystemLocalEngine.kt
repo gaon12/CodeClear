@@ -9,13 +9,6 @@ import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
-data class SystemEngineAvailability(
-    val loaded: Boolean = false,
-    val loading: Boolean = false,
-    val platformSupported: Boolean = false,
-    val pairs: List<SystemLanguagePair> = emptyList()
-)
-
 /** One bounded worker owns system queries, identification, sessions, and script conversion. */
 class SystemLocalEngine(
     private val backend: SystemTranslationBackend,
@@ -90,13 +83,12 @@ class SystemLocalEngine(
                 } catch (_: Exception) {
                     emptyList()
                 }
+                val snapshot = SystemEngineAvailability(true, false, backend.supported, pairs)
                 main.post {
                     inspecting = false
                     inspectedAt = SystemClock.uptimeMillis()
                     if (!closed) {
-                        publish(
-                            SystemEngineAvailability(true, false, backend.supported, pairs)
-                        )
+                        publish(snapshot)
                     }
                 }
             }

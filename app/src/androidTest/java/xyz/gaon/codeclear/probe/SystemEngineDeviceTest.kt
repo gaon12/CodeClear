@@ -141,6 +141,10 @@ class SystemEngineDeviceTest {
             onMain { repeat(20) { engine.refreshCapabilities() } }
             assertEquals(1, backend.queries.get())
             assertEquals(backend.pairs, engine.availability.pairs)
+            assertEquals(
+                SystemTargetSupport(1, 0),
+                engine.availability.targets.getValue(LocalTarget.KOREAN)
+            )
         } finally {
             release.countDown()
         }
