@@ -18,6 +18,7 @@ interface SystemTranslationBackend {
     fun identify(body: String): String?
     fun capabilities(): List<SystemLanguagePair>
     fun create(pair: SystemLanguagePair, complete: (SystemTranslationSession?) -> Unit)
+    fun settingsAction(): (() -> Boolean)? = null
 }
 
 /** One worker owns an operation. Cancellation can be requested from any thread. */
