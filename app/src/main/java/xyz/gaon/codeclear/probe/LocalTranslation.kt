@@ -20,6 +20,8 @@ sealed interface LocalResult {
     data class Ready(val text: String, val source: String, val sameLanguage: Boolean) : LocalResult
     data object NeedsModels : LocalResult
     data object UnknownLanguage : LocalResult
+    data object Unavailable : LocalResult
+    data object UnsupportedPair : LocalResult
     data object Failed : LocalResult
 }
 
