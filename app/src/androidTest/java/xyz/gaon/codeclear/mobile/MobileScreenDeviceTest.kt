@@ -3,7 +3,10 @@ package xyz.gaon.codeclear.mobile
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
+import android.view.PixelCopy
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -40,6 +43,9 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.window.DialogWindowProvider
 import java.io.File
 import java.util.Locale
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -441,14 +447,27 @@ class MobileScreenDeviceTest {
     private fun savePreview(name: String) {
         compose.mainClock.advanceTimeBy(600)
         compose.waitForIdle()
-        // Framework press ripples also use render-thread time outside the Compose test clock.
-        android.os.SystemClock.sleep(350)
-        File(context.cacheDir, "$name.png").outputStream().use {
-            compose.onRoot().captureToImage().asAndroidBitmap().compress(
-                Bitmap.CompressFormat.PNG,
-                100,
-                it
-            )
+        val copied = CountDownLatch(1)
+        val result = AtomicInteger(-1)
+        lateinit var bitmap: Bitmap
+        compose.runOnIdle {
+            val decor = context.window.decorView
+            check(decor.width.toLong() * decor.height <= 16_000_000)
+            bitmap = Bitmap.createBitmap(decor.width, decor.height, Bitmap.Config.ARGB_8888)
+            // Copy only this synthetic activity window, including its actual navigation layers.
+            PixelCopy.request(context.window, bitmap, {
+                result.set(it)
+                copied.countDown()
+            }, Handler(Looper.getMainLooper()))
+        }
+        try {
+            assertTrue(copied.await(5, TimeUnit.SECONDS))
+            assertEquals(PixelCopy.SUCCESS, result.get())
+            File(context.cacheDir, "$name.png").outputStream().use {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+            }
+        } finally {
+            bitmap.recycle()
         }
     }
 

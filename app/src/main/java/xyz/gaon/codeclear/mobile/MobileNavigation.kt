@@ -1,5 +1,10 @@
 package xyz.gaon.codeclear.mobile
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -15,9 +20,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -37,11 +44,27 @@ fun MobileNavigation(selected: Int, select: (Int) -> Unit) {
             ) {
                 listOf(R.string.mobile_home, R.string.mobile_history, R.string.mobile_settings)
                     .forEachIndexed { index, label ->
+                        val interaction = remember { MutableInteractionSource() }
+                        val focused by interaction.collectIsFocusedAsState()
+                        val pressed by interaction.collectIsPressedAsState()
+                        val hovered by interaction.collectIsHoveredAsState()
                         Box(
                             Modifier.weight(1f).heightIn(min = 64.dp)
                                 .testTag("destination-$index")
-                                .clip(RoundedCornerShape(24.dp))
-                                .selectable(selected == index, role = Role.Tab) { select(index) }
+                                .background(
+                                    if (focused || pressed || hovered) {
+                                        MaterialTheme.colorScheme.surfaceVariant
+                                    } else {
+                                        Color.Transparent
+                                    },
+                                    RoundedCornerShape(24.dp)
+                                )
+                                .selectable(
+                                    selected == index,
+                                    interactionSource = interaction,
+                                    indication = null,
+                                    role = Role.Tab
+                                ) { select(index) }
                                 .padding(horizontal = 8.dp, vertical = 18.dp),
                             contentAlignment = Alignment.Center
                         ) {
