@@ -8,6 +8,15 @@ import java.util.concurrent.atomic.AtomicReference
 
 data class SystemLanguagePair(val source: String, val target: String, val ready: Boolean)
 
+/** Ignore unrelated targets before bounding the retained provider inventory. */
+internal fun Sequence<SystemLanguagePair>.supportedSystemPairs(): List<SystemLanguagePair> =
+    take(32_768).filter {
+        it.source.length in 2..32 && it.target.length in 2..32 &&
+            Locale.forLanguageTag(it.target).language in systemTargetLanguages
+    }.distinct().take(4096).toList()
+
+private val systemTargetLanguages = LocalTarget.entries.map { it.modelCode }.toSet()
+
 interface SystemTranslationSession : AutoCloseable {
     fun translate(body: String, complete: (String?) -> Unit)
 }
@@ -47,7 +56,7 @@ class SystemTranslationOperation(
             val source = backend.identify(input.body)?.takeIf(::validLanguage)
                 ?: return LocalResult.UnknownLanguage
             if (cancelled.get()) return LocalResult.Failed
-            val capabilities = backend.capabilities().take(512)
+            val capabilities = backend.capabilities().asSequence().supportedSystemPairs()
             if (cancelled.get()) return LocalResult.Failed
             if (capabilities.isEmpty()) return LocalResult.Unavailable
             val sourceLocale = Locale.forLanguageTag(source)

@@ -32,7 +32,7 @@ class SystemEngineDeviceTest {
         val backend = systemTranslationBackend(instrumentation.targetContext)
         if (Build.VERSION.SDK_INT == 30) assertFalse(backend.supported)
         val capabilities = backend.capabilities()
-        assertTrue(capabilities.size <= 512)
+        assertTrue(capabilities.size <= 4096)
         if (!backend.supported) assertTrue(capabilities.isEmpty())
     }
 

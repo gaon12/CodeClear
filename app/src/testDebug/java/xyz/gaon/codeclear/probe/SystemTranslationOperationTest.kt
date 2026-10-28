@@ -13,6 +13,31 @@ class SystemTranslationOperationTest {
     private val input = LocalInput(1, "[DRILL] Leave Gate 3. Call 112.", LocalTarget.KOREAN)
 
     @Test
+    fun unrelatedCapabilitiesDoNotHideALaterSupportedPair() {
+        val backend = Backend().apply {
+            pairs = List(600) { SystemLanguagePair("en", "es", true) } +
+                SystemLanguagePair("en", "ko", true)
+        }
+        assertTrue(operation(backend).run(input) is LocalResult.Ready)
+        assertEquals(1, backend.creations)
+    }
+
+    @Test
+    fun capabilityInspectionAndRetainedInventoryHaveFiniteBounds() {
+        var inspected = 0
+        val irrelevant = generateSequence {
+            inspected++
+            SystemLanguagePair("en", "es", true)
+        }.supportedSystemPairs()
+        assertTrue(irrelevant.isEmpty())
+        assertEquals(32_768, inspected)
+        val relevant = (1..5000).asSequence().map {
+            SystemLanguagePair("en-$it", "ko", true)
+        }.supportedSystemPairs()
+        assertEquals(4096, relevant.size)
+    }
+
+    @Test
     fun unavailablePlatformsNeverReadTheBodyOrCreateASession() {
         val backend = Backend().apply { available = false }
         assertEquals(LocalResult.Unavailable, operation(backend).run(input))

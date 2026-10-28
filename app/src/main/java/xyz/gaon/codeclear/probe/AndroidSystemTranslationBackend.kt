@@ -62,13 +62,13 @@ private class AndroidSystemTranslationBackend(context: Context) : SystemTranslat
                     TranslationCapability.STATE_AVAILABLE_TO_DOWNLOAD,
                     TranslationCapability.STATE_DOWNLOADING
                 )
-        }?.take(512)?.map {
+        }?.map {
             SystemLanguagePair(
                 it.sourceSpec.locale.toLanguageTag(),
                 it.targetSpec.locale.toLanguageTag(),
                 it.state == TranslationCapability.STATE_ON_DEVICE
             )
-        }?.toList().orEmpty()
+        }?.supportedSystemPairs().orEmpty()
     }
 
     override fun create(pair: SystemLanguagePair, complete: (SystemTranslationSession?) -> Unit) {

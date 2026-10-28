@@ -82,7 +82,11 @@ class SystemLocalEngine(
         try {
             worker.execute {
                 val pairs = try {
-                    if (backend.supported) backend.capabilities().take(512) else emptyList()
+                    if (backend.supported) {
+                        backend.capabilities().asSequence().supportedSystemPairs()
+                    } else {
+                        emptyList()
+                    }
                 } catch (_: Exception) {
                     emptyList()
                 }
