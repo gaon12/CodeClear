@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
@@ -86,6 +87,9 @@ fun MobileScreen(
     val homeScroll = rememberLazyListState()
     val historyScroll = rememberLazyListState()
     val settingsState = rememberSaveableStateHolder()
+    var settingsEntry by rememberSaveable { mutableIntStateOf(0) }
+    var scrollResetTarget by remember { mutableIntStateOf(-1) }
+    var scrollResetSequence by remember { mutableIntStateOf(0) }
     var settingsPage by rememberSaveable { mutableStateOf<SettingsPage?>(null) }
     val tutorialScroll = rememberLazyListState()
     // A lazy item provider can update before its parent replaces the attached scroll state.
@@ -108,11 +112,30 @@ fun MobileScreen(
     BackHandler(enabled = showTutorial) {
         if (step > 0) step-- else tutorial = false
     }
+    LaunchedEffect(scrollResetSequence) {
+        when (scrollResetTarget) {
+            0 -> homeScroll.scrollToItem(0)
+            1 -> historyScroll.scrollToItem(0)
+        }
+    }
     MobileTheme(state.options.theme) {
         Scaffold(containerColor = MaterialTheme.colorScheme.background, bottomBar = {
-            MobileNavigation(currentTab) {
-                tab = it
+            MobileNavigation(currentTab) { destination ->
                 tutorial = false
+                if (destination == tab) {
+                    step = 0
+                    if (destination == 2) {
+                        settingsState.removeState(settingsEntry)
+                        settingsEntry++
+                        settingsPage = null
+                    } else {
+                        scrollResetTarget = destination
+                        scrollResetSequence++
+                        if (destination == 1 && state.beforeId != Long.MAX_VALUE) actions.newest()
+                    }
+                } else {
+                    tab = destination
+                }
             }
         }) { padding ->
             Box(
@@ -120,7 +143,7 @@ fun MobileScreen(
                 contentAlignment = Alignment.TopCenter
             ) {
                 if (currentTab == 2 && !showTutorial) {
-                    settingsState.SaveableStateProvider("settings") {
+                    settingsState.SaveableStateProvider(settingsEntry) {
                         SettingsScreen(
                             state = state,
                             environment = environment,

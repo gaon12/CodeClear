@@ -84,6 +84,7 @@ class MobileScreenDeviceTest {
     )
     private var configured = MobileOptions()
     private var searched = ""
+    private var newestRequests = 0
     private var notificationRequests = 0
     private var notificationsAllowed by mutableStateOf(true)
     private var settingsOpened = 0
@@ -190,7 +191,10 @@ class MobileScreenDeviceTest {
                             }, notificationPermission = {
                                 notificationRequests++
                             }, notificationsAllowed = notificationsAllowed, older = {
-                            }, newest = {}, retryStorage = {},
+                            }, newest = {
+                                newestRequests++
+                                state = state.copy(beforeId = Long.MAX_VALUE)
+                            }, retryStorage = {},
                             systemAvailability = systemSupport,
                             refreshSystem = { if (it) manualSupportRefreshes++ },
                             systemSettings = { providerSettingsOpened++ }
@@ -382,6 +386,55 @@ class MobileScreenDeviceTest {
                 "settings-menu"
             ).performScrollToNode(hasTestTag("settings-category-ABOUT"))
         }
+    }
+
+    @Test
+    fun reselectingADestinationReturnsToItsRootAndPreservesTheHistoryQuery() {
+        compose.runOnIdle { state = state.copy(records = List(24) { record(it.toLong() + 1) }) }
+        fun offset(tag: String) = compose.onNodeWithTag(tag).fetchSemanticsNode().config[
+            SemanticsProperties.VerticalScrollAxisRange
+        ].value()
+        compose.onNodeWithTag(
+            "mobile-feed"
+        ).performScrollToNode(hasText(text(R.string.mobile_manage_access)))
+        val homeOffset = offset("mobile-feed")
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithText(text(R.string.mobile_search)).performTextInput("Gate_3%")
+        compose.runOnIdle { state = state.copy(beforeId = 50) }
+        compose.onNodeWithTag("mobile-feed").performScrollToIndex(5)
+        assertTrue(offset("mobile-feed") > 0f)
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.runOnIdle {
+            assertEquals(1, newestRequests)
+            assertEquals(Long.MAX_VALUE, state.beforeId)
+            assertEquals("Gate_3%", searched)
+            assertEquals("Gate_3%", state.query)
+        }
+        assertEquals(0f, offset("mobile-feed"), 0.01f)
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.runOnIdle { assertEquals(1, newestRequests) }
+        compose.onNodeWithTag("destination-0").performClick()
+        assertEquals(homeOffset, offset("mobile-feed"), 0.01f)
+        compose.onNodeWithTag("destination-0").performClick()
+        assertEquals(0f, offset("mobile-feed"), 0.01f)
+        openSettingsPage(SettingsPage.TRANSLATION)
+        compose.onNodeWithTag(
+            "settings-detail-title"
+        ).assertTextEquals(text(R.string.mobile_translation_settings))
+        compose.onNodeWithTag("destination-2").performClick()
+        compose.onNodeWithTag("settings-menu").assertIsDisplayed()
+        assertEquals(0f, offset("settings-menu"), 0.01f)
+        if (compose.onAllNodesWithTag("settings-split").fetchSemanticsNodes().isEmpty()) {
+            compose.onNodeWithTag("settings-detail").assertDoesNotExist()
+        } else {
+            compose.onNodeWithTag("settings-category-CAPTURE").assertIsSelected()
+        }
+        openSettingsPage(SettingsPage.CAPTURE)
+        compose.onNodeWithText(text(R.string.mobile_tutorial)).performScrollTo().performClick()
+        compose.onNodeWithTag("destination-2").performClick()
+        compose.onNodeWithTag("settings-menu").assertIsDisplayed()
+        assertEquals(0f, offset("settings-menu"), 0.01f)
+        compose.runOnIdle { assertEquals(0, prepared) }
     }
 
     @Test
