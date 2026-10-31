@@ -2,6 +2,7 @@ package xyz.gaon.codeclear.mobile
 
 import android.app.Application
 import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.os.LocaleList
@@ -10,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import xyz.gaon.codeclear.BuildConfig
+import xyz.gaon.codeclear.nearby.NearbyBackgroundService
 import xyz.gaon.codeclear.nearby.NearbySharing
 import xyz.gaon.codeclear.probe.LocalEngine
 import xyz.gaon.codeclear.probe.LocalEngineKind
@@ -31,6 +33,7 @@ class MobileApplication : Application() {
 
 /** The process owns capture and jobs; activity recreation never creates another translation queue. */
 class MobileRuntime(context: Context) {
+    private val application = context.applicationContext
     var state by mutableStateOf(MobileState())
         private set
     var preparation by mutableStateOf(PreparationState())
@@ -49,6 +52,7 @@ class MobileRuntime(context: Context) {
         }
     }
     private var diagnosticOwners = 0
+    private var sharingConfigured = false
     private var diagnosticGeneration = 0L
     val controller: MobileController = MobileController(
         context,
@@ -57,7 +61,16 @@ class MobileRuntime(context: Context) {
         engine,
         changed = {
             state = it
-            if (it.loaded) nearby.configure(it.options.labsEnabled && it.options.nearbyEnabled)
+            if (it.loaded) {
+                val enabled = it.options.labsEnabled && it.options.nearbyEnabled && !it.storageError
+                nearby.configure(enabled)
+                if (!enabled && sharingConfigured) {
+                    application.stopService(
+                        Intent(application, NearbyBackgroundService::class.java)
+                    )
+                }
+                sharingConfigured = enabled
+            }
         },
         translated = { id, target, producer ->
             val language = state.options.uiLanguage
@@ -101,6 +114,11 @@ class MobileRuntime(context: Context) {
         if (withdrawn || options.engine != state.options.engine) models.withdraw()
         if (withdrawn) notifications.cancel(null)
         controller.changeOptions(options)
+    }
+
+    fun stopNearbySharing() {
+        nearby.configure(false)
+        controller.stopNearbySharing()
     }
 
     fun pauseForDiagnostics(): AutoCloseable {

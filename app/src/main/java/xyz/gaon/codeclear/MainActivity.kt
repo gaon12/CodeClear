@@ -41,6 +41,7 @@ import xyz.gaon.codeclear.mobile.ThemeChoice
 import xyz.gaon.codeclear.mobile.UiLanguages
 import xyz.gaon.codeclear.mobile.mobileRuntime
 import xyz.gaon.codeclear.nearby.NearbyAccess
+import xyz.gaon.codeclear.nearby.NearbyBackgroundService
 import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
@@ -65,6 +66,7 @@ class MainActivity : AppCompatActivity() {
     private val nearbyRequest =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
             mobileRuntime.nearby.refresh()
+            ensureNearbyBackground()
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,6 +79,18 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContent {
             val runtime = mobileRuntime
+            LaunchedEffect(
+                runtime.state.loaded,
+                runtime.state.options.labsEnabled,
+                runtime.state.options.nearbyEnabled
+            ) {
+                if (lifecycle.currentState.isAtLeast(
+                        Lifecycle.State.STARTED
+                    )
+                ) {
+                    ensureNearbyBackground()
+                }
+            }
             LaunchedEffect(runtime.state.loaded) {
                 if (runtime.state.loaded) {
                     if (Build.VERSION.SDK_INT < 33) {
@@ -275,6 +289,8 @@ class MainActivity : AppCompatActivity() {
         mobileRuntime.resumeProduct()
         refreshAccess()
         mobileRuntime.nearby.foreground(true)
+        mobileRuntime.nearby.recheckAccess()
+        ensureNearbyBackground()
         mobileRuntime.controller.start()
         mobileRuntime.controller.refresh()
         if (systemSettingsOpened || mobileRuntime.systemAvailability.loaded ||
@@ -309,6 +325,18 @@ class MainActivity : AppCompatActivity() {
             mobileRuntime.nearby.refresh()
         } else {
             nearbyRequest.launch(permissions.toTypedArray())
+        }
+    }
+
+    private fun ensureNearbyBackground() {
+        val runtime = mobileRuntime
+        if (runtime.state.loaded && !runtime.state.storageError &&
+            runtime.state.options.labsEnabled && runtime.state.options.nearbyEnabled &&
+            !runtime.nearby.state.backgroundRunning && !runtime.diagnosticsActive() &&
+            NearbyAccess.granted(this, runtime.nearby.sender) &&
+            NearbyAccess.backgroundGranted(this)
+        ) {
+            NearbyBackgroundService.start(this)
         }
     }
 

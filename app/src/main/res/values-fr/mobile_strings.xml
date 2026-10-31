@@ -159,7 +159,7 @@
     <string name="mobile_nearby">Partage des alertes à proximité</string>
     <string name="mobile_nearby_allow">Autoriser le partage à proximité</string>
     <string name="mobile_nearby_disclosure">Les originaux récemment capturés sont partagés à proximité. L’origine et l’authenticité des messages reçus ne sont pas vérifiées. Ils sont automatiquement conservés dans l’historique privé jusqu’à leur suppression et ne sont pas retransmis.</string>
-    <string name="mobile_nearby_foreground">L’échange utilise Bluetooth tant que l’application est visible et se met en pause quand vous la quittez. Aucune coordonnée GPS ni aucun serveur n’est utilisé. Les messages enregistrés restent dans l’historique.</string>
+    <string name="mobile_nearby_foreground">Bluetooth peut continuer en arrière-plan avec une notification permanente. Arrêtez-le ici ou depuis la notification. Aucune coordonnée GPS ni aucun serveur n’est utilisé. Si Android arrête l’application, rouvrez-la.</string>
     <string name="mobile_nearby_unverified">Reçu à proximité · origine non vérifiée</string>
     <string name="mobile_nearby_inbox">Boîte de proximité</string>
     <plurals name="mobile_nearby_count">
@@ -170,7 +170,7 @@
     <string name="mobile_nearby_save">Enregistrer dans l’historique</string>
     <string name="mobile_nearby_dismiss">Masquer dans les messages récents</string>
     <string name="mobile_nearby_save_failed">Échec de l’enregistrement. Vérifiez les autorisations de partage et l’espace disponible.</string>
-    <string name="mobile_nearby_paused">En pause lorsque l’application est masquée</string>
+    <string name="mobile_nearby_paused">Partage en pause</string>
     <string name="mobile_nearby_permission">Accès aux appareils à proximité requis</string>
     <string name="mobile_nearby_bluetooth">Bluetooth désactivé</string>
     <string name="mobile_nearby_location">Localisation système désactivée</string>
@@ -199,4 +199,9 @@
     <string name="mobile_server_preparing">En préparation</string>
     <string name="mobile_server_preview">La traduction sur serveur est déconnectée. Les traductions restent traitées sur cet appareil. Le résultat prévu indiquera l’organisme émetteur et la manière dont il a été identifié. Aucun texte d’alerte n’est envoyé à un serveur.</string>
     <string name="mobile_nearby_retention_problem">Impossible d’enregistrer un message reçu. L’historique de proximité est limité à 1 000 entrées. Vérifiez l’espace ou supprimez les entrées reçues inutiles, puis réessayez. Les entrées existantes sont conservées.</string>
+    <string name="mobile_nearby_background_title">Partage à proximité actif</string>
+    <string name="mobile_nearby_background_notice">Réception Bluetooth en arrière-plan. Ouvrez l’application ou arrêtez le partage.</string>
+    <string name="mobile_nearby_stop">Arrêter le partage</string>
+    <string name="mobile_nearby_background_needed">La réception en arrière-plan est arrêtée. Gardez l’application ouverte et vérifiez les autorisations.</string>
+    <string name="mobile_nearby_background_location">Sous Android 11, la recherche Bluetooth en arrière-plan nécessite l’accès à la position « Toujours autoriser » dans les paramètres de l’application. Sans cet accès supplémentaire, le partage reste possible quand l’application est visible.</string>
 </resources>

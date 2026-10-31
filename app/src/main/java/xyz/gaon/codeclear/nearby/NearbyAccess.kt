@@ -37,6 +37,10 @@ object NearbyAccess {
         context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED
     }
 
+    fun backgroundGranted(context: Context): Boolean = Build.VERSION.SDK_INT >= 31 ||
+        context.checkSelfPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION) ==
+        PackageManager.PERMISSION_GRANTED
+
     @SuppressLint("MissingPermission") // The exact role's runtime grants are checked first.
     fun status(context: Context, sender: Boolean): NearbyStatus {
         if (!context.packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {

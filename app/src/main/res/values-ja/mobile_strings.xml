@@ -159,7 +159,7 @@
     <string name="mobile_nearby">近くの警報共有</string>
     <string name="mobile_nearby_allow">近くとの共有を許可</string>
     <string name="mobile_nearby_disclosure">新たに収集した原文を周辺ユーザーに共有します。受信文の発信元や真偽は未確認です。受信文は履歴に自動保存され、削除するまで残ります。再共有はしません。</string>
-    <string name="mobile_nearby_foreground">画面にアプリがある間だけBluetoothで交換し、別の画面に移ると一時停止します。GPS座標やサーバーは使いません。保存した受信文は履歴に残ります。</string>
+    <string name="mobile_nearby_foreground">状態通知を表示し、バックグラウンドでもBluetoothで交換します。ここか通知から停止できます。GPS座標やサーバーは使いません。Androidがアプリを停止した場合は開き直して再開してください。</string>
     <string name="mobile_nearby_unverified">近くの端末から受信・発信元未確認</string>
     <string name="mobile_nearby_inbox">近くからの受信箱</string>
     <plurals name="mobile_nearby_count">
@@ -169,7 +169,7 @@
     <string name="mobile_nearby_save">履歴に保存</string>
     <string name="mobile_nearby_dismiss">最近の一覧から非表示</string>
     <string name="mobile_nearby_save_failed">保存できませんでした。共有の権限と空き容量を確認してください。</string>
-    <string name="mobile_nearby_paused">アプリ非表示のため一時停止</string>
+    <string name="mobile_nearby_paused">共有を一時停止中</string>
     <string name="mobile_nearby_permission">付近のデバイスへのアクセスが必要</string>
     <string name="mobile_nearby_bluetooth">Bluetoothがオフ</string>
     <string name="mobile_nearby_location">システムの位置情報がオフ</string>
@@ -198,4 +198,9 @@
     <string name="mobile_server_preparing">準備中</string>
     <string name="mobile_server_preview">サーバー翻訳は未接続です。翻訳は引き続き端末内で処理します。今後は発信機関とその判断根拠を結果に含める予定です。警報本文はサーバーに送信しません。</string>
     <string name="mobile_nearby_retention_problem">受信文を保存できませんでした。周辺受信の履歴は1,000件までです。空き容量を確認するか不要な周辺受信の履歴を削除して再保存してください。既存の履歴は保持されます。</string>
+    <string name="mobile_nearby_background_title">周辺共有を実行中</string>
+    <string name="mobile_nearby_background_notice">バックグラウンドでBluetooth受信中です。アプリを開くか共有を停止できます。</string>
+    <string name="mobile_nearby_stop">共有を停止</string>
+    <string name="mobile_nearby_background_needed">バックグラウンド受信は停止中です。アプリを開いたまま権限を確認してください。</string>
+    <string name="mobile_nearby_background_location">Android 11のバックグラウンドBluetooth検索には、アプリ設定で位置情報を「常に許可」にする必要があります。この追加権限なしでも画面表示中は共有できます。</string>
 </resources>

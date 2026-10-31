@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Foreground-only, anonymous one-hop transport. All platform calls run behind current permission
+ * Anonymous one-hop transport. All platform calls run behind current permission
  * checks on one worker; revocation, close, and late callbacks cannot publish another receipt.
  */
 @SuppressLint("MissingPermission")
@@ -56,6 +56,7 @@ class BleRelay(
     private var token = ByteArray(8)
     private var scanning = false
     private var scanFailures = 0
+    private var diagnosticSightings = 0
     private var advertising = false
     private var server: BluetoothGattServer? = null
     private var serverReady = false
@@ -112,6 +113,7 @@ class BleRelay(
             scan
         )
         scanning = true
+        diagnostic("scan-ready", 0)
         status(if (scanning) receiveStatus else NearbyStatus.COOLDOWN)
     }
 
@@ -199,6 +201,7 @@ class BleRelay(
             }
             val submitted = tryPost {
                 scanPending.set(false)
+                if (diagnosticSightings < 4) diagnostic("discovery", ++diagnosticSightings)
                 if (client != null || peer != null) return@tryPost
                 val key = signal.joinToString("") { "%02x".format(it) }
                 val now = SystemClock.elapsedRealtime()
@@ -244,6 +247,9 @@ class BleRelay(
     }
 
     private val advertiseCallback = object : AdvertiseCallback() {
+        override fun onStartSuccess(settingsInEffect: AdvertiseSettings) = post {
+            diagnostic("advertise-ready", 0)
+        }
         override fun onStartFailure(errorCode: Int) = post {
             diagnostic("advertise", errorCode)
             advertising = false
@@ -262,8 +268,9 @@ class BleRelay(
         advertising = false
         if (exports.isEmpty() || !serverReady) return
         token = byteArrayOf(1, 0) + ByteArray(6).also { SecureRandom().nextBytes(it) }
+        // Fresh exports overlap brief low-power listening windows without raising continuous scan duty.
         advertiser.startAdvertising(
-            AdvertiseSettings.Builder().setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_POWER)
+            AdvertiseSettings.Builder().setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
                 .setTxPowerLevel(
                     AdvertiseSettings.ADVERTISE_TX_POWER_LOW
                 ).setConnectable(true).build(),
@@ -300,6 +307,7 @@ class BleRelay(
         override fun onServiceAdded(code: Int, service: BluetoothGattService) = post {
             if (code != BluetoothGatt.GATT_SUCCESS) diagnostic("server", code)
             serverReady = code == BluetoothGatt.GATT_SUCCESS
+            if (serverReady) diagnostic("server-ready", 0)
             if (serverReady && exports.isNotEmpty()) advertise()
             if (!serverReady) {
                 receiveStatus = NearbyStatus.RECEIVE_ONLY

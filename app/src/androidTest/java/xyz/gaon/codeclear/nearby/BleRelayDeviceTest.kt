@@ -30,7 +30,7 @@ class BleRelayDeviceTest {
         val error = AtomicReference<NearbyStatus>()
         val events = java.util.concurrent.ConcurrentLinkedQueue<String>()
         val diagnostics: (String, Int) -> Unit = { event, code ->
-            events.add("$event:$code")
+            if (events.size < 64) events.add("$event:$code")
             Unit
         }
         val activity = ActivityScenario.launch(MainActivity::class.java)
@@ -93,10 +93,13 @@ class BleRelayDeviceTest {
                         "radio=${events.take(16)}",
                     actual.get() != null
                 )
-                assertEquals(TITLE, actual.get().title)
-                assertEquals(BODY, actual.get().body)
+                assertTrue("Synthetic title mismatch", TITLE == actual.get().title)
+                assertTrue("Synthetic original mismatch", BODY == actual.get().body)
                 onMain {
-                    assertEquals(actual.get(), inbox!!.original(actual.get().root))
+                    assertTrue(
+                        "Receipt identity mismatch",
+                        actual.get() == inbox!!.original(actual.get().root)
+                    )
                     assertTrue(inbox.saveAllowance(actual.get().root)())
                     inbox.configure(false)
                     assertTrue(inbox.state.originals.isEmpty())

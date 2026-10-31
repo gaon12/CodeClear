@@ -84,6 +84,7 @@ class MobileController(
     private var queryCancellation: CancellationSignal? = null
     private var searchDelay: Runnable? = null
     private var initializing = false
+    private var stopNearbyOnLoad = false
     private var selecting = false
     private var active: Work? = null
     private var engineRunning = false
@@ -103,10 +104,23 @@ class MobileController(
             preferences.load()
         }) { options ->
             initializing = false
-            update(state.copy(loaded = true, options = options, storageError = false))
+            val stopRequested = stopNearbyOnLoad
+            stopNearbyOnLoad = false
+            val resolved = if (stopRequested) options.copy(nearbyEnabled = false) else options
+            update(state.copy(loaded = true, options = resolved, storageError = false))
+            if (stopRequested) io({ preferences.save(resolved) }) {}
             syncCaptureConsent(refreshSources = true)
             refresh()
             kick()
+        }
+    }
+
+    fun stopNearbySharing() {
+        requireMain()
+        if (state.loaded) {
+            changeOptions(state.options.copy(nearbyEnabled = false))
+        } else {
+            stopNearbyOnLoad = true
         }
     }
 

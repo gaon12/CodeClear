@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
     <application>
+        <service
+            android:name="xyz.gaon.codeclear.nearby.RelayValidationService"
+            android:exported="false"
+            android:foregroundServiceType="connectedDevice" />
         <activity
             android:name="xyz.gaon.codeclear.probe.CaptureProbeActivity"
             android:exported="true" />

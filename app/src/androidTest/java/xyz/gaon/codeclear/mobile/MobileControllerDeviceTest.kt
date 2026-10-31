@@ -360,6 +360,38 @@ class MobileControllerDeviceTest {
     }
 
     @Test
+    fun aStopActionDuringSettingsLoadIsAppliedBeforeSharingCanBePublished() {
+        val began = java.util.concurrent.CountDownLatch(1)
+        val release = java.util.concurrent.CountDownLatch(1)
+        val persisted = AtomicReference<MobileOptions?>()
+        val preferences = object : OptionsStorage {
+            override fun load(): MobileOptions {
+                began.countDown()
+                check(release.await(5, java.util.concurrent.TimeUnit.SECONDS))
+                return MobileOptions(labsEnabled = true, nearbyEnabled = true)
+            }
+            override fun save(options: MobileOptions) {
+                persisted.set(options)
+            }
+        }
+        try {
+            onMain {
+                controller = MobileController(context, store, preferences, engine, latest::set)
+                controller!!.start()
+            }
+            assertTrue(began.await(5, java.util.concurrent.TimeUnit.SECONDS))
+            onMain { controller!!.stopNearbySharing() }
+            release.countDown()
+            await { it.loaded && !it.loading && persisted.get() != null }
+            assertFalse(latest.get().options.nearbyEnabled)
+            assertFalse(persisted.get()!!.nearbyEnabled)
+            assertEquals(0, onMain { engine.calls })
+        } finally {
+            release.countDown()
+        }
+    }
+
+    @Test
     fun automaticPeerRetentionSurvivesRestartAndDoesNotTranslateUntilRequested() {
         start(local = true)
         await { it.loaded && !it.loading }

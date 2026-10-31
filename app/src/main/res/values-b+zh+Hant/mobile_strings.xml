@@ -159,7 +159,7 @@
     <string name="mobile_nearby">附近警報共享</string>
     <string name="mobile_nearby_allow">允許附近共享</string>
     <string name="mobile_nearby_disclosure">向附近使用者分享新收集的原文。收到的訊息來源和真實性未經驗證。訊息自動儲存到私人歷史紀錄中，直到您刪除為止，不會再次轉發。</string>
-    <string name="mobile_nearby_foreground">僅在應用程式顯示於螢幕上時使用藍牙交換，離開後暫停。不使用GPS座標或伺服器。已儲存的訊息會保留在歷史紀錄中。</string>
+    <string name="mobile_nearby_foreground">顯示持續狀態通知，並可在背景透過藍牙交換。可在此處或通知中停止。不使用GPS座標或伺服器。如果Android停止了應用程式，請重新開啟以恢復。</string>
     <string name="mobile_nearby_unverified">來自附近裝置 · 來源未驗證</string>
     <string name="mobile_nearby_inbox">附近收件匣</string>
     <plurals name="mobile_nearby_count">
@@ -169,7 +169,7 @@
     <string name="mobile_nearby_save">儲存至記錄</string>
     <string name="mobile_nearby_dismiss">從最近訊息清單隱藏</string>
     <string name="mobile_nearby_save_failed">儲存失敗。請檢查共享權限及儲存空間。</string>
-    <string name="mobile_nearby_paused">應用程式隱藏時暫停</string>
+    <string name="mobile_nearby_paused">共享已暫停</string>
     <string name="mobile_nearby_permission">需要附近裝置權限</string>
     <string name="mobile_nearby_bluetooth">Bluetooth已關閉</string>
     <string name="mobile_nearby_location">系統位置設定已關閉</string>
@@ -198,4 +198,9 @@
     <string name="mobile_server_preparing">準備中</string>
     <string name="mobile_server_preview">伺服器翻譯尚未連接。翻譯仍在本機處理。未來的結果計劃包含發布機構及其識別依據。不會將警報內文傳送到伺服器。</string>
     <string name="mobile_nearby_retention_problem">無法儲存收到的訊息。附近訊息歷史紀錄最多保留1,000筆。請檢查儲存空間或刪除不需要的附近訊息紀錄，然後重新儲存。現有紀錄將保留。</string>
+    <string name="mobile_nearby_background_title">附近共享已開啟</string>
+    <string name="mobile_nearby_background_notice">正在背景透過藍牙接收。可開啟應用程式或停止共享。</string>
+    <string name="mobile_nearby_stop">停止共享</string>
+    <string name="mobile_nearby_background_needed">背景接收尚未執行。請保持應用程式開啟並檢查權限。</string>
+    <string name="mobile_nearby_background_location">Android 11背景藍牙搜尋需要在應用程式設定中將位置權限設為「一律允許」。沒有該額外權限時，仍可在應用程式顯示時共享。</string>
 </resources>

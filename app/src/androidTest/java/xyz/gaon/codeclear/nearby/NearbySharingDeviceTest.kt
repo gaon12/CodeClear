@@ -18,6 +18,51 @@ class NearbySharingDeviceTest {
     }
 
     @Test
+    fun foregroundAndServiceOwnershipHandOffWithoutRestartingAnActiveTransfer() {
+        val sessions = mutableListOf<FakeRadio>()
+        val owner = onMain {
+            NearbySharing(
+                instrumentation.targetContext,
+                sender = false,
+                availability = { NearbyStatus.RECEIVE_ONLY },
+                factory = NearbyRadioFactory { _, _, receive, _ ->
+                    FakeRadio(receive).also(sessions::add)
+                }
+            ).also {
+                it.configure(true)
+                it.foreground(true)
+            }
+        }
+        try {
+            onMain {
+                owner.background(true)
+                owner.foreground(false)
+                assertEquals(1, sessions.size)
+                assertFalse(sessions.single().closed)
+                assertTrue(owner.state.backgroundRunning)
+                sessions.single().receive(original())
+            }
+            onMain {
+                assertEquals(1, owner.state.originals.size)
+                owner.foreground(true)
+                owner.background(false)
+                assertEquals(1, sessions.size)
+                assertFalse(sessions.single().closed)
+                assertFalse(owner.state.backgroundRunning)
+                owner.foreground(false)
+                assertTrue(sessions.single().closed)
+                assertEquals(NearbyStatus.PAUSED, owner.state.status)
+            }
+        } finally {
+            onMain {
+                owner.configure(false)
+                owner.background(false)
+                owner.foreground(false)
+            }
+        }
+    }
+
+    @Test
     fun offHiddenPermissionLossAndDeletionRejectLateReceiptsAndStopEverySession() {
         val sessions = mutableListOf<FakeRadio>()
         var access = NearbyStatus.LISTENING

@@ -159,7 +159,7 @@
     <string name="mobile_nearby">Nearby alert sharing</string>
     <string name="mobile_nearby_allow">Allow nearby sharing</string>
     <string name="mobile_nearby_disclosure">Freshly captured originals are available to nearby users. Received messages have unverified origin and authenticity. They are automatically saved in private history until you delete them and are never forwarded again.</string>
-    <string name="mobile_nearby_foreground">Exchange uses Bluetooth while this app is on screen. Switching away pauses it. No GPS coordinates or server are used. Saved receipts remain in history.</string>
+    <string name="mobile_nearby_foreground">Bluetooth sharing can continue in the background with a persistent status notification. Stop it here or from the notification. No GPS coordinates or server are used. Android may stop the app; reopen it to resume.</string>
     <string name="mobile_nearby_unverified">Nearby delivery · unverified origin</string>
     <string name="mobile_nearby_inbox">Nearby inbox</string>
     <plurals name="mobile_nearby_count">
@@ -170,7 +170,7 @@
     <string name="mobile_nearby_save">Save to history</string>
     <string name="mobile_nearby_dismiss">Hide from recent messages</string>
     <string name="mobile_nearby_save_failed">Could not save. Check sharing access and available storage.</string>
-    <string name="mobile_nearby_paused">Paused while the app is away</string>
+    <string name="mobile_nearby_paused">Sharing paused</string>
     <string name="mobile_nearby_permission">Nearby access required</string>
     <string name="mobile_nearby_bluetooth">Bluetooth is off</string>
     <string name="mobile_nearby_location">System location is off</string>
@@ -199,4 +199,9 @@
     <string name="mobile_server_preparing">In preparation</string>
     <string name="mobile_server_preview">Server translation is not connected. Translation still runs on this device. The planned response includes the issuing authority and how it was identified. No alert text is sent to a server.</string>
     <string name="mobile_nearby_retention_problem">Could not save a received message. Nearby history is limited to 1,000 records. Check storage or delete unwanted nearby records, then try saving again. Existing history is preserved.</string>
+    <string name="mobile_nearby_background_title">Nearby sharing is on</string>
+    <string name="mobile_nearby_background_notice">Receiving with Bluetooth in the background. Tap to open the app or stop sharing.</string>
+    <string name="mobile_nearby_stop">Stop sharing</string>
+    <string name="mobile_nearby_background_needed">Background reception is not running. Keep the app open and check access.</string>
+    <string name="mobile_nearby_background_location">On Android 11, background Bluetooth discovery needs location access set to Allow all the time in app settings. You can keep using sharing while the app is visible without that extra access.</string>
 </resources>

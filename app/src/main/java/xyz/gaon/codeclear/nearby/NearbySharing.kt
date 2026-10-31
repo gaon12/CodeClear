@@ -16,7 +16,9 @@ data class NearbyState(
     val status: NearbyStatus = NearbyStatus.OFF,
     val originals: List<NearbyOriginal> = emptyList(),
     val retainedIds: Map<String, Long> = emptyMap(),
-    val retentionProblem: Boolean = false
+    val retentionProblem: Boolean = false,
+    val backgroundRunning: Boolean = false,
+    val backgroundAllowed: Boolean = true
 )
 
 /** Owns explicit sharing access, fresh exports, and bounded recent unverified receipts. */
@@ -29,6 +31,7 @@ class NearbySharing(
     },
     private val retain: ((NearbyOriginal, () -> Boolean, (Long?) -> Unit) -> Unit)? = null
 ) {
+    private val application = context.applicationContext
     private val main = Handler(Looper.getMainLooper())
     private val inbox = RelayInbox()
     private val retainedIds = linkedMapOf<String, Long>()
@@ -42,6 +45,7 @@ class NearbySharing(
     private var radio: NearbyRadio? = null
     private var allowed = false
     private var visible = false
+    private var background = false
     private var suspended = false
     private var enabledAt = Long.MAX_VALUE
     var state by mutableStateOf(NearbyState())
@@ -50,7 +54,13 @@ class NearbySharing(
     private val maintenance = object : Runnable {
         override fun run() {
             prune()
-            if (allowed && visible && !suspended) main.postDelayed(this, 15000)
+            if (allowed && active() && !suspended) {
+                if (availability() !in setOf(NearbyStatus.LISTENING, NearbyStatus.RECEIVE_ONLY)) {
+                    refresh()
+                } else {
+                    main.postDelayed(this, 15000)
+                }
+            }
         }
     }
 
@@ -68,10 +78,33 @@ class NearbySharing(
         refresh()
     }
 
-    fun foreground(active: Boolean) {
+    fun foreground(enabled: Boolean) {
         requireMain()
-        visible = active
-        refresh()
+        val previouslyActive = active()
+        visible = enabled
+        if (previouslyActive != active()) refresh()
+    }
+
+    /** The service grants this lease only after Android accepts its foreground notification. */
+    fun background(enabled: Boolean) {
+        requireMain()
+        val previouslyActive = active()
+        background = enabled
+        state = state.copy(backgroundRunning = enabled)
+        if (previouslyActive != active()) refresh()
+    }
+
+    private fun active(): Boolean = visible || background
+
+    fun recheckAccess() {
+        requireMain()
+        if (radio == null ||
+            availability() !in setOf(NearbyStatus.LISTENING, NearbyStatus.RECEIVE_ONLY)
+        ) {
+            refresh()
+        } else {
+            state = state.copy(backgroundAllowed = NearbyAccess.backgroundGranted(application))
+        }
     }
 
     fun suspendForDiagnostics(active: Boolean) {
@@ -90,16 +123,20 @@ class NearbySharing(
         prune()
         val status = when {
             !allowed -> NearbyStatus.OFF
-            !visible || suspended -> NearbyStatus.PAUSED
+            !active() || suspended -> NearbyStatus.PAUSED
             else -> availability()
         }
-        state = state.copy(status = status)
+        state =
+            state.copy(
+                status = status,
+                backgroundAllowed = NearbyAccess.backgroundGranted(application)
+            )
         if (status !in setOf(NearbyStatus.LISTENING, NearbyStatus.RECEIVE_ONLY)) return
         val next = factory.create(sender, {
             inbox.contains(it, SystemClock.elapsedRealtime())
         }, { original ->
             main.post {
-                if (generation.get() != ticket || !allowed || !visible || suspended) return@post
+                if (generation.get() != ticket || !allowed || !active() || suspended) return@post
                 val entries = inbox.originals(SystemClock.elapsedRealtime())
                 if (entries.size >= 32) {
                     entries.lastOrNull { it.root in retainedIds }?.let {

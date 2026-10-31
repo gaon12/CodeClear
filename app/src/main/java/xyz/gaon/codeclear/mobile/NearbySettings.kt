@@ -33,6 +33,15 @@ internal fun NearbySettings(state: MobileState, actions: MobileActions) {
         }
         SettingDivider()
         SettingNote(stringResource(R.string.mobile_nearby_foreground))
+        if (options.nearbyEnabled && !actions.nearby.backgroundRunning) {
+            SettingNote(stringResource(R.string.mobile_nearby_background_needed))
+            if (!actions.nearby.backgroundAllowed) {
+                SettingNote(stringResource(R.string.mobile_nearby_background_location))
+                SettingRow(stringResource(R.string.mobile_open_settings), onClick = {
+                    actions.settings(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                })
+            }
+        }
         if (android.os.Build.VERSION.SDK_INT == 30) {
             SettingNote(stringResource(R.string.mobile_nearby_legacy_location))
         }
