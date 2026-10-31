@@ -62,7 +62,7 @@
     <string name="mobile_done">完成</string>
     <string name="mobile_next">下一步</string>
     <string name="mobile_capture_status">擷取狀態</string>
-    <string name="mobile_wifi_only">僅支援 Wi-Fi 的裝置無法接收行動網路緊急警報，也無法自動擷取。</string>
+    <string name="mobile_wifi_only">此裝置沒有接收基地台緊急警報所需的行動通訊接收功能。僅連接 Wi-Fi 無法直接接收這些廣播。您仍可查看已儲存的紀錄與譯文。</string>
     <string name="mobile_source_unknown">未找到經過審核的系統警報接收應用程式，此來源暫不支援自動擷取。</string>
     <string name="mobile_setup_needed">請在設定中允許通知存取或無障礙存取。同時啟用兩種方式可增加可擷取的情境。</string>
     <string name="mobile_ready">已準備擷取經審核的系統來源所提供的正文。請保持原始緊急警報應用程式處於啟用狀態。</string>
@@ -84,7 +84,7 @@
     <string name="mobile_restricted">Android 13 以上版本可能限制直接透過 APK 安裝的應用程式。請開啟應用程式資訊 → 更多 → 允許受限制的設定，再分別開啟各項存取權限。若選單中沒有此選項，請透過下方按鈕開啟 Android 應用程式清單，選擇 CodeClear，再開啟更多。選單因裝置而異，管理員也可能禁止變更。</string>
     <string name="mobile_model_notice">透過 Wi-Fi 準備原文語言與目標語言的模型。下載會消耗流量與儲存空間。離開此頁面或關閉翻譯後，Android 仍可能繼續下載。警報正文不會上傳。僅在裝置內翻譯保持啟用時才會恢復翻譯。</string>
     <string name="mobile_privacy_description">原文與譯文會保存在裝置私有儲存空間中，直到您刪除。無須帳號，不提供同步、伺服器翻譯或警報正文上傳。應用程式備份與裝置間資料移轉已停用。</string>
-    <string name="mobile_compatibility_description">適用對象為具有行動通訊硬體的 Android 11 以上手機與平板電腦。能否完整擷取取決於警報接收應用程式與韌體。已測試的設定不代表全球相容性。重新啟動後首次解鎖才開始擷取。</string>
+    <string name="mobile_compatibility_description">CodeClear 可用於 Android 11 以上的手機與平板電腦。直接接收緊急警報需要行動通訊硬體。僅支援 Wi-Fi 的裝置仍可查看已儲存的紀錄與譯文。能否完整擷取取決於警報接收應用程式與韌體；已測試的設定不代表全球支援。重新啟動後首次解鎖才開始擷取。</string>
     <string name="mobile_notification_disclosure">Android 通知存取權限也可能允許存取其他應用程式的通知。CodeClear 只讀取經審核的系統緊急警報接收來源，將完整的單則警報正文儲存到裝置內的私有紀錄中，用於裝置內翻譯。不會上傳正文或自動開啟頁面。您可以隨時在此關閉擷取，或在 Android 設定中撤銷存取權限。</string>
     <string name="mobile_accessibility_disclosure">CodeClear 使用無障礙功能讀取經審核的系統緊急警報對話框中的單則正文、標題與待處理數量，不讀取其他頁面或歷史清單列。不會執行手勢或關閉警告。原文保留在私有紀錄中，用於裝置內翻譯。本應用程式並非身心障礙輔助工具。您可以隨時在此關閉擷取，或在 Android 設定中撤銷存取權限。</string>
     <string name="mobile_local_disclosure">啟用已擷取警報的裝置內自動翻譯。語言模型需要另外透過 Wi-Fi 下載。不會向翻譯伺服器傳送警報正文。關閉後將停止新翻譯，現有紀錄仍會保留。</string>
@@ -132,7 +132,7 @@
     <string name="mobile_result_notification_summary">翻譯完成時通知。不在通知中顯示警報內文。</string>
     <string name="mobile_data_storage">資料儲存說明</string>
     <string name="mobile_about">關於應用程式</string>
-    <string name="mobile_capture_unavailable">此裝置無法使用</string>
+    <string name="mobile_capture_unavailable">不支援直接接收</string>
     <string name="mobile_capture_paused">擷取已關閉 · Android 已允許存取</string>
     <string name="mobile_enable">開啟</string>
     <string name="mobile_open_settings">開啟設定</string>
@@ -140,4 +140,5 @@
     <string name="mobile_target_language">翻譯語言</string>
     <string name="mobile_change">變更</string>
     <string name="mobile_download_models">透過 Wi-Fi 下載</string>
+    <string name="mobile_reception_information">緊急警報接收說明</string>
 </resources>

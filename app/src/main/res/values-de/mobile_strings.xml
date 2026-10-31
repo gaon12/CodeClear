@@ -62,7 +62,7 @@
     <string name="mobile_done">Fertig</string>
     <string name="mobile_next">Weiter</string>
     <string name="mobile_capture_status">Erfassungsstatus</string>
-    <string name="mobile_wifi_only">Nur-WLAN-Gerät: Mobilfunk-Notfallwarnungen können nicht empfangen oder automatisch erfasst werden.</string>
+    <string name="mobile_wifi_only">Dieses Gerät hat keinen Mobilfunkempfänger für Notfallwarnungen von Funkmasten. Eine WLAN-Verbindung allein kann diese Meldungen nicht direkt empfangen. Gespeicherte Einträge und Übersetzungen bleiben verfügbar.</string>
     <string name="mobile_source_unknown">Es wurde keine geprüfte System-Empfangs-App gefunden. Für diese Quelle ist keine automatische Erfassung verfügbar.</string>
     <string name="mobile_setup_needed">Erlauben Sie in den Einstellungen den Benachrichtigungs- oder Bedienungshilfenzugriff. Beide Wege verbessern die Abdeckung.</string>
     <string name="mobile_ready">Die Erfassung freigegebener Nachrichten aus geprüften Systemquellen ist aktiv. Lassen Sie die ursprüngliche Warn-App eingeschaltet.</string>
@@ -84,7 +84,7 @@
     <string name="mobile_restricted">Ab Android 13 kann der Zugriff bei direkt installierten APKs eingeschränkt sein. Öffnen Sie App-Info → Mehr → Eingeschränkte Einstellungen zulassen. Aktivieren Sie danach jeden Zugriff einzeln. Fehlt das Menü, öffnen Sie unten die Android-App-Liste, wählen Sie CodeClear und dort Mehr. Menüs können abweichen; Administratoren können Änderungen verhindern.</string>
     <string name="mobile_model_notice">Bereiten Sie die Modelle für Ausgangs- und Zielsprache über WLAN vor. Downloads benötigen Daten und Speicher. Android kann sie nach Verlassen dieses Bildschirms oder Ausschalten der Übersetzung fortsetzen. Warntexte werden nicht hochgeladen. Die Übersetzung wird nur fortgesetzt, solange die Übersetzung auf dem Gerät aktiviert ist.</string>
     <string name="mobile_privacy_description">Originale und Übersetzungen bleiben bis zum Löschen im privaten Gerätespeicher. Es gibt kein Konto, keine Synchronisierung, keine Serverübersetzung und keinen Upload von Warntexten. App-Sicherung und Geräteübertragung sind deaktiviert.</string>
-    <string name="mobile_compatibility_description">Ziel sind Smartphones und Tablets ab Android 11 mit Mobilfunkhardware. Die vollständige Erfassung hängt von Empfangs-App und Firmware ab. Getestete Profile belegen keine weltweite Kompatibilität. Die Erfassung beginnt nach dem ersten Entsperren nach einem Neustart.</string>
+    <string name="mobile_compatibility_description">CodeClear funktioniert auf Smartphones und Tablets ab Android 11. Der direkte Empfang von Notfallwarnungen erfordert Mobilfunkhardware. Reine WLAN-Geräte können gespeicherte Einträge und Übersetzungen anzeigen. Die vollständige Erfassung hängt von Empfangs-App und Firmware ab; getestete Profile belegen keine weltweite Unterstützung. Die Erfassung beginnt nach dem ersten Entsperren nach einem Neustart.</string>
     <string name="mobile_notification_disclosure">Der Android-Benachrichtigungszugriff kann auch Benachrichtigungen anderer Apps zugänglich machen. CodeClear liest nur geprüfte System-Apps zum Empfang von Notfallwarnungen und speichert vollständige einzelne Warntexte im privaten lokalen Verlauf zur Übersetzung auf dem Gerät. Warntexte werden nicht hochgeladen und Bildschirme nicht automatisch geöffnet. Sie können die Erfassung hier ausschalten oder den Zugriff in Android jederzeit entziehen.</string>
     <string name="mobile_accessibility_disclosure">CodeClear nutzt Bedienungshilfen, um das einzelne Nachrichtenfeld, den Titel und die Anzahl wartender Warnungen in geprüften System-Warndialogen zu lesen. Andere Bildschirme und Verlaufszeilen sind ausgeschlossen. Die App führt keine Gesten aus und schließt keine Warnungen. Originale bleiben für die lokale Übersetzung im privaten Verlauf. Dies ist kein Hilfsmittel für Menschen mit Behinderungen. Sie können die Erfassung hier ausschalten oder den Zugriff in Android jederzeit entziehen.</string>
     <string name="mobile_local_disclosure">Aktivieren Sie die automatische Übersetzung erfasster Warnungen auf diesem Gerät. Starten Sie den Download der Sprachmodelle über WLAN separat. Warntexte werden an keinen Übersetzungsserver gesendet. Das Ausschalten stoppt neue Übersetzungen und erhält den Verlauf.</string>
@@ -132,7 +132,7 @@
     <string name="mobile_result_notification_summary">Benachrichtigung bei fertiger Übersetzung. Warntexte werden nicht in Benachrichtigungen angezeigt.</string>
     <string name="mobile_data_storage">Datenspeicherung</string>
     <string name="mobile_about">Über die App</string>
-    <string name="mobile_capture_unavailable">Auf diesem Gerät nicht verfügbar</string>
+    <string name="mobile_capture_unavailable">Direkter Empfang nicht unterstützt</string>
     <string name="mobile_capture_paused">Erfassung aus · Android-Zugriff erlaubt</string>
     <string name="mobile_enable">Einschalten</string>
     <string name="mobile_open_settings">Einstellungen öffnen</string>
@@ -140,4 +140,5 @@
     <string name="mobile_target_language">Zielsprache</string>
     <string name="mobile_change">Ändern</string>
     <string name="mobile_download_models">Über WLAN herunterladen</string>
+    <string name="mobile_reception_information">So werden Notfallwarnungen empfangen</string>
 </resources>

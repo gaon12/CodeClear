@@ -62,7 +62,7 @@
     <string name="mobile_done">完成</string>
     <string name="mobile_next">下一步</string>
     <string name="mobile_capture_status">采集状态</string>
-    <string name="mobile_wifi_only">仅支持 Wi-Fi 的设备无法接收蜂窝紧急警报，也无法自动采集。</string>
+    <string name="mobile_wifi_only">此设备没有接收基站紧急警报所需的蜂窝通信接收功能。仅连接 Wi-Fi 无法直接接收这些广播。您仍可查看已保存的记录和译文。</string>
     <string name="mobile_source_unknown">未找到经过审核的系统警报接收应用，此来源暂不支持自动采集。</string>
     <string name="mobile_setup_needed">请在设置中允许通知访问或无障碍访问。同时启用两种方式可增加可采集的场景。</string>
     <string name="mobile_ready">已准备采集经审核的系统来源所提供的正文。请保持原始紧急警报应用处于启用状态。</string>
@@ -84,7 +84,7 @@
     <string name="mobile_restricted">Android 13 及以上版本可能限制直接通过 APK 安装的应用。请打开应用信息 → 更多 → 允许受限设置，然后分别开启各项访问权限。若菜单中没有该选项，请通过下方按钮打开 Android 应用列表，选择 CodeClear，再打开更多。菜单因设备而异，管理员也可能禁止更改。</string>
     <string name="mobile_model_notice">通过 Wi-Fi 准备原文语言和目标语言的模型。下载会消耗流量和存储空间。离开此页面或关闭翻译后，Android 仍可能继续下载。警报正文不会上传。仅在设备内翻译保持启用时才会恢复翻译。</string>
     <string name="mobile_privacy_description">原文和译文会保存在设备私有存储中，直到您删除。无需账号，不提供同步、服务器翻译或警报正文上传。应用备份和设备间数据迁移已禁用。</string>
-    <string name="mobile_compatibility_description">面向具有蜂窝通信硬件的 Android 11 及以上手机和平板电脑。能否完整采集取决于警报接收应用和固件。已测试的配置不代表全球兼容性。重启后首次解锁才开始采集。</string>
+    <string name="mobile_compatibility_description">CodeClear 可用于 Android 11 及以上的手机和平板电脑。直接接收紧急警报需要蜂窝通信硬件。仅支持 Wi-Fi 的设备仍可查看已保存的记录和译文。能否完整采集取决于警报接收应用和固件；已测试的配置不代表全球支持。重启后首次解锁才开始采集。</string>
     <string name="mobile_notification_disclosure">Android 通知访问权限也可能允许访问其他应用的通知。CodeClear 只读取经审核的系统紧急警报接收来源，将完整的单条警报正文保存到设备内的私有记录中，用于设备内翻译。不会上传正文或自动打开页面。您可以随时在此关闭采集，或在 Android 设置中撤销访问权限。</string>
     <string name="mobile_accessibility_disclosure">CodeClear 使用无障碍功能读取经审核的系统紧急警报对话框中的单条正文、标题和待处理数量，不读取其他页面或历史列表行。不会执行手势或关闭警告。原文保留在私有记录中，用于设备内翻译。本应用并非残障辅助工具。您可以随时在此关闭采集，或在 Android 设置中撤销访问权限。</string>
     <string name="mobile_local_disclosure">启用对已采集警报的设备内自动翻译。语言模型需要另外通过 Wi-Fi 下载。不会向翻译服务器发送警报正文。关闭后将停止新翻译，现有记录仍会保留。</string>
@@ -132,7 +132,7 @@
     <string name="mobile_result_notification_summary">翻译完成时通知。不在通知中显示警报正文。</string>
     <string name="mobile_data_storage">数据存储说明</string>
     <string name="mobile_about">关于应用</string>
-    <string name="mobile_capture_unavailable">此设备不可用</string>
+    <string name="mobile_capture_unavailable">不支持直接接收</string>
     <string name="mobile_capture_paused">采集已关闭 · Android 已允许访问</string>
     <string name="mobile_enable">开启</string>
     <string name="mobile_open_settings">打开设置</string>
@@ -140,4 +140,5 @@
     <string name="mobile_target_language">翻译语言</string>
     <string name="mobile_change">更改</string>
     <string name="mobile_download_models">通过 Wi-Fi 下载</string>
+    <string name="mobile_reception_information">紧急警报接收说明</string>
 </resources>

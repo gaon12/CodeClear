@@ -62,7 +62,7 @@
     <string name="mobile_done">完了</string>
     <string name="mobile_next">次へ</string>
     <string name="mobile_capture_status">取得状況</string>
-    <string name="mobile_wifi_only">Wi-Fi専用端末では、携帯電話回線の緊急速報を受信・自動取得できません。</string>
+    <string name="mobile_wifi_only">この端末には、基地局からの緊急速報を受信する携帯電話回線の受信機能がありません。Wi-Fi接続だけでは直接受信できません。保存済みの履歴と翻訳は引き続き確認できます。</string>
     <string name="mobile_source_unknown">確認済みのシステム受信アプリが見つかりません。この受信環境では自動取得できません。</string>
     <string name="mobile_setup_needed">設定で通知またはユーザー補助へのアクセスを許可してください。両方を使うと取得できる状況が増えます。</string>
     <string name="mobile_ready">確認済みのシステム受信元が公開する本文を取得します。元の緊急速報アプリも有効にしてください。</string>
@@ -84,7 +84,7 @@
     <string name="mobile_restricted">Android 13以降では、APKから直接インストールしたアプリのアクセスが制限される場合があります。アプリ情報 → その他 → 制限付き設定を許可を選び、その後それぞれのアクセスを有効にしてください。メニューがない場合は、下のボタンからAndroidのアプリ一覧を開き、CodeClearを選んでその他を確認してください。端末や管理者によって変更が制限される場合があります。</string>
     <string name="mobile_model_notice">Wi-Fiで原文言語と翻訳先言語のモデルを準備します。データ通信と保存領域を使用します。この画面を閉じたり翻訳を無効にしたりしても、Androidがダウンロードを続ける場合があります。警報の本文はアップロードしません。翻訳を再開するのは、端末内の翻訳が有効な場合だけです。</string>
     <string name="mobile_privacy_description">原文と翻訳は、削除するまで端末内の非公開領域に保存します。アカウント、同期、サーバー翻訳、警報本文のアップロードはありません。アプリのバックアップと端末間転送は無効です。</string>
-    <string name="mobile_compatibility_description">携帯電話回線に対応したAndroid 11以降のスマートフォン・タブレットを対象としています。全文の取得可否は受信アプリやファームウェアに依存します。検証済みの環境だけで世界中の互換性を保証するものではありません。再起動後、最初のロック解除から取得を開始します。</string>
+    <string name="mobile_compatibility_description">CodeClearはAndroid 11以降のスマートフォンとタブレットで利用できます。緊急速報の直接受信には携帯電話回線の受信機能が必要です。Wi-Fi専用端末でも保存済みの履歴と翻訳は確認できます。全文の取得可否は受信アプリとファームウェアに依存し、検証済みの環境だけで世界中の対応を保証するものではありません。再起動後、最初のロック解除から取得を開始します。</string>
     <string name="mobile_notification_disclosure">Androidの通知アクセス権では、他のアプリの通知にもアクセスできます。CodeClearは確認済みのシステム緊急速報受信元だけを読み取り、完全な個別本文を端末内の非公開履歴に保存して翻訳します。本文のアップロードや画面の自動表示は行いません。取得をオフにするか、Android の設定でアクセス許可をいつでも取り消せます。</string>
     <string name="mobile_accessibility_disclosure">CodeClearはユーザー補助を使い、確認済みのシステム緊急速報ダイアログにある個別の本文、件名、待機件数を読み取ります。他の画面や履歴一覧の行は読みません。ジェスチャーの実行や警告の解除は行いません。原文は端末内の翻訳用に非公開履歴へ保存します。障害者向け支援ツールではありません。取得をオフにするか、Android の設定でアクセス許可をいつでも取り消せます。</string>
     <string name="mobile_local_disclosure">取得した緊急速報を端末内で自動翻訳します。言語モデルは別途 Wi-Fi でダウンロードしてください。警報の本文を翻訳サーバーに送ることはありません。無効にすると新たな翻訳を停止し、履歴は保持します。</string>
@@ -132,7 +132,7 @@
     <string name="mobile_result_notification_summary">翻訳が完了したら通知します。警報の本文は通知に表示しません。</string>
     <string name="mobile_data_storage">データの保存について</string>
     <string name="mobile_about">アプリについて</string>
-    <string name="mobile_capture_unavailable">この端末では利用できません</string>
+    <string name="mobile_capture_unavailable">直接受信には非対応</string>
     <string name="mobile_capture_paused">取得はオフ・Android のアクセスは許可済み</string>
     <string name="mobile_enable">オンにする</string>
     <string name="mobile_open_settings">設定を開く</string>
@@ -140,4 +140,5 @@
     <string name="mobile_target_language">翻訳先の言語</string>
     <string name="mobile_change">変更</string>
     <string name="mobile_download_models">Wi-Fi でダウンロード</string>
+    <string name="mobile_reception_information">緊急速報の受信について</string>
 </resources>

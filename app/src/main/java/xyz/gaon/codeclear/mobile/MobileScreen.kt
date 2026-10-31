@@ -327,7 +327,15 @@ fun MobileScreen(
                                     }
                                 }
                                 item {
-                                    SettingSection(stringResource(R.string.mobile_capture_status)) {
+                                    SettingSection(
+                                        stringResource(
+                                            if (environment.radio == ProbeRadio.ABSENT) {
+                                                R.string.mobile_reception_information
+                                            } else {
+                                                R.string.mobile_capture_status
+                                            }
+                                        )
+                                    ) {
                                         Text(
                                             stringResource(
                                                 when {

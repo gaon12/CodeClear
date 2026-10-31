@@ -47,7 +47,7 @@
     <string name="mobile_privacy_description">삭제할 때까지 원문과 번역을 기기 내 전용 저장소에 보관합니다. 가입·동기화·서버 번역·본문 업로드 기능은 없습니다. 앱 백업과 기기 간 이전은 비활성화되어 있습니다.</string>
     <string name="mobile_delete_all">모든 기록 삭제</string>
     <string name="mobile_compatibility">기기 호환성</string>
-    <string name="mobile_compatibility_description">셀룰러 기능이 있는 Android 11 이상 휴대전화·태블릿을 대상으로 합니다. 전체 내용 수집 여부는 수신 앱과 펌웨어에 따라 다릅니다. 검증된 기기만으로 전 세계 호환성을 보장하지 않습니다. 재부팅 후 첫 잠금 해제부터 수집합니다.</string>
+    <string name="mobile_compatibility_description">CodeClear는 Android 11 이상 스마트폰과 태블릿에서 사용할 수 있습니다. 재난문자를 직접 수신하려면 이동통신 수신 기능이 필요합니다. Wi-Fi 전용 기기에서도 저장된 기록과 번역은 확인할 수 있습니다. 전체 내용 수집 여부는 수신 앱과 펌웨어에 따라 다르며, 검증된 기기만으로 전 세계 지원을 보장하지 않습니다. 수집은 재부팅 후 첫 잠금 해제부터 시작합니다.</string>
     <string name="mobile_notification_disclosure">Android 알림 접근은 다른 앱의 알림에도 접근할 수 있는 권한입니다. CodeClear는 검토된 시스템 재난문자 수신 앱만 읽고, 확인된 개별 본문을 기기 내 전용 기록에 보관해 번역합니다. 본문을 업로드하거나 화면을 자동으로 열지 않습니다. 수집 스위치를 끄거나 Android 설정에서 접근 권한을 해제하면 수집을 중단합니다.</string>
     <string name="mobile_accessibility_disclosure">CodeClear는 접근성으로 검토된 시스템 재난문자 모달의 개별 본문·제목·대기 개수를 읽습니다. 다른 화면과 기록 목록은 읽지 않습니다. 제스처를 실행하거나 경고를 닫지 않습니다. 원문은 기기 내 번역을 위해 전용 기록에 보관합니다. 장애인 지원 도구는 아닙니다. 수집 스위치를 끄거나 Android 설정에서 접근 권한을 해제하면 수집을 중단합니다.</string>
     <string name="mobile_local_disclosure">수집한 재난문자를 기기 안에서 자동으로 번역합니다. 언어 모델을 내려받으려면 별도로 Wi-Fi 다운로드를 시작해야 합니다. 번역 서버로 본문을 전송하지 않습니다. 끄면 새 번역을 중단하며 기존 기록은 유지합니다.</string>
@@ -73,7 +73,7 @@
     <string name="mobile_done">완료</string>
     <string name="mobile_next">다음</string>
     <string name="mobile_capture_status">수집 상태</string>
-    <string name="mobile_wifi_only">Wi-Fi 전용 기기에서는 셀룰러 재난문자 수신과 자동 수집을 사용할 수 없습니다.</string>
+    <string name="mobile_wifi_only">이 기기에는 기지국에서 보내는 재난문자를 받는 이동통신 수신 기능이 없습니다. Wi-Fi 연결만으로는 이 문자를 직접 받을 수 없습니다. 저장된 기록과 번역은 계속 확인할 수 있습니다.</string>
     <string name="mobile_radio_unknown">셀룰러 하드웨어를 확인하지 못했습니다. Wi-Fi 사용·SIM 유무·모바일 데이터 설정과는 별개입니다.</string>
     <string name="mobile_source_unknown">검토된 시스템 재난문자 수신 앱을 찾지 못했습니다. 이 수신 환경에서는 자동 수집을 사용할 수 없습니다.</string>
     <string name="mobile_setup_needed">설정에서 알림 또는 접근성을 허용하세요. 두 경로를 함께 켜면 더 많은 상황에서 수집할 수 있습니다.</string>
@@ -132,7 +132,7 @@
     <string name="mobile_result_notification_summary">번역이 완료되면 알려줍니다. 알림에 재난문자 내용은 표시하지 않습니다.</string>
     <string name="mobile_data_storage">데이터 보관 안내</string>
     <string name="mobile_about">앱 정보</string>
-    <string name="mobile_capture_unavailable">이 기기에서 사용 불가</string>
+    <string name="mobile_capture_unavailable">직접 수신 기능 없음</string>
     <string name="mobile_capture_paused">수집 꺼짐 · Android 접근 허용됨</string>
     <string name="mobile_enable">켜기</string>
     <string name="mobile_open_settings">설정 열기</string>
@@ -140,4 +140,5 @@
     <string name="mobile_target_language">번역 언어</string>
     <string name="mobile_change">변경</string>
     <string name="mobile_download_models">Wi-Fi로 다운로드</string>
+    <string name="mobile_reception_information">재난문자 수신 안내</string>
 </resources>

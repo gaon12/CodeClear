@@ -62,7 +62,7 @@
     <string name="mobile_done">Terminer</string>
     <string name="mobile_next">Suivant</string>
     <string name="mobile_capture_status">État de la collecte</string>
-    <string name="mobile_wifi_only">Appareil Wi-Fi uniquement : la réception et la collecte automatique des alertes cellulaires sont indisponibles.</string>
+    <string name="mobile_wifi_only">Cet appareil ne dispose pas du récepteur cellulaire nécessaire pour les alertes diffusées par les antennes mobiles. Une connexion Wi-Fi seule ne permet pas de les recevoir directement. Les éléments et traductions enregistrés restent consultables.</string>
     <string name="mobile_source_unknown">Aucun récepteur système vérifié n’a été trouvé. La collecte automatique est indisponible pour cette source.</string>
     <string name="mobile_setup_needed">Autorisez l’accès aux notifications ou à l’accessibilité dans les paramètres. Les deux voies améliorent la couverture.</string>
     <string name="mobile_ready">La collecte est activée pour les messages exposés par les sources système vérifiées. Gardez l’application d’alerte originale activée.</string>
@@ -84,7 +84,7 @@
     <string name="mobile_restricted">Android 13 et versions ultérieures peuvent bloquer l’accès après une installation directe par APK. Ouvrez Informations sur l’application → Plus → Autoriser les paramètres restreints, puis activez chaque accès séparément. Si le menu manque, ouvrez la liste des applications Android ci-dessous, sélectionnez CodeClear, puis Plus. Les menus varient et un administrateur peut empêcher les modifications.</string>
     <string name="mobile_model_notice">Préparez les modèles des langues source et cible via Wi-Fi. Les téléchargements utilisent des données et du stockage. Android peut les poursuivre après la fermeture de cet écran ou la désactivation de la traduction. Le texte des alertes n’est pas envoyé. La traduction reprend uniquement si la traduction sur l’appareil reste activée.</string>
     <string name="mobile_privacy_description">Les originaux et traductions restent dans le stockage privé de l’appareil jusqu’à leur suppression. Aucun compte, aucune synchronisation, traduction serveur ou transmission du texte des alertes. La sauvegarde et le transfert des données de l’application sont désactivés.</string>
-    <string name="mobile_compatibility_description">L’application vise les téléphones et tablettes Android 11 et ultérieurs dotés d’une radio cellulaire. La collecte complète dépend du récepteur d’alertes et du micrologiciel. Les profils testés ne prouvent pas une compatibilité mondiale. La collecte commence après le premier déverrouillage suivant un redémarrage.</string>
+    <string name="mobile_compatibility_description">CodeClear fonctionne sur les téléphones et tablettes Android 11 et ultérieurs. La réception directe des alertes nécessite du matériel cellulaire. Les appareils Wi-Fi seuls peuvent consulter les éléments et traductions enregistrés. La collecte complète dépend du récepteur et du micrologiciel ; les profils testés ne prouvent pas une prise en charge mondiale. La collecte commence après le premier déverrouillage suivant un redémarrage.</string>
     <string name="mobile_notification_disclosure">L’accès aux notifications Android peut donner accès aux notifications d’autres applications. CodeClear lit uniquement les sources système de réception d’alertes vérifiées et enregistre les textes individuels complets dans un historique privé sur l’appareil pour les traduire localement. Le texte n’est pas envoyé et aucun écran ne s’ouvre automatiquement. Vous pouvez arrêter la collecte ici ou révoquer l’accès dans les paramètres Android à tout moment.</string>
     <string name="mobile_accessibility_disclosure">CodeClear utilise l’accessibilité pour lire le champ d’un seul message, son titre et le nombre d’alertes en attente dans les boîtes de dialogue système vérifiées. Les autres écrans et lignes d’historique sont exclus. L’application n’effectue pas de gestes et ne ferme pas les avertissements. Les originaux restent dans l’historique privé pour la traduction locale. Ce n’est pas un outil d’assistance au handicap. Vous pouvez arrêter la collecte ici ou révoquer l’accès dans les paramètres Android à tout moment.</string>
     <string name="mobile_local_disclosure">Activez la traduction automatique des alertes recueillies sur cet appareil. Lancez séparément le téléchargement des modèles via Wi-Fi. Aucun texte d’alerte n’est envoyé à un serveur de traduction. La désactivation arrête les nouvelles traductions et conserve l’historique.</string>
@@ -132,7 +132,7 @@
     <string name="mobile_result_notification_summary">Recevez une notification lorsque la traduction est prête. Le texte des alertes reste masqué.</string>
     <string name="mobile_data_storage">Stockage des données</string>
     <string name="mobile_about">À propos</string>
-    <string name="mobile_capture_unavailable">Indisponible sur cet appareil</string>
+    <string name="mobile_capture_unavailable">Réception directe non prise en charge</string>
     <string name="mobile_capture_paused">Collecte désactivée · Accès Android autorisé</string>
     <string name="mobile_enable">Activer</string>
     <string name="mobile_open_settings">Ouvrir les paramètres</string>
@@ -140,4 +140,5 @@
     <string name="mobile_target_language">Langue de traduction</string>
     <string name="mobile_change">Modifier</string>
     <string name="mobile_download_models">Télécharger en Wi-Fi</string>
+    <string name="mobile_reception_information">Comprendre la réception des alertes</string>
 </resources>

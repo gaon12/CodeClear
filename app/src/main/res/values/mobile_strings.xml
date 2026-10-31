@@ -47,7 +47,7 @@
     <string name="mobile_privacy_description">Originals and translations stay in private device storage until you delete them. No account, synchronization, server translation, or alert uploads. App backup and transfer are disabled.</string>
     <string name="mobile_delete_all">Delete all history</string>
     <string name="mobile_compatibility">Device compatibility</string>
-    <string name="mobile_compatibility_description">Android 11+ phones and tablets with a cellular radio are the target. Complete capture depends on the installed alert receiver and firmware. Tested source profiles do not establish worldwide compatibility. Capture starts after the first unlock following reboot.</string>
+    <string name="mobile_compatibility_description">CodeClear works on Android 11+ phones and tablets. Direct emergency-alert reception requires cellular hardware. Wi-Fi-only devices can still show saved records and translations. Complete capture depends on the installed alert receiver and firmware; tested profiles do not establish worldwide support. Capture starts after the first unlock following reboot.</string>
     <string name="mobile_notification_disclosure">Android notification access can expose notifications from other apps. CodeClear reads only reviewed installed system emergency-receiver sources and saves individual complete alert text in private local history for on-device translation. It does not upload alert text or open screens automatically. Turn capture off here or revoke access in Android Settings at any time.</string>
     <string name="mobile_accessibility_disclosure">CodeClear uses accessibility to read the single message field, title, and pending count in reviewed system emergency-alert dialogs. Other screens and history rows are excluded. It does not perform gestures or dismiss warnings. Originals stay in private history for local translation. This is not a disability assistance tool. Turn capture off here or revoke access in Android Settings at any time.</string>
     <string name="mobile_local_disclosure">Enable automatic on-device translation of captured alerts. Language models require a separate Wi-Fi download approval. No alert text is sent to a translation server. Turning this off stops new translations while preserving your history.</string>
@@ -73,7 +73,7 @@
     <string name="mobile_done">Done</string>
     <string name="mobile_next">Next</string>
     <string name="mobile_capture_status">Capture status</string>
-    <string name="mobile_wifi_only">Wi-Fi-only hardware: cellular emergency-alert reception and automatic capture are unavailable.</string>
+    <string name="mobile_wifi_only">This device has no cellular receiver for emergency alerts sent by cell towers. A Wi-Fi connection alone cannot receive these broadcasts. You can still view saved records and translations.</string>
     <string name="mobile_radio_unknown">Cellular radio capability could not be verified. Current Wi-Fi use, SIM absence, and mobile data settings do not determine hardware capability.</string>
     <string name="mobile_source_unknown">No reviewed system alert receiver was found. Automatic capture is unavailable for this source profile.</string>
     <string name="mobile_setup_needed">Allow notification or accessibility access in Settings to capture alerts. Both routes improve coverage.</string>
@@ -132,7 +132,7 @@
     <string name="mobile_result_notification_summary">Get notified when a translation is ready. Alert text is kept out of notifications.</string>
     <string name="mobile_data_storage">How data is stored</string>
     <string name="mobile_about">About</string>
-    <string name="mobile_capture_unavailable">Unavailable on this device</string>
+    <string name="mobile_capture_unavailable">Direct reception is not supported</string>
     <string name="mobile_capture_paused">Capture off · Android access allowed</string>
     <string name="mobile_enable">Turn on</string>
     <string name="mobile_open_settings">Open settings</string>
@@ -140,4 +140,5 @@
     <string name="mobile_target_language">Translation language</string>
     <string name="mobile_change">Change</string>
     <string name="mobile_download_models">Download on Wi-Fi</string>
+    <string name="mobile_reception_information">How emergency alerts are received</string>
 </resources>

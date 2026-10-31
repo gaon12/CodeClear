@@ -877,16 +877,33 @@ class MobileScreenDeviceTest {
 
     @Test
     fun wifiOnlyNoticeAndThreeStepTutorialRemainUsable() {
-        compose.runOnIdle { environment = environment.copy(radio = ProbeRadio.ABSENT) }
-        compose.onNodeWithTag("mobile-feed")
-            .performScrollToNode(hasText(text(R.string.mobile_wifi_only)))
-        compose.onNodeWithText(text(R.string.mobile_wifi_only)).assertIsDisplayed()
+        compose.runOnIdle {
+            environment = environment.copy(radio = ProbeRadio.ABSENT)
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            previewLanguage = "ko"
+        }
+        for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
+            compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            compose.onNodeWithTag("mobile-feed").performScrollToNode(
+                hasText(text(R.string.mobile_reception_information))
+            )
+            compose.onNodeWithText(text(R.string.mobile_reception_information)).assertIsDisplayed()
+            compose.onNodeWithTag("mobile-feed")
+                .performScrollToNode(hasText(text(R.string.mobile_wifi_only)))
+            compose.onNodeWithText(text(R.string.mobile_wifi_only)).assertIsDisplayed()
+            savePreview("wifi-only-home-${theme.name.lowercase()}")
+        }
         compose.onNodeWithText(text(R.string.mobile_tutorial)).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_next)).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_tutorial_read)).assertIsDisplayed()
         compose.onNodeWithText(text(R.string.mobile_next)).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_done)).performScrollTo().performClick()
-        compose.runOnIdle { assertEquals(true, configured.setupComplete) }
+        compose.runOnIdle {
+            assertEquals(true, configured.setupComplete)
+            environment = environment.copy(radio = ProbeRadio.PRESENT)
+        }
+        compose.onNodeWithText(text(R.string.mobile_wifi_only)).assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_reception_information)).assertDoesNotExist()
     }
 
     @Test
