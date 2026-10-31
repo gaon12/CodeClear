@@ -1,6 +1,5 @@
 package xyz.gaon.codeclear.mobile
 
-import java.util.Locale
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import xyz.gaon.codeclear.probe.LocalTarget
@@ -24,15 +23,18 @@ class UiLanguagesTest {
 
     @Test
     fun initialTranslationTargetAlsoPreservesAnExplicitChineseScript() {
-        val previous = Locale.getDefault()
-        try {
-            Locale.setDefault(Locale.forLanguageTag("zh-Hans-HK"))
-            assertEquals(LocalTarget.SIMPLIFIED_CHINESE, defaultTarget())
-            Locale.setDefault(Locale.forLanguageTag("zh-Hant-CN"))
-            assertEquals(LocalTarget.TRADITIONAL_CHINESE, defaultTarget())
-        } finally {
-            Locale.setDefault(previous)
-        }
+        assertEquals(LocalTarget.SIMPLIFIED_CHINESE, defaultTarget("zh-Hans-HK"))
+        assertEquals(LocalTarget.TRADITIONAL_CHINESE, defaultTarget("zh-Hant-CN"))
+    }
+
+    @Test
+    fun initialTranslationTargetUsesThePrimarySupportedLanguageOrEnglishFallback() {
+        assertEquals(LocalTarget.KOREAN, defaultTarget("ko-KR,en-US"))
+        assertEquals(LocalTarget.JAPANESE, defaultTarget("ja-JP"))
+        assertEquals(LocalTarget.FRENCH, defaultTarget("fr-CA"))
+        assertEquals(LocalTarget.GERMAN, defaultTarget("de-DE"))
+        assertEquals(LocalTarget.ENGLISH, defaultTarget("es-ES"))
+        assertEquals(LocalTarget.ENGLISH, defaultTarget(""))
     }
 
     @Test

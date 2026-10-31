@@ -1,8 +1,9 @@
 package xyz.gaon.codeclear.mobile
 
 import android.content.Context
+import android.content.res.Resources
 import android.os.Looper
-import java.util.Locale
+import androidx.core.app.LocaleManagerCompat
 import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
 
@@ -19,8 +20,11 @@ data class MobileOptions(
     val engine: LocalEngineKind = LocalEngineKind.ML_KIT
 )
 
-fun defaultTarget(): LocalTarget {
-    val language = UiLanguages.normalize(Locale.getDefault().toLanguageTag())
+fun defaultTarget(
+    systemLanguages: String = Resources.getSystem().configuration.locales.toLanguageTags()
+): LocalTarget {
+    // App-specific language changes must not replace the device language used for first-run defaults.
+    val language = UiLanguages.normalize(systemLanguages)
     return LocalTarget.entries.firstOrNull { it.languageTag == language } ?: LocalTarget.ENGLISH
 }
 
@@ -45,7 +49,7 @@ class MobileOptionsStorage(
         val engine = LocalEngineKind.entries.firstOrNull { it.key == engineKey }
         val target =
             LocalTarget.entries.firstOrNull { it.name == saved.getString("target", null) }
-                ?: defaultTarget()
+                ?: defaultTarget(LocaleManagerCompat.getSystemLocales(context).toLanguageTags())
         val theme =
             ThemeChoice.entries.firstOrNull { it.name == saved.getString("theme", null) }
                 ?: ThemeChoice.SYSTEM
