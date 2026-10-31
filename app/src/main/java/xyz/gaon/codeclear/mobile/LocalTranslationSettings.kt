@@ -2,11 +2,11 @@ package xyz.gaon.codeclear.mobile
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -17,8 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.probe.LocalEngineKind
@@ -26,69 +24,67 @@ import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.SystemEngineAvailability
 import xyz.gaon.codeclear.probe.SystemTargetSupport
 
-private data class EngineConsent(val engine: LocalEngineKind, val enable: Boolean)
+private data class TranslationChange(val engine: LocalEngineKind, val enable: Boolean)
 
 @Composable
 fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
     var enginePicker by remember { mutableStateOf(false) }
     var targetPicker by remember { mutableStateOf(false) }
-    var proposal by remember { mutableStateOf<EngineConsent?>(null) }
+    var proposal by remember { mutableStateOf<TranslationChange?>(null) }
     val availability = actions.systemAvailability
     val support = availability.targets[options.target] ?: SystemTargetSupport()
     val systemSelectable = availability.loaded && !availability.loading &&
         availability.platformSupported && support.available
     LaunchedEffect(Unit) { actions.refreshSystem(false) }
-    SettingSection(stringResource(R.string.mobile_translation_settings)) {
-        OutlinedButton(onClick = { enginePicker = true }) {
-            Text(
-                stringResource(R.string.mobile_engine, stringResource(engineLabel(options.engine)))
-            )
-        }
-        Text(
+    SettingsGroup(stringResource(R.string.mobile_translation_settings)) {
+        SettingSwitchRow(
+            stringResource(R.string.mobile_auto_translation),
+            stringResource(if (options.localConsent) R.string.mobile_on else R.string.mobile_off),
+            checked = options.localConsent,
+            enabled =
+                options.localConsent || options.engine == LocalEngineKind.ML_KIT ||
+                    systemSelectable,
+            onCheckedChange = { enabled ->
+                if (!enabled) {
+                    actions.configure(options.copy(localConsent = false))
+                } else {
+                    proposal = TranslationChange(options.engine, enable = true)
+                }
+            }
+        )
+        SettingDivider()
+        SettingRow(
+            stringResource(R.string.mobile_target_language),
+            languageName(options.target.languageTag),
+            onClick = { targetPicker = true }
+        )
+        SettingDivider()
+        SettingRow(
+            stringResource(R.string.mobile_engine_title),
+            stringResource(engineLabel(options.engine)),
+            onClick = { enginePicker = true }
+        )
+        SettingNote(
             stringResource(
-                if (options.engine == LocalEngineKind.ML_KIT) {
+                if (options.engine ==
+                    LocalEngineKind.ML_KIT
+                ) {
                     R.string.mobile_local_description
                 } else {
                     R.string.mobile_system_description
                 }
             )
         )
-        TextButton(
-            onClick = {
-                if (options.localConsent) {
-                    actions.configure(options.copy(localConsent = false))
-                } else {
-                    proposal = EngineConsent(options.engine, enable = true)
-                }
-            },
-            enabled =
-                options.localConsent || options.engine == LocalEngineKind.ML_KIT || systemSelectable
-        ) {
-            Text(
-                stringResource(
-                    if (options.localConsent) {
-                        R.string.mobile_disable_translation
-                    } else {
-                        R.string.mobile_enable_translation
-                    }
-                )
-            )
-        }
-        OutlinedButton(onClick = { targetPicker = true }) {
-            Text(stringResource(R.string.mobile_target, languageName(options.target.languageTag)))
-        }
-        if (options.engine == LocalEngineKind.ML_KIT) {
-            Text(
-                stringResource(R.string.mobile_model_notice),
-                style = MaterialTheme.typography.bodySmall
-            )
-        } else {
-            SystemSupportStatus(availability, options.target)
-            TextButton(
+        if (options.engine == LocalEngineKind.SYSTEM) {
+            Column(Modifier.padding(horizontal = 24.dp)) {
+                SystemSupportStatus(availability, options.target)
+            }
+            SettingRow(
+                stringResource(R.string.mobile_system_models_action),
                 onClick = actions.systemSettings,
                 enabled =
                     availability.loaded && !availability.loading && availability.platformSupported
-            ) { Text(stringResource(R.string.mobile_system_models_action)) }
+            )
         }
     }
     if (enginePicker) {
@@ -100,22 +96,23 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                     Modifier.verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    LocalEngineKind.entries.forEach { engine ->
-                        TextButton(
-                            onClick = {
-                                enginePicker = false
-                                if (engine !=
-                                    options.engine
-                                ) {
-                                    proposal = EngineConsent(engine, enable = false)
+                    Column(Modifier.selectableGroup()) {
+                        LocalEngineKind.entries.forEach { engine ->
+                            RadioChoiceRow(
+                                stringResource(engineLabel(engine)),
+                                selected = engine == options.engine,
+                                enabled = engine == LocalEngineKind.ML_KIT || systemSelectable,
+                                onClick = {
+                                    enginePicker = false
+                                    if (engine !=
+                                        options.engine
+                                    ) {
+                                        proposal =
+                                            TranslationChange(engine, enable = false)
+                                    }
                                 }
-                            },
-                            modifier = Modifier.fillMaxWidth().semantics {
-                                selected =
-                                    engine == options.engine
-                            },
-                            enabled = engine == LocalEngineKind.ML_KIT || systemSelectable
-                        ) { Text(stringResource(engineLabel(engine))) }
+                            )
+                        }
                     }
                     SystemSupportStatus(availability, options.target)
                     TextButton(onClick = {
@@ -180,7 +177,13 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                         }
                     },
                     enabled = request.engine == LocalEngineKind.ML_KIT || systemSelectable
-                ) { Text(stringResource(R.string.mobile_agree)) }
+                ) {
+                    Text(
+                        stringResource(
+                            if (request.enable) R.string.mobile_enable else R.string.mobile_change
+                        )
+                    )
+                }
             },
             dismissButton = {
                 TextButton(onClick = {
@@ -191,9 +194,10 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
     }
     if (targetPicker) {
         ChoiceDialog(
-            stringResource(R.string.mobile_translation_settings),
+            stringResource(R.string.mobile_target_language),
             LocalTarget.entries.map { languageName(it.languageTag) },
-            { targetPicker = false }
+            { targetPicker = false },
+            selectedIndex = options.target.ordinal
         ) {
             targetPicker = false
             actions.configure(options.copy(target = LocalTarget.entries[it]))

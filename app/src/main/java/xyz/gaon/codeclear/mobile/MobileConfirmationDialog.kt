@@ -1,12 +1,12 @@
 package xyz.gaon.codeclear.mobile
 
 import android.view.Gravity
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ProvideTextStyle
 import androidx.compose.material3.Surface
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
@@ -41,19 +42,29 @@ fun MobileConfirmationDialog(
             window?.setGravity(Gravity.BOTTOM)
             onDispose { previousGravity?.let { window?.setGravity(it) } }
         }
-        BoxWithConstraints(Modifier.widthIn(max = 560.dp).fillMaxWidth().padding(16.dp)) {
+        BoxWithConstraints(Modifier.widthIn(max = 480.dp).fillMaxWidth().padding(16.dp)) {
             Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surface) {
                 Column(Modifier.heightIn(max = maxHeight).padding(24.dp)) {
                     ProvideTextStyle(MaterialTheme.typography.titleLarge) { title() }
                     Box(Modifier.weight(1f, fill = false).padding(top = 16.dp, bottom = 12.dp)) {
                         ProvideTextStyle(MaterialTheme.typography.bodyMedium) { text() }
                     }
-                    FlowRow(
+                    Row(
                         Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End)
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        dismissButton?.invoke()
-                        confirmButton()
+                        if (dismissButton != null) {
+                            Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                                dismissButton()
+                            }
+                            VerticalDivider(
+                                Modifier.height(20.dp),
+                                color = MaterialTheme.colorScheme.outlineVariant
+                            )
+                        }
+                        Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                            confirmButton()
+                        }
                     }
                 }
             }

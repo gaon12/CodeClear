@@ -9,6 +9,7 @@ import android.provider.Settings
 import android.view.PixelCopy
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.view.WindowManager
 import android.view.inspector.WindowInspector
 import androidx.activity.SystemBarStyle
@@ -28,8 +29,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -73,6 +79,8 @@ class MobileScreenDeviceTest {
     )
     private var configured = MobileOptions()
     private var searched = ""
+    private var notificationRequests = 0
+    private var notificationsAllowed by mutableStateOf(true)
     private var settingsOpened = 0
     private var lastSettingsAction = ""
     private var prepared = 0
@@ -80,6 +88,7 @@ class MobileScreenDeviceTest {
     private var retriedEngine: LocalEngineKind? = null
     private var retried = 0
     private var fontScale by mutableStateOf(1f)
+    private var densityScale by mutableStateOf(1f)
     private var previewLanguage by mutableStateOf<String?>(null)
     private var systemSupport by mutableStateOf(SystemEngineAvailability(loaded = true))
     private var manualSupportRefreshes = 0
@@ -137,7 +146,7 @@ class MobileScreenDeviceTest {
                     } ?: base
                 }
                 CompositionLocalProvider(
-                    LocalDensity provides Density(density.density, fontScale),
+                    LocalDensity provides Density(density.density * densityScale, fontScale),
                     LocalContext provides localized,
                     LocalConfiguration provides localized.resources.configuration
                 ) {
@@ -174,7 +183,8 @@ class MobileScreenDeviceTest {
                                 lastSettingsAction = it
                             }, openSource = {
                             }, notificationPermission = {
-                            }, notificationsAllowed = true, older = {
+                                notificationRequests++
+                            }, notificationsAllowed = notificationsAllowed, older = {
                             }, newest = {}, retryStorage = {},
                             systemAvailability = systemSupport,
                             refreshSystem = { if (it) manualSupportRefreshes++ },
@@ -191,6 +201,53 @@ class MobileScreenDeviceTest {
         compose.runOnUiThread {
             context.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
             scope?.close()
+        }
+    }
+
+    @Test
+    fun settingsShowSelectedRadioChoicesAndKeepNotificationPermissionSystemControlled() {
+        compose.onNodeWithTag("destination-2").performClick()
+        compose.onNodeWithText(text(R.string.mobile_screen_mode)).performScrollTo().performClick()
+        compose.onNode(hasText(text(R.string.mobile_system)) and isSelectable()).assertIsSelected()
+        compose.onNode(
+            hasText(text(R.string.mobile_light)) and isSelectable()
+        ).assertIsNotSelected().performClick()
+        compose.runOnIdle { assertEquals(ThemeChoice.LIGHT, configured.theme) }
+        compose.onNodeWithText(text(R.string.mobile_screen_mode)).performScrollTo().performClick()
+        compose.onNode(hasText(text(R.string.mobile_light)) and isSelectable()).assertIsSelected()
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_result_notifications)
+        ).performScrollTo().assertIsOn().performClick()
+        compose.runOnIdle {
+            assertEquals(1, notificationRequests)
+            assertEquals(0, prepared)
+        }
+        compose.onNodeWithText(text(R.string.mobile_result_notifications)).assertIsOn()
+        compose.runOnIdle { notificationsAllowed = false }
+        compose.onNodeWithText(text(R.string.mobile_result_notifications)).assertIsOff()
+    }
+
+    @Test
+    fun koreanSettingsChoicesAndPermissionHelpRenderInBothThemes() {
+        compose.runOnIdle {
+            previewLanguage = "ko"
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+        compose.onNodeWithTag("destination-2").performClick()
+        for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
+            compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            compose.onNodeWithTag("mobile-feed").performScrollToIndex(0)
+            savePreview("settings-ko-${theme.name.lowercase()}")
+            compose.onNodeWithText("화면 모드").performScrollTo().performClick()
+            savePreview("settings-mode-${theme.name.lowercase()}", dialog = true)
+            compose.onNodeWithText("취소").performClick()
+            compose.onNodeWithText("번역 언어").performScrollTo().performClick()
+            savePreview("settings-language-${theme.name.lowercase()}", dialog = true)
+            compose.onNodeWithText("취소").performClick()
+            compose.onNodeWithText("알림 접근").performScrollTo().performClick()
+            savePreview("settings-access-${theme.name.lowercase()}", dialog = true)
+            compose.onNodeWithText("취소").performClick()
         }
     }
 
@@ -274,7 +331,7 @@ class MobileScreenDeviceTest {
     }
 
     @Test
-    fun engineChangesRequireConsentAndPreserveTheDisabledChoice() {
+    fun engineChangesExplainLocalProcessingAndPreserveTheDisabledChoice() {
         compose.runOnIdle {
             state =
                 state.copy(
@@ -289,27 +346,31 @@ class MobileScreenDeviceTest {
                 )
         }
         openEnginePicker()
-        compose.onNodeWithText(text(R.string.mobile_engine_system)).performClick()
+        compose.onNode(
+            hasText(text(R.string.mobile_engine_system)) and isSelectable()
+        ).performClick()
         compose.onNodeWithText(text(R.string.mobile_system_disclosure)).assertIsDisplayed()
         compose.runOnIdle { assertEquals(LocalEngineKind.ML_KIT, state.options.engine) }
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
         openEnginePicker(alreadyInSettings = true)
-        compose.onNodeWithText(text(R.string.mobile_engine_system)).performClick()
-        compose.onNodeWithText(text(R.string.mobile_agree)).performClick()
+        compose.onNode(
+            hasText(text(R.string.mobile_engine_system)) and isSelectable()
+        ).performClick()
+        compose.onNodeWithText(text(R.string.mobile_change)).performClick()
         compose.runOnIdle {
             assertEquals(LocalEngineKind.SYSTEM, state.options.engine)
             assertEquals(false, state.options.localConsent)
         }
         compose.onNodeWithText(
-            text(R.string.mobile_enable_translation)
+            text(R.string.mobile_auto_translation)
         ).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_system_disclosure)).assertIsDisplayed()
-        compose.onNodeWithText(text(R.string.mobile_agree)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_enable)).performClick()
         compose.runOnIdle { assertEquals(true, state.options.localConsent) }
     }
 
     @Test
-    fun wrongTargetsStayUnavailableAndSettingsActionsDoNotChangeConsent() {
+    fun wrongTargetsStayUnavailableAndSettingsActionsDoNotChangeChoices() {
         compose.runOnIdle {
             state = state.copy(options = state.options.copy(target = LocalTarget.KOREAN))
             systemSupport =
@@ -321,7 +382,9 @@ class MobileScreenDeviceTest {
                 )
         }
         openEnginePicker()
-        compose.onNodeWithText(text(R.string.mobile_engine_system)).assertIsNotEnabled()
+        compose.onNode(
+            hasText(text(R.string.mobile_engine_system)) and isSelectable()
+        ).assertIsNotEnabled()
         compose.onNodeWithText(
             context.getString(R.string.mobile_engine_pair_missing, languageName("ko"))
         ).assertIsDisplayed()
@@ -353,9 +416,11 @@ class MobileScreenDeviceTest {
                 )
         }
         openEnginePicker()
-        compose.onNodeWithText(text(R.string.mobile_engine_system)).performClick()
+        compose.onNode(
+            hasText(text(R.string.mobile_engine_system)) and isSelectable()
+        ).performClick()
         compose.runOnIdle { systemSupport = SystemEngineAvailability(loaded = true) }
-        compose.onNodeWithText(text(R.string.mobile_agree)).assertIsNotEnabled()
+        compose.onNodeWithText(text(R.string.mobile_change)).assertIsNotEnabled()
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
         compose.runOnIdle {
             assertEquals(LocalEngineKind.ML_KIT, state.options.engine)
@@ -364,7 +429,7 @@ class MobileScreenDeviceTest {
     }
 
     @Test
-    fun unpreparedPairsUseProviderSettingsAndWithdrawalAlwaysRemainsAvailable() {
+    fun unpreparedPairsUseProviderSettingsAndTurningOffAlwaysRemainsAvailable() {
         compose.runOnIdle {
             state = state.copy(options = state.options.copy(target = LocalTarget.KOREAN))
             systemSupport =
@@ -376,8 +441,10 @@ class MobileScreenDeviceTest {
                 )
         }
         openEnginePicker()
-        compose.onNodeWithText(text(R.string.mobile_engine_system)).performClick()
-        compose.onNodeWithText(text(R.string.mobile_agree)).performClick()
+        compose.onNode(
+            hasText(text(R.string.mobile_engine_system)) and isSelectable()
+        ).performClick()
+        compose.onNodeWithText(text(R.string.mobile_change)).performClick()
         compose.onNodeWithText(
             context.getString(R.string.mobile_engine_pairs, languageName("ko"), 0, 1)
         )
@@ -391,13 +458,17 @@ class MobileScreenDeviceTest {
             systemSupport = SystemEngineAvailability(loaded = true)
         }
         compose.onNodeWithText(
-            text(R.string.mobile_disable_translation)
+            text(R.string.mobile_auto_translation)
         ).performScrollTo().performClick()
-        compose.onNodeWithText(text(R.string.mobile_enable_translation)).assertIsNotEnabled()
+        compose.onNodeWithText(text(R.string.mobile_auto_translation)).assertIsNotEnabled()
         openEnginePicker(alreadyInSettings = true)
-        compose.onNodeWithText(text(R.string.mobile_engine_system)).assertIsNotEnabled()
-        compose.onNodeWithText(text(R.string.mobile_engine_mlkit)).performClick()
-        compose.onNodeWithText(text(R.string.mobile_agree)).performClick()
+        compose.onNode(
+            hasText(text(R.string.mobile_engine_system)) and isSelectable()
+        ).assertIsNotEnabled()
+        compose.onNode(
+            hasText(text(R.string.mobile_engine_mlkit)) and isSelectable()
+        ).performClick()
+        compose.onNodeWithText(text(R.string.mobile_change)).performClick()
         compose.runOnIdle {
             assertEquals(LocalEngineKind.ML_KIT, state.options.engine)
             assertEquals(false, state.options.localConsent)
@@ -406,10 +477,7 @@ class MobileScreenDeviceTest {
 
     private fun openEnginePicker(alreadyInSettings: Boolean = false) {
         if (!alreadyInSettings) compose.onNodeWithTag("destination-2").performClick()
-        val label = context.getString(
-            R.string.mobile_engine,
-            text(engineLabel(state.options.engine))
-        )
+        val label = text(R.string.mobile_engine_title)
         compose.onNodeWithTag("mobile-feed").performScrollToNode(hasText(label))
         compose.onNodeWithText(label).performClick()
     }
@@ -417,17 +485,25 @@ class MobileScreenDeviceTest {
     @Test
     fun accessDisclosurePrecedesSettingsAndDoesNotPretendToGrantPermission() {
         compose.onNodeWithTag("destination-2").performClick()
-        compose.onAllNodesWithText(
-            text(R.string.mobile_review_access)
-        )[0].performScrollTo().performClick()
+        compose.runOnIdle { environment = environment.copy(notificationGranted = false) }
+        compose.onNodeWithText(
+            text(R.string.mobile_notification_access)
+        ).performScrollTo().assertIsOff().performClick()
         compose.onNodeWithText(text(R.string.mobile_notification_disclosure)).assertIsDisplayed()
         assertDecisionWindowAtBottom()
         compose.runOnIdle { assertEquals(0, settingsOpened) }
-        compose.onNodeWithText(text(R.string.mobile_agree)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_open_settings)).performClick()
         compose.runOnIdle {
             assertEquals(true, configured.notificationConsent)
             assertEquals(1, settingsOpened)
         }
+        compose.onNodeWithText(text(R.string.mobile_notification_access)).assertIsOff()
+        compose.runOnIdle { environment = environment.copy(notificationGranted = true) }
+        compose.onNodeWithText(text(R.string.mobile_notification_access)).assertIsOn()
+        compose.onNodeWithText(
+            text(R.string.mobile_notification_access)
+        ).performClick().assertIsOff()
+        compose.runOnIdle { assertEquals(false, configured.notificationConsent) }
     }
 
     @Test
@@ -445,7 +521,7 @@ class MobileScreenDeviceTest {
     }
 
     @Test
-    fun wifiOnlySettingsAvoidAccessPromptsAndStillAllowWithdrawal() {
+    fun wifiOnlySettingsAvoidAccessPromptsAndStillAllowTurningCaptureOff() {
         compose.runOnIdle {
             environment = environment.copy(radio = ProbeRadio.ABSENT)
             state = state.copy(
@@ -456,27 +532,30 @@ class MobileScreenDeviceTest {
             )
         }
         compose.onNodeWithTag("destination-2").performClick()
-        compose.onAllNodesWithText(text(R.string.mobile_review_access)).assertCountEquals(0)
-        compose.onAllNodesWithText(text(R.string.mobile_withdraw)).assertCountEquals(2)
-        compose.onAllNodesWithText(
-            text(R.string.mobile_withdraw)
-        )[0].performScrollTo().performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_notification_access)
+        ).performScrollTo().assertIsOff().performClick()
         compose.runOnIdle {
             assertEquals(false, configured.notificationConsent)
             assertEquals(true, configured.accessibilityConsent)
             assertEquals(0, settingsOpened)
         }
-        compose.onAllNodesWithText(
-            text(R.string.mobile_withdraw)
-        )[0].performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.mobile_notification_access)).assertIsNotEnabled()
+        compose.onNodeWithText(
+            text(R.string.mobile_accessibility_access)
+        ).performScrollTo().performClick()
         compose.runOnIdle { assertEquals(false, configured.accessibilityConsent) }
+        compose.onNodeWithText(text(R.string.mobile_accessibility_access)).assertIsNotEnabled()
     }
 
     @Test
-    fun restrictedSettingsFallbackOpensTheAppListWithoutChangingConsent() {
+    fun restrictedSettingsFallbackOpensTheAppListWithoutChangingChoices() {
         val previous = state.options
         compose.onNodeWithTag("destination-2").performClick()
         if (Build.VERSION.SDK_INT >= 33) {
+            compose.onNodeWithText(
+                text(R.string.mobile_permission_help)
+            ).performScrollTo().performClick()
             compose.onNodeWithText(text(R.string.mobile_app_list)).performScrollTo().performClick()
             compose.runOnIdle {
                 assertEquals(Settings.ACTION_APPLICATION_SETTINGS, lastSettingsAction)
@@ -497,20 +576,45 @@ class MobileScreenDeviceTest {
         compose.onNodeWithText(text(R.string.mobile_details)).performClick()
         compose.onNodeWithText(text(R.string.mobile_close)).assertIsDisplayed().performClick()
         compose.onNodeWithTag("destination-2").performClick()
-        compose.onAllNodesWithText(
-            text(R.string.mobile_review_access)
-        )[0].performScrollTo().performClick()
-        compose.onNodeWithText(text(R.string.mobile_agree)).assertIsDisplayed().performClick()
+        compose.runOnIdle { environment = environment.copy(notificationGranted = false) }
+        compose.onNodeWithText(
+            text(R.string.mobile_notification_access)
+        ).performScrollTo().performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_open_settings)
+        ).assertIsDisplayed().performClick()
         compose.runOnIdle { assertEquals(1, settingsOpened) }
         compose.onNodeWithText(
-            context.getString(
-                R.string.mobile_target,
-                languageName(state.options.target.languageTag)
-            )
+            text(R.string.mobile_target_language)
         ).performScrollTo().performClick()
         compose.onNodeWithText("Deutsch").performScrollTo().performClick()
         compose.runOnIdle {
             assertEquals(xyz.gaon.codeclear.probe.LocalTarget.GERMAN, configured.target)
+        }
+    }
+
+    @Test
+    fun compactLandscapeKeepsPermissionAndRadioActionsReachableAtLargeText() {
+        compose.runOnIdle {
+            densityScale = 2.2f
+            fontScale = 1.8f
+            environment = environment.copy(notificationGranted = false)
+        }
+        compose.onNodeWithTag("destination-2").performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_notification_access)
+        ).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.mobile_open_settings)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_cancel)).assertIsDisplayed().performClick()
+        compose.runOnIdle { assertEquals(0, settingsOpened) }
+        compose.onNodeWithText(
+            text(R.string.mobile_target_language)
+        ).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.mobile_cancel)).assertIsDisplayed()
+        compose.onNode(hasText("Deutsch") and isSelectable()).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(LocalTarget.GERMAN, configured.target)
+            assertEquals(0, prepared)
         }
     }
 
@@ -551,7 +655,7 @@ class MobileScreenDeviceTest {
         compose.onNodeWithText(
             text(R.string.mobile_collection)
         ).performScrollTo().assertIsDisplayed()
-        val label = context.getString(R.string.mobile_ui_language, text(R.string.mobile_system))
+        val label = text(R.string.mobile_ui_language_title)
         compose.onNodeWithText(label).performScrollTo()
         compose.onNodeWithTag("destination-0").performClick()
         val after = compose.onNodeWithText(
@@ -626,18 +730,19 @@ class MobileScreenDeviceTest {
         savePreview("mobile-ko-settings")
     }
 
-    private fun savePreview(name: String) {
+    private fun savePreview(name: String, dialog: Boolean = false) {
         compose.mainClock.advanceTimeBy(600)
         compose.waitForIdle()
         val copied = CountDownLatch(1)
         val result = AtomicInteger(-1)
         lateinit var bitmap: Bitmap
         compose.runOnIdle {
-            val decor = context.window.decorView
+            val window = if (dialog) dialogWindow() else context.window
+            val decor = window.decorView
             check(decor.width.toLong() * decor.height <= 16_000_000)
             bitmap = Bitmap.createBitmap(decor.width, decor.height, Bitmap.Config.ARGB_8888)
             // Copy only this synthetic activity window, including its actual navigation layers.
-            PixelCopy.request(context.window, bitmap, {
+            PixelCopy.request(window, bitmap, {
                 result.set(it)
                 copied.countDown()
             }, Handler(Looper.getMainLooper()))
@@ -655,20 +760,7 @@ class MobileScreenDeviceTest {
 
     private fun assertDecisionWindowAtBottom() {
         compose.runOnIdle {
-            val views = ArrayDeque<View>().apply { addAll(WindowInspector.getGlobalWindowViews()) }
-            var provider: DialogWindowProvider? = null
-            var remaining = 256
-            while (views.isNotEmpty() && remaining-- > 0) {
-                val view = views.removeFirst()
-                if (view is DialogWindowProvider) {
-                    provider = view
-                    break
-                }
-                if (view is ViewGroup) {
-                    for (index in 0 until view.childCount) views.addLast(view.getChildAt(index))
-                }
-            }
-            val decor = checkNotNull(provider).window.decorView
+            val decor = dialogWindow().decorView
             val location = IntArray(2)
             decor.getLocationOnScreen(location)
             val screenBottom = context.windowManager.maximumWindowMetrics.bounds.bottom
@@ -678,6 +770,23 @@ class MobileScreenDeviceTest {
                 location[1] + decor.height >= screenBottom - allowance
             )
         }
+    }
+
+    private fun dialogWindow(): Window {
+        val views = ArrayDeque<View>().apply { addAll(WindowInspector.getGlobalWindowViews()) }
+        var provider: DialogWindowProvider? = null
+        var remaining = 256
+        while (views.isNotEmpty() && remaining-- > 0) {
+            val view = views.removeFirst()
+            if (view is DialogWindowProvider) {
+                provider = view
+                break
+            }
+            if (view is ViewGroup) {
+                for (index in 0 until view.childCount) views.addLast(view.getChildAt(index))
+            }
+        }
+        return checkNotNull(provider).window
     }
 
     private fun record(id: Long) = SavedAlert(

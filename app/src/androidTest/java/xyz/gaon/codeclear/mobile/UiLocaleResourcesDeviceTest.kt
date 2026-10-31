@@ -23,6 +23,15 @@ class UiLocaleResourcesDeviceTest {
             "fr" to "Accueil",
             "de" to "Startseite"
         )
+        val permissionActions = mapOf(
+            "en" to "Open settings",
+            "ko" to "설정 열기",
+            "zh-Hans" to "打开设置",
+            "zh-Hant" to "開啟設定",
+            "ja" to "設定を開く",
+            "fr" to "Ouvrir les paramètres",
+            "de" to "Einstellungen öffnen"
+        )
         val chineseSources = mutableListOf<String>()
         for ((tag, home) in expected) {
             val localized = context.createConfigurationContext(
@@ -40,9 +49,7 @@ class UiLocaleResourcesDeviceTest {
                 support.contains("TEST_LANG") && support.contains("12") && support.contains("34")
             )
             assertFalse(support.contains("%1"))
-            assertTrue(
-                localized.getString(R.string.mobile_engine, "TEST_ENGINE").contains("TEST_ENGINE")
-            )
+            assertEquals(permissionActions[tag], localized.getString(R.string.mobile_open_settings))
             for (id in listOf(
                 R.string.mobile_notification_disclosure,
                 R.string.mobile_accessibility_disclosure,

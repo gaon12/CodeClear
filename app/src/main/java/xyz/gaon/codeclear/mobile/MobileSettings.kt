@@ -4,19 +4,15 @@ import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -32,6 +28,9 @@ import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeRadio
 import xyz.gaon.codeclear.probe.ProbeSessionState
 
+private enum class SettingsInfo { RESTRICTED_ACCESS, PRIVACY, COMPATIBILITY }
+private enum class CaptureAccess { NOTIFICATION, ACCESSIBILITY }
+
 @Composable
 fun MobileSettings(
     state: MobileState,
@@ -41,121 +40,146 @@ fun MobileSettings(
     tutorial: () -> Unit
 ) {
     val options = state.options
-    var disclosure by remember { mutableStateOf<String?>(null) }
+    var disclosure by remember { mutableStateOf<CaptureAccess?>(null) }
+    var info by remember { mutableStateOf<SettingsInfo?>(null) }
     var themePicker by remember { mutableStateOf(false) }
     var uiLanguagePicker by remember { mutableStateOf(false) }
     val captureAvailable = environment.radio != ProbeRadio.ABSENT
-    SettingSection(stringResource(R.string.mobile_collection)) {
-        if (!captureAvailable) Text(stringResource(R.string.mobile_wifi_only))
+    SettingsGroup(stringResource(R.string.mobile_collection)) {
+        if (!captureAvailable) SettingNote(stringResource(R.string.mobile_wifi_only))
         AccessRow(
             stringResource(R.string.mobile_notification_access),
             options.notificationConsent,
             environment.notificationGranted,
             session.notificationConnected,
             captureAvailable,
-            {
-                disclosure = "notification"
-            },
+            { disclosure = CaptureAccess.NOTIFICATION },
             { actions.configure(options.copy(notificationConsent = false)) }
         )
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        SettingDivider()
         AccessRow(
             stringResource(R.string.mobile_accessibility_access),
             options.accessibilityConsent,
             environment.accessibilityGranted,
             session.accessibilityConnected,
             captureAvailable,
-            {
-                disclosure = "accessibility"
-            },
+            { disclosure = CaptureAccess.ACCESSIBILITY },
             { actions.configure(options.copy(accessibilityConsent = false)) }
         )
         if (captureAvailable && Build.VERSION.SDK_INT >= 33) {
-            Text(
-                stringResource(R.string.mobile_restricted),
-                style = MaterialTheme.typography.bodySmall
-            )
-            TextButton(onClick = {
-                actions.settings(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-            }) { Text(stringResource(R.string.mobile_app_info)) }
-            TextButton(onClick = {
-                actions.settings(Settings.ACTION_APPLICATION_SETTINGS)
-            }) { Text(stringResource(R.string.mobile_app_list)) }
+            SettingDivider()
+            SettingRow(stringResource(R.string.mobile_permission_help), onClick = {
+                info = SettingsInfo.RESTRICTED_ACCESS
+            })
         }
-        TextButton(onClick = tutorial) { Text(stringResource(R.string.mobile_tutorial)) }
+        SettingDivider()
+        SettingRow(stringResource(R.string.mobile_tutorial), onClick = tutorial)
     }
     LocalTranslationSettings(options, actions)
-    SettingSection(stringResource(R.string.mobile_appearance)) {
-        OutlinedButton(onClick = {
-            themePicker = true
-        }) { Text(stringResource(themeLabel(options.theme))) }
-        OutlinedButton(onClick = { uiLanguagePicker = true }) {
-            val language = if (options.uiLanguage.isEmpty()) {
+    SettingsGroup(stringResource(R.string.mobile_appearance)) {
+        SettingRow(
+            stringResource(R.string.mobile_screen_mode),
+            stringResource(themeLabel(options.theme)),
+            onClick = { themePicker = true }
+        )
+        SettingDivider()
+        SettingRow(
+            stringResource(R.string.mobile_ui_language_title),
+            if (options.uiLanguage.isEmpty()) {
                 stringResource(
                     R.string.mobile_system
                 )
             } else {
                 languageName(options.uiLanguage)
-            }
-            Text(stringResource(R.string.mobile_ui_language, language))
-        }
-    }
-    SettingSection(stringResource(R.string.mobile_result_notifications)) {
-        Text(
-            stringResource(
-                if (actions.notificationsAllowed) {
-                    R.string.mobile_notifications_on
-                } else {
-                    R.string.mobile_notifications_off
-                }
-            )
+            },
+            onClick = { uiLanguagePicker = true }
         )
-        OutlinedButton(onClick = actions.notificationPermission) {
-            Text(stringResource(R.string.mobile_notification_settings))
-        }
     }
-    SettingSection(stringResource(R.string.mobile_privacy)) {
-        Text(stringResource(R.string.mobile_privacy_description))
-        OutlinedButton(onClick = {
+    SettingsGroup(stringResource(R.string.mobile_notifications)) {
+        SettingSwitchRow(
+            stringResource(R.string.mobile_result_notifications),
+            stringResource(
+                if (actions.notificationsAllowed) R.string.mobile_on else R.string.mobile_off
+            ),
+            checked = actions.notificationsAllowed,
+            onCheckedChange = { actions.notificationPermission() }
+        )
+        SettingNote(stringResource(R.string.mobile_result_notification_summary))
+    }
+    SettingsGroup(stringResource(R.string.mobile_privacy)) {
+        SettingRow(stringResource(R.string.mobile_data_storage), onClick = {
+            info =
+                SettingsInfo.PRIVACY
+        })
+        SettingDivider()
+        SettingRow(stringResource(R.string.mobile_delete_all), onClick = {
             actions.delete(null)
-        }) { Text(stringResource(R.string.mobile_delete_all)) }
+        }, destructive = true)
     }
-    SettingSection(stringResource(R.string.mobile_compatibility)) {
-        Text(stringResource(R.string.mobile_compatibility_description))
+    SettingsGroup(stringResource(R.string.mobile_about)) {
+        SettingRow(stringResource(R.string.mobile_compatibility), onClick = {
+            info =
+                SettingsInfo.COMPATIBILITY
+        })
     }
     disclosure?.let { route ->
+        val notification = route == CaptureAccess.NOTIFICATION
         MobileConfirmationDialog(
-            onDismissRequest = {
-                disclosure = null
-            },
-            title = { Text(stringResource(R.string.mobile_consent_title)) },
-            text = {
-                Column(Modifier.verticalScroll(rememberScrollState())) {
-                    Text(
-                        stringResource(
-                            when (route) {
-                                "notification" -> R.string.mobile_notification_disclosure
-                                else -> R.string.mobile_accessibility_disclosure
-                            }
-                        )
+            onDismissRequest = { disclosure = null },
+            title = {
+                Text(
+                    stringResource(
+                        if (notification) {
+                            R.string.mobile_notification_access
+                        } else {
+                            R.string.mobile_accessibility_access
+                        }
                     )
-                }
+                )
+            },
+            text = {
+                Text(
+                    stringResource(
+                        if (notification) {
+                            R.string.mobile_notification_disclosure
+                        } else {
+                            R.string.mobile_accessibility_disclosure
+                        }
+                    ),
+                    Modifier.verticalScroll(rememberScrollState())
+                )
             },
             confirmButton = {
                 TextButton(onClick = {
                     disclosure = null
-                    when (route) {
-                        "notification" -> {
-                            actions.configure(options.copy(notificationConsent = true))
-                            actions.settings(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+                    if (notification) {
+                        actions.configure(options.copy(notificationConsent = true))
+                        if (!environment.notificationGranted) {
+                            actions.settings(
+                                Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS
+                            )
                         }
-
-                        else -> {
-                            actions.configure(options.copy(accessibilityConsent = true))
-                            actions.settings(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+                    } else {
+                        actions.configure(options.copy(accessibilityConsent = true))
+                        if (!environment.accessibilityGranted) {
+                            actions.settings(
+                                Settings.ACTION_ACCESSIBILITY_SETTINGS
+                            )
                         }
                     }
-                }) { Text(stringResource(R.string.mobile_agree)) }
+                }) {
+                    Text(
+                        stringResource(
+                            if ((notification && environment.notificationGranted) ||
+                                (!notification && environment.accessibilityGranted)
+                            ) {
+                                R.string.mobile_enable
+                            } else {
+                                R.string.mobile_open_settings
+                            }
+                        )
+                    )
+                }
             },
             dismissButton = {
                 TextButton(onClick = {
@@ -164,16 +188,55 @@ fun MobileSettings(
             }
         )
     }
+    info?.let { page ->
+        val title = when (page) {
+            SettingsInfo.RESTRICTED_ACCESS -> R.string.mobile_permission_help
+            SettingsInfo.PRIVACY -> R.string.mobile_data_storage
+            SettingsInfo.COMPATIBILITY -> R.string.mobile_compatibility
+        }
+        MobileConfirmationDialog(
+            onDismissRequest = { info = null },
+            title = { Text(stringResource(title)) },
+            text = {
+                Column(
+                    Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        stringResource(
+                            when (page) {
+                                SettingsInfo.RESTRICTED_ACCESS -> R.string.mobile_restricted
+
+                                SettingsInfo.PRIVACY -> R.string.mobile_privacy_description
+
+                                SettingsInfo.COMPATIBILITY ->
+                                    R.string.mobile_compatibility_description
+                            }
+                        )
+                    )
+                    if (page == SettingsInfo.RESTRICTED_ACCESS) {
+                        TextButton(onClick = {
+                            actions.settings(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                        }) { Text(stringResource(R.string.mobile_app_info)) }
+                        TextButton(onClick = {
+                            actions.settings(Settings.ACTION_APPLICATION_SETTINGS)
+                        }) { Text(stringResource(R.string.mobile_app_list)) }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    info = null
+                }) { Text(stringResource(R.string.mobile_close)) }
+            }
+        )
+    }
     if (themePicker) {
         ChoiceDialog(
-            stringResource(R.string.mobile_appearance),
-            ThemeChoice.entries.map {
-                stringResource(themeLabel(it))
-            },
-            {
-                themePicker =
-                    false
-            }
+            stringResource(R.string.mobile_screen_mode),
+            ThemeChoice.entries.map { stringResource(themeLabel(it)) },
+            { themePicker = false },
+            selectedIndex = options.theme.ordinal
         ) {
             themePicker = false
             actions.configure(options.copy(theme = ThemeChoice.entries[it]))
@@ -186,7 +249,8 @@ fun MobileSettings(
             languages.map {
                 if (it.isEmpty()) stringResource(R.string.mobile_system) else languageName(it)
             },
-            { uiLanguagePicker = false }
+            { uiLanguagePicker = false },
+            selectedIndex = languages.indexOf(options.uiLanguage)
         ) {
             uiLanguagePicker = false
             actions.configure(options.copy(uiLanguage = languages[it]))
@@ -197,36 +261,45 @@ fun MobileSettings(
 @Composable
 private fun AccessRow(
     title: String,
-    consent: Boolean,
+    enabled: Boolean,
     granted: Boolean,
     connected: Boolean,
     captureAvailable: Boolean,
     enable: () -> Unit,
-    withdraw: () -> Unit
+    disable: () -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(title, style = MaterialTheme.typography.titleMedium)
+    SettingSwitchRow(
+        title,
+        stringResource(
+            when {
+                !captureAvailable -> R.string.mobile_capture_unavailable
+                !granted -> R.string.mobile_access_needed
+                !enabled -> R.string.mobile_capture_paused
+                !connected -> R.string.mobile_reconnect_needed
+                else -> R.string.mobile_connected
+            }
+        ),
+        checked = captureAvailable && enabled && granted,
+        enabled = captureAvailable || enabled,
+        onCheckedChange = { if (enabled && (!captureAvailable || granted)) disable() else enable() }
+    )
+}
+
+@Composable
+fun SettingsGroup(title: String, content: @Composable () -> Unit) {
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(
-            stringResource(
-                when {
-                    !captureAvailable -> R.string.mobile_wifi_only
-                    !consent -> R.string.mobile_consent_needed
-                    !granted -> R.string.mobile_access_needed
-                    !connected -> R.string.mobile_reconnect_needed
-                    else -> R.string.mobile_connected
-                }
-            ),
-            style = MaterialTheme.typography.bodyMedium
+            title,
+            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 4.dp),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            if (captureAvailable) {
-                TextButton(onClick = enable) { Text(stringResource(R.string.mobile_review_access)) }
-            }
-            if (consent) {
-                TextButton(onClick = withdraw) {
-                    Text(stringResource(R.string.mobile_withdraw))
-                }
-            }
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(Modifier.padding(vertical = 2.dp)) { content() }
         }
     }
 }
@@ -253,13 +326,19 @@ fun SettingSection(title: String, content: @Composable () -> Unit) {
 }
 
 @Composable
-fun ChoiceDialog(title: String, choices: List<String>, dismiss: () -> Unit, choose: (Int) -> Unit) {
+fun ChoiceDialog(
+    title: String,
+    choices: List<String>,
+    dismiss: () -> Unit,
+    selectedIndex: Int,
+    choose: (Int) -> Unit
+) {
     MobileConfirmationDialog(onDismissRequest = dismiss, title = { Text(title) }, text = {
-        Column(Modifier.verticalScroll(rememberScrollState())) {
+        Column(Modifier.verticalScroll(rememberScrollState()).selectableGroup()) {
             choices.forEachIndexed { index, label ->
-                TextButton(onClick = {
+                RadioChoiceRow(label, selected = index == selectedIndex, onClick = {
                     choose(index)
-                }, modifier = Modifier.fillMaxWidth()) { Text(label) }
+                })
             }
         }
     }, confirmButton = {

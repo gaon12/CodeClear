@@ -217,7 +217,7 @@ class MainActivity : AppCompatActivity() {
                                         true
                                     )
                                 }
-                            }) { Text(stringResource(R.string.mobile_agree)) }
+                            }) { Text(stringResource(R.string.mobile_download_models)) }
                         },
                         dismissButton = {
                             TextButton(onClick = {
