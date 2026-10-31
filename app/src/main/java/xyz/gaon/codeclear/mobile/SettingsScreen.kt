@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -28,10 +27,9 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -122,66 +119,76 @@ private fun SettingsMenu(
     select: (SettingsPage) -> Unit,
     modifier: Modifier
 ) {
-    LazyColumn(
-        modifier.testTag("settings-menu").selectableGroup(),
-        state = scroll,
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        item {
-            Box(
-                Modifier.fillMaxWidth().heightIn(min = if (expanded) 72.dp else 160.dp),
-                contentAlignment = if (expanded) Alignment.CenterStart else Alignment.Center
-            ) {
-                Text(
-                    stringResource(R.string.mobile_settings),
-                    Modifier.padding(horizontal = 16.dp),
-                    style = if (expanded) {
-                        MaterialTheme.typography.titleLarge
-                    } else {
-                        MaterialTheme.typography.headlineLarge
+    Column(modifier) {
+        MobilePageHeader(stringResource(R.string.mobile_settings), titleTag = "settings-menu-title")
+        LazyColumn(
+            Modifier.weight(1f).fillMaxWidth().testTag("settings-menu").selectableGroup(),
+            state = scroll,
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (!expanded && (!state.loaded || state.storageError)) {
+                item { SettingsStatus(state, actions) }
+            }
+            items(SettingsPage.entries.chunked(2), key = { it.first().name }) { group ->
+                Surface(
+                    Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    color = MaterialTheme.colorScheme.surface
+                ) {
+                    Column {
+                        group.forEachIndexed { index, page ->
+                            if (index > 0) SettingDivider()
+                            SettingsCategory(page, state.options, selected == page) { select(page) }
+                        }
                     }
-                )
+                }
             }
         }
-        if (!expanded) item { SettingsStatus(state, actions) }
-        items(SettingsPage.entries, key = { it.name }) { page ->
-            val active = selected == page
-            val interaction = remember { MutableInteractionSource() }
-            val pressed by interaction.collectIsPressedAsState()
-            val focused by interaction.collectIsFocusedAsState()
-            val hovered by interaction.collectIsHoveredAsState()
-            Column(
-                Modifier.fillMaxWidth().testTag("settings-category-${page.name}")
-                    .background(
-                        if (active || pressed || focused || hovered) {
-                            MaterialTheme.colorScheme.surfaceVariant
-                        } else {
-                            Color.Transparent
-                        },
-                        RoundedCornerShape(20.dp)
-                    ).selectable(
-                        active,
-                        role = Role.Tab,
-                        interactionSource = interaction,
-                        indication = null,
-                        onClick = { select(page) }
-                    )
-                    .heightIn(min = 80.dp).padding(horizontal = 20.dp, vertical = 18.dp),
-                verticalArrangement = Arrangement.spacedBy(5.dp)
-            ) {
-                Text(
-                    stringResource(page.title),
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal
-                )
-                Text(
-                    settingsSummary(page, state.options),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
+    }
+}
+
+@Composable
+private fun SettingsCategory(
+    page: SettingsPage,
+    options: MobileOptions,
+    active: Boolean,
+    select: () -> Unit
+) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val focused by interaction.collectIsFocusedAsState()
+    val hovered by interaction.collectIsHoveredAsState()
+    Column(
+        Modifier.fillMaxWidth().testTag("settings-category-${page.name}")
+            .background(
+                if (active || pressed || focused ||
+                    hovered
+                ) {
+                    MaterialTheme.colorScheme.surfaceVariant
+                } else {
+                    Color.Transparent
+                },
+                RoundedCornerShape(20.dp)
+            ).selectable(
+                active,
+                role = Role.Tab,
+                interactionSource = interaction,
+                indication = null,
+                onClick = select
+            ).heightIn(min = 80.dp).padding(horizontal = 24.dp, vertical = 18.dp),
+        verticalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
+        Text(
+            stringResource(page.title),
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal
+        )
+        Text(
+            settingsSummary(page, options),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -199,26 +206,13 @@ private fun SettingsDetail(
     modifier: Modifier
 ) {
     Column(modifier.fillMaxHeight().testTag("settings-detail-pane")) {
-        Row(
-            Modifier.widthIn(max = 760.dp).fillMaxWidth().align(Alignment.CenterHorizontally)
-                .heightIn(min = 72.dp).padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (back != null) {
-                IconButton(onClick = back, modifier = Modifier.testTag("settings-back")) {
-                    Icon(
-                        painterResource(R.drawable.ic_back),
-                        stringResource(R.string.mobile_back),
-                        Modifier.size(24.dp)
-                    )
-                }
-            }
-            Text(
-                stringResource(page.title),
-                Modifier.padding(horizontal = 12.dp).testTag("settings-detail-title"),
-                style = MaterialTheme.typography.titleLarge
-            )
-        }
+        MobilePageHeader(
+            stringResource(page.title),
+            Modifier.widthIn(max = 760.dp).fillMaxWidth().align(Alignment.CenterHorizontally),
+            back = back,
+            titleTag = "settings-detail-title",
+            backTag = "settings-back"
+        )
         Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.TopCenter) {
             LazyColumn(
                 Modifier.widthIn(max = 760.dp).fillMaxSize().testTag("settings-detail"),

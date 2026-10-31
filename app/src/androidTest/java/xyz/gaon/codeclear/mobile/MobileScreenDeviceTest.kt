@@ -242,6 +242,12 @@ class MobileScreenDeviceTest {
         }
         for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
             compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            compose.onNodeWithTag("destination-2").performClick()
+            if (compose.onAllNodesWithTag("settings-menu").fetchSemanticsNodes().isEmpty()) {
+                compose.onNodeWithTag("settings-back").performClick()
+            }
+            compose.onNodeWithTag("settings-menu").performScrollToIndex(0)
+            savePreview("settings-main-${theme.name.lowercase()}")
             openSettingsPage(SettingsPage.APPEARANCE)
             savePreview("settings-appearance-${theme.name.lowercase()}")
             compose.onNodeWithText("화면 모드").performScrollTo().performClick()
@@ -337,6 +343,45 @@ class MobileScreenDeviceTest {
         }
         compose.onNodeWithTag("settings-menu").performScrollToNode(hasTestTag(category))
         compose.onNodeWithTag(category).performClick()
+    }
+
+    @Test
+    fun destinationTitlesStayFixedWhileTheirContentScrolls() {
+        compose.runOnIdle {
+            densityScale =
+                context.window.decorView.width / context.resources.displayMetrics.density / 320f
+            fontScale = 1.8f
+            state = state.copy(records = List(24) { record(it.toLong() + 1) })
+        }
+        fun verify(header: String, label: Int, feed: String, scroll: () -> Unit) {
+            compose.onNodeWithTag(header).assertTextEquals(text(label)).assertIsDisplayed()
+            val before = compose.onNodeWithTag(header).fetchSemanticsNode().boundsInRoot
+            scroll()
+            val after = compose.onNodeWithTag(header).fetchSemanticsNode().boundsInRoot
+            assertEquals(before.top, after.top, 1f)
+            assertEquals(before.left, after.left, 1f)
+            compose.onNodeWithTag(header).assertIsDisplayed()
+            val offset = compose.onNodeWithTag(feed).fetchSemanticsNode().config[
+                SemanticsProperties.VerticalScrollAxisRange
+            ].value()
+            assertTrue("The content must have scrolled beneath its header", offset > 0f)
+        }
+        compose.onAllNodesWithText("CodeClear").assertCountEquals(0)
+        verify("destination-title", R.string.mobile_home, "mobile-feed") {
+            compose.onNodeWithTag(
+                "mobile-feed"
+            ).performScrollToNode(hasText(text(R.string.mobile_manage_access)))
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        verify("destination-title", R.string.mobile_history, "mobile-feed") {
+            compose.onNodeWithTag("mobile-feed").performScrollToIndex(5)
+        }
+        compose.onNodeWithTag("destination-2").performClick()
+        verify("settings-menu-title", R.string.mobile_settings, "settings-menu") {
+            compose.onNodeWithTag(
+                "settings-menu"
+            ).performScrollToNode(hasTestTag("settings-category-ABOUT"))
+        }
     }
 
     @Test

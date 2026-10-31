@@ -3,7 +3,6 @@ package xyz.gaon.codeclear.mobile
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -116,7 +115,7 @@ fun MobileScreen(
                 tutorial = false
             }
         }) { padding ->
-            BoxWithConstraints(
+            Box(
                 Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.TopCenter
             ) {
@@ -136,296 +135,288 @@ fun MobileScreen(
                             }
                         )
                     }
-                    return@BoxWithConstraints
+                    return@Box
                 }
-                val headingHeight = if (maxHeight >= 560.dp) 160.dp else 88.dp
-                LazyColumn(
-                    Modifier.widthIn(max = 880.dp).fillMaxWidth().testTag("mobile-feed"),
-                    state = feedScroll,
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    item {
-                        Box(
-                            Modifier.fillMaxWidth().heightIn(
-                                min = headingHeight
-                            ).padding(vertical = 20.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                if (!showTutorial && currentTab == 0) {
-                                    "CodeClear"
-                                } else {
-                                    stringResource(
-                                        if (showTutorial) {
-                                            R.string.mobile_tutorial
-                                        } else {
-                                            listOf(
-                                                R.string.mobile_home,
-                                                R.string.mobile_history,
-                                                R.string.mobile_settings
-                                            )[currentTab]
-                                        }
-                                    )
-                                },
-                                style = MaterialTheme.typography.headlineLarge
-                            )
+                Column(Modifier.widthIn(max = 880.dp).fillMaxSize()) {
+                    MobilePageHeader(
+                        stringResource(
+                            if (showTutorial) {
+                                R.string.mobile_tutorial
+                            } else if (currentTab ==
+                                0
+                            ) {
+                                R.string.mobile_home
+                            } else {
+                                R.string.mobile_history
+                            }
+                        ),
+                        back = if (showTutorial) {
+                            { if (step > 0) step-- else tutorial = false }
+                        } else {
+                            null
                         }
-                    }
-                    if (!state.loaded) {
-                        item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
-                    }
-                    if (state.storageError) {
-                        item {
-                            SettingSection(stringResource(R.string.mobile_storage_error)) {
-                                Text(stringResource(R.string.mobile_storage_notice))
-                                Button(onClick = actions.retryStorage) {
-                                    Text(stringResource(R.string.mobile_retry))
+                    )
+                    LazyColumn(
+                        Modifier.weight(1f).fillMaxWidth().testTag("mobile-feed"),
+                        state = feedScroll,
+                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        if (!state.loaded) {
+                            item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
+                        }
+                        if (state.storageError) {
+                            item {
+                                SettingSection(stringResource(R.string.mobile_storage_error)) {
+                                    Text(stringResource(R.string.mobile_storage_notice))
+                                    Button(onClick = actions.retryStorage) {
+                                        Text(stringResource(R.string.mobile_retry))
+                                    }
                                 }
                             }
                         }
-                    }
-                    when {
-                        showTutorial -> item {
-                            SettingSection(
-                                stringResource(
-                                    listOf(
-                                        R.string.mobile_tutorial_receive,
-                                        R.string.mobile_tutorial_read,
-                                        R.string.mobile_tutorial_translate
-                                    )[currentStep]
-                                )
-                            ) {
-                                Text(
+                        when {
+                            showTutorial -> item {
+                                SettingSection(
                                     stringResource(
                                         listOf(
-                                            R.string.mobile_tutorial_receive_body,
-                                            R.string.mobile_tutorial_read_body,
-                                            R.string.mobile_tutorial_translate_body
+                                            R.string.mobile_tutorial_receive,
+                                            R.string.mobile_tutorial_read,
+                                            R.string.mobile_tutorial_translate
                                         )[currentStep]
                                     )
-                                )
-                                Row {
-                                    if (currentStep >
-                                        0
-                                    ) {
-                                        TextButton(onClick = {
-                                            step--
-                                        }) { Text(stringResource(R.string.mobile_back)) }
-                                    }
-                                    Button(onClick = {
-                                        if (step <
-                                            2
+                                ) {
+                                    Text(
+                                        stringResource(
+                                            listOf(
+                                                R.string.mobile_tutorial_receive_body,
+                                                R.string.mobile_tutorial_read_body,
+                                                R.string.mobile_tutorial_translate_body
+                                            )[currentStep]
+                                        )
+                                    )
+                                    Row {
+                                        if (currentStep >
+                                            0
                                         ) {
-                                            step++
-                                        } else {
-                                            tutorial = false
-                                            actions.configure(
-                                                state.options.copy(setupComplete = true)
+                                            TextButton(onClick = {
+                                                step--
+                                            }) { Text(stringResource(R.string.mobile_back)) }
+                                        }
+                                        Button(onClick = {
+                                            if (step <
+                                                2
+                                            ) {
+                                                step++
+                                            } else {
+                                                tutorial = false
+                                                actions.configure(
+                                                    state.options.copy(setupComplete = true)
+                                                )
+                                            }
+                                        }) {
+                                            Text(
+                                                stringResource(
+                                                    if (currentStep ==
+                                                        2
+                                                    ) {
+                                                        R.string.mobile_done
+                                                    } else {
+                                                        R.string.mobile_next
+                                                    }
+                                                )
                                             )
                                         }
-                                    }) {
-                                        Text(
-                                            stringResource(
-                                                if (currentStep ==
-                                                    2
-                                                ) {
-                                                    R.string.mobile_done
-                                                } else {
-                                                    R.string.mobile_next
-                                                }
-                                            )
+                                    }
+                                }
+                            }
+
+                            currentTab == 0 -> {
+                                item {
+                                    Text(
+                                        stringResource(R.string.mobile_last_saved),
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                }
+                                val latest = state.latest
+                                if (latest == null) {
+                                    item { Text(stringResource(R.string.mobile_empty)) }
+                                } else {
+                                    item {
+                                        AlertPresentation(
+                                            latest,
+                                            state.options.target.languageTag,
+                                            state.options.localConsent,
+                                            {
+                                                actions.retry(
+                                                    latest.id,
+                                                    state.options.target.languageTag,
+                                                    state.options.engine
+                                                )
+                                            },
+                                            {
+                                                actions.prepare(
+                                                    latest,
+                                                    state.options.target.languageTag,
+                                                    state.options.engine
+                                                )
+                                            },
+                                            { actions.detail(latest.id) },
+                                            engine = state.options.engine
                                         )
                                     }
                                 }
-                            }
-                        }
-
-                        currentTab == 0 -> {
-                            item {
-                                Text(
-                                    stringResource(R.string.mobile_last_saved),
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                            }
-                            val latest = state.latest
-                            if (latest == null) {
-                                item { Text(stringResource(R.string.mobile_empty)) }
-                            } else {
                                 item {
+                                    SettingSection(stringResource(R.string.mobile_capture_status)) {
+                                        Text(
+                                            stringResource(
+                                                when {
+                                                    environment.radio == ProbeRadio.ABSENT ->
+                                                        R.string.mobile_wifi_only
+
+                                                    environment.radio != ProbeRadio.PRESENT ->
+                                                        R.string.mobile_radio_unknown
+
+                                                    environment.systemPackages.isEmpty() ->
+                                                        R.string.mobile_source_unknown
+
+                                                    (
+                                                        !state.options.notificationConsent ||
+                                                            !environment.notificationGranted ||
+                                                            !session.notificationConnected
+                                                        ) &&
+                                                        (
+                                                            !state.options.accessibilityConsent ||
+                                                                !environment.accessibilityGranted ||
+                                                                !session.accessibilityConnected
+                                                            ) -> R.string.mobile_setup_needed
+
+                                                    else -> R.string.mobile_ready
+                                                }
+                                            )
+                                        )
+                                        TextButton(onClick = {
+                                            settingsPage = SettingsPage.CAPTURE
+                                            tab = 2
+                                        }) { Text(stringResource(R.string.mobile_manage_access)) }
+                                        TextButton(onClick = {
+                                            tutorial = true
+                                            step = 0
+                                        }) { Text(stringResource(R.string.mobile_tutorial)) }
+                                    }
+                                }
+                                val observed = session.records.lastOrNull()?.observation
+                                if (observed != null &&
+                                    (
+                                        observed.bodyEvidence == ProbeBodyEvidence.UNVERIFIED ||
+                                            observed.limited ||
+                                            observed.groupSummary ||
+                                            observed.platformBoundaryPossible
+                                        )
+                                ) {
+                                    item {
+                                        Text(
+                                            stringResource(R.string.mobile_incomplete),
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    }
+                                }
+                                observed?.reportedDialogQueueSize?.takeIf {
+                                    it > 1
+                                }?.let { count ->
+                                    item { Text(stringResource(R.string.mobile_pending, count)) }
+                                }
+                                if (sourceAvailable) {
+                                    item {
+                                        Button(onClick = actions.openSource) {
+                                            Text(stringResource(R.string.mobile_open_source))
+                                        }
+                                    }
+                                }
+                            }
+
+                            currentTab == 1 -> {
+                                item {
+                                    OutlinedTextField(
+                                        value = state.query,
+                                        onValueChange = actions.search,
+                                        label = {
+                                            Text(stringResource(R.string.mobile_search))
+                                        },
+                                        singleLine = true,
+                                        shape = RoundedCornerShape(24.dp),
+                                        leadingIcon = {
+                                            Icon(painterResource(R.drawable.ic_search), null)
+                                        },
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedContainerColor =
+                                                MaterialTheme.colorScheme.surface,
+                                            unfocusedContainerColor =
+                                                MaterialTheme.colorScheme.surface,
+                                            unfocusedBorderColor = Color.Transparent
+                                        ),
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                                if (state.loading) {
+                                    item {
+                                        LinearProgressIndicator(Modifier.fillMaxWidth())
+                                    }
+                                }
+                                if (!state.loading &&
+                                    state.records.isEmpty()
+                                ) {
+                                    item { Text(stringResource(R.string.mobile_no_results)) }
+                                }
+                                items(state.records, key = { it.id }) { alert ->
                                     AlertPresentation(
-                                        latest,
+                                        alert,
                                         state.options.target.languageTag,
                                         state.options.localConsent,
                                         {
                                             actions.retry(
-                                                latest.id,
+                                                alert.id,
                                                 state.options.target.languageTag,
                                                 state.options.engine
                                             )
                                         },
                                         {
                                             actions.prepare(
-                                                latest,
+                                                alert,
                                                 state.options.target.languageTag,
                                                 state.options.engine
                                             )
                                         },
-                                        { actions.detail(latest.id) },
+                                        { actions.detail(alert.id) },
                                         engine = state.options.engine
                                     )
                                 }
-                            }
-                            item {
-                                SettingSection(stringResource(R.string.mobile_capture_status)) {
-                                    Text(
-                                        stringResource(
-                                            when {
-                                                environment.radio == ProbeRadio.ABSENT ->
-                                                    R.string.mobile_wifi_only
-
-                                                environment.radio != ProbeRadio.PRESENT ->
-                                                    R.string.mobile_radio_unknown
-
-                                                environment.systemPackages.isEmpty() ->
-                                                    R.string.mobile_source_unknown
-
-                                                (
-                                                    !state.options.notificationConsent ||
-                                                        !environment.notificationGranted ||
-                                                        !session.notificationConnected
-                                                    ) &&
-                                                    (
-                                                        !state.options.accessibilityConsent ||
-                                                            !environment.accessibilityGranted ||
-                                                            !session.accessibilityConnected
-                                                        ) -> R.string.mobile_setup_needed
-
-                                                else -> R.string.mobile_ready
+                                item {
+                                    Row {
+                                        TextButton(onClick = actions.newest) {
+                                            Text(stringResource(R.string.mobile_newest))
+                                        }
+                                        if (state.records.size ==
+                                            50
+                                        ) {
+                                            TextButton(onClick = actions.older) {
+                                                Text(stringResource(R.string.mobile_older))
                                             }
-                                        )
-                                    )
-                                    TextButton(onClick = {
-                                        settingsPage = SettingsPage.CAPTURE
-                                        tab = 2
-                                    }) { Text(stringResource(R.string.mobile_manage_access)) }
-                                    TextButton(onClick = {
-                                        tutorial = true
-                                        step = 0
-                                    }) { Text(stringResource(R.string.mobile_tutorial)) }
-                                }
-                            }
-                            val observed = session.records.lastOrNull()?.observation
-                            if (observed != null &&
-                                (
-                                    observed.bodyEvidence == ProbeBodyEvidence.UNVERIFIED ||
-                                        observed.limited ||
-                                        observed.groupSummary ||
-                                        observed.platformBoundaryPossible
-                                    )
-                            ) {
-                                item {
-                                    Text(
-                                        stringResource(R.string.mobile_incomplete),
-                                        color = MaterialTheme.colorScheme.error
-                                    )
-                                }
-                            }
-                            observed?.reportedDialogQueueSize?.takeIf {
-                                it > 1
-                            }?.let { count ->
-                                item { Text(stringResource(R.string.mobile_pending, count)) }
-                            }
-                            if (sourceAvailable) {
-                                item {
-                                    Button(onClick = actions.openSource) {
-                                        Text(stringResource(R.string.mobile_open_source))
-                                    }
-                                }
-                            }
-                        }
-
-                        currentTab == 1 -> {
-                            item {
-                                OutlinedTextField(
-                                    value = state.query,
-                                    onValueChange = actions.search,
-                                    label = {
-                                        Text(stringResource(R.string.mobile_search))
-                                    },
-                                    singleLine = true,
-                                    shape = RoundedCornerShape(24.dp),
-                                    leadingIcon = {
-                                        Icon(painterResource(R.drawable.ic_search), null)
-                                    },
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedContainerColor =
-                                            MaterialTheme.colorScheme.surface,
-                                        unfocusedContainerColor =
-                                            MaterialTheme.colorScheme.surface,
-                                        unfocusedBorderColor = Color.Transparent
-                                    ),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                            if (state.loading) {
-                                item {
-                                    LinearProgressIndicator(Modifier.fillMaxWidth())
-                                }
-                            }
-                            if (!state.loading &&
-                                state.records.isEmpty()
-                            ) {
-                                item { Text(stringResource(R.string.mobile_no_results)) }
-                            }
-                            items(state.records, key = { it.id }) { alert ->
-                                AlertPresentation(
-                                    alert,
-                                    state.options.target.languageTag,
-                                    state.options.localConsent,
-                                    {
-                                        actions.retry(
-                                            alert.id,
-                                            state.options.target.languageTag,
-                                            state.options.engine
-                                        )
-                                    },
-                                    {
-                                        actions.prepare(
-                                            alert,
-                                            state.options.target.languageTag,
-                                            state.options.engine
-                                        )
-                                    },
-                                    { actions.detail(alert.id) },
-                                    engine = state.options.engine
-                                )
-                            }
-                            item {
-                                Row {
-                                    TextButton(onClick = actions.newest) {
-                                        Text(stringResource(R.string.mobile_newest))
-                                    }
-                                    if (state.records.size ==
-                                        50
-                                    ) {
-                                        TextButton(onClick = actions.older) {
-                                            Text(stringResource(R.string.mobile_older))
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                    if (preparation.phase != PreparationPhase.IDLE &&
-                        state.options.engine == LocalEngineKind.ML_KIT
-                    ) {
-                        item {
-                            Text(
-                                stringResource(
-                                    preparationMessage(preparation.phase)
+                        if (preparation.phase != PreparationPhase.IDLE &&
+                            state.options.engine == LocalEngineKind.ML_KIT
+                        ) {
+                            item {
+                                Text(
+                                    stringResource(
+                                        preparationMessage(preparation.phase)
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }
