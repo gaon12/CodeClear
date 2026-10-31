@@ -151,4 +151,9 @@
     <string name="mobile_identifying_original">正在确认原文语言…</string>
     <string name="mobile_original_unknown">无法确认原文语言。请保留原文并重试。</string>
     <string name="mobile_original_language_choice">%1$s · 原文语言</string>
+    <string name="mobile_home_check_source">检查来源</string>
+    <string name="mobile_home_setup">需要设置权限</string>
+    <string name="mobile_home_empty_title">在一处查看收到的警报</string>
+    <string name="mobile_home_view_history">查看记录</string>
+    <string name="mobile_home_no_radio">无蜂窝接收功能</string>
 </resources>

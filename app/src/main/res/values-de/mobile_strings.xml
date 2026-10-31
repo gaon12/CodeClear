@@ -151,4 +151,9 @@
     <string name="mobile_identifying_original">Die Originalsprache wird ermittelt…</string>
     <string name="mobile_original_unknown">Die Originalsprache konnte nicht ermittelt werden. Prüfen Sie das Original und versuchen Sie es erneut.</string>
     <string name="mobile_original_language_choice">%1$s · Originalsprache</string>
+    <string name="mobile_home_check_source">Quelle prüfen</string>
+    <string name="mobile_home_setup">Zugriff einrichten</string>
+    <string name="mobile_home_empty_title">Ihre Warnungen an einem Ort</string>
+    <string name="mobile_home_view_history">Verlauf öffnen</string>
+    <string name="mobile_home_no_radio">Kein Mobilfunkempfänger</string>
 </resources>

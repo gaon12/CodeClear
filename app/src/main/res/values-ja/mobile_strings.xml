@@ -151,4 +151,9 @@
     <string name="mobile_identifying_original">原文の言語を確認しています…</string>
     <string name="mobile_original_unknown">原文の言語を確認できませんでした。原文を確認して、もう一度お試しください。</string>
     <string name="mobile_original_language_choice">%1$s · 原文の言語</string>
+    <string name="mobile_home_check_source">収集元を確認</string>
+    <string name="mobile_home_setup">アクセスの設定が必要</string>
+    <string name="mobile_home_empty_title">受信した警報をまとめて確認</string>
+    <string name="mobile_home_view_history">履歴を見る</string>
+    <string name="mobile_home_no_radio">携帯通信の受信機能なし</string>
 </resources>

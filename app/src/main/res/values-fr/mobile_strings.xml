@@ -151,4 +151,9 @@
     <string name="mobile_identifying_original">Identification de la langue d’origine…</string>
     <string name="mobile_original_unknown">La langue d’origine n’a pas pu être identifiée. Consultez l’original et réessayez.</string>
     <string name="mobile_original_language_choice">%1$s · Langue d’origine</string>
+    <string name="mobile_home_check_source">Vérifier la source</string>
+    <string name="mobile_home_setup">Configurer les accès</string>
+    <string name="mobile_home_empty_title">Vos alertes au même endroit</string>
+    <string name="mobile_home_view_history">Voir l’historique</string>
+    <string name="mobile_home_no_radio">Sans réception cellulaire</string>
 </resources>

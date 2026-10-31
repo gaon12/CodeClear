@@ -298,14 +298,32 @@ fun MobileScreen(
 
                             currentTab == 0 -> {
                                 item {
-                                    Text(
-                                        stringResource(R.string.mobile_last_saved),
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
+                                    HomeOverview(state, environment, session, {
+                                        settingsPage = SettingsPage.CAPTURE
+                                        tab = 2
+                                    }, {
+                                        settingsPage = SettingsPage.TRANSLATION
+                                        tab = 2
+                                    })
+                                }
+                                item {
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            stringResource(R.string.mobile_last_saved),
+                                            Modifier.weight(1f),
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
+                                        TextButton(onClick = { tab = 1 }) {
+                                            Text(stringResource(R.string.mobile_home_view_history))
+                                        }
+                                    }
                                 }
                                 val latest = state.latest
                                 if (latest == null) {
-                                    item { Text(stringResource(R.string.mobile_empty)) }
+                                    item { HomeEmptyState() }
                                 } else {
                                     item {
                                         AlertPresentation(
@@ -368,14 +386,33 @@ fun MobileScreen(
                                                 }
                                             )
                                         )
-                                        TextButton(onClick = {
-                                            settingsPage = SettingsPage.CAPTURE
-                                            tab = 2
-                                        }) { Text(stringResource(R.string.mobile_manage_access)) }
-                                        TextButton(onClick = {
-                                            tutorial = true
-                                            step = 0
-                                        }) { Text(stringResource(R.string.mobile_tutorial)) }
+                                    }
+                                }
+                                item {
+                                    SettingsGroup {
+                                        TextButton(
+                                            onClick = {
+                                                settingsPage = SettingsPage.CAPTURE
+                                                tab = 2
+                                            },
+                                            modifier = Modifier.fillMaxWidth().heightIn(
+                                                min = 56.dp
+                                            )
+                                        ) {
+                                            Text(stringResource(R.string.mobile_manage_access))
+                                        }
+                                        SettingDivider()
+                                        TextButton(
+                                            onClick = {
+                                                tutorial = true
+                                                step = 0
+                                            },
+                                            modifier = Modifier.fillMaxWidth().heightIn(
+                                                min = 56.dp
+                                            )
+                                        ) {
+                                            Text(stringResource(R.string.mobile_tutorial))
+                                        }
                                     }
                                 }
                                 val observed = session.records.lastOrNull()?.observation

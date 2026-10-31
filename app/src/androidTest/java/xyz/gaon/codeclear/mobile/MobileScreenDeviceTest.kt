@@ -1059,7 +1059,9 @@ class MobileScreenDeviceTest {
             compose.onNodeWithText(text(R.string.mobile_wifi_only)).assertIsDisplayed()
             savePreview("wifi-only-home-${theme.name.lowercase()}")
         }
-        compose.onNodeWithText(text(R.string.mobile_tutorial)).performScrollTo().performClick()
+        compose.onNodeWithTag("mobile-feed")
+            .performScrollToNode(hasText(text(R.string.mobile_tutorial)))
+        compose.onNodeWithText(text(R.string.mobile_tutorial)).assertIsDisplayed().performClick()
         compose.onNodeWithText(text(R.string.mobile_next)).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_tutorial_read)).assertIsDisplayed()
         compose.onNodeWithText(text(R.string.mobile_next)).performScrollTo().performClick()
@@ -1252,6 +1254,32 @@ class MobileScreenDeviceTest {
                 )
             }
         }
+    }
+
+    @Test
+    fun homeOverviewOpensRelevantSettingsAndKeepsEmptyStateReadable() {
+        compose.runOnIdle {
+            state = state.copy(latest = null)
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            previewLanguage = "ko"
+        }
+        for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
+            compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            compose.onNodeWithTag("home-overview").assertIsDisplayed()
+            compose.onNodeWithText(text(R.string.mobile_home_empty_title)).assertIsDisplayed()
+            savePreview("home-empty-${theme.name.lowercase()}")
+        }
+        compose.onNodeWithText(text(R.string.mobile_collection)).performClick()
+        compose.onNodeWithTag("settings-detail-title")
+            .assertTextEquals(text(R.string.mobile_collection))
+        compose.onNodeWithTag("destination-0").performClick()
+        compose.onNodeWithText(text(R.string.mobile_translation_settings)).performClick()
+        compose.onNodeWithTag("settings-detail-title")
+            .assertTextEquals(text(R.string.mobile_translation_settings))
+        compose.onNodeWithTag("destination-0").performClick()
+        compose.onNodeWithText(text(R.string.mobile_home_view_history)).performClick()
+        compose.onNodeWithTag("destination-title").assertTextEquals(text(R.string.mobile_history))
+        compose.runOnIdle { assertEquals(0, prepared) }
     }
 
     @Test

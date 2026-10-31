@@ -65,7 +65,7 @@ fun AlertPresentation(
                     painterResource(R.drawable.ic_result),
                     null,
                     Modifier.size(28.dp),
-                    tint = MaterialTheme.colorScheme.error
+                    tint = MaterialTheme.colorScheme.primary
                 )
                 Column {
                     Text(
@@ -178,7 +178,9 @@ fun AlertPresentation(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             details?.let {
-                TextButton(onClick = it) { Text(stringResource(R.string.mobile_details)) }
+                OutlinedButton(onClick = it, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.mobile_details))
+                }
             }
         }
     }
