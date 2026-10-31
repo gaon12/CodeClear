@@ -222,7 +222,7 @@ fun MobileScreen(
                             }
                         )
                     ) {
-                        if (!state.loaded) {
+                        if (!state.loaded && (currentTab != 1 || showTutorial)) {
                             item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
                         }
                         if (state.storageError) {
@@ -418,42 +418,39 @@ fun MobileScreen(
                                         modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
                                     )
                                 }
-                                if (state.loading) {
-                                    item {
-                                        LinearProgressIndicator(Modifier.fillMaxWidth())
+                                if (state.loading || !state.loaded) {
+                                    item { HistoryLoadingPlaceholder() }
+                                } else {
+                                    if (state.records.isEmpty()) {
+                                        item { Text(stringResource(R.string.mobile_no_results)) }
                                     }
-                                }
-                                if (!state.loading &&
-                                    state.records.isEmpty()
-                                ) {
-                                    item { Text(stringResource(R.string.mobile_no_results)) }
-                                }
-                                itemsIndexed(state.records, key = { _, alert ->
-                                    alert.id
-                                }) { index, alert ->
-                                    AlertHistoryRow(
-                                        alert = alert,
-                                        target = state.options.target.languageTag,
-                                        engine = state.options.engine,
-                                        localEnabled = state.options.localConsent,
-                                        first = index == 0,
-                                        last = index == state.records.lastIndex,
-                                        open = {
-                                            historyDetailId = alert.id
-                                            actions.detail(alert.id)
-                                        }
-                                    )
-                                }
-                                item {
-                                    Row(Modifier.padding(vertical = 12.dp)) {
-                                        TextButton(onClick = actions.newest) {
-                                            Text(stringResource(R.string.mobile_newest))
-                                        }
-                                        if (state.records.size ==
-                                            50
-                                        ) {
-                                            TextButton(onClick = actions.older) {
-                                                Text(stringResource(R.string.mobile_older))
+                                    itemsIndexed(state.records, key = { _, alert ->
+                                        alert.id
+                                    }) { index, alert ->
+                                        AlertHistoryRow(
+                                            alert = alert,
+                                            target = state.options.target.languageTag,
+                                            engine = state.options.engine,
+                                            localEnabled = state.options.localConsent,
+                                            first = index == 0,
+                                            last = index == state.records.lastIndex,
+                                            open = {
+                                                historyDetailId = alert.id
+                                                actions.detail(alert.id)
+                                            }
+                                        )
+                                    }
+                                    item {
+                                        Row(Modifier.padding(vertical = 12.dp)) {
+                                            TextButton(onClick = actions.newest) {
+                                                Text(stringResource(R.string.mobile_newest))
+                                            }
+                                            if (state.records.size ==
+                                                50
+                                            ) {
+                                                TextButton(onClick = actions.older) {
+                                                    Text(stringResource(R.string.mobile_older))
+                                                }
                                             }
                                         }
                                     }

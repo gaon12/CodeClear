@@ -572,6 +572,41 @@ class MobileScreenDeviceTest {
     }
 
     @Test
+    fun historySearchUsesPlaceholdersUntilTheCurrentResultsArrive() {
+        compose.runOnIdle {
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            previewLanguage = "ko"
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithText(text(R.string.mobile_search)).performTextInput("Gate_3%")
+        for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
+            compose.runOnIdle {
+                state = state.copy(loading = true, options = state.options.copy(theme = theme))
+            }
+            compose.onNodeWithTag("history-loading").assertIsDisplayed()
+            compose.onNodeWithTag("history-row-1").assertDoesNotExist()
+            compose.onNodeWithText(text(R.string.mobile_no_results)).assertDoesNotExist()
+            compose.onAllNodes(
+                SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo)
+            ).assertCountEquals(0)
+            savePreview("history-loading-${theme.name.lowercase()}")
+        }
+        compose.runOnIdle { state = state.copy(loading = false, records = emptyList()) }
+        compose.onNodeWithTag("history-loading").assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_no_results)).assertIsDisplayed()
+        compose.runOnIdle { state = state.copy(loading = true) }
+        compose.onNodeWithText(text(R.string.mobile_no_results)).assertDoesNotExist()
+        compose.runOnIdle { state = state.copy(loading = false, records = listOf(record(2))) }
+        compose.onNodeWithTag("history-loading").assertDoesNotExist()
+        compose.onNodeWithTag("history-row-2").assertIsDisplayed().performClick()
+        compose.runOnIdle {
+            assertEquals("Gate_3%", state.query)
+            assertEquals(2L, state.detailId)
+            assertEquals(0, prepared)
+        }
+    }
+
+    @Test
     fun historyDispatchesLiteralSearchAndModelsRequireAnExplicitAction() {
         compose.onNodeWithTag("destination-1").performClick()
         compose.onNodeWithText(text(R.string.mobile_search)).performTextInput("Gate_3%")
