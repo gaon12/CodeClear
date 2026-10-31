@@ -54,3 +54,10 @@ If checks fail or any code changes after testing, fix the change and repeat form
 - Keep `.dev/` ignored by Git under the existing repository configuration unless the user requests otherwise.
 - Resolve open product decisions and record platform feasibility evidence before feature implementation. Maintain the compatibility review in `.dev/09-android-compatibility-and-open-decisions.md` and the confirmed provider/cache decisions in `.dev/10-server-models-byok-and-public-cache.md`.
 - Follow the detailed workflow in `.dev/08-development-workflow.md`. Documentation-only changes need document validation; do not run unrelated application tests solely for prose edits.
+
+## Remote synchronization
+
+- The official repository is `https://github.com/gaon12/CodeClear`; use it as `origin` and keep the development branch on `main`.
+- The user authorizes regular pushes. After a focused change passes its required checks and is committed, push the verified commits to `origin/main` without asking again.
+- Review staged scope before committing and pushing. Keep ignored development records, credentials, generated output, local configuration, and unrelated existing edits out of the push.
+- Do not force-push or overwrite remote work. If synchronization fails, preserve local commits, report the failure, and resolve it without discarding another contributor's changes.
