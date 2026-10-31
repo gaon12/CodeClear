@@ -275,6 +275,41 @@ class MobileScreenDeviceTest {
     }
 
     @Test
+    fun categoryIconsRemainDecorativeAndWideMenusHaveRoom() {
+        compose.onNodeWithTag("destination-2").performClick()
+        if (compose.onAllNodesWithTag("settings-split").fetchSemanticsNodes().isNotEmpty()) {
+            val screen = compose.onNodeWithTag("settings-screen").fetchSemanticsNode().boundsInRoot
+            val menu = compose.onNodeWithTag("settings-menu").fetchSemanticsNode().boundsInRoot
+            val density = context.resources.displayMetrics.density
+            val readableWidth = minOf(screen.width * 0.4f, 600f * density)
+            assertTrue(
+                "The parent menu needs room for icons and descriptions",
+                menu.width >= readableWidth
+            )
+            val detail = compose.onNodeWithTag(
+                "settings-detail-pane"
+            ).fetchSemanticsNode().boundsInRoot
+            assertTrue(detail.left >= menu.right - 1f)
+            assertTrue(detail.width >= 460f * density)
+        }
+        for (page in SettingsPage.entries) {
+            compose.onNodeWithTag("settings-menu").performScrollToNode(
+                hasTestTag("settings-category-${page.name}")
+            )
+            val icon = compose.onNodeWithTag("settings-icon-${page.name}", useUnmergedTree = true)
+            icon.assertIsDisplayed()
+            assertTrue(
+                !icon.fetchSemanticsNode().config.contains(SemanticsProperties.ContentDescription)
+            )
+        }
+        compose.onNodeWithTag("settings-menu").performScrollToIndex(0)
+        compose.onNodeWithTag("settings-category-CAPTURE").performClick()
+        compose.onNodeWithTag(
+            "settings-detail-title"
+        ).assertTextEquals(text(R.string.mobile_collection))
+    }
+
+    @Test
     fun settingsPagesPreserveSelectionAcrossTabsAndSupportCompactBackNavigation() {
         openSettingsPage(SettingsPage.TRANSLATION)
         compose.onNodeWithTag(

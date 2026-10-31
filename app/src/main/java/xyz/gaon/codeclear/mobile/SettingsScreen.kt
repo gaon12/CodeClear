@@ -27,6 +27,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -41,6 +42,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.probe.LocalEngineKind
@@ -72,7 +74,7 @@ fun SettingsScreen(
     BoxWithConstraints(Modifier.fillMaxSize().testTag("settings-screen")) {
         val expanded = maxWidth >= 840.dp
         val page = selectedPage ?: SettingsPage.CAPTURE
-        val menuWidth = (maxWidth * 0.36f).coerceIn(280.dp, 400.dp)
+        val menuWidth = (maxWidth * 0.42f).coerceIn(320.dp, 640.dp)
         BackHandler(enabled = !expanded && selectedPage != null) { selectPage(null) }
         if (expanded) {
             Row(Modifier.fillMaxSize().testTag("settings-split")) {
@@ -138,7 +140,13 @@ private fun SettingsMenu(
                 ) {
                     Column {
                         group.forEachIndexed { index, page ->
-                            if (index > 0) SettingDivider()
+                            if (index > 0) {
+                                HorizontalDivider(
+                                    Modifier.padding(start = 76.dp, end = 20.dp),
+                                    thickness = 0.5.dp,
+                                    color = MaterialTheme.colorScheme.outlineVariant
+                                )
+                            }
                             SettingsCategory(page, state.options, selected == page) { select(page) }
                         }
                     }
@@ -159,7 +167,7 @@ private fun SettingsCategory(
     val pressed by interaction.collectIsPressedAsState()
     val focused by interaction.collectIsFocusedAsState()
     val hovered by interaction.collectIsHoveredAsState()
-    Column(
+    Row(
         Modifier.fillMaxWidth().testTag("settings-category-${page.name}")
             .background(
                 if (active || pressed || focused ||
@@ -176,19 +184,27 @@ private fun SettingsCategory(
                 interactionSource = interaction,
                 indication = null,
                 onClick = select
-            ).heightIn(min = 80.dp).padding(horizontal = 24.dp, vertical = 18.dp),
-        verticalArrangement = Arrangement.spacedBy(5.dp)
+            ).heightIn(min = 84.dp).padding(horizontal = 20.dp, vertical = 18.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            stringResource(page.title),
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal
-        )
-        Text(
-            settingsSummary(page, options),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        SettingsCategoryIcon(page)
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+            Text(
+                stringResource(page.title),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                settingsSummary(page, options),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }
 
