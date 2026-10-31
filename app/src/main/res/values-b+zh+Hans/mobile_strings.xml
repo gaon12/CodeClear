@@ -158,17 +158,17 @@
     <string name="mobile_home_no_radio">无蜂窝接收功能</string>
     <string name="mobile_nearby">附近警报共享</string>
     <string name="mobile_nearby_allow">允许附近共享</string>
-    <string name="mobile_nearby_disclosure">向附近用户公开最近15分钟内新收集的原文。接收内容的来源及真实性未经验证，保存前仅显示在临时收件箱中，不会再次转发。</string>
-    <string name="mobile_nearby_foreground">仅在此应用显示在屏幕上时通过Bluetooth交换，切换到其他应用后暂停。不使用GPS坐标或服务器。未保存的内容最多保留15分钟。</string>
+    <string name="mobile_nearby_disclosure">向附近用户分享新收集的原文。收到的消息来源和真实性未经验证。消息自动保存到私密历史记录中，直到您删除为止，不会再次转发。</string>
+    <string name="mobile_nearby_foreground">仅在应用显示在屏幕上时使用蓝牙交换，离开应用后暂停。不使用GPS坐标或服务器。已保存的消息会保留在历史记录中。</string>
     <string name="mobile_nearby_unverified">来自附近设备 · 来源未验证</string>
     <string name="mobile_nearby_inbox">附近收件箱</string>
     <plurals name="mobile_nearby_count">
-        <item quantity="other">%1$d条 · 临时保留最多15分钟</item>
+        <item quantity="other">最近收到%1$d条消息</item>
     </plurals>
-    <string name="mobile_nearby_empty">暂无临时消息。附近设备可能不存在、已暂停或超出范围。</string>
+    <string name="mobile_nearby_empty">暂无最近收到的消息。之前收到的消息可在历史记录中查看。</string>
     <string name="mobile_nearby_save">保存到记录</string>
-    <string name="mobile_nearby_dismiss">从临时收件箱移除</string>
-    <string name="mobile_nearby_save_failed">无法保存。消息可能已过期或共享已停止。</string>
+    <string name="mobile_nearby_dismiss">从最近消息列表隐藏</string>
+    <string name="mobile_nearby_save_failed">保存失败。请检查共享权限及存储空间。</string>
     <string name="mobile_nearby_paused">应用隐藏时暂停</string>
     <string name="mobile_nearby_permission">需要附近设备权限</string>
     <string name="mobile_nearby_bluetooth">Bluetooth已关闭</string>
@@ -197,4 +197,5 @@
     <string name="mobile_server_translation">服务器翻译</string>
     <string name="mobile_server_preparing">准备中</string>
     <string name="mobile_server_preview">服务器翻译尚未连接。翻译仍在本机处理。未来的结果计划包含发布机构及其识别依据。不会将警报正文发送到服务器。</string>
+    <string name="mobile_nearby_retention_problem">无法保存收到的消息。附近消息历史记录最多保留1,000条。请检查存储空间或删除不需要的附近消息记录，然后重新保存。现有记录将保留。</string>
 </resources>

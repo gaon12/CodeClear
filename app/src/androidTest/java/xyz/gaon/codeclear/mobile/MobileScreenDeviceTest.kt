@@ -368,6 +368,38 @@ class MobileScreenDeviceTest {
     }
 
     @Test
+    fun retainedNearbyOriginalOpensHistoryWithoutAnotherSaveRequest() {
+        val now = System.currentTimeMillis()
+        val original = RelayProtocol.decode(
+            RelayProtocol.encode("[DRILL] Stored nearby", "[DRILL] Saved original", now),
+            now
+        )!!
+        compose.runOnIdle {
+            val saved = record(999).let {
+                it.copy(
+                    capture = it.capture.copy(
+                        source = CaptureSource.PEER,
+                        title = original.title,
+                        original = original.body
+                    )
+                )
+            }
+            state = state.copy(records = listOf(saved) + state.records)
+            nearby = NearbyState(
+                NearbyStatus.RECEIVE_ONLY,
+                listOf(original),
+                mapOf(original.root to saved.id)
+            )
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithText(text(R.string.mobile_nearby_inbox)).performClick()
+        compose.onNodeWithText(original.title).performClick()
+        compose.onNodeWithTag("save-nearby").performScrollTo().performClick()
+        compose.onNodeWithTag("history-detail").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(0, nearbySaves) }
+    }
+
+    @Test
     fun nearbyInboxUsesChildPagesAndOnlySavesAfterTheUserRequestsIt() {
         val now = System.currentTimeMillis()
         val original = RelayProtocol.decode(
@@ -478,7 +510,8 @@ class MobileScreenDeviceTest {
         )
         for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
             compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
-            compose.onNodeWithTag("app-version-value").assertTextEquals(version).assertIsDisplayed()
+            compose.onNodeWithTag("app-version-value", useUnmergedTree = true)
+                .assertTextEquals(version).assertIsDisplayed()
             savePreview("about-${theme.name.lowercase()}")
         }
         compose.runOnIdle { fontScale = 1.8f }

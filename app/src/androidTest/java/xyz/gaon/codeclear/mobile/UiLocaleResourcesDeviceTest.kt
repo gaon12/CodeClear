@@ -79,7 +79,7 @@ class UiLocaleResourcesDeviceTest {
                 )
                 assertFalse(received.contains("%1"))
                 assertTrue(received.isNotBlank())
-                if (tag == "en" && count == 1) assertTrue(received.startsWith("1 message ·"))
+                if (tag == "en" && count == 1) assertTrue(received.startsWith("1 recent message"))
             }
             if (tag.startsWith("zh-")) {
                 chineseSources +=

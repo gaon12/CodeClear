@@ -85,6 +85,87 @@ class NearbySharingDeviceTest {
     }
 
     @Test
+    fun retentionFailurePreservesTheOriginalAndTurningSharingOffClearsItsNotice() {
+        lateinit var connection: FakeRadio
+        val original = original()
+        val owner = onMain {
+            NearbySharing(
+                instrumentation.targetContext,
+                sender = false,
+                availability = { NearbyStatus.RECEIVE_ONLY },
+                factory = NearbyRadioFactory { _, _, receive, _ ->
+                    FakeRadio(receive).also { connection = it }
+                },
+                retain = { _, _, complete -> complete(null) }
+            ).also {
+                it.configure(true)
+                it.foreground(true)
+            }
+        }
+        try {
+            onMain { connection.receive(original) }
+            onMain { /* Drain the posted receipt before checking the retention acknowledgment. */ }
+            onMain {
+                assertTrue(owner.state.retentionProblem)
+                assertEquals(original, owner.original(original.root))
+                owner.configure(false)
+                assertFalse(owner.state.retentionProblem)
+            }
+        } finally {
+            onMain {
+                owner.configure(false)
+                owner.foreground(false)
+            }
+        }
+    }
+
+    @Test
+    fun acceptedReceiptIsRetainedAndLateAcknowledgmentCannotRestoreDeletedInbox() {
+        lateinit var connection: FakeRadio
+        var acknowledgment: ((Long?) -> Unit)? = null
+        var allowance: (() -> Boolean)? = null
+        val original = original()
+        val owner = onMain {
+            NearbySharing(
+                instrumentation.targetContext,
+                sender = false,
+                availability = { NearbyStatus.RECEIVE_ONLY },
+                factory = NearbyRadioFactory { _, _, receive, _ ->
+                    FakeRadio(receive).also { connection = it }
+                },
+                retain = { received, allowed, complete ->
+                    assertEquals(original, received)
+                    allowance = allowed
+                    acknowledgment = complete
+                }
+            ).also {
+                it.configure(true)
+                it.foreground(true)
+            }
+        }
+        try {
+            onMain { connection.receive(original) }
+            onMain {
+                assertTrue(allowance!!())
+                acknowledgment!!(42)
+            }
+            onMain {
+                assertEquals(42L, owner.state.retainedIds[original.root])
+                assertTrue(connection.published.isEmpty())
+                owner.deleted(null)
+                assertFalse(allowance!!())
+                acknowledgment!!(42)
+            }
+            onMain { assertTrue(owner.state.retainedIds.isEmpty()) }
+        } finally {
+            onMain {
+                owner.configure(false)
+                owner.foreground(false)
+            }
+        }
+    }
+
+    @Test
     fun receiptRequiresExplicitRetentionAndDismissalDoesNotAllowDuplicateDelivery() {
         lateinit var connection: FakeRadio
         val owner = onMain {

@@ -353,10 +353,35 @@ class MobileControllerDeviceTest {
         assertTrue(store.page("", "en").isEmpty())
         onMain { controller!!.saveNearby(original, { true }) {} }
         await { onMain { engine.calls } == 1 }
-        assertEquals(null, latest.get().latest)
+        assertEquals(CaptureSource.PEER, latest.get().latest?.capture?.source)
         onMain { engine.complete("[DRILL] Local translation") }
         await { it.records.firstOrNull()?.translation?.phase == TranslationPhase.READY }
         assertEquals(1, onMain { engine.calls })
+    }
+
+    @Test
+    fun automaticPeerRetentionSurvivesRestartAndDoesNotTranslateUntilRequested() {
+        start(local = true)
+        await { it.loaded && !it.loading }
+        val now = System.currentTimeMillis()
+        val original = RelayProtocol.decode(
+            RelayProtocol.encode("[DRILL] Nearby", "[DRILL] Retained original", now),
+            now
+        )!!
+        val result = AtomicReference<Long?>()
+        onMain { controller!!.saveNearby(original, { true }, translate = false) { result.set(it) } }
+        await { state -> !state.loading && result.get()?.let { state.latest?.id == it } == true }
+        assertEquals(0, onMain { engine.calls })
+        val id = result.get()!!
+        val previous = controller!!
+        onMain { previous.close() }
+        assertTrue(previous.awaitClosed(5000))
+        controller = null
+        store = AlertHistoryStore(context, name)
+        start(local = false)
+        await { !it.loading && it.latest?.id == id }
+        assertEquals(original.body, latest.get().latest?.capture?.original)
+        assertEquals(CaptureSource.PEER, latest.get().latest?.capture?.source)
     }
 
     private fun start(

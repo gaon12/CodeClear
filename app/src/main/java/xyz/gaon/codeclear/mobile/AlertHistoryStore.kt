@@ -12,10 +12,15 @@ import java.security.MessageDigest
 import xyz.gaon.codeclear.probe.LocalEngineKind
 
 /** App-private, credential-encrypted SQLite history. Call every operation from a worker thread. */
-class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoCloseable {
+class AlertHistoryStore(
+    context: Context,
+    name: String = "alerts.db",
+    private val maxPeerAlerts: Int = 1000
+) : AutoCloseable {
     init {
         require(name.matches(Regex("[A-Za-z0-9][A-Za-z0-9_.-]{0,74}\\.db")))
         require(!context.isDeviceProtectedStorage)
+        require(maxPeerAlerts in 1..1000)
     }
 
     private val helper = HistoryDatabase(context.applicationContext, name)
@@ -64,6 +69,22 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
                     (System.currentTimeMillis() - IGNORE_LIFETIME_MILLIS).toString()
                 )
             ).use { if (it.moveToFirst()) return null }
+        }
+        if (capture.source == CaptureSource.PEER) {
+            require(
+                capture.original.isNotBlank() && capture.original.length <= 8192 &&
+                    capture.title.length <= 256
+            )
+            require(capture.sourceIdentity?.matches(Regex("[0-9a-f]{64}")) == true)
+            db.rawQuery(
+                "SELECT id FROM alerts WHERE source_package=? AND source_identity=? " +
+                    "AND original_hash=? LIMIT 1",
+                arrayOf(capture.sourcePackage, capture.sourceIdentity, hash)
+            ).use { if (it.moveToFirst()) return StoredObservation(it.getLong(0), created = false) }
+            db.rawQuery(
+                "SELECT COUNT(*) FROM (SELECT 1 FROM alerts WHERE source_kind='PEER' LIMIT ?)",
+                arrayOf(maxPeerAlerts.toString())
+            ).use { if (it.moveToFirst() && it.getInt(0) >= maxPeerAlerts) return null }
         }
         val values = ContentValues().apply {
             put("source_package", capture.sourcePackage)
@@ -483,6 +504,9 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         }
 
         override fun onOpen(db: SQLiteDatabase) {
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS alert_source_kind ON alerts(source_kind,id DESC)"
+            )
             pruneIgnored(db)
         }
 

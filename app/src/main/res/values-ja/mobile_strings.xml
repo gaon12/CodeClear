@@ -158,17 +158,17 @@
     <string name="mobile_home_no_radio">携帯通信の受信機能なし</string>
     <string name="mobile_nearby">近くの警報共有</string>
     <string name="mobile_nearby_allow">近くとの共有を許可</string>
-    <string name="mobile_nearby_disclosure">過去15分に新しく収集した原文を近くの利用者に公開します。受信内容の発信元と真正性は未確認です。保存するまで一時受信箱に表示し、再転送しません。</string>
-    <string name="mobile_nearby_foreground">このアプリが画面に表示されている間だけBluetoothで交換します。他のアプリに移ると一時停止します。GPS座標やサーバーは使いません。未保存の内容は最大15分で消えます。</string>
+    <string name="mobile_nearby_disclosure">新たに収集した原文を周辺ユーザーに共有します。受信文の発信元や真偽は未確認です。受信文は履歴に自動保存され、削除するまで残ります。再共有はしません。</string>
+    <string name="mobile_nearby_foreground">画面にアプリがある間だけBluetoothで交換し、別の画面に移ると一時停止します。GPS座標やサーバーは使いません。保存した受信文は履歴に残ります。</string>
     <string name="mobile_nearby_unverified">近くの端末から受信・発信元未確認</string>
     <string name="mobile_nearby_inbox">近くからの受信箱</string>
     <plurals name="mobile_nearby_count">
-        <item quantity="other">%1$d件・最大15分間の一時保管</item>
+        <item quantity="other">最近受信したメッセージ %1$d件</item>
     </plurals>
-    <string name="mobile_nearby_empty">一時保管のメッセージはありません。近くの端末が不在、一時停止中、または範囲外の可能性があります。</string>
+    <string name="mobile_nearby_empty">最近の受信文はありません。以前の受信文は履歴で確認できます。</string>
     <string name="mobile_nearby_save">履歴に保存</string>
-    <string name="mobile_nearby_dismiss">一時受信箱から削除</string>
-    <string name="mobile_nearby_save_failed">保存できませんでした。期限切れか、共有が停止した可能性があります。</string>
+    <string name="mobile_nearby_dismiss">最近の一覧から非表示</string>
+    <string name="mobile_nearby_save_failed">保存できませんでした。共有の権限と空き容量を確認してください。</string>
     <string name="mobile_nearby_paused">アプリ非表示のため一時停止</string>
     <string name="mobile_nearby_permission">付近のデバイスへのアクセスが必要</string>
     <string name="mobile_nearby_bluetooth">Bluetoothがオフ</string>
@@ -197,4 +197,5 @@
     <string name="mobile_server_translation">サーバー翻訳</string>
     <string name="mobile_server_preparing">準備中</string>
     <string name="mobile_server_preview">サーバー翻訳は未接続です。翻訳は引き続き端末内で処理します。今後は発信機関とその判断根拠を結果に含める予定です。警報本文はサーバーに送信しません。</string>
+    <string name="mobile_nearby_retention_problem">受信文を保存できませんでした。周辺受信の履歴は1,000件までです。空き容量を確認するか不要な周辺受信の履歴を削除して再保存してください。既存の履歴は保持されます。</string>
 </resources>

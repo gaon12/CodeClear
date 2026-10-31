@@ -1,15 +1,13 @@
 package xyz.gaon.codeclear.nearby
 
-/** Synchronized public input budget; receipts are temporary until explicitly saved. */
+/** Bounded recent receipts; message retention is independent of the public propagation lifetime. */
 class RelayInbox {
-    private data class Receipt(val original: NearbyOriginal, val expires: Long)
-    private val entries = linkedMapOf<String, Receipt>()
+    private val entries = linkedMapOf<String, NearbyOriginal>()
     private val seen = linkedMapOf<String, Long>()
     private val accepted = ArrayDeque<Long>()
 
     @Synchronized
     fun prune(elapsed: Long) {
-        entries.entries.removeAll { it.value.expires <= elapsed }
         seen.entries.removeAll { it.value <= elapsed }
         while (accepted.firstOrNull()?.let { it <= elapsed - 60000 } == true) accepted.removeFirst()
     }
@@ -17,7 +15,7 @@ class RelayInbox {
     @Synchronized
     fun contains(root: String, elapsed: Long): Boolean {
         prune(elapsed)
-        return root in seen
+        return root in entries || root in seen
     }
 
     @Synchronized
@@ -27,7 +25,7 @@ class RelayInbox {
         val remaining = (original.capturedAt + RelayProtocol.LIFETIME - now)
             .coerceIn(0, RelayProtocol.LIFETIME)
         if (remaining == 0L) return false
-        entries[original.root] = Receipt(original, elapsed + remaining)
+        entries[original.root] = original
         seen[original.root] = elapsed + RelayProtocol.LIFETIME
         if (seen.size > 512) seen.remove(seen.keys.first())
         accepted.addLast(elapsed)
@@ -37,7 +35,7 @@ class RelayInbox {
     @Synchronized
     fun originals(elapsed: Long): List<NearbyOriginal> {
         prune(elapsed)
-        return entries.values.map { it.original }.asReversed()
+        return entries.values.toList().asReversed()
     }
 
     @Synchronized

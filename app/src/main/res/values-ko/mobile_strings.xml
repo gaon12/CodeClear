@@ -158,17 +158,17 @@
     <string name="mobile_home_no_radio">셀룰러 수신 기능 없음</string>
     <string name="mobile_nearby">주변 문자 공유</string>
     <string name="mobile_nearby_allow">주변 공유 허용</string>
-    <string name="mobile_nearby_disclosure">최근 15분 안에 새로 수집한 원문을 주변 사용자에게 공개합니다. 주변에서 받은 내용은 발신 기관과 진위를 확인할 수 없어 임시 수신함에 따로 표시합니다. 직접 저장하기 전에는 기록에 남기지 않으며 다른 기기에 재전달하지 않습니다.</string>
-    <string name="mobile_nearby_foreground">앱이 화면에 열려 있는 동안 Bluetooth로 교환합니다. 다른 앱으로 이동하면 일시중지됩니다. GPS 좌표나 서버는 사용하지 않습니다. 저장하지 않은 수신 내용은 최대 15분 뒤 사라집니다.</string>
+    <string name="mobile_nearby_disclosure">새로 수집한 원문을 주변 사용자에게 전달합니다. 받은 문자의 발신자와 진위는 확인되지 않았습니다. 받은 문자는 기록에 자동 저장되며 직접 삭제할 때까지 보관합니다. 다시 주변으로 전달하지 않습니다.</string>
+    <string name="mobile_nearby_foreground">앱이 화면에 있을 때 블루투스로 주고받으며, 다른 화면으로 이동하면 일시 중지합니다. GPS 좌표나 서버를 사용하지 않습니다. 저장한 문자는 기록에 남습니다.</string>
     <string name="mobile_nearby_unverified">주변 기기에서 받음 · 출처 미확인</string>
     <string name="mobile_nearby_inbox">주변에서 받은 문자</string>
     <plurals name="mobile_nearby_count">
-        <item quantity="other">%1$d개 · 최대 15분 동안 임시 보관</item>
+        <item quantity="other">최근 받은 문자 %1$d개</item>
     </plurals>
-    <string name="mobile_nearby_empty">임시 보관 중인 문자가 없습니다. 주변 기기가 없거나, 앱이 닫혀 있거나, 연결 범위 밖일 수 있습니다.</string>
+    <string name="mobile_nearby_empty">최근 받은 문자가 없습니다. 이전에 받은 문자는 기록에서 확인할 수 있습니다.</string>
     <string name="mobile_nearby_save">기록에 저장</string>
-    <string name="mobile_nearby_dismiss">임시 수신함에서 삭제</string>
-    <string name="mobile_nearby_save_failed">저장하지 못했습니다. 문자가 만료되었거나 공유가 중지되었을 수 있습니다.</string>
+    <string name="mobile_nearby_dismiss">최근 목록에서 숨기기</string>
+    <string name="mobile_nearby_save_failed">저장하지 못했습니다. 공유 권한과 저장 공간을 확인해 주세요.</string>
     <string name="mobile_nearby_paused">앱 화면을 벗어나 일시중지됨</string>
     <string name="mobile_nearby_permission">주변 기기 권한 필요</string>
     <string name="mobile_nearby_bluetooth">Bluetooth가 꺼져 있음</string>
@@ -197,4 +197,5 @@
     <string name="mobile_server_translation">서버 번역</string>
     <string name="mobile_server_preparing">준비 중</string>
     <string name="mobile_server_preview">서버 번역은 아직 연결되지 않았습니다. 번역은 계속 기기 안에서 처리합니다. 향후 번역 결과에 발송 기관과 확인 근거를 포함할 예정입니다. 재난문자 내용은 서버로 보내지 않습니다.</string>
+    <string name="mobile_nearby_retention_problem">받은 문자를 저장하지 못했습니다. 주변 문자 기록은 최대 1,000개까지 보관합니다. 저장 공간을 확인하거나 불필요한 주변 문자 기록을 삭제한 뒤 다시 저장해 주세요. 기존 기록은 유지됩니다.</string>
 </resources>

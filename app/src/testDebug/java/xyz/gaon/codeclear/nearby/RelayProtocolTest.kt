@@ -72,7 +72,7 @@ class RelayProtocolTest {
     }
 
     @Test
-    fun inboxBoundsRatesExpiryAndDismissedDuplicates() {
+    fun inboxBoundsRatesAndDismissedDuplicatesWithoutExpiringReceivedContent() {
         val inbox = RelayInbox()
         val first = RelayProtocol.decode(packet(), now)!!
         assertTrue(inbox.accept(first, now, 1))
@@ -94,7 +94,7 @@ class RelayProtocolTest {
         assertEquals(31, inbox.originals(190000).size)
         assertTrue(inbox.accept(RelayProtocol.decode(packet(), now)!!, now, 240040))
         assertFalse(inbox.accept(RelayProtocol.decode(packet(), now)!!, now, 240041))
-        assertTrue(inbox.originals(RelayProtocol.LIFETIME + 240041).isEmpty())
+        assertEquals(32, inbox.originals(RelayProtocol.LIFETIME + 240041).size)
         inbox.clear()
         assertFalse(inbox.contains(first.root, RelayProtocol.LIFETIME + 240042))
     }

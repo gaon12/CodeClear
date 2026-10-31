@@ -36,7 +36,7 @@ class MobileRuntime(context: Context) {
     var preparation by mutableStateOf(PreparationState())
         private set
     val detailLanguages = OriginalLanguageIdentifier()
-    val nearby = NearbySharing(context)
+    val nearby: NearbySharing = NearbySharing(context, retain = ::retainNearby)
     private val notifications = ResultNotifications(context)
     private val mlKit = MlKitLocalEngine()
     var systemAvailability by mutableStateOf(SystemEngineAvailability())
@@ -50,7 +50,7 @@ class MobileRuntime(context: Context) {
     }
     private var diagnosticOwners = 0
     private var diagnosticGeneration = 0L
-    val controller = MobileController(
+    val controller: MobileController = MobileController(
         context,
         AlertHistoryStore(context),
         MobileOptionsStorage(context),
@@ -87,6 +87,14 @@ class MobileRuntime(context: Context) {
         ModelPreparation(MlKitModelPreparationBackend(), {
             preparation = it
         }, { controller.modelsPrepared(it) })
+
+    private fun retainNearby(
+        original: xyz.gaon.codeclear.nearby.NearbyOriginal,
+        allowed: () -> Boolean,
+        complete: (Long?) -> Unit
+    ) {
+        controller.saveNearby(original, allowed, translate = false, complete = complete)
+    }
 
     fun configure(options: MobileOptions) {
         val withdrawn = !options.localConsent && state.options.localConsent

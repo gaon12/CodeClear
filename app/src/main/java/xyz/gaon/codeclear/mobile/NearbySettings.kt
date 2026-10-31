@@ -37,6 +37,9 @@ internal fun NearbySettings(state: MobileState, actions: MobileActions) {
             SettingNote(stringResource(R.string.mobile_nearby_legacy_location))
         }
         SettingNote(stringResource(R.string.mobile_nearby_disclosure))
+        if (actions.nearby.retentionProblem) {
+            SettingNote(stringResource(R.string.mobile_nearby_retention_problem))
+        }
         when (actions.nearby.status) {
             NearbyStatus.PERMISSION_REQUIRED -> {
                 SettingRow(

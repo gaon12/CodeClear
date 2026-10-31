@@ -158,18 +158,18 @@
     <string name="mobile_home_no_radio">Kein Mobilfunkempfänger</string>
     <string name="mobile_nearby">Warnungen in der Nähe teilen</string>
     <string name="mobile_nearby_allow">Teilen in der Nähe erlauben</string>
-    <string name="mobile_nearby_disclosure">Neu erfasste Originale der letzten 15 Minuten werden für Personen in der Nähe verfügbar. Herkunft und Echtheit empfangener Nachrichten sind ungeprüft. Sie bleiben bis zum Speichern im temporären Postfach und werden nicht weitergeleitet.</string>
-    <string name="mobile_nearby_foreground">Der Austausch per Bluetooth läuft nur bei sichtbarer App und pausiert beim Wechsel. Keine GPS-Koordinaten und kein Server. Ungespeicherte Nachrichten verfallen nach höchstens 15 Minuten.</string>
+    <string name="mobile_nearby_disclosure">Neu erfasste Originale werden mit Nutzern in der Nähe geteilt. Herkunft und Echtheit empfangener Nachrichten sind ungeprüft. Sie bleiben automatisch im privaten Verlauf, bis Sie sie löschen, und werden nicht weitergeleitet.</string>
+    <string name="mobile_nearby_foreground">Der Austausch erfolgt per Bluetooth, solange die App sichtbar ist. Beim Verlassen pausiert er. GPS-Koordinaten und Server werden nicht verwendet. Gespeicherte Nachrichten bleiben im Verlauf.</string>
     <string name="mobile_nearby_unverified">Aus der Nähe · Herkunft ungeprüft</string>
     <string name="mobile_nearby_inbox">Postfach aus der Nähe</string>
     <plurals name="mobile_nearby_count">
-        <item quantity="one">%1$d Nachricht · bis zu 15 Minuten aufbewahrt</item>
-        <item quantity="other">%1$d Nachrichten · bis zu 15 Minuten aufbewahrt</item>
+        <item quantity="one">%1$d kürzlich empfangene Nachricht</item>
+        <item quantity="other">%1$d kürzlich empfangene Nachrichten</item>
     </plurals>
-    <string name="mobile_nearby_empty">Keine temporären Nachrichten. Geräte in der Nähe können fehlen, pausieren oder außer Reichweite sein.</string>
+    <string name="mobile_nearby_empty">Keine kürzlich empfangenen Nachrichten. Frühere Nachrichten finden Sie im Verlauf.</string>
     <string name="mobile_nearby_save">Im Verlauf speichern</string>
-    <string name="mobile_nearby_dismiss">Aus temporärem Postfach entfernen</string>
-    <string name="mobile_nearby_save_failed">Speichern fehlgeschlagen. Die Nachricht ist eventuell abgelaufen oder das Teilen wurde beendet.</string>
+    <string name="mobile_nearby_dismiss">Aus der Liste der letzten Nachrichten ausblenden</string>
+    <string name="mobile_nearby_save_failed">Speichern fehlgeschlagen. Prüfen Sie Freigabezugriff und Speicherplatz.</string>
     <string name="mobile_nearby_paused">Bei ausgeblendeter App pausiert</string>
     <string name="mobile_nearby_permission">Zugriff auf Geräte in der Nähe erforderlich</string>
     <string name="mobile_nearby_bluetooth">Bluetooth ist aus</string>
@@ -198,4 +198,5 @@
     <string name="mobile_server_translation">Serverübersetzung</string>
     <string name="mobile_server_preparing">In Vorbereitung</string>
     <string name="mobile_server_preview">Die Serverübersetzung ist nicht verbunden. Übersetzungen erfolgen weiterhin auf diesem Gerät. Geplant sind Angaben zur ausstellenden Stelle und zur Herkunft dieser Angabe. Es werden keine Warntexte an einen Server gesendet.</string>
+    <string name="mobile_nearby_retention_problem">Eine Nachricht konnte nicht gespeichert werden. Bis zu 1.000 empfangene Nachrichten bleiben im Verlauf. Prüfen Sie den Speicher oder löschen Sie unerwünschte empfangene Einträge und speichern Sie erneut. Vorhandene Einträge bleiben erhalten.</string>
 </resources>

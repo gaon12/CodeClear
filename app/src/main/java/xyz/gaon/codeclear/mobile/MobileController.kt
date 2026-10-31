@@ -251,7 +251,12 @@ class MobileController(
         if (!closed && !state.storageError) io({ observationIds.clear() }) {}
     }
 
-    fun saveNearby(original: NearbyOriginal, allowed: () -> Boolean, complete: (Long?) -> Unit) {
+    fun saveNearby(
+        original: NearbyOriginal,
+        allowed: () -> Boolean,
+        translate: Boolean = true,
+        complete: (Long?) -> Unit
+    ) {
         requireMain()
         if (!state.loaded || state.storageError || closed || !allowed()) {
             complete(null)
@@ -271,7 +276,7 @@ class MobileController(
                     sourceIdentity = original.root
                 )
             )?.also {
-                if (options.localConsent) {
+                if (translate && options.localConsent) {
                     store.queueTranslation(
                         it,
                         options.target.languageTag,
@@ -385,7 +390,12 @@ class MobileController(
                     engine = request.options.engine,
                     nativeOnly = true
                 )
-                    .firstOrNull(),
+                    .firstOrNull() ?: store.page(
+                    "",
+                    request.options.target.languageTag,
+                    limit = 1,
+                    engine = request.options.engine
+                ).firstOrNull(),
                 request.detailId?.let {
                     store.find(
                         it,
@@ -421,7 +431,10 @@ class MobileController(
                     (state.detailEngine == null || state.detailEngine == state.options.engine)
             }
         )
-            .filter { it.translation == null }.map { it.id }.distinct()
+            .filter {
+                it.translation == null &&
+                    (it.capture.source != CaptureSource.PEER || it.id == state.detailId)
+            }.map { it.id }.distinct()
         if (ids.isEmpty()) return
         val target = state.options.target.languageTag
         val selectedEngine = state.options.engine

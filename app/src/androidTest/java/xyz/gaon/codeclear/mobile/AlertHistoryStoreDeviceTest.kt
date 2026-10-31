@@ -41,6 +41,28 @@ class AlertHistoryStoreDeviceTest {
     }
 
     @Test
+    fun peerRetentionPreservesOldMessagesAndStopsAtCapacityWithoutDeletingThem() {
+        store.close()
+        store = AlertHistoryStore(context, name, maxPeerAlerts = 2)
+        fun peer(index: Int) = capture("[DRILL] Retained $index").copy(
+            source = CaptureSource.PEER,
+            sourceIdentity = index.toString(16).padStart(64, '0')
+        )
+        val first = store.insert(peer(1))!!
+        val second = store.insert(peer(2))!!
+        assertNull(store.insert(peer(3)))
+        assertEquals(first, store.insert(peer(1)))
+        assertEquals(2, store.page("", "en").size)
+        store.close()
+        store = AlertHistoryStore(context, name, maxPeerAlerts = 2)
+        assertEquals("[DRILL] Retained 1", store.find(first, "en")!!.capture.original)
+        store.delete(second)
+        assertNotNull(store.insert(peer(3)))
+        assertNull(store.insert(peer(2)))
+        assertEquals(2, store.page("", "en").size)
+    }
+
+    @Test
     fun countrySnapshotSurvivesReopeningAndDoesNotChangeWhenReplayed() {
         val country = ReceptionCountry("KR", CountryEvidence.CBS_PLMN)
         val original = capture(
