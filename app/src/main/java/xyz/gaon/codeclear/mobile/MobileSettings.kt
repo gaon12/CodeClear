@@ -33,6 +33,7 @@ private enum class CaptureAccess { NOTIFICATION, ACCESSIBILITY }
 
 @Composable
 fun MobileSettings(
+    page: SettingsPage,
     state: MobileState,
     environment: ProbeEnvironment,
     session: ProbeSessionState,
@@ -45,82 +46,94 @@ fun MobileSettings(
     var themePicker by remember { mutableStateOf(false) }
     var uiLanguagePicker by remember { mutableStateOf(false) }
     val captureAvailable = environment.radio != ProbeRadio.ABSENT
-    SettingsGroup(stringResource(R.string.mobile_collection)) {
-        if (!captureAvailable) SettingNote(stringResource(R.string.mobile_wifi_only))
-        AccessRow(
-            stringResource(R.string.mobile_notification_access),
-            options.notificationConsent,
-            environment.notificationGranted,
-            session.notificationConnected,
-            captureAvailable,
-            { disclosure = CaptureAccess.NOTIFICATION },
-            { actions.configure(options.copy(notificationConsent = false)) }
-        )
-        SettingDivider()
-        AccessRow(
-            stringResource(R.string.mobile_accessibility_access),
-            options.accessibilityConsent,
-            environment.accessibilityGranted,
-            session.accessibilityConnected,
-            captureAvailable,
-            { disclosure = CaptureAccess.ACCESSIBILITY },
-            { actions.configure(options.copy(accessibilityConsent = false)) }
-        )
-        if (captureAvailable && Build.VERSION.SDK_INT >= 33) {
+    if (page == SettingsPage.CAPTURE) {
+        SettingsGroup {
+            if (!captureAvailable) SettingNote(stringResource(R.string.mobile_wifi_only))
+            AccessRow(
+                stringResource(R.string.mobile_notification_access),
+                options.notificationConsent,
+                environment.notificationGranted,
+                session.notificationConnected,
+                captureAvailable,
+                { disclosure = CaptureAccess.NOTIFICATION },
+                { actions.configure(options.copy(notificationConsent = false)) }
+            )
             SettingDivider()
-            SettingRow(stringResource(R.string.mobile_permission_help), onClick = {
-                info = SettingsInfo.RESTRICTED_ACCESS
+            AccessRow(
+                stringResource(R.string.mobile_accessibility_access),
+                options.accessibilityConsent,
+                environment.accessibilityGranted,
+                session.accessibilityConnected,
+                captureAvailable,
+                { disclosure = CaptureAccess.ACCESSIBILITY },
+                { actions.configure(options.copy(accessibilityConsent = false)) }
+            )
+            if (captureAvailable && Build.VERSION.SDK_INT >= 33) {
+                SettingDivider()
+                SettingRow(stringResource(R.string.mobile_permission_help), onClick = {
+                    info = SettingsInfo.RESTRICTED_ACCESS
+                })
+            }
+            SettingDivider()
+            SettingRow(stringResource(R.string.mobile_tutorial), onClick = tutorial)
+        }
+    }
+    if (page == SettingsPage.TRANSLATION) {
+        LocalTranslationSettings(options, actions)
+    }
+    if (page == SettingsPage.APPEARANCE) {
+        SettingsGroup {
+            SettingRow(
+                stringResource(R.string.mobile_screen_mode),
+                stringResource(themeLabel(options.theme)),
+                onClick = { themePicker = true }
+            )
+            SettingDivider()
+            SettingRow(
+                stringResource(R.string.mobile_ui_language_title),
+                if (options.uiLanguage.isEmpty()) {
+                    stringResource(
+                        R.string.mobile_system
+                    )
+                } else {
+                    languageName(options.uiLanguage)
+                },
+                onClick = { uiLanguagePicker = true }
+            )
+        }
+    }
+    if (page == SettingsPage.NOTIFICATIONS) {
+        SettingsGroup {
+            SettingSwitchRow(
+                stringResource(R.string.mobile_result_notifications),
+                stringResource(
+                    if (actions.notificationsAllowed) R.string.mobile_on else R.string.mobile_off
+                ),
+                checked = actions.notificationsAllowed,
+                onCheckedChange = { actions.notificationPermission() }
+            )
+            SettingNote(stringResource(R.string.mobile_result_notification_summary))
+        }
+    }
+    if (page == SettingsPage.PRIVACY) {
+        SettingsGroup {
+            SettingRow(stringResource(R.string.mobile_data_storage), onClick = {
+                info =
+                    SettingsInfo.PRIVACY
+            })
+            SettingDivider()
+            SettingRow(stringResource(R.string.mobile_delete_all), onClick = {
+                actions.delete(null)
+            }, destructive = true)
+        }
+    }
+    if (page == SettingsPage.ABOUT) {
+        SettingsGroup {
+            SettingRow(stringResource(R.string.mobile_compatibility), onClick = {
+                info =
+                    SettingsInfo.COMPATIBILITY
             })
         }
-        SettingDivider()
-        SettingRow(stringResource(R.string.mobile_tutorial), onClick = tutorial)
-    }
-    LocalTranslationSettings(options, actions)
-    SettingsGroup(stringResource(R.string.mobile_appearance)) {
-        SettingRow(
-            stringResource(R.string.mobile_screen_mode),
-            stringResource(themeLabel(options.theme)),
-            onClick = { themePicker = true }
-        )
-        SettingDivider()
-        SettingRow(
-            stringResource(R.string.mobile_ui_language_title),
-            if (options.uiLanguage.isEmpty()) {
-                stringResource(
-                    R.string.mobile_system
-                )
-            } else {
-                languageName(options.uiLanguage)
-            },
-            onClick = { uiLanguagePicker = true }
-        )
-    }
-    SettingsGroup(stringResource(R.string.mobile_notifications)) {
-        SettingSwitchRow(
-            stringResource(R.string.mobile_result_notifications),
-            stringResource(
-                if (actions.notificationsAllowed) R.string.mobile_on else R.string.mobile_off
-            ),
-            checked = actions.notificationsAllowed,
-            onCheckedChange = { actions.notificationPermission() }
-        )
-        SettingNote(stringResource(R.string.mobile_result_notification_summary))
-    }
-    SettingsGroup(stringResource(R.string.mobile_privacy)) {
-        SettingRow(stringResource(R.string.mobile_data_storage), onClick = {
-            info =
-                SettingsInfo.PRIVACY
-        })
-        SettingDivider()
-        SettingRow(stringResource(R.string.mobile_delete_all), onClick = {
-            actions.delete(null)
-        }, destructive = true)
-    }
-    SettingsGroup(stringResource(R.string.mobile_about)) {
-        SettingRow(stringResource(R.string.mobile_compatibility), onClick = {
-            info =
-                SettingsInfo.COMPATIBILITY
-        })
     }
     disclosure?.let { route ->
         val notification = route == CaptureAccess.NOTIFICATION
@@ -286,21 +299,13 @@ private fun AccessRow(
 }
 
 @Composable
-fun SettingsGroup(title: String, content: @Composable () -> Unit) {
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text(
-            title,
-            modifier = Modifier.padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 4.dp),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Card(
-            shape = RoundedCornerShape(24.dp),
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        ) {
-            Column(Modifier.padding(vertical = 2.dp)) { content() }
-        }
+fun SettingsGroup(content: @Composable () -> Unit) {
+    Card(
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(Modifier.padding(vertical = 2.dp)) { content() }
     }
 }
 

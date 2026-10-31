@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,7 +86,8 @@ fun MobileScreen(
     var step by rememberSaveable { mutableIntStateOf(0) }
     val homeScroll = rememberLazyListState()
     val historyScroll = rememberLazyListState()
-    val settingsScroll = rememberLazyListState()
+    val settingsState = rememberSaveableStateHolder()
+    var settingsPage by rememberSaveable { mutableStateOf<SettingsPage?>(null) }
     val tutorialScroll = rememberLazyListState()
     // A lazy item provider can update before its parent replaces the attached scroll state.
     val currentTab = tab
@@ -97,12 +99,15 @@ fun MobileScreen(
     LaunchedEffect(state.query, state.beforeId) { historyScroll.scrollToItem(0) }
     val feedScroll = if (showTutorial) {
         tutorialScroll
+    } else if (currentTab ==
+        1
+    ) {
+        historyScroll
     } else {
-        when (currentTab) {
-            0 -> homeScroll
-            1 -> historyScroll
-            else -> settingsScroll
-        }
+        homeScroll
+    }
+    BackHandler(enabled = showTutorial) {
+        if (step > 0) step-- else tutorial = false
     }
     MobileTheme(state.options.theme) {
         Scaffold(containerColor = MaterialTheme.colorScheme.background, bottomBar = {
@@ -115,6 +120,24 @@ fun MobileScreen(
                 Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.TopCenter
             ) {
+                if (currentTab == 2 && !showTutorial) {
+                    settingsState.SaveableStateProvider("settings") {
+                        SettingsScreen(
+                            state = state,
+                            environment = environment,
+                            session = session,
+                            preparation = preparation,
+                            actions = actions,
+                            selectedPage = settingsPage,
+                            selectPage = { settingsPage = it },
+                            tutorial = {
+                                tutorial = true
+                                step = 0
+                            }
+                        )
+                    }
+                    return@BoxWithConstraints
+                }
                 val headingHeight = if (maxHeight >= 560.dp) 160.dp else 88.dp
                 LazyColumn(
                     Modifier.widthIn(max = 880.dp).fillMaxWidth().testTag("mobile-feed"),
@@ -283,6 +306,7 @@ fun MobileScreen(
                                         )
                                     )
                                     TextButton(onClick = {
+                                        settingsPage = SettingsPage.CAPTURE
                                         tab = 2
                                     }) { Text(stringResource(R.string.mobile_manage_access)) }
                                     TextButton(onClick = {
@@ -392,16 +416,6 @@ fun MobileScreen(
                                 }
                             }
                         }
-
-                        else -> item {
-                            Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                                MobileSettings(state, environment, session, actions) {
-                                    tutorial =
-                                        true
-                                    step = 0
-                                }
-                            }
-                        }
                     }
                     if (preparation.phase != PreparationPhase.IDLE &&
                         state.options.engine == LocalEngineKind.ML_KIT
@@ -409,19 +423,7 @@ fun MobileScreen(
                         item {
                             Text(
                                 stringResource(
-                                    when (preparation.phase) {
-                                        PreparationPhase.IDENTIFYING -> R.string.mobile_working
-
-                                        PreparationPhase.WAITING_FOR_WIFI ->
-                                            R.string.mobile_downloading
-
-                                        PreparationPhase.READY -> R.string.mobile_models_ready
-
-                                        PreparationPhase.UNKNOWN_LANGUAGE ->
-                                            R.string.mobile_unknown_language
-
-                                        else -> R.string.mobile_failed
-                                    }
+                                    preparationMessage(preparation.phase)
                                 )
                             )
                         }
@@ -480,4 +482,12 @@ fun MobileScreen(
             }
         }
     }
+}
+
+internal fun preparationMessage(phase: PreparationPhase): Int = when (phase) {
+    PreparationPhase.IDENTIFYING -> R.string.mobile_working
+    PreparationPhase.WAITING_FOR_WIFI -> R.string.mobile_downloading
+    PreparationPhase.READY -> R.string.mobile_models_ready
+    PreparationPhase.UNKNOWN_LANGUAGE -> R.string.mobile_unknown_language
+    else -> R.string.mobile_failed
 }

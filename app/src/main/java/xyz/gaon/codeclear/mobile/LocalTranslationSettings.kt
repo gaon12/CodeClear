@@ -36,7 +36,7 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
     val systemSelectable = availability.loaded && !availability.loading &&
         availability.platformSupported && support.available
     LaunchedEffect(Unit) { actions.refreshSystem(false) }
-    SettingsGroup(stringResource(R.string.mobile_translation_settings)) {
+    SettingsGroup {
         SettingSwitchRow(
             stringResource(R.string.mobile_auto_translation),
             stringResource(if (options.localConsent) R.string.mobile_on else R.string.mobile_off),

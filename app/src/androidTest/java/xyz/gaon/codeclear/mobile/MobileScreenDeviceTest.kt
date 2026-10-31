@@ -26,6 +26,9 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -33,10 +36,12 @@ import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -206,26 +211,27 @@ class MobileScreenDeviceTest {
 
     @Test
     fun settingsShowSelectedRadioChoicesAndKeepNotificationPermissionSystemControlled() {
-        compose.onNodeWithTag("destination-2").performClick()
+        openSettingsPage(SettingsPage.APPEARANCE)
         compose.onNodeWithText(text(R.string.mobile_screen_mode)).performScrollTo().performClick()
-        compose.onNode(hasText(text(R.string.mobile_system)) and isSelectable()).assertIsSelected()
+        compose.onNode(hasText(text(R.string.mobile_system)) and isRadioChoice()).assertIsSelected()
         compose.onNode(
-            hasText(text(R.string.mobile_light)) and isSelectable()
+            hasText(text(R.string.mobile_light)) and isRadioChoice()
         ).assertIsNotSelected().performClick()
         compose.runOnIdle { assertEquals(ThemeChoice.LIGHT, configured.theme) }
         compose.onNodeWithText(text(R.string.mobile_screen_mode)).performScrollTo().performClick()
-        compose.onNode(hasText(text(R.string.mobile_light)) and isSelectable()).assertIsSelected()
+        compose.onNode(hasText(text(R.string.mobile_light)) and isRadioChoice()).assertIsSelected()
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
-        compose.onNodeWithText(
+        openSettingsPage(SettingsPage.NOTIFICATIONS)
+        switchControl(
             text(R.string.mobile_result_notifications)
         ).performScrollTo().assertIsOn().performClick()
         compose.runOnIdle {
             assertEquals(1, notificationRequests)
             assertEquals(0, prepared)
         }
-        compose.onNodeWithText(text(R.string.mobile_result_notifications)).assertIsOn()
+        switchControl(text(R.string.mobile_result_notifications)).assertIsOn()
         compose.runOnIdle { notificationsAllowed = false }
-        compose.onNodeWithText(text(R.string.mobile_result_notifications)).assertIsOff()
+        switchControl(text(R.string.mobile_result_notifications)).assertIsOff()
     }
 
     @Test
@@ -234,21 +240,103 @@ class MobileScreenDeviceTest {
             previewLanguage = "ko"
             context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
-        compose.onNodeWithTag("destination-2").performClick()
         for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
             compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
-            compose.onNodeWithTag("mobile-feed").performScrollToIndex(0)
-            savePreview("settings-ko-${theme.name.lowercase()}")
+            openSettingsPage(SettingsPage.APPEARANCE)
+            savePreview("settings-appearance-${theme.name.lowercase()}")
             compose.onNodeWithText("화면 모드").performScrollTo().performClick()
             savePreview("settings-mode-${theme.name.lowercase()}", dialog = true)
             compose.onNodeWithText("취소").performClick()
+            openSettingsPage(SettingsPage.TRANSLATION)
             compose.onNodeWithText("번역 언어").performScrollTo().performClick()
             savePreview("settings-language-${theme.name.lowercase()}", dialog = true)
             compose.onNodeWithText("취소").performClick()
+            openSettingsPage(SettingsPage.CAPTURE)
+            savePreview("settings-ko-${theme.name.lowercase()}")
             compose.onNodeWithText("알림 접근").performScrollTo().performClick()
             savePreview("settings-access-${theme.name.lowercase()}", dialog = true)
             compose.onNodeWithText("취소").performClick()
         }
+    }
+
+    @Test
+    fun settingsPagesPreserveSelectionAcrossTabsAndSupportCompactBackNavigation() {
+        openSettingsPage(SettingsPage.TRANSLATION)
+        compose.onNodeWithTag(
+            "settings-detail-title"
+        ).assertTextEquals(text(R.string.mobile_translation_settings))
+        compose.onNodeWithText(text(R.string.mobile_target_language)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_notification_access)).assertDoesNotExist()
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("destination-2").performClick()
+        compose.onNodeWithTag(
+            "settings-detail-title"
+        ).assertTextEquals(text(R.string.mobile_translation_settings))
+        if (compose.onAllNodesWithTag("settings-split").fetchSemanticsNodes().isNotEmpty()) {
+            compose.onNodeWithTag("settings-category-TRANSLATION").assertIsSelected()
+            val menu = compose.onNodeWithTag("settings-menu").fetchSemanticsNode().boundsInRoot
+            val detail = compose.onNodeWithTag(
+                "settings-detail-pane"
+            ).fetchSemanticsNode().boundsInRoot
+            assertTrue("The menu must be to the left of its detail", menu.right <= detail.left)
+        } else {
+            compose.onNodeWithTag("settings-menu").assertDoesNotExist()
+            compose.runOnUiThread { context.onBackPressedDispatcher.onBackPressed() }
+            compose.onNodeWithTag("settings-menu").assertIsDisplayed()
+            compose.onNodeWithTag("settings-detail").assertDoesNotExist()
+            openSettingsPage(SettingsPage.APPEARANCE)
+            compose.onNodeWithTag("settings-back").performClick()
+            compose.onNodeWithTag("settings-menu").assertIsDisplayed()
+        }
+        compose.onNodeWithTag("destination-0").performClick()
+        compose.onNodeWithTag(
+            "mobile-feed"
+        ).performScrollToNode(hasText(text(R.string.mobile_manage_access)))
+        compose.onNodeWithText(text(R.string.mobile_manage_access)).performClick()
+        compose.onNodeWithTag(
+            "settings-detail-title"
+        ).assertTextEquals(text(R.string.mobile_collection))
+    }
+
+    @Test
+    fun settingsSelectionSurvivesSwitchingBetweenSingleAndSplitPanes() {
+        var windowWidthDp = 0f
+        compose.runOnIdle {
+            windowWidthDp =
+                context.window.decorView.width / context.resources.displayMetrics.density
+            densityScale = windowWidthDp / 960f
+        }
+        openSettingsPage(SettingsPage.APPEARANCE)
+        compose.onNodeWithTag("settings-split").assertIsDisplayed()
+        compose.onNodeWithTag("settings-category-APPEARANCE").assertIsSelected()
+        compose.runOnIdle { densityScale = windowWidthDp / 400f }
+        compose.onNodeWithTag("settings-split").assertDoesNotExist()
+        compose.onNodeWithTag("settings-back").assertIsDisplayed()
+        compose.onNodeWithTag(
+            "settings-detail-title"
+        ).assertTextEquals(text(R.string.mobile_appearance))
+        compose.runOnIdle { densityScale = windowWidthDp / 960f }
+        compose.onNodeWithTag("settings-category-APPEARANCE").assertIsSelected()
+        compose.onNodeWithTag(
+            "settings-detail-title"
+        ).assertTextEquals(text(R.string.mobile_appearance))
+    }
+
+    private fun switchControl(label: String) = compose.onNode(
+        hasText(label) and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Switch)
+    )
+
+    private fun isRadioChoice() =
+        SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
+
+    private fun openSettingsPage(page: SettingsPage) {
+        compose.onNodeWithTag("destination-2").performClick()
+        val category = "settings-category-${page.name}"
+        if (compose.onAllNodesWithTag("settings-menu").fetchSemanticsNodes().isEmpty()) {
+            compose.onNodeWithTag("settings-back").performClick()
+        }
+        compose.onNodeWithTag("settings-menu").performScrollToNode(hasTestTag(category))
+        compose.onNodeWithTag(category).performClick()
     }
 
     @Test
@@ -347,14 +435,14 @@ class MobileScreenDeviceTest {
         }
         openEnginePicker()
         compose.onNode(
-            hasText(text(R.string.mobile_engine_system)) and isSelectable()
+            hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
         ).performClick()
         compose.onNodeWithText(text(R.string.mobile_system_disclosure)).assertIsDisplayed()
         compose.runOnIdle { assertEquals(LocalEngineKind.ML_KIT, state.options.engine) }
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
-        openEnginePicker(alreadyInSettings = true)
+        openEnginePicker()
         compose.onNode(
-            hasText(text(R.string.mobile_engine_system)) and isSelectable()
+            hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
         ).performClick()
         compose.onNodeWithText(text(R.string.mobile_change)).performClick()
         compose.runOnIdle {
@@ -383,7 +471,7 @@ class MobileScreenDeviceTest {
         }
         openEnginePicker()
         compose.onNode(
-            hasText(text(R.string.mobile_engine_system)) and isSelectable()
+            hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
         ).assertIsNotEnabled()
         compose.onNodeWithText(
             context.getString(R.string.mobile_engine_pair_missing, languageName("ko"))
@@ -417,7 +505,7 @@ class MobileScreenDeviceTest {
         }
         openEnginePicker()
         compose.onNode(
-            hasText(text(R.string.mobile_engine_system)) and isSelectable()
+            hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
         ).performClick()
         compose.runOnIdle { systemSupport = SystemEngineAvailability(loaded = true) }
         compose.onNodeWithText(text(R.string.mobile_change)).assertIsNotEnabled()
@@ -442,7 +530,7 @@ class MobileScreenDeviceTest {
         }
         openEnginePicker()
         compose.onNode(
-            hasText(text(R.string.mobile_engine_system)) and isSelectable()
+            hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
         ).performClick()
         compose.onNodeWithText(text(R.string.mobile_change)).performClick()
         compose.onNodeWithText(
@@ -461,12 +549,12 @@ class MobileScreenDeviceTest {
             text(R.string.mobile_auto_translation)
         ).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_auto_translation)).assertIsNotEnabled()
-        openEnginePicker(alreadyInSettings = true)
+        openEnginePicker()
         compose.onNode(
-            hasText(text(R.string.mobile_engine_system)) and isSelectable()
+            hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
         ).assertIsNotEnabled()
         compose.onNode(
-            hasText(text(R.string.mobile_engine_mlkit)) and isSelectable()
+            hasText(text(R.string.mobile_engine_mlkit)) and isRadioChoice()
         ).performClick()
         compose.onNodeWithText(text(R.string.mobile_change)).performClick()
         compose.runOnIdle {
@@ -475,16 +563,16 @@ class MobileScreenDeviceTest {
         }
     }
 
-    private fun openEnginePicker(alreadyInSettings: Boolean = false) {
-        if (!alreadyInSettings) compose.onNodeWithTag("destination-2").performClick()
+    private fun openEnginePicker() {
+        openSettingsPage(SettingsPage.TRANSLATION)
         val label = text(R.string.mobile_engine_title)
-        compose.onNodeWithTag("mobile-feed").performScrollToNode(hasText(label))
+        compose.onNodeWithTag("settings-detail").performScrollToNode(hasText(label))
         compose.onNodeWithText(label).performClick()
     }
 
     @Test
     fun accessDisclosurePrecedesSettingsAndDoesNotPretendToGrantPermission() {
-        compose.onNodeWithTag("destination-2").performClick()
+        openSettingsPage(SettingsPage.CAPTURE)
         compose.runOnIdle { environment = environment.copy(notificationGranted = false) }
         compose.onNodeWithText(
             text(R.string.mobile_notification_access)
@@ -531,7 +619,7 @@ class MobileScreenDeviceTest {
                 )
             )
         }
-        compose.onNodeWithTag("destination-2").performClick()
+        openSettingsPage(SettingsPage.CAPTURE)
         compose.onNodeWithText(
             text(R.string.mobile_notification_access)
         ).performScrollTo().assertIsOff().performClick()
@@ -551,7 +639,7 @@ class MobileScreenDeviceTest {
     @Test
     fun restrictedSettingsFallbackOpensTheAppListWithoutChangingChoices() {
         val previous = state.options
-        compose.onNodeWithTag("destination-2").performClick()
+        openSettingsPage(SettingsPage.CAPTURE)
         if (Build.VERSION.SDK_INT >= 33) {
             compose.onNodeWithText(
                 text(R.string.mobile_permission_help)
@@ -575,7 +663,7 @@ class MobileScreenDeviceTest {
         ).performScrollToNode(hasText(text(R.string.mobile_details)))
         compose.onNodeWithText(text(R.string.mobile_details)).performClick()
         compose.onNodeWithText(text(R.string.mobile_close)).assertIsDisplayed().performClick()
-        compose.onNodeWithTag("destination-2").performClick()
+        openSettingsPage(SettingsPage.CAPTURE)
         compose.runOnIdle { environment = environment.copy(notificationGranted = false) }
         compose.onNodeWithText(
             text(R.string.mobile_notification_access)
@@ -584,6 +672,7 @@ class MobileScreenDeviceTest {
             text(R.string.mobile_open_settings)
         ).assertIsDisplayed().performClick()
         compose.runOnIdle { assertEquals(1, settingsOpened) }
+        openSettingsPage(SettingsPage.TRANSLATION)
         compose.onNodeWithText(
             text(R.string.mobile_target_language)
         ).performScrollTo().performClick()
@@ -594,24 +683,28 @@ class MobileScreenDeviceTest {
     }
 
     @Test
-    fun compactLandscapeKeepsPermissionAndRadioActionsReachableAtLargeText() {
+    fun compactWindowKeepsPermissionAndRadioActionsReachableAtLargeText() {
         compose.runOnIdle {
-            densityScale = 2.2f
+            densityScale = (
+                context.window.decorView.width /
+                    context.resources.displayMetrics.density / 600f
+                ).coerceAtLeast(1f)
             fontScale = 1.8f
             environment = environment.copy(notificationGranted = false)
         }
-        compose.onNodeWithTag("destination-2").performClick()
+        openSettingsPage(SettingsPage.CAPTURE)
         compose.onNodeWithText(
             text(R.string.mobile_notification_access)
         ).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_open_settings)).assertIsDisplayed()
         compose.onNodeWithText(text(R.string.mobile_cancel)).assertIsDisplayed().performClick()
         compose.runOnIdle { assertEquals(0, settingsOpened) }
+        openSettingsPage(SettingsPage.TRANSLATION)
         compose.onNodeWithText(
             text(R.string.mobile_target_language)
         ).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_cancel)).assertIsDisplayed()
-        compose.onNode(hasText("Deutsch") and isSelectable()).performScrollTo().performClick()
+        compose.onNode(hasText("Deutsch") and isRadioChoice()).performScrollTo().performClick()
         compose.runOnIdle {
             assertEquals(LocalTarget.GERMAN, configured.target)
             assertEquals(0, prepared)
@@ -651,10 +744,7 @@ class MobileScreenDeviceTest {
         val beforeScroll = compose.onNodeWithTag("mobile-feed").fetchSemanticsNode().config[
             androidx.compose.ui.semantics.SemanticsProperties.VerticalScrollAxisRange
         ].value()
-        compose.onNodeWithTag("destination-2").performClick()
-        compose.onNodeWithText(
-            text(R.string.mobile_collection)
-        ).performScrollTo().assertIsDisplayed()
+        openSettingsPage(SettingsPage.APPEARANCE)
         val label = text(R.string.mobile_ui_language_title)
         compose.onNodeWithText(label).performScrollTo()
         compose.onNodeWithTag("destination-0").performClick()
@@ -726,7 +816,7 @@ class MobileScreenDeviceTest {
         compose.onNodeWithTag("mobile-feed").performScrollToIndex(0)
         savePreview("mobile-ko-history")
         compose.onNodeWithTag("destination-2").performClick()
-        compose.onNodeWithTag("mobile-feed").performScrollToIndex(0)
+        compose.onNodeWithTag("settings-menu").performScrollToIndex(0)
         savePreview("mobile-ko-settings")
     }
 
