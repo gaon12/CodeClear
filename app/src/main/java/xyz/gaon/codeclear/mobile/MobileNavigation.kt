@@ -7,15 +7,18 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -26,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -49,7 +53,7 @@ fun MobileNavigation(selected: Int, select: (Int) -> Unit) {
                         val pressed by interaction.collectIsPressedAsState()
                         val hovered by interaction.collectIsHoveredAsState()
                         Box(
-                            Modifier.weight(1f).heightIn(min = 64.dp)
+                            Modifier.weight(1f).heightIn(min = 72.dp)
                                 .testTag("destination-$index")
                                 .background(
                                     if (focused || pressed || hovered) {
@@ -65,26 +69,44 @@ fun MobileNavigation(selected: Int, select: (Int) -> Unit) {
                                     indication = null,
                                     role = Role.Tab
                                 ) { select(index) }
-                                .padding(horizontal = 8.dp, vertical = 18.dp),
+                                .padding(horizontal = 8.dp, vertical = 8.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                stringResource(label),
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = if (selected ==
-                                    index
-                                ) {
-                                    FontWeight.Bold
-                                } else {
-                                    FontWeight.Medium
-                                },
-                                textAlign = TextAlign.Center,
-                                color = if (selected == index) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                }
-                            )
+                            val color = if (selected == index) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            }
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Icon(
+                                    painterResource(
+                                        listOf(
+                                            R.drawable.ic_home,
+                                            R.drawable.ic_history,
+                                            R.drawable.ic_settings
+                                        )[index]
+                                    ),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp),
+                                    tint = color
+                                )
+                                Text(
+                                    stringResource(label),
+                                    style = MaterialTheme.typography.labelLarge,
+                                    fontWeight = if (selected ==
+                                        index
+                                    ) {
+                                        FontWeight.Bold
+                                    } else {
+                                        FontWeight.Medium
+                                    },
+                                    textAlign = TextAlign.Center,
+                                    color = color
+                                )
+                            }
                         }
                     }
             }
