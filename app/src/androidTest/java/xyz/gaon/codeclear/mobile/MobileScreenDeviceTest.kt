@@ -533,7 +533,7 @@ class MobileScreenDeviceTest {
             assertTrue(detail.left >= menu.right - 1f)
             assertTrue(detail.width >= 460f * density)
         }
-        for (page in SettingsPage.entries) {
+        for (page in settingsMenuPages(state.options)) {
             compose.onNodeWithTag("settings-menu").performScrollToNode(
                 hasTestTag("settings-category-${page.name}")
             )
@@ -621,13 +621,51 @@ class MobileScreenDeviceTest {
         SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
 
     private fun openSettingsPage(page: SettingsPage) {
+        if (page == SettingsPage.LABS || page.parent == SettingsPage.LABS) {
+            compose.runOnIdle {
+                state = state.copy(options = state.options.copy(labsEnabled = true))
+            }
+        }
         compose.onNodeWithTag("destination-2").performClick()
-        val category = "settings-category-${page.name}"
+        val category = "settings-category-${(page.parent ?: page).name}"
         if (compose.onAllNodesWithTag("settings-menu").fetchSemanticsNodes().isEmpty()) {
             compose.onNodeWithTag("settings-back").performClick()
         }
         compose.onNodeWithTag("settings-menu").performScrollToNode(hasTestTag(category))
         compose.onNodeWithTag(category).performClick()
+        if (page.parent != null) {
+            compose.onNodeWithTag("settings-detail").performScrollToNode(hasText(text(page.title)))
+            compose.onNodeWithText(text(page.title)).performClick()
+        }
+    }
+
+    @Test
+    fun sevenVersionTapsRevealTheEggAndLabsChildPages() {
+        compose.onNodeWithTag("destination-2").performClick()
+        compose.onNodeWithTag("settings-category-LABS").assertDoesNotExist()
+        openSettingsPage(SettingsPage.ABOUT)
+        repeat(6) { compose.onNodeWithTag("app-version-row").performClick() }
+        compose.onNodeWithTag("signal-easter-egg").assertDoesNotExist()
+        compose.onNodeWithTag("app-version-row").performClick()
+        compose.onNodeWithTag("signal-easter-egg").assertIsDisplayed()
+        assertTrue(configured.labsEnabled)
+        assertFalse(configured.nearbyEnabled)
+        compose.onNodeWithTag("signal-egg-pulse").performClick()
+        savePreview("labs-egg", dialog = true)
+        compose.onNodeWithTag("signal-egg-close").performClick()
+        openSettingsPage(SettingsPage.LABS)
+        compose.onNodeWithText(text(R.string.mobile_server_translation)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_server_preview)).assertIsDisplayed()
+        compose.onNodeWithTag("settings-back").performClick()
+        compose.onNodeWithText(text(R.string.mobile_nearby)).performClick()
+        compose.onNodeWithTag(
+            "settings-detail-title"
+        ).assertTextEquals(text(R.string.mobile_nearby))
+        compose.onNodeWithTag("settings-back").performClick()
+        compose.onNodeWithTag("settings-detail-title").assertTextEquals(text(R.string.mobile_labs))
+        savePreview("labs-menu")
+        compose.onNodeWithTag("destination-2").performClick()
+        compose.onNodeWithTag("settings-menu").assertIsDisplayed()
     }
 
     @Test

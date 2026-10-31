@@ -191,4 +191,11 @@
     <string name="mobile_type_emergency">Urgence</string>
     <string name="mobile_type_safety">Information de sécurité</string>
     <string name="mobile_type_missing">Alerte disparition</string>
+    <string name="mobile_labs">Laboratoire</string>
+    <string name="mobile_labs_summary">Essayer les fonctions en développement</string>
+    <string name="mobile_labs_notice">Les fonctions expérimentales peuvent changer. Le partage à proximité reste désactivé sans votre autorisation.</string>
+    <string name="mobile_labs_unlocked">Le laboratoire est accessible dans les paramètres.</string>
+    <string name="mobile_server_translation">Traduction sur serveur</string>
+    <string name="mobile_server_preparing">En préparation</string>
+    <string name="mobile_server_preview">La traduction sur serveur est déconnectée. Les traductions restent traitées sur cet appareil. Le résultat prévu indiquera l’organisme émetteur et la manière dont il a été identifié. Aucun texte d’alerte n’est envoyé à un serveur.</string>
 </resources>

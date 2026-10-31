@@ -191,4 +191,11 @@
     <string name="mobile_type_emergency">Emergency</string>
     <string name="mobile_type_safety">Public safety</string>
     <string name="mobile_type_missing">Missing-person alert</string>
+    <string name="mobile_labs">Labs</string>
+    <string name="mobile_labs_summary">Try features in development</string>
+    <string name="mobile_labs_notice">Experimental features may change. Nearby sharing stays off until you allow it.</string>
+    <string name="mobile_labs_unlocked">Labs is unlocked. Open it from Settings.</string>
+    <string name="mobile_server_translation">Server translation</string>
+    <string name="mobile_server_preparing">In preparation</string>
+    <string name="mobile_server_preview">Server translation is not connected. Translation still runs on this device. The planned response includes the issuing authority and how it was identified. No alert text is sent to a server.</string>
 </resources>

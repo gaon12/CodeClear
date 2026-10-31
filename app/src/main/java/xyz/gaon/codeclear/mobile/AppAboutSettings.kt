@@ -1,8 +1,12 @@
 package xyz.gaon.codeclear.mobile
 
 import android.content.ActivityNotFoundException
+import android.os.SystemClock
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -16,6 +20,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -29,9 +34,11 @@ internal object ProjectInformation {
 }
 
 @Composable
-internal fun AppAboutSettings(compatibility: () -> Unit) {
+internal fun AppAboutSettings(unlock: () -> Unit, compatibility: () -> Unit) {
     val uriHandler = LocalUriHandler.current
     var linkFailed by remember { mutableStateOf(false) }
+    var showEgg by remember { mutableStateOf(false) }
+    val taps = remember { VersionTapUnlock() }
     val open: (String) -> Unit = { url ->
         linkFailed = false
         try {
@@ -47,7 +54,12 @@ internal fun AppAboutSettings(compatibility: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         SettingsGroup {
             Column(
-                Modifier.padding(horizontal = 24.dp, vertical = 18.dp),
+                Modifier.fillMaxWidth().testTag("app-version-row").clickable(role = Role.Button) {
+                    if (taps.tap(SystemClock.elapsedRealtime())) {
+                        unlock()
+                        showEgg = true
+                    }
+                }.heightIn(min = 72.dp).padding(horizontal = 24.dp, vertical = 18.dp),
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 Text(
@@ -92,4 +104,5 @@ internal fun AppAboutSettings(compatibility: () -> Unit) {
             SettingRow(stringResource(R.string.mobile_compatibility), onClick = compatibility)
         }
     }
+    if (showEgg) SignalEasterEgg { showEgg = false }
 }

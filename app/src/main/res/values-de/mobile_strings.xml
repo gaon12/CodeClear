@@ -191,4 +191,11 @@
     <string name="mobile_type_emergency">Notfall</string>
     <string name="mobile_type_safety">Sicherheitshinweis</string>
     <string name="mobile_type_missing">Vermisstenwarnung</string>
+    <string name="mobile_labs">Labor</string>
+    <string name="mobile_labs_summary">Funktionen in Entwicklung ausprobieren</string>
+    <string name="mobile_labs_notice">Experimentelle Funktionen können sich ändern. Die Freigabe in der Nähe bleibt bis zu Ihrer Erlaubnis aus.</string>
+    <string name="mobile_labs_unlocked">Das Labor ist freigeschaltet und in den Einstellungen verfügbar.</string>
+    <string name="mobile_server_translation">Serverübersetzung</string>
+    <string name="mobile_server_preparing">In Vorbereitung</string>
+    <string name="mobile_server_preview">Die Serverübersetzung ist nicht verbunden. Übersetzungen erfolgen weiterhin auf diesem Gerät. Geplant sind Angaben zur ausstellenden Stelle und zur Herkunft dieser Angabe. Es werden keine Warntexte an einen Server gesendet.</string>
 </resources>

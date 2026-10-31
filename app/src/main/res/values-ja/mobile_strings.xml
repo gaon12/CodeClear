@@ -190,4 +190,11 @@
     <string name="mobile_type_emergency">緊急災害</string>
     <string name="mobile_type_safety">安全案内</string>
     <string name="mobile_type_missing">行方不明者警報</string>
+    <string name="mobile_labs">ラボ</string>
+    <string name="mobile_labs_summary">開発中の機能を試す</string>
+    <string name="mobile_labs_notice">実験的な機能は変更される場合があります。周辺共有は許可するまでオフです。</string>
+    <string name="mobile_labs_unlocked">ラボが開きました。設定から確認できます。</string>
+    <string name="mobile_server_translation">サーバー翻訳</string>
+    <string name="mobile_server_preparing">準備中</string>
+    <string name="mobile_server_preview">サーバー翻訳は未接続です。翻訳は引き続き端末内で処理します。今後は発信機関とその判断根拠を結果に含める予定です。警報本文はサーバーに送信しません。</string>
 </resources>

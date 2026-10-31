@@ -190,4 +190,11 @@
     <string name="mobile_type_emergency">紧急灾情</string>
     <string name="mobile_type_safety">安全提示</string>
     <string name="mobile_type_missing">失踪人员警报</string>
+    <string name="mobile_labs">实验室</string>
+    <string name="mobile_labs_summary">试用开发中的功能</string>
+    <string name="mobile_labs_notice">实验功能可能会变化。附近共享仅在您允许后开启。</string>
+    <string name="mobile_labs_unlocked">实验室已解锁，请在设置中查看。</string>
+    <string name="mobile_server_translation">服务器翻译</string>
+    <string name="mobile_server_preparing">准备中</string>
+    <string name="mobile_server_preview">服务器翻译尚未连接。翻译仍在本机处理。未来的结果计划包含发布机构及其识别依据。不会将警报正文发送到服务器。</string>
 </resources>

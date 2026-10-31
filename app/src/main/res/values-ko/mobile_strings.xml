@@ -190,4 +190,11 @@
     <string name="mobile_type_emergency">긴급재난</string>
     <string name="mobile_type_safety">안전안내</string>
     <string name="mobile_type_missing">실종경보</string>
+    <string name="mobile_labs">실험실</string>
+    <string name="mobile_labs_summary">개발 중인 기능을 사용해 보세요</string>
+    <string name="mobile_labs_notice">실험실 기능은 변경될 수 있습니다. 주변 공유는 직접 허용해야 켜집니다.</string>
+    <string name="mobile_labs_unlocked">실험실이 열렸습니다. 설정에서 확인해 보세요.</string>
+    <string name="mobile_server_translation">서버 번역</string>
+    <string name="mobile_server_preparing">준비 중</string>
+    <string name="mobile_server_preview">서버 번역은 아직 연결되지 않았습니다. 번역은 계속 기기 안에서 처리합니다. 향후 번역 결과에 발송 기관과 확인 근거를 포함할 예정입니다. 재난문자 내용은 서버로 보내지 않습니다.</string>
 </resources>

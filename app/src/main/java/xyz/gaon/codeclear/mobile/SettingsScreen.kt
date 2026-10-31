@@ -54,10 +54,26 @@ enum class SettingsPage(val title: Int) {
     TRANSLATION(R.string.mobile_translation_settings),
     APPEARANCE(R.string.mobile_appearance),
     NOTIFICATIONS(R.string.mobile_notifications),
+    LABS(R.string.mobile_labs),
     SHARING(R.string.mobile_nearby),
+    SERVER(R.string.mobile_server_translation),
     PRIVACY(R.string.mobile_privacy),
     ABOUT(R.string.mobile_about)
 }
+
+internal val SettingsPage.parent: SettingsPage?
+    get() = if (this == SettingsPage.SHARING ||
+        this == SettingsPage.SERVER
+    ) {
+        SettingsPage.LABS
+    } else {
+        null
+    }
+
+internal fun settingsMenuPages(options: MobileOptions): List<SettingsPage> =
+    SettingsPage.entries.filter {
+        it.parent == null && (it != SettingsPage.LABS || options.labsEnabled)
+    }
 
 @Composable
 fun SettingsScreen(
@@ -74,26 +90,33 @@ fun SettingsScreen(
     val pageScroll = SettingsPage.entries.associateWith { rememberLazyListState() }
     BoxWithConstraints(Modifier.fillMaxSize().testTag("settings-screen")) {
         val expanded = maxWidth >= 840.dp
-        val page = selectedPage ?: SettingsPage.CAPTURE
+        val selection = selectedPage?.takeUnless {
+            !state.options.labsEnabled &&
+                (it == SettingsPage.LABS || it.parent == SettingsPage.LABS)
+        }
+        val page = selection ?: SettingsPage.CAPTURE
         val menuWidth = (maxWidth * 0.42f).coerceIn(320.dp, 640.dp)
-        BackHandler(enabled = !expanded && selectedPage != null) { selectPage(null) }
+        BackHandler(enabled = selection != null && (!expanded || page.parent != null)) {
+            selectPage(page.parent)
+        }
         if (expanded) {
             Row(Modifier.fillMaxSize().testTag("settings-split")) {
                 SettingsMenu(
                     state,
                     actions,
                     menuScroll,
-                    page,
+                    page.parent ?: page,
                     true,
                     { selectPage(it) },
                     Modifier.fillMaxHeight().width(menuWidth)
                 )
                 SettingsDetail(
                     page, pageScroll.getValue(page), state, environment, session,
-                    preparation, actions, tutorial, null, Modifier.weight(1f)
+                    preparation, actions, tutorial, selectPage,
+                    page.parent?.let { { selectPage(it) } }, Modifier.weight(1f)
                 )
             }
-        } else if (selectedPage == null) {
+        } else if (selection == null) {
             SettingsMenu(
                 state,
                 actions,
@@ -106,7 +129,8 @@ fun SettingsScreen(
         } else {
             SettingsDetail(
                 page, pageScroll.getValue(page), state, environment, session,
-                preparation, actions, tutorial, { selectPage(null) }, Modifier.fillMaxSize()
+                preparation, actions, tutorial, selectPage,
+                { selectPage(page.parent) }, Modifier.fillMaxSize()
             )
         }
     }
@@ -133,7 +157,7 @@ private fun SettingsMenu(
             if (!expanded && (!state.loaded || state.storageError)) {
                 item { SettingsStatus(state, actions) }
             }
-            items(SettingsPage.entries.chunked(2), key = { it.first().name }) { group ->
+            items(settingsMenuPages(state.options).chunked(2), key = { it.first().name }) { group ->
                 Surface(
                     Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),
@@ -219,6 +243,7 @@ private fun SettingsDetail(
     preparation: PreparationState,
     actions: MobileActions,
     tutorial: () -> Unit,
+    navigate: (SettingsPage) -> Unit,
     back: (() -> Unit)?,
     modifier: Modifier
 ) {
@@ -239,7 +264,7 @@ private fun SettingsDetail(
             ) {
                 item { SettingsStatus(state, actions) }
                 item(key = page) {
-                    MobileSettings(page, state, environment, session, actions, tutorial)
+                    MobileSettings(page, state, environment, session, actions, tutorial, navigate)
                 }
                 if (page == SettingsPage.TRANSLATION &&
                     preparation.phase != PreparationPhase.IDLE &&
@@ -278,6 +303,10 @@ private fun settingsSummary(page: SettingsPage, options: MobileOptions): String 
     SettingsPage.SHARING -> stringResource(
         if (options.nearbyEnabled) R.string.mobile_on else R.string.mobile_off
     )
+
+    SettingsPage.LABS -> stringResource(R.string.mobile_labs_summary)
+
+    SettingsPage.SERVER -> stringResource(R.string.mobile_server_preparing)
 
     SettingsPage.PRIVACY -> stringResource(R.string.mobile_data_storage)
 

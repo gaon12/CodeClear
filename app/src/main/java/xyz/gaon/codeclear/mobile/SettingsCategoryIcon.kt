@@ -22,6 +22,8 @@ internal fun SettingsCategoryIcon(page: SettingsPage) {
         SettingsPage.APPEARANCE -> R.drawable.ic_category_appearance to Color(0xFF8D55C7)
         SettingsPage.NOTIFICATIONS -> R.drawable.ic_category_notifications to Color(0xFFBF6B00)
         SettingsPage.SHARING -> R.drawable.ic_category_sharing to Color(0xFF287D96)
+        SettingsPage.LABS -> R.drawable.ic_category_labs to Color(0xFF6A59B5)
+        SettingsPage.SERVER -> R.drawable.ic_category_translation to Color(0xFF008A78)
         SettingsPage.PRIVACY -> R.drawable.ic_category_privacy to Color(0xFF438047)
         SettingsPage.ABOUT -> R.drawable.ic_category_about to Color(0xFF657187)
     }

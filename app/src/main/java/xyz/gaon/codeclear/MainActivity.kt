@@ -296,7 +296,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestNearby() {
-        if (!mobileRuntime.state.loaded || mobileRuntime.state.storageError) return
+        if (!mobileRuntime.state.loaded || mobileRuntime.state.storageError ||
+            !mobileRuntime.state.options.labsEnabled
+        ) {
+            return
+        }
         mobileRuntime.configure(mobileRuntime.state.options.copy(nearbyEnabled = true))
         val permissions = NearbyAccess.permissions(mobileRuntime.nearby.sender).filter {
             checkSelfPermission(it) != android.content.pm.PackageManager.PERMISSION_GRANTED

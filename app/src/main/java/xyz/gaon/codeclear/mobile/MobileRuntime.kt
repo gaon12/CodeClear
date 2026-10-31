@@ -57,7 +57,7 @@ class MobileRuntime(context: Context) {
         engine,
         changed = {
             state = it
-            if (it.loaded) nearby.configure(it.options.nearbyEnabled)
+            if (it.loaded) nearby.configure(it.options.labsEnabled && it.options.nearbyEnabled)
         },
         translated = { id, target, producer ->
             val language = state.options.uiLanguage

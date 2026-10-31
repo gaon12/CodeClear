@@ -18,7 +18,8 @@ data class MobileOptions(
     val uiLanguage: String = "",
     val setupComplete: Boolean = false,
     val engine: LocalEngineKind = LocalEngineKind.ML_KIT,
-    val nearbyEnabled: Boolean = false
+    val nearbyEnabled: Boolean = false,
+    val labsEnabled: Boolean = false
 )
 
 fun defaultTarget(
@@ -46,6 +47,7 @@ class MobileOptionsStorage(
         check(Looper.myLooper() != Looper.getMainLooper())
         val saved = context.getSharedPreferences(name, Context.MODE_PRIVATE)
         val currentDisclosure = saved.getInt("disclosure_version", 0) == 1
+        val labsEnabled = saved.getBoolean("labs_enabled", false)
         val engineKey = saved.getString("local_engine", LocalEngineKind.ML_KIT.key)
         val engine = LocalEngineKind.entries.firstOrNull { it.key == engineKey }
         val target =
@@ -70,7 +72,9 @@ class MobileOptionsStorage(
             uiLanguage = language,
             setupComplete = currentDisclosure && saved.getBoolean("setup_complete", false),
             engine = engine ?: LocalEngineKind.ML_KIT,
-            nearbyEnabled = currentDisclosure && saved.getBoolean("nearby_enabled", false)
+            nearbyEnabled =
+                currentDisclosure && labsEnabled && saved.getBoolean("nearby_enabled", false),
+            labsEnabled = labsEnabled
         )
     }
 
@@ -84,6 +88,7 @@ class MobileOptionsStorage(
             .putBoolean("local_consent", options.localConsent)
             .putString("local_engine", options.engine.key)
             .putBoolean("nearby_enabled", options.nearbyEnabled)
+            .putBoolean("labs_enabled", options.labsEnabled)
             .putBoolean("setup_complete", options.setupComplete)
             .putString("target", options.target.name).putString("theme", options.theme.name)
             .putString("ui_language", options.uiLanguage).commit()

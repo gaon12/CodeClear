@@ -38,7 +38,8 @@ fun MobileSettings(
     environment: ProbeEnvironment,
     session: ProbeSessionState,
     actions: MobileActions,
-    tutorial: () -> Unit
+    tutorial: () -> Unit,
+    navigate: (SettingsPage) -> Unit = {}
 ) {
     val options = state.options
     var disclosure by remember { mutableStateOf<CaptureAccess?>(null) }
@@ -79,6 +80,23 @@ fun MobileSettings(
         }
     }
     if (page == SettingsPage.SHARING) NearbySettings(state, actions)
+    if (page == SettingsPage.LABS) {
+        SettingsGroup {
+            SettingNote(stringResource(R.string.mobile_labs_notice))
+            SettingRow(stringResource(R.string.mobile_nearby), onClick = {
+                navigate(SettingsPage.SHARING)
+            })
+            SettingDivider()
+            SettingRow(
+                stringResource(R.string.mobile_server_translation),
+                stringResource(R.string.mobile_server_preparing),
+                onClick = { navigate(SettingsPage.SERVER) }
+            )
+        }
+    }
+    if (page == SettingsPage.SERVER) {
+        SettingsGroup { SettingNote(stringResource(R.string.mobile_server_preview)) }
+    }
     if (page == SettingsPage.TRANSLATION) {
         LocalTranslationSettings(options, actions)
     }
@@ -129,7 +147,10 @@ fun MobileSettings(
         }
     }
     if (page == SettingsPage.ABOUT) {
-        AppAboutSettings { info = SettingsInfo.COMPATIBILITY }
+        AppAboutSettings(
+            unlock = { actions.configure(options.copy(labsEnabled = true)) },
+            compatibility = { info = SettingsInfo.COMPATIBILITY }
+        )
     }
     disclosure?.let { route ->
         val notification = route == CaptureAccess.NOTIFICATION

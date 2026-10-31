@@ -40,6 +40,7 @@ class MobileOptionsStorageDeviceTest {
                 assertFalse(options.localConsent)
                 assertFalse(options.setupComplete)
                 assertFalse(options.nearbyEnabled)
+                assertFalse(options.labsEnabled)
             }
         } finally {
             Locale.setDefault(original)
@@ -59,7 +60,8 @@ class MobileOptionsStorageDeviceTest {
                     target = LocalTarget.GERMAN,
                     uiLanguage = "fr",
                     theme = ThemeChoice.DARK,
-                    nearbyEnabled = true
+                    nearbyEnabled = true,
+                    labsEnabled = true
                 )
             )
             Locale.setDefault(Locale.JAPAN)
@@ -68,9 +70,26 @@ class MobileOptionsStorageDeviceTest {
             assertEquals("fr", options.uiLanguage)
             assertEquals(ThemeChoice.DARK, options.theme)
             assertTrue(options.nearbyEnabled)
+            assertTrue(options.labsEnabled)
             assertFalse(options.localConsent)
         } finally {
             Locale.setDefault(original)
+            context.deleteSharedPreferences(name)
+        }
+    }
+
+    @Test
+    fun nearbyChoiceCannotStartSharingBeforeLabsIsUnlocked() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val name = "options-test-${UUID.randomUUID()}"
+        val storage = MobileOptionsStorage(context, name)
+        try {
+            storage.save(MobileOptions(nearbyEnabled = true))
+            assertFalse(storage.load().nearbyEnabled)
+            storage.save(storage.load().copy(labsEnabled = true))
+            assertTrue(storage.load().labsEnabled)
+            assertFalse(storage.load().nearbyEnabled)
+        } finally {
             context.deleteSharedPreferences(name)
         }
     }
