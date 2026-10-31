@@ -85,6 +85,14 @@ fun AlertPresentation(
                         ),
                         style = MaterialTheme.typography.labelMedium
                     )
+                    alert.capture.context.country?.let { country ->
+                        Text(
+                            country.flag + " " + country.displayName(
+                                LocalConfiguration.current.locales[0].toLanguageTag()
+                            ),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
                 }
             }
             if (alert.capture.source == CaptureSource.PEER) {
@@ -282,6 +290,26 @@ fun AlertMetadata(alert: SavedAlert) {
                 },
                 style = MaterialTheme.typography.bodyMedium
             )
+            alert.capture.context.country?.let { country ->
+                val locale = LocalConfiguration.current.locales[0].toLanguageTag()
+                Text(
+                    stringResource(
+                        if (country.evidence ==
+                            xyz.gaon.codeclear.reception.CountryEvidence.CBS_PLMN
+                        ) {
+                            R.string.mobile_country_cbs
+                        } else if (country.evidence ==
+                            xyz.gaon.codeclear.reception.CountryEvidence.PEER
+                        ) {
+                            R.string.mobile_country_peer
+                        } else {
+                            R.string.mobile_country_network
+                        },
+                        country.flag + " " + country.displayName(locale)
+                    ),
+                    modifier = Modifier.testTag("reception-country")
+                )
+            }
             alert.capture.receivedAtMillis?.let {
                 Text(stringResource(R.string.mobile_received, dateTime(it)))
             }

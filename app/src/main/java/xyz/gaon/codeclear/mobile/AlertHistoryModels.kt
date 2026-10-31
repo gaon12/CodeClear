@@ -30,7 +30,8 @@ data class CapturedAlert(
     val receivedAtMillis: Long? = null,
     val sourceIdentity: String? = null,
     val headingHint: String = "UNKNOWN",
-    val broadcast: BroadcastMetadata? = null
+    val broadcast: BroadcastMetadata? = null,
+    val context: ReceptionContext = ReceptionContext()
 ) {
     init {
         require(sourcePackage.length <= 256 && sourcePackage.matches(PACKAGE))

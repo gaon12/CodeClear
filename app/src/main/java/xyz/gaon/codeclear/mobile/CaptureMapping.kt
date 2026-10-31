@@ -4,6 +4,8 @@ import xyz.gaon.codeclear.probe.ProbeBodyEvidence
 import xyz.gaon.codeclear.probe.ProbeOrigin
 import xyz.gaon.codeclear.probe.ProbeRecord
 import xyz.gaon.codeclear.probe.ProbeRoute
+import xyz.gaon.codeclear.reception.CountryEvidence
+import xyz.gaon.codeclear.reception.ReceptionCountry
 
 /** The caller supplies actual verified system packages, radio capability, and current route consent. */
 fun ProbeRecord.toHistoryCapture(
@@ -52,6 +54,11 @@ fun ProbeRecord.toHistoryCapture(
         receivedAtMillis = fields?.receivedAtMillis,
         sourceIdentity = identity,
         headingHint = source.headingHint.name,
+        context = ReceptionContext(
+            fields?.countryIso?.let {
+                ReceptionCountry(it, CountryEvidence.CBS_PLMN)
+            }
+        ),
         broadcast = fields?.let {
             BroadcastMetadata(
                 it.format,

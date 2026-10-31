@@ -20,6 +20,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import xyz.gaon.codeclear.probe.LocalEngineKind
+import xyz.gaon.codeclear.reception.CountryEvidence
+import xyz.gaon.codeclear.reception.ReceptionCountry
 
 class AlertHistoryStoreDeviceTest {
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
@@ -36,6 +38,30 @@ class AlertHistoryStoreDeviceTest {
     fun removeOnlyThisTestsDatabase() {
         store.close()
         context.deleteDatabase(name)
+    }
+
+    @Test
+    fun countrySnapshotSurvivesReopeningAndDoesNotChangeWhenReplayed() {
+        val country = ReceptionCountry("KR", CountryEvidence.CBS_PLMN)
+        val original = capture(
+            "[DRILL] Country snapshot"
+        ).copy(sourceIdentity = "country:1", context = ReceptionContext(country))
+        val id = store.insert(original)!!
+        store.close()
+        store = AlertHistoryStore(context, name)
+        assertEquals(country, store.find(id, "en")!!.capture.context.country)
+        store.insert(
+            original.copy(
+                context = ReceptionContext(ReceptionCountry("US", CountryEvidence.NETWORK_SNAPSHOT))
+            )
+        )
+        assertEquals(country, store.find(id, "en")!!.capture.context.country)
+        assertEquals(ReceptionContext(), ReceptionContext.decode("{bad"))
+    }
+
+    @Test
+    fun migrationFromVersionFourPreservesOriginalsAndTranslations() {
+        verifyMigration(4)
     }
 
     @Test
@@ -163,24 +189,49 @@ class AlertHistoryStoreDeviceTest {
             null,
             SQLiteDatabase.OPEN_READWRITE
         ).use {
-            it.execSQL("DROP INDEX translation_queue")
-            it.execSQL("ALTER TABLE translations RENAME TO current_translations")
+            val schema = it.rawQuery(
+                "SELECT sql FROM sqlite_master WHERE name='alerts'",
+                null
+            ).use { cursor ->
+                check(cursor.moveToFirst())
+                cursor.getString(0)
+            }
+            val columns = it.rawQuery("PRAGMA table_info(alerts)", null).use { cursor ->
+                buildList {
+                    while (cursor.moveToNext()) {
+                        val field = cursor.getString(1)
+                        if (field != "reception_context") add(field)
+                    }
+                }.joinToString(",")
+            }
             it.execSQL(
-                "CREATE TABLE translations (" +
-                    "alert_id INTEGER NOT NULL REFERENCES alerts(id) ON DELETE CASCADE," +
-                    "target TEXT NOT NULL, revision INTEGER NOT NULL, phase TEXT NOT NULL," +
-                    "text TEXT, source_language TEXT, search_text TEXT, PRIMARY KEY(alert_id,target))"
+                schema.replace("CREATE TABLE alerts", "CREATE TABLE legacy_alerts")
+                    .replace("reception_context TEXT,", "")
             )
-            it.execSQL(
-                "INSERT INTO translations SELECT alert_id,target,revision,phase,text," +
-                    "source_language,search_text FROM current_translations"
-            )
-            it.execSQL("DROP TABLE current_translations")
-            if (version == 1) it.execSQL("DROP TABLE ignored_sources")
-            if (version == 3) {
+            it.execSQL("INSERT INTO legacy_alerts($columns) SELECT $columns FROM alerts")
+            it.execSQL("DROP TABLE alerts")
+            it.execSQL("ALTER TABLE legacy_alerts RENAME TO alerts")
+            it.execSQL("CREATE INDEX alert_original_hash ON alerts(original_hash)")
+            if (version < 4) {
+                it.execSQL("DROP INDEX translation_queue")
+                it.execSQL("ALTER TABLE translations RENAME TO current_translations")
                 it.execSQL(
-                    "CREATE INDEX translation_queue ON translations(target,phase,alert_id DESC)"
+                    "CREATE TABLE translations (" +
+                        "alert_id INTEGER NOT NULL REFERENCES alerts(id) ON DELETE CASCADE," +
+                        "target TEXT NOT NULL, revision INTEGER NOT NULL, phase TEXT NOT NULL," +
+                        "text TEXT, source_language TEXT, search_text TEXT, PRIMARY KEY(alert_id,target))"
                 )
+                it.execSQL(
+                    "INSERT INTO translations SELECT alert_id,target,revision,phase,text," +
+                        "source_language,search_text FROM current_translations"
+                )
+                it.execSQL("DROP TABLE current_translations")
+                if (version == 1) it.execSQL("DROP TABLE ignored_sources")
+                if (version == 3) {
+                    it.execSQL(
+                        "CREATE INDEX translation_queue ON translations(target,phase,alert_id DESC)"
+                    )
+                }
             }
             it.version = version
         }

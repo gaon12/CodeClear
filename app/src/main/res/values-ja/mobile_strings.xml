@@ -182,4 +182,7 @@
     <string name="mobile_nearby_legacy_location">Android 11ではBluetooth検索に位置情報の権限と設定が必要です。GPS座標は収集しません。</string>
     <string name="mobile_nearby_saved_at">保存 %1$s</string>
     <string name="mobile_nearby_cooldown">しばらく待ってから自動で再検索します</string>
+    <string name="mobile_country_cbs">受信国（CBS網）：%1$s</string>
+    <string name="mobile_country_network">収集時の通信網の国：%1$s</string>
+    <string name="mobile_country_peer">転送元の受信国（未確認）：%1$s</string>
 </resources>

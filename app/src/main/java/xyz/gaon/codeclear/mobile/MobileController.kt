@@ -24,6 +24,8 @@ import xyz.gaon.codeclear.probe.ProbeRecord
 import xyz.gaon.codeclear.probe.ProbeRoute
 import xyz.gaon.codeclear.probe.ProbeSession
 import xyz.gaon.codeclear.probe.isUnlocked
+import xyz.gaon.codeclear.reception.NetworkCountry
+import xyz.gaon.codeclear.reception.ReceptionCountry
 
 data class MobileState(
     val loaded: Boolean = false,
@@ -52,7 +54,8 @@ class MobileController(
     private val deleted: (Long?) -> Unit = {},
     private val releaseEngine: () -> Unit = {},
     private val cancelEngine: () -> Unit = {},
-    private val captured: (Long, CapturedAlert) -> Unit = { _, _ -> }
+    private val captured: (Long, CapturedAlert) -> Unit = { _, _ -> },
+    private val networkCountry: () -> ReceptionCountry? = NetworkCountry(context)::read
 ) : CaptureObserver,
     AutoCloseable {
     private data class Work(val ticket: TranslationTicket, val epoch: Long)
@@ -210,15 +213,21 @@ class MobileController(
         }
         io({
             if (generation != captureGeneration.get()) return@io null
-            store.insertObservation(capture)?.also { observation ->
+            val enriched = capture.copy(
+                context = capture.context.copy(
+                    country = capture.context.country ?: networkCountry()
+                )
+            )
+            store.insertObservation(enriched)?.also { observation ->
                 val id = observation.id
                 store.queueTranslation(id, options.target.languageTag, options.engine)
                 observationIds[record.id] = id
                 if (observationIds.size > 128) observationIds.remove(observationIds.keys.first())
-            }
-        }) { observation ->
-            if (observation != null && generation == captureGeneration.get() && !capturePaused) {
-                if (observation.created) captured(observation.id, capture)
+            }?.let { it to enriched }
+        }) { result ->
+            val (observation, enriched) = result ?: return@io
+            if (generation == captureGeneration.get() && !capturePaused) {
+                if (observation.created) captured(observation.id, enriched)
                 refresh()
                 kick()
             }

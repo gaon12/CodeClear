@@ -77,6 +77,7 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
             put("posted_ms", capture.postedAtMillis)
             put("received_ms", capture.receivedAtMillis)
             put("heading_hint", capture.headingHint)
+            put("reception_context", capture.context.encode())
             capture.broadcast?.let {
                 put("broadcast_format", it.format)
                 put("broadcast_serial", it.serial)
@@ -442,14 +443,15 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
                 receivedAtMillis = optional("received_ms"),
                 sourceIdentity = text("source_identity"),
                 headingHint = text("heading_hint")!!,
-                broadcast = metadata
+                broadcast = metadata,
+                context = ReceptionContext.decode(text("reception_context"))
             ),
             translated
         )
     }
 
     private class HistoryDatabase(context: Context, name: String) :
-        SQLiteOpenHelper(context, name, null, 4) {
+        SQLiteOpenHelper(context, name, null, 5) {
         init {
             setWriteAheadLoggingEnabled(true)
         }
@@ -467,6 +469,7 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
                     title TEXT NOT NULL, original TEXT NOT NULL, original_hash TEXT NOT NULL,
                     search_original TEXT NOT NULL, captured_ms INTEGER NOT NULL,
                     posted_ms INTEGER, received_ms INTEGER, heading_hint TEXT NOT NULL,
+                    reception_context TEXT,
                     broadcast_format INTEGER, broadcast_serial INTEGER, broadcast_category INTEGER,
                     broadcast_priority INTEGER, cmas_class INTEGER, etws_type INTEGER,
                     UNIQUE(source_package, source_identity, original_hash)
@@ -484,11 +487,13 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            if (oldVersion in 1..3 && newVersion == 4) {
+            if (oldVersion !in 1..4 || newVersion != 5) {
+                throw SQLiteException("A preserving history migration is required")
+            }
+            if (oldVersion <= 3) {
                 if (oldVersion == 1) createIgnoredSources(db)
                 db.execSQL("ALTER TABLE translations RENAME TO previous_translations")
                 createTranslations(db)
-                // Older results were produced only by the default engine. Preserve them verbatim.
                 db.execSQL(
                     "INSERT INTO translations " +
                         "(alert_id,target,engine,revision,phase,text," +
@@ -499,9 +504,8 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
                 )
                 db.execSQL("DROP TABLE previous_translations")
                 createQueueIndex(db)
-            } else {
-                throw SQLiteException("A preserving history migration is required")
             }
+            db.execSQL("ALTER TABLE alerts ADD COLUMN reception_context TEXT")
         }
     }
 

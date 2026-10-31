@@ -7,6 +7,15 @@ import org.junit.Test
 
 class SourcePayloadDeviceTest {
     @Test
+    fun receivedPlmnProducesOnlyACountryWithoutChangingTheOriginal() = fixture {
+        writeMessage(this, "[DRILL] Original country", plmn = "45008")
+        setDataPosition(0)
+        val decoded = ProbeBroadcastPayload.readReviewedParcel(this)!!
+        assertEquals("KR", decoded.fields.countryIso)
+        assertEquals("[DRILL] Original country", decoded.body)
+    }
+
+    @Test
     fun baselineLayoutIsAcceptedAcrossAllReviewedPlatformVersions() {
         for (sdk in 30..37) {
             fixture {
@@ -121,12 +130,13 @@ class SourcePayloadDeviceTest {
         parcel: Parcel,
         body: String,
         tag: Int = 'C'.code,
-        extendedCmas: Boolean = false
+        extendedCmas: Boolean = false,
+        plmn: String = "00101"
     ) = with(parcel) {
         writeInt(1)
         writeInt(0)
         writeInt(49)
-        writeString("00101")
+        writeString(plmn)
         writeInt(-1)
         writeInt(-1)
         writeInt(4370)

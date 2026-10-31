@@ -183,4 +183,7 @@
     <string name="mobile_nearby_legacy_location">Android 11 benötigt Standortberechtigung und aktivierten Systemstandort für die Bluetooth-Suche. Diese App erfasst keine GPS-Koordinaten.</string>
     <string name="mobile_nearby_saved_at">Gespeichert %1$s</string>
     <string name="mobile_nearby_cooldown">Kurze Wartezeit vor der nächsten Suche</string>
+    <string name="mobile_country_cbs">Empfangsland (CBS-Netz): %1$s</string>
+    <string name="mobile_country_network">Netzland bei Erfassung: %1$s</string>
+    <string name="mobile_country_peer">Empfangsland des Absenders (ungeprüft): %1$s</string>
 </resources>

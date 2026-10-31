@@ -183,4 +183,7 @@
     <string name="mobile_nearby_legacy_location">Android 11 exige l’autorisation et l’activation de la localisation système pour rechercher des appareils Bluetooth. Cette application ne recueille pas de coordonnées GPS.</string>
     <string name="mobile_nearby_saved_at">Enregistré %1$s</string>
     <string name="mobile_nearby_cooldown">Courte pause avant une nouvelle recherche</string>
+    <string name="mobile_country_cbs">Pays de réception (réseau CBS) : %1$s</string>
+    <string name="mobile_country_network">Pays du réseau lors de la collecte : %1$s</string>
+    <string name="mobile_country_peer">Pays de réception du relais (non vérifié) : %1$s</string>
 </resources>

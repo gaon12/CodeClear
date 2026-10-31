@@ -182,4 +182,7 @@
     <string name="mobile_nearby_legacy_location">Android 11에서는 Bluetooth 검색에 위치 권한과 시스템 위치 설정이 필요합니다. 앱은 GPS 좌표를 수집하지 않습니다.</string>
     <string name="mobile_nearby_saved_at">저장 %1$s</string>
     <string name="mobile_nearby_cooldown">잠시 기다린 뒤 자동으로 다시 찾습니다</string>
+    <string name="mobile_country_cbs">수신 국가(CBS 통신망): %1$s</string>
+    <string name="mobile_country_network">수집 당시 통신망 국가: %1$s</string>
+    <string name="mobile_country_peer">전달 기기의 수신 국가(미확인): %1$s</string>
 </resources>

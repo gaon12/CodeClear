@@ -183,4 +183,7 @@
     <string name="mobile_nearby_legacy_location">Android 11 requires location permission and system location for Bluetooth discovery. This app does not collect GPS coordinates.</string>
     <string name="mobile_nearby_saved_at">Saved %1$s</string>
     <string name="mobile_nearby_cooldown">Waiting briefly before searching again</string>
+    <string name="mobile_country_cbs">Reception country (CBS network): %1$s</string>
+    <string name="mobile_country_network">Country at capture (network): %1$s</string>
+    <string name="mobile_country_peer">Origin reception country (unverified peer): %1$s</string>
 </resources>

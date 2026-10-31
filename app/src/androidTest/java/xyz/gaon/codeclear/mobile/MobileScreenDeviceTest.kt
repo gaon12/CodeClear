@@ -39,6 +39,7 @@ import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.click
@@ -83,6 +84,8 @@ import xyz.gaon.codeclear.probe.ProbeRadio
 import xyz.gaon.codeclear.probe.ProbeSessionState
 import xyz.gaon.codeclear.probe.SystemEngineAvailability
 import xyz.gaon.codeclear.probe.SystemLanguagePair
+import xyz.gaon.codeclear.reception.CountryEvidence
+import xyz.gaon.codeclear.reception.ReceptionCountry
 
 /** Renders synthetic-only state. The real runtime is paused and its history is never modified. */
 class MobileScreenDeviceTest {
@@ -300,6 +303,28 @@ class MobileScreenDeviceTest {
             context.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             scope?.close()
         }
+    }
+
+    @Test
+    fun storedCountryUsesAFlagAndTheCurrentDisplayLanguage() {
+        val country = ReceptionCountry("KR", CountryEvidence.CBS_PLMN)
+        compose.runOnIdle {
+            previewLanguage = "fr"
+            state = state.copy(
+                records = listOf(
+                    record(1).let {
+                        it.copy(capture = it.capture.copy(context = ReceptionContext(country)))
+                    }
+                )
+            )
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performClick()
+        compose.onNodeWithTag("reception-country").performScrollTo()
+            .assertTextContains(country.flag + " " + country.displayName("fr"), substring = true)
+        compose.runOnIdle { previewLanguage = "de" }
+        compose.onNodeWithTag("reception-country")
+            .assertTextContains(country.flag + " " + country.displayName("de"), substring = true)
     }
 
     @Test

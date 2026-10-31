@@ -3,6 +3,7 @@ package xyz.gaon.codeclear.probe
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
+import xyz.gaon.codeclear.reception.MccCountries
 
 data class ProbeBroadcastFields(
     val format: Int,
@@ -11,7 +12,8 @@ data class ProbeBroadcastFields(
     val priority: Int,
     val cmasClass: Int?,
     val etwsType: Int?,
-    val receivedAtMillis: Long
+    val receivedAtMillis: Long,
+    val countryIso: String? = null
 )
 
 data class ProbeDecodedBroadcast(val body: String, val fields: ProbeBroadcastFields)
@@ -19,7 +21,7 @@ data class ProbeDecodedBroadcast(val body: String, val fields: ProbeBroadcastFie
 /**
  * Experimental data-only adapter for two reviewed framework Parcel layouts.
  * Parcelable is public; the source message's binary schema is not a stable public contract.
- * Unknown layouts fail closed. Never call hidden getters, retain location, or guess offsets.
+ * Unknown layouts fail closed. Never call hidden getters, retain cell identifiers or coordinates, or guess offsets.
  * Source: AOSP frameworks/base/telephony/java/android/telephony/SmsCbMessage.java.
  * The baseline and nested warning/location writers were reviewed for Android 11 through 16;
  * accepting a known layout does not establish capture support for an untested source or firmware.
@@ -72,7 +74,8 @@ object ProbeBroadcastPayload {
             val format = number().also { require(it in 1..2) }
             number().also { require(it in 0..3) }
             val serial = number().also { require(it in 0..65535) }
-            text(16) // PLMN is deliberately discarded with the following area/cell identifiers.
+            val country = MccCountries.fromPlmn(text(16))
+            // Retain only the derived country; discard PLMN, area, and cell identifiers.
             number()
             number()
             val category = number().also { require(it in 0..65535) }
@@ -120,7 +123,16 @@ object ProbeBroadcastPayload {
             require(parcel.dataAvail() == 0)
             ProbeDecodedBroadcast(
                 body,
-                ProbeBroadcastFields(format, serial, category, priority, cmas, etws, received)
+                ProbeBroadcastFields(
+                    format,
+                    serial,
+                    category,
+                    priority,
+                    cmas,
+                    etws,
+                    received,
+                    country
+                )
             )
         } catch (_: RuntimeException) {
             null
