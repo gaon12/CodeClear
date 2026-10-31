@@ -70,7 +70,12 @@ class MobileActions(
     val retryStorage: () -> Unit,
     val systemAvailability: SystemEngineAvailability = SystemEngineAvailability(),
     val refreshSystem: (Boolean) -> Unit = {},
-    val systemSettings: () -> Unit = {}
+    val systemSettings: () -> Unit = {},
+    val changeDetailTarget: (Long, String, String) -> Unit = { _, _, _ -> },
+    val identifyOriginal: (String, (String?) -> Unit) -> AutoCloseable = { _, complete ->
+        complete(null)
+        AutoCloseable {}
+    }
 )
 
 @Composable

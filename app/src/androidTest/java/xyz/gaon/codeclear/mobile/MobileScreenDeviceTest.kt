@@ -95,6 +95,8 @@ class MobileScreenDeviceTest {
     private var notificationsAllowed by mutableStateOf(true)
     private var settingsOpened = 0
     private var lastSettingsAction = ""
+    private var originalLanguageRequests = 0
+    private var originalLanguageReply: ((String?) -> Unit)? = null
     private var deletionRequests = 0
     private var deletedAlertId: Long? = null
     private var prepared = 0
@@ -227,7 +229,21 @@ class MobileScreenDeviceTest {
                             }, retryStorage = {},
                             systemAvailability = systemSupport,
                             refreshSystem = { if (it) manualSupportRefreshes++ },
-                            systemSettings = { providerSettingsOpened++ }
+                            systemSettings = { providerSettingsOpened++ },
+                            changeDetailTarget = { id, target, source ->
+                                if (id == state.detailId) {
+                                    state =
+                                        state.copy(
+                                            detailTarget = target,
+                                            detailSourceLanguage = source
+                                        )
+                                }
+                            },
+                            identifyOriginal = { _, complete ->
+                                originalLanguageRequests++
+                                originalLanguageReply = complete
+                                AutoCloseable {}
+                            }
                         )
                     )
                 }
@@ -553,6 +569,46 @@ class MobileScreenDeviceTest {
         compose.onNodeWithTag("settings-menu").assertIsDisplayed()
         assertEquals(0f, offset("settings-menu"), 0.01f)
         compose.runOnIdle { assertEquals(0, prepared) }
+    }
+
+    @Test
+    fun detailLanguageChoicesExcludeTheOriginalAndKeepTheDefaultTarget() {
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performClick()
+        val defaultTarget = state.options.target
+        compose.onNodeWithText(
+            text(R.string.mobile_target_language)
+        ).performScrollTo().performClick()
+        val originalLabel = context.getString(R.string.mobile_original_language_choice, "한국어")
+        compose.onNode(hasText(originalLabel) and isRadioChoice()).assertIsNotEnabled()
+        compose.onNode(hasText("Français") and isRadioChoice()).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals("fr", state.detailTarget)
+            assertEquals(defaultTarget, state.options.target)
+            assertEquals(0, originalLanguageRequests)
+            assertEquals(0, prepared)
+        }
+    }
+
+    @Test
+    fun unknownOriginalLanguageDisablesChoicesUntilIdentificationCompletes() {
+        compose.runOnIdle {
+            state = state.copy(records = listOf(record(1).copy(translation = null)))
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_target_language)
+        ).performScrollTo().performClick()
+        compose.onNode(hasText("English") and isRadioChoice()).assertIsNotEnabled()
+        compose.runOnIdle {
+            assertEquals(1, originalLanguageRequests)
+            originalLanguageReply!!.invoke("en")
+        }
+        val original = context.getString(R.string.mobile_original_language_choice, "English")
+        compose.onNode(hasText(original) and isRadioChoice()).performScrollTo().assertIsNotEnabled()
+        compose.onNode(hasText("Deutsch") and isRadioChoice()).performScrollTo().performClick()
+        compose.runOnIdle { assertEquals("de", state.detailTarget) }
     }
 
     @Test

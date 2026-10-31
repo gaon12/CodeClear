@@ -64,6 +64,7 @@ internal fun AlertDetailBody(state: MobileState, actions: MobileActions) {
         val target = state.detailTarget ?: state.options.target.languageTag
         val engine = state.detailEngine ?: state.options.engine
         val active = state.options.localConsent && engine == state.options.engine
+        DetailTargetPicker(alert, state, actions)
         AlertPresentation(alert, target, active, {
             actions.retry(alert.id, target, engine)
         }, { actions.prepare(alert, target, engine) }, engine = engine)

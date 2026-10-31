@@ -206,6 +206,42 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         )
     }
 
+    /** Persist a failed record's retry without replacing a live ticket or an existing result. */
+    fun queueRetry(id: Long, target: String, engine: LocalEngineKind): Boolean {
+        require(target in HistoryText.targets)
+        val db = database
+        db.beginTransactionNonExclusive()
+        try {
+            val alert = find(id, target, engine) ?: return false
+            val previous = alert.translation
+            if (previous?.phase in setOf(TranslationPhase.READY, TranslationPhase.WORKING)) {
+                return false
+            }
+            if (previous == null) {
+                queueTranslation(id, target, engine)
+            } else if (previous.phase != TranslationPhase.QUEUED) {
+                val changed = db.update(
+                    "translations",
+                    ContentValues().apply {
+                        put("phase", TranslationPhase.QUEUED.name)
+                        put("revision", previous.revision + 1)
+                        put("same_language", 0)
+                        putNull("text")
+                        putNull("source_language")
+                        putNull("search_text")
+                    },
+                    "alert_id=? AND target=? AND engine=?",
+                    arrayOf(id.toString(), target, engine.key)
+                )
+                check(changed == 1)
+            }
+            db.setTransactionSuccessful()
+            return true
+        } finally {
+            db.endTransaction()
+        }
+    }
+
     fun finishTranslation(ticket: TranslationTicket, result: SavedTranslation): Boolean {
         require(ticket.target in HistoryText.targets)
         require(result.phase !in setOf(TranslationPhase.QUEUED, TranslationPhase.WORKING))

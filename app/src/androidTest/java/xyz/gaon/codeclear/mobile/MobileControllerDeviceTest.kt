@@ -78,6 +78,45 @@ class MobileControllerDeviceTest {
     }
 
     @Test
+    fun detailTargetQueuesBehindActiveWorkWithoutChangingTheDefault() {
+        val id = store.insert(capture("[DRILL] Alternate detail target"))!!
+        start()
+        await { engine.calls == 1 && it.latest?.id == id }
+        onMain { controller!!.openDetail(id) }
+        await { it.detail?.id == id }
+        onMain { controller!!.changeDetailTarget(id, "ko", "ko") }
+        assertEquals(null, latest.get().detailTarget)
+        onMain { controller!!.changeDetailTarget(id, "de", "ko") }
+        await { it.detailTarget == "de" }
+        assertEquals(1, onMain { engine.calls })
+        onMain { engine.complete("Default English") }
+        await { engine.calls == 2 }
+        assertEquals(LocalTarget.GERMAN, onMain { engine.inputs.last().target })
+        onMain { engine.complete("Selected German") }
+        await { it.detail?.translation?.text == "Selected German" }
+        assertEquals(LocalTarget.ENGLISH, latest.get().options.target)
+        assertEquals("ko", latest.get().detailSourceLanguage)
+        assertEquals("Default English", latest.get().latest?.translation?.text)
+    }
+
+    @Test
+    fun detailLanguageSelectionDoesNotEnableTranslationOrRetargetAnotherRecord() {
+        val first = store.insert(capture("[DRILL] First"))!!
+        val second = store.insert(capture("[DRILL] Second"))!!
+        start(local = false)
+        await { it.latest?.id == second }
+        onMain { controller!!.openDetail(second) }
+        await { it.detail?.id == second }
+        onMain { controller!!.changeDetailTarget(first, "de", "ko") }
+        assertEquals(null, latest.get().detailTarget)
+        onMain { controller!!.changeDetailTarget(second, "de", "ko") }
+        await { it.detailTarget == "de" && !it.loading }
+        assertEquals(0, onMain { engine.calls })
+        assertEquals(LocalTarget.ENGLISH, latest.get().options.target)
+        assertFalse(latest.get().options.localConsent)
+    }
+
+    @Test
     fun equalBodiesReuseTranslationWithoutMergingOccurrencesOrStartingTwoSdkJobs() {
         store.insert(capture("[DRILL] Same original"))
         store.insert(capture("[DRILL] Same original"))

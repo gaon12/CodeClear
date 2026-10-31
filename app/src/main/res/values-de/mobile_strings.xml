@@ -148,4 +148,7 @@
     <string name="mobile_contributors_summary">%1$s · Alle Mitwirkenden ansehen</string>
     <string name="mobile_link_unavailable">Der Link konnte nicht geöffnet werden. Prüfen Sie Ihre Browsereinstellungen und versuchen Sie es erneut.</string>
     <string name="mobile_capture_information">Erfassungsinformationen</string>
+    <string name="mobile_identifying_original">Die Originalsprache wird ermittelt…</string>
+    <string name="mobile_original_unknown">Die Originalsprache konnte nicht ermittelt werden. Prüfen Sie das Original und versuchen Sie es erneut.</string>
+    <string name="mobile_original_language_choice">%1$s · Originalsprache</string>
 </resources>

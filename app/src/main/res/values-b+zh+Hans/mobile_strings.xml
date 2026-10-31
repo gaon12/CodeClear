@@ -148,4 +148,7 @@
     <string name="mobile_contributors_summary">%1$s · 查看所有贡献者</string>
     <string name="mobile_link_unavailable">无法打开链接。请检查浏览器设置后重试。</string>
     <string name="mobile_capture_information">采集信息</string>
+    <string name="mobile_identifying_original">正在确认原文语言…</string>
+    <string name="mobile_original_unknown">无法确认原文语言。请保留原文并重试。</string>
+    <string name="mobile_original_language_choice">%1$s · 原文语言</string>
 </resources>

@@ -32,6 +32,7 @@ data class MobileState(
     val detailId: Long? = null,
     val detailTarget: String? = null,
     val detailEngine: LocalEngineKind? = null,
+    val detailSourceLanguage: String? = null,
     val detail: SavedAlert? = null,
     val query: String = "",
     val beforeId: Long = Long.MAX_VALUE,
@@ -272,6 +273,11 @@ class MobileController(
         update(
             state.copy(
                 detailId = validId,
+                detailSourceLanguage = if (validId != null && validId == state.detailId) {
+                    state.detailSourceLanguage ?: state.detail?.translation?.sourceLanguage
+                } else {
+                    null
+                },
                 detailTarget = target.takeIf { validId != null },
                 detailEngine = if (validId ==
                     null
@@ -284,6 +290,27 @@ class MobileController(
             )
         )
         refresh()
+    }
+
+    fun changeDetailTarget(id: Long, target: String, originalLanguage: String) {
+        requireMain()
+        val choice = LocalTarget.entries.firstOrNull { it.languageTag == target } ?: return
+        if (id != state.detailId || !state.loaded || state.storageError || closed ||
+            !canTranslateDetailTo(choice, originalLanguage)
+        ) {
+            return
+        }
+        val engine = state.options.engine
+        openDetail(id, target, engine)
+        update(state.copy(detailSourceLanguage = originalLanguageCode(originalLanguage)))
+        if (!state.options.localConsent) return
+        val epoch = workEpoch.get()
+        io({
+            if (epoch == workEpoch.get()) store.queueRetry(id, target, engine)
+        }) {
+            refresh()
+            kick()
+        }
     }
 
     fun refresh() {
@@ -384,18 +411,19 @@ class MobileController(
     ) {
         requireMain()
         require(target in HistoryText.targets)
-        if (!state.options.localConsent || selectedEngine != state.options.engine ||
-            active != null || selecting || closed
+        if (!state.loaded || state.storageError || !state.options.localConsent ||
+            selectedEngine != state.options.engine || closed
         ) {
             return
         }
-        selecting = true
         val epoch = workEpoch.get()
         io({
-            store.beginTranslation(id, target, retry = true, engine = selectedEngine)
-        }) { ticket ->
-            selecting = false
-            if (ticket != null && epoch == workEpoch.get()) run(Work(ticket, epoch)) else kick()
+            epoch == workEpoch.get() && store.queueRetry(id, target, selectedEngine)
+        }) { queued ->
+            if (queued && epoch == workEpoch.get()) {
+                refresh()
+                kick()
+            }
         }
     }
 
@@ -429,8 +457,23 @@ class MobileController(
         val epoch = workEpoch.get()
         val target = state.options.target
         val selectedEngine = state.options.engine
+        val detailId = state.detailId
+        val detailTarget = state.detailTarget?.takeIf {
+            it != target.languageTag && state.detailEngine == selectedEngine
+        }
         io({
-            store.nextQueued(target.languageTag, selectedEngine)?.let { id ->
+            val detailTicket = if (detailId != null && detailTarget != null) {
+                store.beginTranslation(detailId, detailTarget, engine = selectedEngine)
+            } else {
+                null
+            }
+            val candidate = detailTicket?.let { ticket ->
+                Candidate(
+                    ticket,
+                    store.cachedTranslation(ticket.original, ticket.target, selectedEngine)
+                )
+            }
+            candidate ?: store.nextQueued(target.languageTag, selectedEngine)?.let { id ->
                 store.beginTranslation(
                     id,
                     target.languageTag,

@@ -156,7 +156,9 @@ class MainActivity : AppCompatActivity() {
                             controller::retryStorage,
                             runtime.systemAvailability,
                             { runtime.systemEngine.refreshCapabilities(force = it) },
-                            ::openSystemTranslationSettings
+                            ::openSystemTranslationSettings,
+                            controller::changeDetailTarget,
+                            runtime.detailLanguages::identify
                         )
                     )
                 }
@@ -178,6 +180,7 @@ class MainActivity : AppCompatActivity() {
                             TextButton(onClick = {
                                 deletion = null
                                 runtime.models.withdraw()
+                                runtime.detailLanguages.clear()
                                 controller.delete(request.id)
                             }) { Text(stringResource(R.string.mobile_delete)) }
                         },

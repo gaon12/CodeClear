@@ -34,6 +34,7 @@ class MobileRuntime(context: Context) {
         private set
     var preparation by mutableStateOf(PreparationState())
         private set
+    val detailLanguages = OriginalLanguageIdentifier()
     private val notifications = ResultNotifications(context)
     private val mlKit = MlKitLocalEngine()
     var systemAvailability by mutableStateOf(SystemEngineAvailability())
