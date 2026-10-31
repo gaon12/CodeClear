@@ -185,4 +185,9 @@
     <string name="mobile_country_cbs">接收国家（CBS网络）：%1$s</string>
     <string name="mobile_country_network">收集时的网络国家：%1$s</string>
     <string name="mobile_country_peer">转发设备接收国家（未验证）：%1$s</string>
+    <string name="mobile_alert_type">警报类型：%1$s</string>
+    <string name="mobile_type_extreme">极端紧急灾情</string>
+    <string name="mobile_type_emergency">紧急灾情</string>
+    <string name="mobile_type_safety">安全提示</string>
+    <string name="mobile_type_missing">失踪人员警报</string>
 </resources>

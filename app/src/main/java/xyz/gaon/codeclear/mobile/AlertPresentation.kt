@@ -85,6 +85,17 @@ fun AlertPresentation(
                         ),
                         style = MaterialTheme.typography.labelMedium
                     )
+                    nationalAlertType(alert.capture)?.let { category ->
+                        Text(
+                            stringResource(
+                                R.string.mobile_alert_type,
+                                stringResource(category.label)
+                            ),
+                            Modifier.testTag("national-alert-type"),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     alert.capture.context.country?.let { country ->
                         Text(
                             country.flag + " " + country.displayName(

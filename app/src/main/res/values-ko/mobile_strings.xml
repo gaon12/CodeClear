@@ -185,4 +185,9 @@
     <string name="mobile_country_cbs">수신 국가(CBS 통신망): %1$s</string>
     <string name="mobile_country_network">수집 당시 통신망 국가: %1$s</string>
     <string name="mobile_country_peer">전달 기기의 수신 국가(미확인): %1$s</string>
+    <string name="mobile_alert_type">경보 유형: %1$s</string>
+    <string name="mobile_type_extreme">위급재난</string>
+    <string name="mobile_type_emergency">긴급재난</string>
+    <string name="mobile_type_safety">안전안내</string>
+    <string name="mobile_type_missing">실종경보</string>
 </resources>

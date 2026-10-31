@@ -306,6 +306,26 @@ class MobileScreenDeviceTest {
     }
 
     @Test
+    fun verifiedKoreanCategoryAppearsAndUnverifiedPeerCategoryStaysHidden() {
+        val original = record(1).let {
+            it.copy(
+                capture = it.capture.copy(
+                    context = ReceptionContext(ReceptionCountry("KR", CountryEvidence.CBS_PLMN)),
+                    broadcast = BroadcastMetadata(1, 42, 4372, 3, 1, null)
+                )
+            )
+        }
+        compose.runOnIdle { state = state.copy(latest = original) }
+        compose.onNodeWithTag("national-alert-type").assertIsDisplayed()
+        compose.runOnIdle {
+            state = state.copy(
+                latest = original.copy(capture = original.capture.copy(source = CaptureSource.PEER))
+            )
+        }
+        compose.onNodeWithTag("national-alert-type").assertDoesNotExist()
+    }
+
+    @Test
     fun storedCountryUsesAFlagAndTheCurrentDisplayLanguage() {
         val country = ReceptionCountry("KR", CountryEvidence.CBS_PLMN)
         compose.runOnIdle {

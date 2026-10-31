@@ -186,4 +186,9 @@
     <string name="mobile_country_cbs">Empfangsland (CBS-Netz): %1$s</string>
     <string name="mobile_country_network">Netzland bei Erfassung: %1$s</string>
     <string name="mobile_country_peer">Empfangsland des Absenders (ungeprüft): %1$s</string>
+    <string name="mobile_alert_type">Warnungsart: %1$s</string>
+    <string name="mobile_type_extreme">Höchste Notfallstufe</string>
+    <string name="mobile_type_emergency">Notfall</string>
+    <string name="mobile_type_safety">Sicherheitshinweis</string>
+    <string name="mobile_type_missing">Vermisstenwarnung</string>
 </resources>

@@ -185,4 +185,9 @@
     <string name="mobile_country_cbs">受信国（CBS網）：%1$s</string>
     <string name="mobile_country_network">収集時の通信網の国：%1$s</string>
     <string name="mobile_country_peer">転送元の受信国（未確認）：%1$s</string>
+    <string name="mobile_alert_type">警報の種類：%1$s</string>
+    <string name="mobile_type_extreme">最緊急災害</string>
+    <string name="mobile_type_emergency">緊急災害</string>
+    <string name="mobile_type_safety">安全案内</string>
+    <string name="mobile_type_missing">行方不明者警報</string>
 </resources>

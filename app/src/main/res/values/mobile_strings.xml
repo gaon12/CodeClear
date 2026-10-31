@@ -186,4 +186,9 @@
     <string name="mobile_country_cbs">Reception country (CBS network): %1$s</string>
     <string name="mobile_country_network">Country at capture (network): %1$s</string>
     <string name="mobile_country_peer">Origin reception country (unverified peer): %1$s</string>
+    <string name="mobile_alert_type">Alert type: %1$s</string>
+    <string name="mobile_type_extreme">Extreme emergency</string>
+    <string name="mobile_type_emergency">Emergency</string>
+    <string name="mobile_type_safety">Public safety</string>
+    <string name="mobile_type_missing">Missing-person alert</string>
 </resources>
