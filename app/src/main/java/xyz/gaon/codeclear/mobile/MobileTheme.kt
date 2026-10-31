@@ -32,6 +32,8 @@ fun MobileTheme(choice: ThemeChoice, content: @Composable () -> Unit) {
         darkColorScheme(
             primary = Color(0xFFA9C7FF),
             onPrimary = Color(0xFF002D6F),
+            secondary = Color(0xFF397AFF),
+            onSecondary = Color.White,
             background = Color.Black,
             surface = Color(0xFF18181B),
             secondaryContainer = Color(0xFF203456),
@@ -46,6 +48,8 @@ fun MobileTheme(choice: ThemeChoice, content: @Composable () -> Unit) {
         lightColorScheme(
             primary = Color(0xFF185CC4),
             onPrimary = Color.White,
+            secondary = Color(0xFF185CC4),
+            onSecondary = Color.White,
             background = Color(0xFFF2F2F7),
             surface = Color.White,
             secondaryContainer = Color(0xFFE5EDFC),

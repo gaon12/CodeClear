@@ -22,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -67,10 +66,11 @@ fun SettingSwitchRow(
         SettingLabel(title, summary, Modifier.weight(1f))
         val position by animateFloatAsState(if (checked) 1f else 0f, label = "switch-position")
         val track = if (checked) {
-            MaterialTheme.colorScheme.primary
+            MaterialTheme.colorScheme.secondary
         } else {
             MaterialTheme.colorScheme.outline
         }
+        val thumb = MaterialTheme.colorScheme.onSecondary
         Box(Modifier.size(40.dp, 32.dp), contentAlignment = Alignment.Center) {
             Canvas(Modifier.size(36.dp, 20.dp)) {
                 drawRoundRect(
@@ -78,7 +78,7 @@ fun SettingSwitchRow(
                     cornerRadius = androidx.compose.ui.geometry.CornerRadius(10.dp.toPx())
                 )
                 drawCircle(
-                    Color.White,
+                    thumb,
                     radius = 8.dp.toPx(),
                     center = Offset((10 + 16 * position).dp.toPx(), size.height / 2)
                 )
