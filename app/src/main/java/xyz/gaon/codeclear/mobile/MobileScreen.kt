@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,6 +30,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -84,8 +85,11 @@ fun MobileScreen(
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var tutorial by rememberSaveable { mutableStateOf(false) }
     var step by rememberSaveable { mutableIntStateOf(0) }
+    var historyDetailId by rememberSaveable { mutableStateOf<Long?>(null) }
+    val isHistoryDetail = state.detailId != null && state.detailId == historyDetailId
     val homeScroll = rememberLazyListState()
     val historyScroll = rememberLazyListState()
+    val historyDetailScroll = key(state.detailId) { rememberScrollState() }
     val settingsState = rememberSaveableStateHolder()
     var settingsEntry by rememberSaveable { mutableIntStateOf(0) }
     var scrollResetTarget by remember { mutableIntStateOf(-1) }
@@ -98,6 +102,9 @@ fun MobileScreen(
     val currentStep = step
     LaunchedEffect(showTutorial, currentStep) {
         if (showTutorial) tutorialScroll.scrollToItem(0)
+    }
+    LaunchedEffect(state.detailId) {
+        if (state.detailId != historyDetailId) historyDetailId = null
     }
     LaunchedEffect(state.query, state.beforeId) { historyScroll.scrollToItem(0) }
     val feedScroll = if (showTutorial) {
@@ -124,6 +131,10 @@ fun MobileScreen(
                 tutorial = false
                 if (destination == tab) {
                     step = 0
+                    if (destination == 1 && isHistoryDetail) {
+                        historyDetailId = null
+                        actions.detail(null)
+                    }
                     if (destination == 2) {
                         settingsState.removeState(settingsEntry)
                         settingsEntry++
@@ -142,6 +153,24 @@ fun MobileScreen(
                 Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.TopCenter
             ) {
+                if (currentTab == 1 && isHistoryDetail) {
+                    val back = {
+                        historyDetailId = null
+                        actions.detail(null)
+                    }
+                    BackHandler(onBack = back)
+                    key(state.detailId) {
+                        AlertDetailPage(
+                            state,
+                            preparation,
+                            actions,
+                            historyDetailScroll,
+                            back,
+                            Modifier.widthIn(max = 880.dp)
+                        )
+                    }
+                    return@Box
+                }
                 if (currentTab == 2 && !showTutorial) {
                     settingsState.SaveableStateProvider(settingsEntry) {
                         SettingsScreen(
@@ -183,7 +212,15 @@ fun MobileScreen(
                         Modifier.weight(1f).fillMaxWidth().testTag("mobile-feed"),
                         state = feedScroll,
                         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                        verticalArrangement = Arrangement.spacedBy(
+                            if (!showTutorial &&
+                                currentTab == 1
+                            ) {
+                                0.dp
+                            } else {
+                                14.dp
+                            }
+                        )
                     ) {
                         if (!state.loaded) {
                             item { LinearProgressIndicator(Modifier.fillMaxWidth()) }
@@ -378,7 +415,7 @@ fun MobileScreen(
                                                 MaterialTheme.colorScheme.surface,
                                             unfocusedBorderColor = Color.Transparent
                                         ),
-                                        modifier = Modifier.fillMaxWidth()
+                                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
                                     )
                                 }
                                 if (state.loading) {
@@ -391,31 +428,24 @@ fun MobileScreen(
                                 ) {
                                     item { Text(stringResource(R.string.mobile_no_results)) }
                                 }
-                                items(state.records, key = { it.id }) { alert ->
-                                    AlertPresentation(
-                                        alert,
-                                        state.options.target.languageTag,
-                                        state.options.localConsent,
-                                        {
-                                            actions.retry(
-                                                alert.id,
-                                                state.options.target.languageTag,
-                                                state.options.engine
-                                            )
-                                        },
-                                        {
-                                            actions.prepare(
-                                                alert,
-                                                state.options.target.languageTag,
-                                                state.options.engine
-                                            )
-                                        },
-                                        { actions.detail(alert.id) },
-                                        engine = state.options.engine
+                                itemsIndexed(state.records, key = { _, alert ->
+                                    alert.id
+                                }) { index, alert ->
+                                    AlertHistoryRow(
+                                        alert = alert,
+                                        target = state.options.target.languageTag,
+                                        engine = state.options.engine,
+                                        localEnabled = state.options.localConsent,
+                                        first = index == 0,
+                                        last = index == state.records.lastIndex,
+                                        open = {
+                                            historyDetailId = alert.id
+                                            actions.detail(alert.id)
+                                        }
                                     )
                                 }
                                 item {
-                                    Row {
+                                    Row(Modifier.padding(vertical = 12.dp)) {
                                         TextButton(onClick = actions.newest) {
                                             Text(stringResource(R.string.mobile_newest))
                                         }
@@ -445,7 +475,7 @@ fun MobileScreen(
                 }
             }
         }
-        if (state.detailId != null) {
+        if (state.detailId != null && !isHistoryDetail) {
             BackHandler { actions.detail(null) }
             Dialog(onDismissRequest = {
                 actions.detail(null)
@@ -459,32 +489,7 @@ fun MobileScreen(
                             Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()),
                             verticalArrangement = Arrangement.spacedBy(18.dp)
                         ) {
-                            val alert = state.detail
-                            if (alert ==
-                                null
-                            ) {
-                                Text(
-                                    stringResource(
-                                        if (state.loading) {
-                                            R.string.mobile_working
-                                        } else {
-                                            R.string.mobile_deleted
-                                        }
-                                    )
-                                )
-                            } else {
-                                val target = state.detailTarget ?: state.options.target.languageTag
-                                val engine = state.detailEngine ?: state.options.engine
-                                val active =
-                                    state.options.localConsent && engine == state.options.engine
-                                AlertPresentation(alert, target, active, {
-                                    actions.retry(alert.id, target, engine)
-                                }, { actions.prepare(alert, target, engine) }, engine = engine)
-                                AlertMetadata(alert)
-                                TextButton(onClick = {
-                                    actions.delete(alert.id)
-                                }) { Text(stringResource(R.string.mobile_delete)) }
-                            }
+                            AlertDetailBody(state, actions)
                         }
                         TextButton(onClick = {
                             actions.detail(null)

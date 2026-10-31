@@ -92,7 +92,11 @@ fun AlertPresentation(
                             stringResource(R.string.mobile_translation, languageName(target)),
                             alert.translation?.text
                                 ?: stringResource(
-                                    phaseLabel(alert.translation?.phase, consent, engine)
+                                    translationStatusLabel(
+                                        alert.translation?.phase,
+                                        consent,
+                                        engine
+                                    )
                                 ),
                             translated = true
                         )
@@ -201,34 +205,37 @@ private fun MessagePanel(label: String, body: String, translated: Boolean = fals
     }
 }
 
-private fun phaseLabel(phase: TranslationPhase?, consent: Boolean, engine: LocalEngineKind): Int =
-    if (!consent) {
-        R.string.mobile_translation_off
-    } else {
-        when (phase) {
-            null -> R.string.mobile_not_translated
+internal fun translationStatusLabel(
+    phase: TranslationPhase?,
+    consent: Boolean,
+    engine: LocalEngineKind
+): Int = if (!consent) {
+    R.string.mobile_translation_off
+} else {
+    when (phase) {
+        null -> R.string.mobile_not_translated
 
-            TranslationPhase.QUEUED -> R.string.mobile_queued
+        TranslationPhase.QUEUED -> R.string.mobile_queued
 
-            TranslationPhase.WORKING -> R.string.mobile_working
+        TranslationPhase.WORKING -> R.string.mobile_working
 
-            TranslationPhase.NEEDS_MODELS -> if (engine == LocalEngineKind.SYSTEM) {
-                R.string.mobile_system_models_missing
-            } else {
-                R.string.mobile_models_missing
-            }
-
-            TranslationPhase.UNKNOWN_LANGUAGE -> R.string.mobile_unknown_language
-
-            TranslationPhase.UNAVAILABLE -> R.string.mobile_system_unavailable
-
-            TranslationPhase.UNSUPPORTED_PAIR -> R.string.mobile_pair_unsupported
-
-            TranslationPhase.FAILED -> R.string.mobile_failed
-
-            TranslationPhase.READY -> R.string.mobile_failed
+        TranslationPhase.NEEDS_MODELS -> if (engine == LocalEngineKind.SYSTEM) {
+            R.string.mobile_system_models_missing
+        } else {
+            R.string.mobile_models_missing
         }
+
+        TranslationPhase.UNKNOWN_LANGUAGE -> R.string.mobile_unknown_language
+
+        TranslationPhase.UNAVAILABLE -> R.string.mobile_system_unavailable
+
+        TranslationPhase.UNSUPPORTED_PAIR -> R.string.mobile_pair_unsupported
+
+        TranslationPhase.FAILED -> R.string.mobile_failed
+
+        TranslationPhase.READY -> R.string.mobile_failed
     }
+}
 
 @Composable
 fun dateTime(time: Long): String {

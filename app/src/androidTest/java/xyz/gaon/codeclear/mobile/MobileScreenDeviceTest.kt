@@ -175,7 +175,12 @@ class MobileScreenDeviceTest {
                                 state = state.copy(query = it)
                             },
                             detail = { id ->
-                                state = state.copy(detailId = id, detail = id?.let(::record))
+                                val selected = id?.let { key ->
+                                    state.records.firstOrNull { it.id == key }
+                                        ?: state.latest?.takeIf { it.id == key }
+                                        ?: record(key)
+                                }
+                                state = state.copy(detailId = id, detail = selected)
                             },
                             delete = {
                             }, retry = { _, _, engine ->
@@ -352,8 +357,10 @@ class MobileScreenDeviceTest {
     @Test
     fun destinationTitlesStayFixedWhileTheirContentScrolls() {
         compose.runOnIdle {
-            densityScale =
-                context.window.decorView.width / context.resources.displayMetrics.density / 320f
+            val density = context.resources.displayMetrics.density
+            val widthScale = context.window.decorView.width / density / 320f
+            val heightScale = context.window.decorView.height / density / 480f
+            densityScale = minOf(widthScale, heightScale).coerceAtLeast(1f)
             fontScale = 1.8f
             state = state.copy(records = List(24) { record(it.toLong() + 1) })
         }
@@ -438,6 +445,111 @@ class MobileScreenDeviceTest {
     }
 
     @Test
+    fun compactHistoryPreviewsPreserveUnicodeAndOpenTheFullSelectedRecord() {
+        val original = "[DRILL] Long original. ".repeat(120)
+        val translated = "[DRILL]  " + "🚨".repeat(400) + " Full translation tail."
+        val first = record(1).let {
+            it.copy(
+                capture = it.capture.copy(original = original),
+                translation = it.translation!!.copy(text = translated)
+            )
+        }
+        compose.runOnIdle { state = state.copy(records = listOf(first)) }
+        compose.onNodeWithTag("destination-1").performClick()
+        val preview = compose.onNodeWithTag("history-preview-1", useUnmergedTree = true)
+            .fetchSemanticsNode().config[SemanticsProperties.Text].single().text
+        assertTrue(preview.length < translated.length)
+        assertTrue(
+            "List previews must preserve complete Unicode characters",
+            Charsets.UTF_8.newEncoder().canEncode(preview)
+        )
+        compose.onNodeWithText(translated).assertDoesNotExist()
+        compose.runOnIdle { fontScale = 1.8f }
+        compose.onNodeWithTag("history-row-1").performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(1L, state.detailId)
+            state = state.copy(latest = record(2), records = listOf(record(2), first))
+        }
+        compose.onNodeWithText(original).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(translated).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("history-detail-back").assertIsDisplayed().performClick()
+        compose.onNodeWithTag("history-row-2").assertIsDisplayed()
+    }
+
+    @Test
+    fun historyDetailsUseChildPagesAndRestoreTheListBeforeRootReselection() {
+        compose.runOnIdle { state = state.copy(records = List(24) { record(it.toLong() + 1) }) }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithText(text(R.string.mobile_search)).performTextInput("Gate_3%")
+        compose.runOnIdle { state = state.copy(beforeId = 50) }
+        compose.onNodeWithTag("mobile-feed").performScrollToIndex(8)
+        compose.onNodeWithTag("history-row-8").performScrollTo()
+        val listOffset = compose.onNodeWithTag("mobile-feed").fetchSemanticsNode().config[
+            SemanticsProperties.VerticalScrollAxisRange
+        ].value()
+        assertTrue(listOffset > 0f)
+        compose.onNodeWithTag("history-row-8").performClick()
+        compose.onNodeWithTag("history-detail").assertIsDisplayed()
+        compose.onNodeWithTag("mobile-feed").assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_close)).assertDoesNotExist()
+        val heading = compose.onNodeWithTag(
+            "history-detail-title"
+        ).fetchSemanticsNode().boundsInRoot
+        compose.onNodeWithText(text(R.string.mobile_delete)).performScrollTo()
+        assertEquals(
+            heading.top,
+            compose.onNodeWithTag("history-detail-title").fetchSemanticsNode().boundsInRoot.top,
+            1f
+        )
+        val detailOffset = compose.onNodeWithTag("history-detail-body").fetchSemanticsNode().config[
+            SemanticsProperties.VerticalScrollAxisRange
+        ].value()
+        compose.onNodeWithTag("destination-0").performClick()
+        compose.onNodeWithTag("history-detail").assertDoesNotExist()
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-detail").assertIsDisplayed()
+        assertEquals(
+            detailOffset,
+            compose.onNodeWithTag("history-detail-body").fetchSemanticsNode().config[
+                SemanticsProperties.VerticalScrollAxisRange
+            ].value(),
+            0.01f
+        )
+        compose.runOnUiThread { context.onBackPressedDispatcher.onBackPressed() }
+        val restoredOffset = compose.onNodeWithTag("mobile-feed").fetchSemanticsNode().config[
+            SemanticsProperties.VerticalScrollAxisRange
+        ].value()
+        assertEquals(listOffset, restoredOffset, 0.01f)
+        compose.runOnIdle {
+            assertEquals("Gate_3%", state.query)
+            assertEquals(50L, state.beforeId)
+            assertEquals(0, newestRequests)
+            assertEquals(null, state.detailId)
+        }
+        compose.onNodeWithTag("history-row-8").performClick()
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-detail").assertDoesNotExist()
+        assertEquals(
+            0f,
+            compose.onNodeWithTag("mobile-feed").fetchSemanticsNode().config[
+                SemanticsProperties.VerticalScrollAxisRange
+            ].value(),
+            0.01f
+        )
+        compose.runOnIdle {
+            assertEquals(1, newestRequests)
+            assertEquals(Long.MAX_VALUE, state.beforeId)
+            assertEquals("Gate_3%", state.query)
+            assertEquals(null, state.detailId)
+        }
+        compose.onNodeWithTag("history-row-1").performClick()
+        compose.runOnIdle { state = state.copy(detail = null, records = emptyList()) }
+        compose.onNodeWithText(text(R.string.mobile_deleted)).assertIsDisplayed()
+        compose.onNodeWithTag("history-detail-back").assertIsDisplayed().performClick()
+        compose.onNodeWithText(text(R.string.mobile_no_results)).assertIsDisplayed()
+    }
+
+    @Test
     fun originalAndTranslationStayTogetherAndDetailDoesNotSwitchToNewArrival() {
         compose.onNodeWithText(
             "[DRILL] Original 1: Gate 3, 112."
@@ -470,6 +582,7 @@ class MobileScreenDeviceTest {
             ).copy(translation = SavedTranslation(TranslationPhase.NEEDS_MODELS))
             state = state.copy(records = listOf(missing))
         }
+        compose.onNodeWithTag("history-row-1").performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_prepare)).performScrollTo().performClick()
         compose.runOnIdle { assertEquals(1, prepared) }
     }
@@ -900,7 +1013,11 @@ class MobileScreenDeviceTest {
                     translation = it.translation!!.copy(text = translated)
                 )
             }
-            state = state.copy(latest = alert, records = listOf(alert))
+            state = state.copy(
+                latest = alert,
+                records = listOf(alert),
+                options = state.options.copy(target = LocalTarget.ENGLISH)
+            )
             context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
         for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
@@ -910,8 +1027,41 @@ class MobileScreenDeviceTest {
             compose.onNodeWithText(translated).assertIsDisplayed()
             savePreview("mobile-ko-${theme.name.lowercase()}")
         }
+        compose.runOnIdle {
+            val titles = listOf("[훈련] 비 안내", "[훈련] 하천 주변 안내", "[훈련] 도로 통제 안내", "[훈련] 강풍 안내")
+            val results =
+                listOf(
+                    "[DRILL] Heavy rain tonight.",
+                    "[DRILL] Stay away from rivers.",
+                    "[DRILL] Use an alternative route.",
+                    "[DRILL] Avoid outdoor structures."
+                )
+            state = state.copy(
+                records = List(8) { index ->
+                    record(index.toLong() + 1).let {
+                        it.copy(
+                            capture = it.capture.copy(
+                                title = titles[index % titles.size],
+                                original = original,
+                                capturedAtMillis = it.capture.capturedAtMillis - index * 86_400_000L
+                            ),
+                            translation = it.translation!!.copy(
+                                text = results[index % results.size]
+                            )
+                        )
+                    }
+                }
+            )
+        }
         compose.onNodeWithTag("destination-1").performClick()
-        compose.onNodeWithTag("mobile-feed").performScrollToIndex(0)
+        for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
+            compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            compose.onNodeWithTag("mobile-feed").performScrollToIndex(0)
+            savePreview("history-list-${theme.name.lowercase()}")
+            compose.onNodeWithTag("history-row-1").performClick()
+            savePreview("history-detail-${theme.name.lowercase()}")
+            compose.onNodeWithTag("history-detail-back").performClick()
+        }
         savePreview("mobile-ko-history")
         compose.onNodeWithTag("destination-2").performClick()
         compose.onNodeWithTag("settings-menu").performScrollToIndex(0)
