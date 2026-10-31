@@ -4,10 +4,14 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -64,7 +68,13 @@ internal fun AlertDetailBody(state: MobileState, actions: MobileActions) {
             actions.retry(alert.id, target, engine)
         }, { actions.prepare(alert, target, engine) }, engine = engine)
         AlertMetadata(alert)
-        TextButton(onClick = { actions.delete(alert.id) }) {
+        OutlinedButton(
+            onClick = { actions.delete(alert.id) },
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("delete-alert"),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = MaterialTheme.colorScheme.error
+            )
+        ) {
             Text(stringResource(R.string.mobile_delete))
         }
     }

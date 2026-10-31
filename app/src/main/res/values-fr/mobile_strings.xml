@@ -147,4 +147,5 @@
     <string name="mobile_contributors">Contributeurs</string>
     <string name="mobile_contributors_summary">%1$s · Voir tous les contributeurs</string>
     <string name="mobile_link_unavailable">Impossible d’ouvrir le lien. Vérifiez les paramètres du navigateur et réessayez.</string>
+    <string name="mobile_capture_information">Informations de collecte</string>
 </resources>

@@ -147,4 +147,5 @@
     <string name="mobile_contributors">貢獻者</string>
     <string name="mobile_contributors_summary">%1$s · 查看所有貢獻者</string>
     <string name="mobile_link_unavailable">無法開啟連結。請檢查瀏覽器設定後再試一次。</string>
+    <string name="mobile_capture_information">擷取資訊</string>
 </resources>

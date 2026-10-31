@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -252,48 +253,29 @@ fun dateTime(time: Long): String {
 
 @Composable
 fun AlertMetadata(alert: SavedAlert) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        modifier = Modifier.padding(horizontal = 6.dp)
-    ) {
-        Text(
-            stringResource(R.string.mobile_times_notice),
-            style = MaterialTheme.typography.bodySmall
-        )
-        alert.capture.receivedAtMillis?.let {
-            Text(stringResource(R.string.mobile_received, dateTime(it)))
-        }
-        alert.capture.postedAtMillis?.let {
-            Text(stringResource(R.string.mobile_posted, dateTime(it)))
-        }
-        Text(stringResource(R.string.mobile_source, alert.capture.sourcePackage))
-        Text(stringResource(R.string.mobile_official_unknown))
-        val category = when (alert.capture.headingHint) {
-            "NATIONAL" -> R.string.mobile_national
-            "EXTREME" -> R.string.mobile_extreme
-            "SEVERE" -> R.string.mobile_severe
-            "PUBLIC_SAFETY" -> R.string.mobile_public_safety
-            "AMBER" -> R.string.mobile_amber
-            "TEST" -> R.string.mobile_test
-            "OPERATOR_DEFINED" -> R.string.mobile_operator_defined
-            "EARTHQUAKE" -> R.string.mobile_earthquake
-            "TSUNAMI" -> R.string.mobile_tsunami
-            "EARTHQUAKE_AND_TSUNAMI" -> R.string.mobile_earthquake_tsunami
-            "OTHER_EMERGENCY" -> R.string.mobile_other_emergency
-            "OTHER" -> R.string.mobile_other_alert
-            else -> R.string.mobile_unknown
-        }
-        Text(stringResource(R.string.mobile_estimate, stringResource(category)))
-        alert.capture.broadcast?.let {
+    SettingsGroup {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.padding(20.dp).testTag("alert-metadata")
+        ) {
             Text(
-                stringResource(
-                    R.string.mobile_numeric_metadata,
-                    it.category,
-                    it.priority,
-                    it.cmasClass?.toString() ?: "—",
-                    it.etwsType?.toString() ?: "—"
-                ),
-                style = MaterialTheme.typography.bodySmall
+                stringResource(R.string.mobile_capture_information),
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                stringResource(R.string.mobile_source, alert.capture.sourcePackage),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            alert.capture.receivedAtMillis?.let {
+                Text(stringResource(R.string.mobile_received, dateTime(it)))
+            }
+            alert.capture.postedAtMillis?.let {
+                Text(stringResource(R.string.mobile_posted, dateTime(it)))
+            }
+            Text(
+                stringResource(R.string.mobile_times_notice),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

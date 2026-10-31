@@ -147,4 +147,5 @@
     <string name="mobile_contributors">Mitwirkende</string>
     <string name="mobile_contributors_summary">%1$s · Alle Mitwirkenden ansehen</string>
     <string name="mobile_link_unavailable">Der Link konnte nicht geöffnet werden. Prüfen Sie Ihre Browsereinstellungen und versuchen Sie es erneut.</string>
+    <string name="mobile_capture_information">Erfassungsinformationen</string>
 </resources>

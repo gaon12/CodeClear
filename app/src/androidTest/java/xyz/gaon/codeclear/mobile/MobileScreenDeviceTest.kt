@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -40,6 +41,7 @@ import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -53,6 +55,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.window.DialogWindowProvider
 import java.io.File
@@ -92,6 +95,8 @@ class MobileScreenDeviceTest {
     private var notificationsAllowed by mutableStateOf(true)
     private var settingsOpened = 0
     private var lastSettingsAction = ""
+    private var deletionRequests = 0
+    private var deletedAlertId: Long? = null
     private var prepared = 0
     private var preparedEngine: LocalEngineKind? = null
     private var retriedEngine: LocalEngineKind? = null
@@ -201,6 +206,8 @@ class MobileScreenDeviceTest {
                                 state = state.copy(detailId = id, detail = selected)
                             },
                             delete = {
+                                deletionRequests++
+                                deletedAlertId = it
                             }, retry = { _, _, engine ->
                                 retried++
                                 retriedEngine = engine
@@ -546,6 +553,40 @@ class MobileScreenDeviceTest {
         compose.onNodeWithTag("settings-menu").assertIsDisplayed()
         assertEquals(0f, offset("settings-menu"), 0.01f)
         compose.runOnIdle { assertEquals(0, prepared) }
+    }
+
+    @Test
+    fun detailsGroupMetadataAndExposeAFullWidthDeleteAction() {
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performClick()
+        compose.onNodeWithTag("alert-metadata").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_official_unknown)).assertDoesNotExist()
+        compose.onNodeWithText(
+            context.getString(R.string.mobile_estimate, text(R.string.mobile_unknown))
+        ).assertDoesNotExist()
+        val button = compose.onNodeWithTag("delete-alert").performScrollTo()
+        val width = compose.onNodeWithTag(
+            "history-detail-body"
+        ).fetchSemanticsNode().boundsInRoot.width
+        assertTrue(button.fetchSemanticsNode().boundsInRoot.width >= width * 0.85f)
+        button.performTouchInput { click(Offset(8f, centerY)) }
+        compose.runOnIdle {
+            assertEquals(1, deletionRequests)
+            assertEquals(1L, deletedAlertId)
+        }
+    }
+
+    @Test
+    fun singleDialogCloseUsesTheEntireActionWidth() {
+        openSettingsPage(SettingsPage.ABOUT)
+        compose.onNodeWithText(text(R.string.mobile_compatibility)).performScrollTo().performClick()
+        val actionsWidth = compose.onNodeWithTag(
+            "confirmation-actions"
+        ).fetchSemanticsNode().boundsInRoot.width
+        val close = compose.onNodeWithText(text(R.string.mobile_close))
+        assertEquals(actionsWidth, close.fetchSemanticsNode().boundsInRoot.width, 1f)
+        close.performTouchInput { click(Offset(8f, centerY)) }
+        compose.onNodeWithTag("confirmation-actions").assertDoesNotExist()
     }
 
     @Test

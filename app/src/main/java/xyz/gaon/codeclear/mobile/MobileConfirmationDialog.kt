@@ -20,6 +20,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -50,11 +51,15 @@ fun MobileConfirmationDialog(
                         ProvideTextStyle(MaterialTheme.typography.bodyMedium) { text() }
                     }
                     Row(
-                        Modifier.fillMaxWidth(),
+                        Modifier.fillMaxWidth().testTag("confirmation-actions"),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (dismissButton != null) {
-                            Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                            Box(
+                                Modifier.weight(1f).heightIn(min = 56.dp),
+                                contentAlignment = Alignment.Center,
+                                propagateMinConstraints = true
+                            ) {
                                 dismissButton()
                             }
                             VerticalDivider(
@@ -62,7 +67,11 @@ fun MobileConfirmationDialog(
                                 color = MaterialTheme.colorScheme.outlineVariant
                             )
                         }
-                        Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                        Box(
+                            Modifier.weight(1f).heightIn(min = 56.dp),
+                            contentAlignment = Alignment.Center,
+                            propagateMinConstraints = true
+                        ) {
                             confirmButton()
                         }
                     }
