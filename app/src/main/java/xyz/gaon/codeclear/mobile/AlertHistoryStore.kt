@@ -30,7 +30,7 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         val db = database
         db.beginTransactionNonExclusive()
         try {
-            val ids = captures.map(::insertLocked)
+            val ids = captures.map { insertLocked(it)?.id }
             db.setTransactionSuccessful()
             return ids
         } finally {
@@ -39,7 +39,9 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
     }
 
     /** A null result means this exact source observation was recently deleted by the owner. */
-    fun insert(capture: CapturedAlert): Long? {
+    fun insert(capture: CapturedAlert): Long? = insertObservation(capture)?.id
+
+    fun insertObservation(capture: CapturedAlert): StoredObservation? {
         val db = database
         db.beginTransactionNonExclusive()
         try {
@@ -51,7 +53,7 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         }
     }
 
-    private fun insertLocked(capture: CapturedAlert): Long? {
+    private fun insertLocked(capture: CapturedAlert): StoredObservation? {
         val hash = originalHash(capture.original)
         val db = database
         capture.sourceIdentity?.let { identity ->
@@ -90,7 +92,7 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
             values,
             SQLiteDatabase.CONFLICT_IGNORE
         )
-        if (inserted > 0) return inserted
+        if (inserted > 0) return StoredObservation(inserted, created = true)
         // Equality of text alone never merges two occurrences. Require the source identity too.
         require(capture.sourceIdentity != null)
         db.rawQuery(
@@ -98,7 +100,9 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
                 "AND original_hash=? LIMIT 1",
             arrayOf(capture.sourcePackage, capture.sourceIdentity, hash)
         ).use {
-            if (it.moveToFirst() && it.getString(1) == capture.original) return it.getLong(0)
+            if (it.moveToFirst() && it.getString(1) == capture.original) {
+                return StoredObservation(it.getLong(0), created = false)
+            }
         }
         throw SQLiteException("Unable to store captured alert")
     }
@@ -109,7 +113,8 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         beforeId: Long = Long.MAX_VALUE,
         limit: Int = 50,
         cancellation: CancellationSignal? = null,
-        engine: LocalEngineKind = LocalEngineKind.ML_KIT
+        engine: LocalEngineKind = LocalEngineKind.ML_KIT,
+        nativeOnly: Boolean = false
     ): List<SavedAlert> {
         require(target in HistoryText.targets && query.length <= 256 && limit in 1..50)
         val args = mutableListOf(target, engine.key, beforeId.toString())
@@ -124,7 +129,9 @@ class AlertHistoryStore(context: Context, name: String = "alerts.db") : AutoClos
         }
         args += limit.toString()
         return database.rawQuery(
-            SELECT_ALERT + " WHERE a.id<?" + matching + " ORDER BY a.id DESC LIMIT ?",
+            SELECT_ALERT + " WHERE a.id<?" +
+                (if (nativeOnly) " AND a.source_kind!='PEER'" else "") + matching +
+                " ORDER BY a.id DESC LIMIT ?",
             args.toTypedArray(),
             cancellation
         ).use { cursor -> buildList { while (cursor.moveToNext()) add(readAlert(cursor)) } }

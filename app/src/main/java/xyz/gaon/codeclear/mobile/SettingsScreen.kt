@@ -54,6 +54,7 @@ enum class SettingsPage(val title: Int) {
     TRANSLATION(R.string.mobile_translation_settings),
     APPEARANCE(R.string.mobile_appearance),
     NOTIFICATIONS(R.string.mobile_notifications),
+    SHARING(R.string.mobile_nearby),
     PRIVACY(R.string.mobile_privacy),
     ABOUT(R.string.mobile_about)
 }
@@ -273,6 +274,10 @@ private fun settingsSummary(page: SettingsPage, options: MobileOptions): String 
     SettingsPage.APPEARANCE -> stringResource(themeLabel(options.theme))
 
     SettingsPage.NOTIFICATIONS -> stringResource(R.string.mobile_result_notifications)
+
+    SettingsPage.SHARING -> stringResource(
+        if (options.nearbyEnabled) R.string.mobile_on else R.string.mobile_off
+    )
 
     SettingsPage.PRIVACY -> stringResource(R.string.mobile_data_storage)
 

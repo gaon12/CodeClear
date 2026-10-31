@@ -13,14 +13,25 @@ data class NearbyOriginal(
     val capturedAt: Long
 )
 
+/** An event keeps its random identity across radio restarts; generation runs on the radio worker. */
+class RelayOccurrence {
+    internal val nonce: ByteArray by lazy {
+        ByteArray(16).also { SecureRandom().nextBytes(it) }
+    }
+}
+
 object RelayProtocol {
     const val VERSION = 1
     const val MAX_BYTES = 32768
     const val LIFETIME = 15 * 60 * 1000L
     private const val HEADER = 31
-    private val random = SecureRandom()
 
-    fun encode(title: String, body: String, capturedAt: Long): ByteArray {
+    fun encode(
+        title: String,
+        body: String,
+        capturedAt: Long,
+        occurrence: RelayOccurrence = RelayOccurrence()
+    ): ByteArray {
         require(title.length <= 256 && body.isNotBlank() && body.length <= 8192)
         require(capturedAt > 0)
         val heading = strictEncode(title)
@@ -28,7 +39,7 @@ object RelayProtocol {
         val size = HEADER + heading.size + original.size + 32
         require(size <= MAX_BYTES)
         val payload = ByteBuffer.allocate(size - 32)
-            .put(VERSION.toByte()).put(ByteArray(16).also(random::nextBytes))
+            .put(VERSION.toByte()).put(occurrence.nonce)
             .putLong(capturedAt).putShort(heading.size.toShort()).putInt(original.size)
             .put(heading).put(original).array()
         return payload + digest(payload)

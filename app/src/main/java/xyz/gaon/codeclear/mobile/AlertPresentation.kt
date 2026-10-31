@@ -76,12 +76,22 @@ fun AlertPresentation(
                     )
                     Text(
                         stringResource(
-                            R.string.mobile_captured,
+                            if (alert.capture.source == CaptureSource.PEER) {
+                                R.string.mobile_nearby_saved_at
+                            } else {
+                                R.string.mobile_captured
+                            },
                             dateTime(alert.capture.capturedAtMillis)
                         ),
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
+            }
+            if (alert.capture.source == CaptureSource.PEER) {
+                Text(
+                    stringResource(R.string.mobile_nearby_unverified),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             BoxWithConstraints {
                 val original: @Composable () -> Unit = {
@@ -265,7 +275,11 @@ fun AlertMetadata(alert: SavedAlert) {
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                stringResource(R.string.mobile_source, alert.capture.sourcePackage),
+                if (alert.capture.source == CaptureSource.PEER) {
+                    stringResource(R.string.mobile_nearby_unverified)
+                } else {
+                    stringResource(R.string.mobile_source, alert.capture.sourcePackage)
+                },
                 style = MaterialTheme.typography.bodyMedium
             )
             alert.capture.receivedAtMillis?.let {

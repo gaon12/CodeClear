@@ -68,8 +68,8 @@
     <string name="mobile_ready">已準備擷取經審核的系統來源所提供的正文。請保持原始緊急警報應用程式處於啟用狀態。</string>
     <string name="mobile_manage_access">管理擷取權限</string>
     <string name="mobile_open_source">開啟原始系統警報</string>
-    <string name="mobile_last_saved">最近儲存的警報</string>
-    <string name="mobile_empty">暫無已儲存的警報。這不代表沒有發布或接收到緊急警報。</string>
+    <string name="mobile_last_saved">最近收集的警報</string>
+    <string name="mobile_empty">新收集的警報將顯示在此處。此處沒有內容不代表未發布或未收到緊急警報。</string>
     <string name="mobile_search">搜尋原文或譯文</string>
     <string name="mobile_no_results">沒有符合的紀錄。</string>
     <string name="mobile_newest">最新一頁</string>
@@ -156,4 +156,30 @@
     <string name="mobile_home_empty_title">在同一處查看收到的警報</string>
     <string name="mobile_home_view_history">查看記錄</string>
     <string name="mobile_home_no_radio">無行動網路接收功能</string>
+    <string name="mobile_nearby">附近警報共享</string>
+    <string name="mobile_nearby_allow">允許附近共享</string>
+    <string name="mobile_nearby_disclosure">向附近使用者公開最近15分鐘內新收集的原文。接收內容的來源及真實性未經驗證，儲存前僅顯示在暫存收件匣，不會再次轉傳。</string>
+    <string name="mobile_nearby_foreground">僅在此應用程式顯示於螢幕時透過Bluetooth交換，切換至其他應用程式後暫停。不使用GPS座標或伺服器。未儲存的內容最多保留15分鐘。</string>
+    <string name="mobile_nearby_unverified">來自附近裝置 · 來源未驗證</string>
+    <string name="mobile_nearby_inbox">附近收件匣</string>
+    <plurals name="mobile_nearby_count">
+        <item quantity="other">%1$d則 · 暫存最多15分鐘</item>
+    </plurals>
+    <string name="mobile_nearby_empty">目前沒有暫存訊息。附近裝置可能不存在、已暫停或超出範圍。</string>
+    <string name="mobile_nearby_save">儲存至記錄</string>
+    <string name="mobile_nearby_dismiss">從暫存收件匣移除</string>
+    <string name="mobile_nearby_save_failed">無法儲存。訊息可能已到期或共享已停止。</string>
+    <string name="mobile_nearby_paused">應用程式隱藏時暫停</string>
+    <string name="mobile_nearby_permission">需要附近裝置權限</string>
+    <string name="mobile_nearby_bluetooth">Bluetooth已關閉</string>
+    <string name="mobile_nearby_location">系統位置設定已關閉</string>
+    <string name="mobile_nearby_unavailable">此裝置無法使用BLE</string>
+    <string name="mobile_nearby_listening">正在尋找附近裝置</string>
+    <string name="mobile_nearby_receive_only">正在尋找附近裝置 · 僅接收</string>
+    <string name="mobile_nearby_transferring">正在接收附近原文</string>
+    <string name="mobile_nearby_error">交換已停止，請檢查權限後重試。</string>
+    <string name="mobile_allow">允許</string>
+    <string name="mobile_nearby_legacy_location">Android 11進行Bluetooth搜尋時需要位置權限與系統位置設定。本應用程式不收集GPS座標。</string>
+    <string name="mobile_nearby_saved_at">儲存於%1$s</string>
+    <string name="mobile_nearby_cooldown">稍候片刻後自動重新搜尋</string>
 </resources>

@@ -65,6 +65,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -72,6 +73,9 @@ import org.junit.Test
 import xyz.gaon.codeclear.BuildConfig
 import xyz.gaon.codeclear.MainActivity
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.nearby.NearbyState
+import xyz.gaon.codeclear.nearby.NearbyStatus
+import xyz.gaon.codeclear.nearby.RelayProtocol
 import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
@@ -97,6 +101,9 @@ class MobileScreenDeviceTest {
     private var lastSettingsAction = ""
     private var originalLanguageRequests = 0
     private var originalLanguageReply: ((String?) -> Unit)? = null
+    private var nearby by mutableStateOf(NearbyState())
+    private var nearbyRequests = 0
+    private var nearbySaves = 0
     private var deletionRequests = 0
     private var deletedAlertId: Long? = null
     private var prepared = 0
@@ -118,6 +125,7 @@ class MobileScreenDeviceTest {
     fun renderOnlySyntheticPrivateFixtures() {
         compose.runOnUiThread {
             scope = context.mobileRuntime.pauseForDiagnostics()
+            context.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             val record = record(1)
             state =
                 MobileState(
@@ -194,6 +202,7 @@ class MobileScreenDeviceTest {
                             configure = {
                                 configured = it
                                 state = state.copy(options = it)
+                                if (!it.nearbyEnabled) nearby = NearbyState()
                             },
                             search = {
                                 searched = it
@@ -243,6 +252,39 @@ class MobileScreenDeviceTest {
                                 originalLanguageRequests++
                                 originalLanguageReply = complete
                                 AutoCloseable {}
+                            },
+                            nearby = nearby,
+                            nearbyPermission = {
+                                nearbyRequests++
+                                configured = state.options.copy(nearbyEnabled = true)
+                                state = state.copy(options = configured)
+                                nearby = nearby.copy(status = NearbyStatus.LISTENING)
+                            },
+                            dismissNearby = { root ->
+                                nearby =
+                                    nearby.copy(
+                                        originals = nearby.originals.filterNot {
+                                            it.root == root
+                                        }
+                                    )
+                            },
+                            saveNearby = { root, complete ->
+                                val original = nearby.originals.first { it.root == root }
+                                nearbySaves++
+                                val saved = record(999).copy(
+                                    capture = CapturedAlert(
+                                        "xyz.gaon.codeclear.nearby",
+                                        CaptureSource.PEER,
+                                        original.title,
+                                        original.body,
+                                        System.currentTimeMillis(),
+                                        sourceIdentity = root
+                                    ),
+                                    translation = null
+                                )
+                                state = state.copy(records = listOf(saved) + state.records)
+                                nearby = nearby.copy(originals = emptyList())
+                                complete(saved.id)
                             }
                         )
                     )
@@ -255,7 +297,69 @@ class MobileScreenDeviceTest {
     fun restoreSecureWindowAndReleaseDiagnosticScope() {
         compose.runOnUiThread {
             context.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             scope?.close()
+        }
+    }
+
+    @Test
+    fun nearbySharingRequiresAnExplicitAllowanceAndCanBeTurnedOff() {
+        openSettingsPage(SettingsPage.SHARING)
+        compose.runOnIdle { state = state.copy(loaded = false) }
+        switchControl(text(R.string.mobile_nearby_allow)).assertIsNotEnabled()
+        compose.runOnIdle { state = state.copy(loaded = true) }
+        switchControl(text(R.string.mobile_nearby_allow)).assertIsOff().performClick()
+        compose.runOnIdle { assertEquals(0, nearbyRequests) }
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+        switchControl(text(R.string.mobile_nearby_allow)).assertIsOff().performClick()
+        compose.onNodeWithText(text(R.string.mobile_allow)).performClick()
+        compose.runOnIdle {
+            assertEquals(1, nearbyRequests)
+            assertTrue(configured.nearbyEnabled)
+            assertEquals(0, prepared)
+        }
+        switchControl(text(R.string.mobile_nearby_allow)).assertIsOn().performClick().assertIsOff()
+        compose.runOnIdle { assertFalse(configured.nearbyEnabled) }
+    }
+
+    @Test
+    fun nearbyInboxUsesChildPagesAndOnlySavesAfterTheUserRequestsIt() {
+        val now = System.currentTimeMillis()
+        val original = RelayProtocol.decode(
+            RelayProtocol.encode(
+                "[DRILL] Nearby received",
+                "[DRILL] Temporary original 👩‍🚒",
+                now
+            ),
+            now
+        )!!
+        compose.runOnIdle {
+            previewLanguage = "ko"
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            state = state.copy(options = state.options.copy(nearbyEnabled = true))
+            nearby = NearbyState(NearbyStatus.RECEIVE_ONLY, listOf(original))
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithText(text(R.string.mobile_nearby_inbox)).performClick()
+        compose.onNodeWithTag("nearby-inbox").assertIsDisplayed()
+        compose.onNodeWithText(original.title).performClick()
+        compose.onNodeWithText(original.body).assertIsDisplayed()
+        compose.runOnIdle { assertEquals(0, nearbySaves) }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("nearby-inbox").assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_nearby_inbox)).performClick()
+        compose.onNodeWithText(original.title).performClick()
+        for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
+            compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            savePreview("nearby-original-${theme.name.lowercase()}")
+        }
+        compose.onNodeWithTag("save-nearby").performScrollTo().performClick()
+        compose.onNodeWithTag("history-detail").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(1, nearbySaves)
+            assertEquals(1L, state.latest!!.id)
+            assertEquals(CaptureSource.PEER, state.detail!!.capture.source)
+            assertEquals(0, prepared)
         }
     }
 

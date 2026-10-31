@@ -39,6 +39,26 @@ class AlertHistoryStoreDeviceTest {
     }
 
     @Test
+    fun onlyANewObservationCanBePublishedAsANewNearbyEvent() {
+        val alert = capture("[DRILL] First observation").copy(sourceIdentity = "native:1")
+        val first = store.insertObservation(alert)!!
+        assertTrue(first.created)
+        val replay = store.insertObservation(
+            alert.copy(
+                capturedAtMillis =
+                    alert.capturedAtMillis + 60000
+            )
+        )!!
+        assertFalse(replay.created)
+        assertEquals(first.id, replay.id)
+        val separate = store.insertObservation(alert.copy(sourceIdentity = "native:2"))!!
+        assertTrue(separate.created)
+        assertNotEquals(first.id, separate.id)
+        store.delete(first.id)
+        assertNull(store.insertObservation(alert))
+    }
+
+    @Test
     fun headingUpdatesPreserveTheOriginalAndCannotRestoreADeletedRow() {
         val id = store.insert(capture("[DRILL] Heading metadata"))!!
         store.updateHeading(id, "PUBLIC_SAFETY")

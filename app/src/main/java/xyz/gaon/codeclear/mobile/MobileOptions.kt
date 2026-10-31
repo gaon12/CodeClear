@@ -17,7 +17,8 @@ data class MobileOptions(
     val theme: ThemeChoice = ThemeChoice.SYSTEM,
     val uiLanguage: String = "",
     val setupComplete: Boolean = false,
-    val engine: LocalEngineKind = LocalEngineKind.ML_KIT
+    val engine: LocalEngineKind = LocalEngineKind.ML_KIT,
+    val nearbyEnabled: Boolean = false
 )
 
 fun defaultTarget(
@@ -68,7 +69,8 @@ class MobileOptionsStorage(
             theme = theme,
             uiLanguage = language,
             setupComplete = currentDisclosure && saved.getBoolean("setup_complete", false),
-            engine = engine ?: LocalEngineKind.ML_KIT
+            engine = engine ?: LocalEngineKind.ML_KIT,
+            nearbyEnabled = currentDisclosure && saved.getBoolean("nearby_enabled", false)
         )
     }
 
@@ -81,6 +83,7 @@ class MobileOptionsStorage(
             .putBoolean("accessibility_consent", options.accessibilityConsent)
             .putBoolean("local_consent", options.localConsent)
             .putString("local_engine", options.engine.key)
+            .putBoolean("nearby_enabled", options.nearbyEnabled)
             .putBoolean("setup_complete", options.setupComplete)
             .putString("target", options.target.name).putString("theme", options.theme.name)
             .putString("ui_language", options.uiLanguage).commit()

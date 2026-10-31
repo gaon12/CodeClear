@@ -78,6 +78,7 @@ fun MobileSettings(
             SettingRow(stringResource(R.string.mobile_tutorial), onClick = tutorial)
         }
     }
+    if (page == SettingsPage.SHARING) NearbySettings(state, actions)
     if (page == SettingsPage.TRANSLATION) {
         LocalTranslationSettings(options, actions)
     }

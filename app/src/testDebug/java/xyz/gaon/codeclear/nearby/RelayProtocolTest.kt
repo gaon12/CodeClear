@@ -21,6 +21,14 @@ class RelayProtocolTest {
         val first = packet()
         assertEquals("[DRILL] 원문  두 칸\n👩‍🚒 é", RelayProtocol.decode(first, now)!!.body)
         assertEquals(RelayProtocol.root(first), RelayProtocol.decode(first, now)!!.root)
+        val occurrence = RelayOccurrence()
+        val stable = RelayProtocol.encode("[DRILL] Stable event", "Exact original", now, occurrence)
+        assertEquals(
+            RelayProtocol.root(stable),
+            RelayProtocol.root(
+                RelayProtocol.encode("[DRILL] Stable event", "Exact original", now, occurrence)
+            )
+        )
         assertNotEquals(RelayProtocol.root(first), RelayProtocol.root(packet()))
     }
 
@@ -133,6 +141,17 @@ class RelayProtocolTest {
         } finally {
             pool.shutdownNow()
         }
+    }
+
+    @Test
+    fun scannerRecreationWaitsForTheSharedStartBudgetInsteadOfSpinning() {
+        val budget = ScanStartBudget()
+        repeat(4) { assertEquals(0L, budget.reserveDelay(it.toLong())) }
+        assertEquals(30996L, budget.reserveDelay(4))
+        assertEquals(1000L, budget.reserveDelay(30999))
+        assertEquals(0L, budget.reserveDelay(31000))
+        assertTrue(budget.reserveDelay(31000) > 0)
+        assertEquals(0L, budget.reserveDelay(62000))
     }
 
     private fun resign(bytes: ByteArray): ByteArray {

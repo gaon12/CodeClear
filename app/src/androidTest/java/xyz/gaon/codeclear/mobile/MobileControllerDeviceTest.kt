@@ -12,6 +12,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
+import xyz.gaon.codeclear.nearby.RelayProtocol
 import xyz.gaon.codeclear.probe.LocalEngine
 import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalInput
@@ -193,9 +194,14 @@ class MobileControllerDeviceTest {
     fun preferenceFailurePausesCollectionAndTranslationWithoutLoggingDetails() {
         start(local = false, failSave = true)
         await { it.loaded }
-        onMain { controller!!.changeOptions(controller!!.state.options.copy(localConsent = true)) }
+        onMain {
+            controller!!.changeOptions(
+                controller!!.state.options.copy(localConsent = true, nearbyEnabled = true)
+            )
+        }
         await { it.storageError }
         assertFalse(latest.get().options.localConsent)
+        assertFalse(latest.get().options.nearbyEnabled)
         assertFalse(latest.get().options.notificationConsent)
         assertEquals(0, onMain { engine.calls })
     }
@@ -292,6 +298,65 @@ class MobileControllerDeviceTest {
         assertTrue(onMain { notices.isEmpty() })
         assertTrue(latest.get().records.isEmpty())
         assertEquals(null, store.find(id, "en", LocalEngineKind.SYSTEM))
+    }
+
+    @Test
+    fun savingNearbyKeepsUnverifiedProvenanceAndDoesNotReplaceTheNativeLatest() {
+        val local = store.insert(capture("[DRILL] Native latest"))!!
+        start(local = false)
+        await { it.latest?.id == local }
+        val now = System.currentTimeMillis()
+        val original = RelayProtocol.decode(
+            RelayProtocol.encode(
+                "[DRILL] Nearby",
+                "[DRILL] Peer original 👩‍🚒",
+                now
+            ),
+            now
+        )!!
+        val result = AtomicReference<Long>()
+        onMain { controller!!.saveNearby(original, { true }) { result.set(it) } }
+        await { it.records.size == 2 }
+        val id = result.get()!!
+        assertEquals(local, latest.get().latest!!.id)
+        val peer = store.find(id, "en")!!
+        assertEquals(CaptureSource.PEER, peer.capture.source)
+        assertEquals(original.root, peer.capture.sourceIdentity)
+        assertEquals(original.body, peer.capture.original)
+        assertEquals(null, peer.capture.broadcast)
+        assertEquals(null, peer.translation)
+        assertEquals(0, onMain { engine.calls })
+        onMain { controller!!.delete(id) }
+        await { !it.loading && it.records.size == 1 }
+        result.set(-1)
+        onMain { controller!!.saveNearby(original, { true }) { result.set(it) } }
+        await { !it.loading && result.get() == null }
+        assertEquals(1, store.page("", "en").size)
+    }
+
+    @Test
+    fun nearbySaveHonorsRevocationAndOnlyQueuesTheAllowedLocalEngine() {
+        start(local = true)
+        await { it.loaded && !it.loading }
+        val now = System.currentTimeMillis()
+        val original = RelayProtocol.decode(
+            RelayProtocol.encode(
+                "[DRILL] Nearby",
+                "[DRILL] Explicit save",
+                now
+            ),
+            now
+        )!!
+        var denied = false
+        onMain { controller!!.saveNearby(original, { false }) { denied = it == null } }
+        assertTrue(denied)
+        assertTrue(store.page("", "en").isEmpty())
+        onMain { controller!!.saveNearby(original, { true }) {} }
+        await { onMain { engine.calls } == 1 }
+        assertEquals(null, latest.get().latest)
+        onMain { engine.complete("[DRILL] Local translation") }
+        await { it.records.firstOrNull()?.translation?.phase == TranslationPhase.READY }
+        assertEquals(1, onMain { engine.calls })
     }
 
     private fun start(

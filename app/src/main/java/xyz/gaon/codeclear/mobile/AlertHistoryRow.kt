@@ -119,6 +119,13 @@ fun AlertHistoryRow(
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
+                    if (alert.capture.source == CaptureSource.PEER) {
+                        Text(
+                            stringResource(R.string.mobile_nearby_unverified),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     Text(
                         if (translated != null) {
                             stringResource(R.string.mobile_translation, languageName(target))
@@ -168,7 +175,7 @@ private fun HistoryCaptureTime(time: Long) {
 }
 
 // Keep list text layout bounded without splitting a Unicode code point; details retain the full text.
-private fun historyPreview(text: String): String {
+internal fun historyPreview(text: String): String {
     val end = text.offsetByCodePoints(0, minOf(text.codePointCount(0, text.length), 256))
     return text.substring(0, end).replace('\n', ' ').replace('\r', ' ') +
         if (end < text.length) "…" else ""

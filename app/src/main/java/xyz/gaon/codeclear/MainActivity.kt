@@ -40,6 +40,7 @@ import xyz.gaon.codeclear.mobile.SavedAlert
 import xyz.gaon.codeclear.mobile.ThemeChoice
 import xyz.gaon.codeclear.mobile.UiLanguages
 import xyz.gaon.codeclear.mobile.mobileRuntime
+import xyz.gaon.codeclear.nearby.NearbyAccess
 import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
@@ -59,6 +60,11 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.RequestPermission()) {
             notificationRequested = true
             refreshAccess()
+        }
+
+    private val nearbyRequest =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+            mobileRuntime.nearby.refresh()
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -158,7 +164,25 @@ class MainActivity : AppCompatActivity() {
                             { runtime.systemEngine.refreshCapabilities(force = it) },
                             ::openSystemTranslationSettings,
                             controller::changeDetailTarget,
-                            runtime.detailLanguages::identify
+                            runtime.detailLanguages::identify,
+                            runtime.nearby.state,
+                            ::requestNearby,
+                            runtime.nearby::refresh,
+                            runtime.nearby::dismiss,
+                            { root, complete ->
+                                val original = runtime.nearby.original(root)
+                                if (original == null) {
+                                    complete(null)
+                                } else {
+                                    controller.saveNearby(
+                                        original,
+                                        runtime.nearby.saveAllowance(root)
+                                    ) { id ->
+                                        if (id != null) runtime.nearby.dismiss(root)
+                                        complete(id)
+                                    }
+                                }
+                            }
                         )
                     )
                 }
@@ -250,6 +274,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         mobileRuntime.resumeProduct()
         refreshAccess()
+        mobileRuntime.nearby.foreground(true)
         mobileRuntime.controller.start()
         mobileRuntime.controller.refresh()
         if (systemSettingsOpened || mobileRuntime.systemAvailability.loaded ||
@@ -263,6 +288,24 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         systemSettingsRequest++
         super.onPause()
+    }
+
+    override fun onStop() {
+        mobileRuntime.nearby.foreground(false)
+        super.onStop()
+    }
+
+    private fun requestNearby() {
+        if (!mobileRuntime.state.loaded || mobileRuntime.state.storageError) return
+        mobileRuntime.configure(mobileRuntime.state.options.copy(nearbyEnabled = true))
+        val permissions = NearbyAccess.permissions(mobileRuntime.nearby.sender).filter {
+            checkSelfPermission(it) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        }
+        if (permissions.isEmpty()) {
+            mobileRuntime.nearby.refresh()
+        } else {
+            nearbyRequest.launch(permissions.toTypedArray())
+        }
     }
 
     private fun refreshAccess() {

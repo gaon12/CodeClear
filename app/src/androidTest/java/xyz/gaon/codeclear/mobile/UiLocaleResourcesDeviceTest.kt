@@ -41,6 +41,9 @@ class UiLocaleResourcesDeviceTest {
             )
             assertEquals(home, localized.getString(R.string.mobile_home))
             assertTrue(localized.getString(R.string.mobile_captured, "14:05").contains("14:05"))
+            assertTrue(
+                localized.getString(R.string.mobile_nearby_saved_at, "14:05").contains("14:05")
+            )
             val metadata = localized.getString(R.string.mobile_numeric_metadata, 4372, 3, "1", "—")
             assertTrue(metadata.contains("4372"))
             assertFalse(metadata.contains("%1"))
@@ -62,9 +65,21 @@ class UiLocaleResourcesDeviceTest {
                 R.string.mobile_accessibility_disclosure,
                 R.string.mobile_local_disclosure,
                 R.string.mobile_model_notice,
-                R.string.mobile_system_disclosure
+                R.string.mobile_system_disclosure,
+                R.string.mobile_nearby_disclosure,
+                R.string.mobile_nearby_foreground
             )) {
                 assertTrue(localized.getString(id).length > 40)
+            }
+            for (count in listOf(0, 1, 2, 32)) {
+                val received = localized.resources.getQuantityString(
+                    R.plurals.mobile_nearby_count,
+                    count,
+                    count
+                )
+                assertFalse(received.contains("%1"))
+                assertTrue(received.isNotBlank())
+                if (tag == "en" && count == 1) assertTrue(received.startsWith("1 message ·"))
             }
             if (tag.startsWith("zh-")) {
                 chineseSources +=

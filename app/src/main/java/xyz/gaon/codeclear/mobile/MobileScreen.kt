@@ -42,11 +42,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.nearby.NearbyState
 import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.ProbeBodyEvidence
 import xyz.gaon.codeclear.probe.ProbeEnvironment
@@ -75,7 +77,12 @@ class MobileActions(
     val identifyOriginal: (String, (String?) -> Unit) -> AutoCloseable = { _, complete ->
         complete(null)
         AutoCloseable {}
-    }
+    },
+    val nearby: NearbyState = NearbyState(),
+    val nearbyPermission: () -> Unit = {},
+    val refreshNearby: () -> Unit = {},
+    val dismissNearby: (String) -> Unit = {},
+    val saveNearby: (String, (Long?) -> Unit) -> Unit = { _, complete -> complete(null) }
 )
 
 @Composable
@@ -90,6 +97,7 @@ fun MobileScreen(
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var tutorial by rememberSaveable { mutableStateOf(false) }
     var step by rememberSaveable { mutableIntStateOf(0) }
+    var nearbyPage by rememberSaveable { mutableStateOf(false) }
     var historyDetailId by rememberSaveable { mutableStateOf<Long?>(null) }
     val isHistoryDetail = state.detailId != null && state.detailId == historyDetailId
     val homeScroll = rememberLazyListState()
@@ -136,6 +144,7 @@ fun MobileScreen(
                 tutorial = false
                 if (destination == tab) {
                     step = 0
+                    if (destination == 1) nearbyPage = false
                     if (destination == 1 && isHistoryDetail) {
                         historyDetailId = null
                         actions.detail(null)
@@ -158,6 +167,18 @@ fun MobileScreen(
                 Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.TopCenter
             ) {
+                if (currentTab == 1 && nearbyPage && !isHistoryDetail) {
+                    androidx.compose.foundation.layout.Box(
+                        Modifier.widthIn(max = 880.dp).fillMaxSize()
+                    ) {
+                        NearbyInboxPage(actions, { nearbyPage = false }, { id ->
+                            nearbyPage = false
+                            historyDetailId = id
+                            actions.detail(id)
+                        })
+                    }
+                    return@Box
+                }
                 if (currentTab == 1 && isHistoryDetail) {
                     val back = {
                         historyDetailId = null
@@ -415,6 +436,24 @@ fun MobileScreen(
                                         }
                                     }
                                 }
+                                if (state.options.nearbyEnabled) {
+                                    item {
+                                        SettingsGroup {
+                                            SettingRow(
+                                                stringResource(R.string.mobile_nearby_inbox),
+                                                pluralStringResource(
+                                                    R.plurals.mobile_nearby_count,
+                                                    actions.nearby.originals.size,
+                                                    actions.nearby.originals.size
+                                                ),
+                                                onClick = {
+                                                    tab = 1
+                                                    nearbyPage = true
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
                                 val observed = session.records.lastOrNull()?.observation
                                 if (observed != null &&
                                     (
@@ -446,6 +485,26 @@ fun MobileScreen(
                             }
 
                             currentTab == 1 -> {
+                                if (state.options.nearbyEnabled ||
+                                    actions.nearby.originals.isNotEmpty()
+                                ) {
+                                    item {
+                                        SettingsGroup {
+                                            SettingRow(
+                                                stringResource(R.string.mobile_nearby_inbox),
+                                                pluralStringResource(
+                                                    R.plurals.mobile_nearby_count,
+                                                    actions.nearby.originals.size,
+                                                    actions.nearby.originals.size
+                                                ),
+                                                onClick = {
+                                                    nearbyPage =
+                                                        true
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
                                 item {
                                     OutlinedTextField(
                                         value = state.query,

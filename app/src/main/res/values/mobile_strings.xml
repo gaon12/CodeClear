@@ -82,8 +82,8 @@
     <string name="mobile_incomplete">The latest source observation did not expose a verified complete individual body. The saved alert below may be older. Open the original system alert to check it.</string>
     <string name="mobile_pending">Pending alerts reported by the source: %1$d. Only exposed individual bodies can be captured; open the original to check the others.</string>
     <string name="mobile_open_source">Open original system alert</string>
-    <string name="mobile_last_saved">Last saved alert</string>
-    <string name="mobile_empty">No saved alert yet. This does not mean no emergency alert was issued or received.</string>
+    <string name="mobile_last_saved">Latest captured alert</string>
+    <string name="mobile_empty">Newly captured alerts appear here. An empty screen does not establish whether an emergency alert was issued or received.</string>
     <string name="mobile_search">Search original or translation</string>
     <string name="mobile_no_results">No matching records.</string>
     <string name="mobile_newest">Newest page</string>
@@ -156,4 +156,31 @@
     <string name="mobile_home_empty_title">Your alerts, in one place</string>
     <string name="mobile_home_view_history">View history</string>
     <string name="mobile_home_no_radio">No cellular receiver</string>
+    <string name="mobile_nearby">Nearby alert sharing</string>
+    <string name="mobile_nearby_allow">Allow nearby sharing</string>
+    <string name="mobile_nearby_disclosure">Newly captured originals from the last 15 minutes become available to nearby users. Received messages have unverified origin and authenticity. They stay in a temporary inbox until you save them; they are never forwarded again.</string>
+    <string name="mobile_nearby_foreground">Exchange uses Bluetooth only while this app is on screen. Switching away pauses it. No GPS coordinates or server are used. Unsaved receipts expire within 15 minutes.</string>
+    <string name="mobile_nearby_unverified">Nearby delivery · unverified origin</string>
+    <string name="mobile_nearby_inbox">Nearby inbox</string>
+    <plurals name="mobile_nearby_count">
+        <item quantity="one">%1$d message · kept temporarily for up to 15 minutes</item>
+        <item quantity="other">%1$d messages · kept temporarily for up to 15 minutes</item>
+    </plurals>
+    <string name="mobile_nearby_empty">No temporary messages. Nearby devices may be absent, paused, or out of range.</string>
+    <string name="mobile_nearby_save">Save to history</string>
+    <string name="mobile_nearby_dismiss">Remove from temporary inbox</string>
+    <string name="mobile_nearby_save_failed">Could not save. The message may have expired or sharing may have stopped.</string>
+    <string name="mobile_nearby_paused">Paused while the app is away</string>
+    <string name="mobile_nearby_permission">Nearby access required</string>
+    <string name="mobile_nearby_bluetooth">Bluetooth is off</string>
+    <string name="mobile_nearby_location">System location is off</string>
+    <string name="mobile_nearby_unavailable">BLE is unavailable on this device</string>
+    <string name="mobile_nearby_listening">Looking for nearby devices</string>
+    <string name="mobile_nearby_receive_only">Looking for nearby devices · receive only</string>
+    <string name="mobile_nearby_transferring">Receiving nearby original</string>
+    <string name="mobile_nearby_error">Exchange stopped. Check access and try again.</string>
+    <string name="mobile_allow">Allow</string>
+    <string name="mobile_nearby_legacy_location">Android 11 requires location permission and system location for Bluetooth discovery. This app does not collect GPS coordinates.</string>
+    <string name="mobile_nearby_saved_at">Saved %1$s</string>
+    <string name="mobile_nearby_cooldown">Waiting briefly before searching again</string>
 </resources>

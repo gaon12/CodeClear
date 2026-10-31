@@ -10,6 +10,7 @@ import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
+import xyz.gaon.codeclear.nearby.NearbyOriginal
 import xyz.gaon.codeclear.probe.CaptureObserver
 import xyz.gaon.codeclear.probe.LocalEngine
 import xyz.gaon.codeclear.probe.LocalEngineKind
@@ -50,7 +51,8 @@ class MobileController(
     private val translated: (Long, String, LocalEngineKind) -> Unit = { _, _, _ -> },
     private val deleted: (Long?) -> Unit = {},
     private val releaseEngine: () -> Unit = {},
-    private val cancelEngine: () -> Unit = {}
+    private val cancelEngine: () -> Unit = {},
+    private val captured: (Long, CapturedAlert) -> Unit = { _, _ -> }
 ) : CaptureObserver,
     AutoCloseable {
     private data class Work(val ticket: TranslationTicket, val epoch: Long)
@@ -208,13 +210,15 @@ class MobileController(
         }
         io({
             if (generation != captureGeneration.get()) return@io null
-            store.insert(capture)?.also { id ->
+            store.insertObservation(capture)?.also { observation ->
+                val id = observation.id
                 store.queueTranslation(id, options.target.languageTag, options.engine)
                 observationIds[record.id] = id
                 if (observationIds.size > 128) observationIds.remove(observationIds.keys.first())
             }
-        }) { id ->
-            if (id != null) {
+        }) { observation ->
+            if (observation != null && generation == captureGeneration.get() && !capturePaused) {
+                if (observation.created) captured(observation.id, capture)
                 refresh()
                 kick()
             }
@@ -236,6 +240,41 @@ class MobileController(
         captureGeneration.set(generation)
         seenObservations.clear()
         if (!closed && !state.storageError) io({ observationIds.clear() }) {}
+    }
+
+    fun saveNearby(original: NearbyOriginal, allowed: () -> Boolean, complete: (Long?) -> Unit) {
+        requireMain()
+        if (!state.loaded || state.storageError || closed || !allowed()) {
+            complete(null)
+            return
+        }
+        val epoch = workEpoch.get()
+        val options = state.options
+        io({
+            if (epoch != workEpoch.get() || !allowed()) return@io null
+            store.insert(
+                CapturedAlert(
+                    sourcePackage = "xyz.gaon.codeclear.nearby",
+                    source = CaptureSource.PEER,
+                    title = original.title,
+                    original = original.body,
+                    capturedAtMillis = System.currentTimeMillis(),
+                    sourceIdentity = original.root
+                )
+            )?.also {
+                if (options.localConsent) {
+                    store.queueTranslation(
+                        it,
+                        options.target.languageTag,
+                        options.engine
+                    )
+                }
+            }
+        }, onFailure = { complete(null) }) { id ->
+            refresh()
+            kick()
+            complete(id.takeIf { epoch == workEpoch.get() && allowed() })
+        }
     }
 
     fun search(query: String) {
@@ -334,7 +373,8 @@ class MobileController(
                     "",
                     request.options.target.languageTag,
                     limit = 1,
-                    engine = request.options.engine
+                    engine = request.options.engine,
+                    nativeOnly = true
                 )
                     .firstOrNull(),
                 request.detailId?.let {
@@ -555,7 +595,7 @@ class MobileController(
         }
     }
 
-    private fun <T> io(block: () -> T, success: (T) -> Unit) {
+    private fun <T> io(block: () -> T, onFailure: () -> Unit = {}, success: (T) -> Unit) {
         if (closed) return
         try {
             worker.execute {
@@ -566,11 +606,15 @@ class MobileController(
                 } catch (_: OperationCanceledException) {
                     // A newer view request owns the UI; cancellation is not a storage failure.
                 } catch (_: Exception) {
-                    main.post { failStorage() }
+                    main.post {
+                        failStorage()
+                        onFailure()
+                    }
                 }
             }
         } catch (_: RejectedExecutionException) {
             failStorage()
+            onFailure()
         }
     }
 
@@ -591,7 +635,8 @@ class MobileController(
                 options = state.options.copy(
                     notificationConsent = false,
                     accessibilityConsent = false,
-                    localConsent = false
+                    localConsent = false,
+                    nearbyEnabled = false
                 )
             )
         )

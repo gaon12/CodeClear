@@ -2,7 +2,7 @@ package xyz.gaon.codeclear.mobile
 
 import xyz.gaon.codeclear.probe.LocalEngineKind
 
-enum class CaptureSource { NOTIFICATION, DIALOG, ORIGINAL_NOTIFICATION }
+enum class CaptureSource { NOTIFICATION, DIALOG, ORIGINAL_NOTIFICATION, PEER }
 
 data class BroadcastMetadata(
     val format: Int,
@@ -66,6 +66,9 @@ data class SavedTranslation(
     val engine: LocalEngineKind = LocalEngineKind.ML_KIT,
     val sameLanguage: Boolean = false
 )
+
+/** Existing observations remain readable but must not become newly shareable events. */
+data class StoredObservation(val id: Long, val created: Boolean)
 
 data class SavedAlert(val id: Long, val capture: CapturedAlert, val translation: SavedTranslation?)
 

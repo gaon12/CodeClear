@@ -68,8 +68,8 @@
     <string name="mobile_ready">Die Erfassung freigegebener Nachrichten aus geprüften Systemquellen ist aktiv. Lassen Sie die ursprüngliche Warn-App eingeschaltet.</string>
     <string name="mobile_manage_access">Erfassungszugriff verwalten</string>
     <string name="mobile_open_source">Originalwarnung des Systems öffnen</string>
-    <string name="mobile_last_saved">Zuletzt gespeicherte Warnung</string>
-    <string name="mobile_empty">Noch keine Warnung gespeichert. Das bedeutet nicht, dass keine Warnung ausgegeben oder empfangen wurde.</string>
+    <string name="mobile_last_saved">Zuletzt erfasste Warnung</string>
+    <string name="mobile_empty">Neu erfasste Warnungen erscheinen hier. Ein leerer Bildschirm bedeutet nicht, dass keine Warnung ausgegeben oder empfangen wurde.</string>
     <string name="mobile_search">Original oder Übersetzung durchsuchen</string>
     <string name="mobile_no_results">Keine passenden Einträge.</string>
     <string name="mobile_newest">Neueste Seite</string>
@@ -156,4 +156,31 @@
     <string name="mobile_home_empty_title">Ihre Warnungen an einem Ort</string>
     <string name="mobile_home_view_history">Verlauf öffnen</string>
     <string name="mobile_home_no_radio">Kein Mobilfunkempfänger</string>
+    <string name="mobile_nearby">Warnungen in der Nähe teilen</string>
+    <string name="mobile_nearby_allow">Teilen in der Nähe erlauben</string>
+    <string name="mobile_nearby_disclosure">Neu erfasste Originale der letzten 15 Minuten werden für Personen in der Nähe verfügbar. Herkunft und Echtheit empfangener Nachrichten sind ungeprüft. Sie bleiben bis zum Speichern im temporären Postfach und werden nicht weitergeleitet.</string>
+    <string name="mobile_nearby_foreground">Der Austausch per Bluetooth läuft nur bei sichtbarer App und pausiert beim Wechsel. Keine GPS-Koordinaten und kein Server. Ungespeicherte Nachrichten verfallen nach höchstens 15 Minuten.</string>
+    <string name="mobile_nearby_unverified">Aus der Nähe · Herkunft ungeprüft</string>
+    <string name="mobile_nearby_inbox">Postfach aus der Nähe</string>
+    <plurals name="mobile_nearby_count">
+        <item quantity="one">%1$d Nachricht · bis zu 15 Minuten aufbewahrt</item>
+        <item quantity="other">%1$d Nachrichten · bis zu 15 Minuten aufbewahrt</item>
+    </plurals>
+    <string name="mobile_nearby_empty">Keine temporären Nachrichten. Geräte in der Nähe können fehlen, pausieren oder außer Reichweite sein.</string>
+    <string name="mobile_nearby_save">Im Verlauf speichern</string>
+    <string name="mobile_nearby_dismiss">Aus temporärem Postfach entfernen</string>
+    <string name="mobile_nearby_save_failed">Speichern fehlgeschlagen. Die Nachricht ist eventuell abgelaufen oder das Teilen wurde beendet.</string>
+    <string name="mobile_nearby_paused">Bei ausgeblendeter App pausiert</string>
+    <string name="mobile_nearby_permission">Zugriff auf Geräte in der Nähe erforderlich</string>
+    <string name="mobile_nearby_bluetooth">Bluetooth ist aus</string>
+    <string name="mobile_nearby_location">Systemstandort ist aus</string>
+    <string name="mobile_nearby_unavailable">BLE auf diesem Gerät nicht verfügbar</string>
+    <string name="mobile_nearby_listening">Suche nach Geräten in der Nähe</string>
+    <string name="mobile_nearby_receive_only">Suche nach Geräten · nur Empfang</string>
+    <string name="mobile_nearby_transferring">Original aus der Nähe wird empfangen</string>
+    <string name="mobile_nearby_error">Austausch beendet. Zugriff prüfen und erneut versuchen.</string>
+    <string name="mobile_allow">Erlauben</string>
+    <string name="mobile_nearby_legacy_location">Android 11 benötigt Standortberechtigung und aktivierten Systemstandort für die Bluetooth-Suche. Diese App erfasst keine GPS-Koordinaten.</string>
+    <string name="mobile_nearby_saved_at">Gespeichert %1$s</string>
+    <string name="mobile_nearby_cooldown">Kurze Wartezeit vor der nächsten Suche</string>
 </resources>

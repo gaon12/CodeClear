@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import xyz.gaon.codeclear.BuildConfig
+import xyz.gaon.codeclear.nearby.NearbySharing
 import xyz.gaon.codeclear.probe.LocalEngine
 import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.MlKitLocalEngine
@@ -35,6 +36,7 @@ class MobileRuntime(context: Context) {
     var preparation by mutableStateOf(PreparationState())
         private set
     val detailLanguages = OriginalLanguageIdentifier()
+    val nearby = NearbySharing(context)
     private val notifications = ResultNotifications(context)
     private val mlKit = MlKitLocalEngine()
     var systemAvailability by mutableStateOf(SystemEngineAvailability())
@@ -53,7 +55,10 @@ class MobileRuntime(context: Context) {
         AlertHistoryStore(context),
         MobileOptionsStorage(context),
         engine,
-        changed = { state = it },
+        changed = {
+            state = it
+            if (it.loaded) nearby.configure(it.options.nearbyEnabled)
+        },
         translated = { id, target, producer ->
             val language = state.options.uiLanguage
             val localized = if (Build.VERSION.SDK_INT < 33 && language.isNotEmpty()) {
@@ -67,12 +72,16 @@ class MobileRuntime(context: Context) {
             }
             notifications.post(id, target, localized, producer)
         },
-        deleted = notifications::cancel,
+        deleted = {
+            notifications.cancel(it)
+            nearby.deleted(it)
+        },
         releaseEngine = {
             mlKit.close()
             systemEngine.close()
         },
-        cancelEngine = systemEngine::cancel
+        cancelEngine = systemEngine::cancel,
+        captured = nearby::offer
     )
     val models =
         ModelPreparation(MlKitModelPreparationBackend(), {
@@ -89,7 +98,10 @@ class MobileRuntime(context: Context) {
     fun pauseForDiagnostics(): AutoCloseable {
         check(BuildConfig.DEBUG && Looper.myLooper() == Looper.getMainLooper())
         val generation = diagnosticGeneration
-        if (diagnosticOwners++ == 0) controller.pauseCapture(true)
+        if (diagnosticOwners++ == 0) {
+            controller.pauseCapture(true)
+            nearby.suspendForDiagnostics(true)
+        }
         var closed = false
         return AutoCloseable {
             check(Looper.myLooper() == Looper.getMainLooper())
@@ -98,6 +110,7 @@ class MobileRuntime(context: Context) {
                 if (--diagnosticOwners == 0) {
                     ProbeSession.setDiagnostics(false, false)
                     controller.pauseCapture(false)
+                    nearby.suspendForDiagnostics(false)
                 }
             }
         }
@@ -116,6 +129,7 @@ class MobileRuntime(context: Context) {
         diagnosticOwners = 0
         ProbeSession.setDiagnostics(false, false)
         controller.pauseCapture(false)
+        nearby.suspendForDiagnostics(false)
     }
 }
 

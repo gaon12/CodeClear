@@ -39,6 +39,7 @@ class MobileOptionsStorageDeviceTest {
                 assertFalse(options.accessibilityConsent)
                 assertFalse(options.localConsent)
                 assertFalse(options.setupComplete)
+                assertFalse(options.nearbyEnabled)
             }
         } finally {
             Locale.setDefault(original)
@@ -57,7 +58,8 @@ class MobileOptionsStorageDeviceTest {
                 storage.load().copy(
                     target = LocalTarget.GERMAN,
                     uiLanguage = "fr",
-                    theme = ThemeChoice.DARK
+                    theme = ThemeChoice.DARK,
+                    nearbyEnabled = true
                 )
             )
             Locale.setDefault(Locale.JAPAN)
@@ -65,6 +67,7 @@ class MobileOptionsStorageDeviceTest {
             assertEquals(LocalTarget.GERMAN, options.target)
             assertEquals("fr", options.uiLanguage)
             assertEquals(ThemeChoice.DARK, options.theme)
+            assertTrue(options.nearbyEnabled)
             assertFalse(options.localConsent)
         } finally {
             Locale.setDefault(original)

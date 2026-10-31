@@ -68,8 +68,8 @@
     <string name="mobile_ready">La collecte est activée pour les messages exposés par les sources système vérifiées. Gardez l’application d’alerte originale activée.</string>
     <string name="mobile_manage_access">Gérer l’accès à la collecte</string>
     <string name="mobile_open_source">Ouvrir l’alerte système originale</string>
-    <string name="mobile_last_saved">Dernière alerte enregistrée</string>
-    <string name="mobile_empty">Aucune alerte enregistrée. Cela ne signifie pas qu’aucune alerte n’a été émise ou reçue.</string>
+    <string name="mobile_last_saved">Dernière alerte recueillie</string>
+    <string name="mobile_empty">Les nouvelles alertes recueillies apparaissent ici. Un écran vide ne signifie pas qu’aucune alerte n’a été émise ou reçue.</string>
     <string name="mobile_search">Rechercher dans l’original ou la traduction</string>
     <string name="mobile_no_results">Aucun résultat.</string>
     <string name="mobile_newest">Page la plus récente</string>
@@ -156,4 +156,31 @@
     <string name="mobile_home_empty_title">Vos alertes au même endroit</string>
     <string name="mobile_home_view_history">Voir l’historique</string>
     <string name="mobile_home_no_radio">Sans réception cellulaire</string>
+    <string name="mobile_nearby">Partage des alertes à proximité</string>
+    <string name="mobile_nearby_allow">Autoriser le partage à proximité</string>
+    <string name="mobile_nearby_disclosure">Les originaux nouvellement recueillis depuis 15 minutes sont accessibles aux personnes à proximité. L’origine et l’authenticité des messages reçus ne sont pas vérifiées. Ils restent temporaires avant enregistrement et ne sont jamais retransmis.</string>
+    <string name="mobile_nearby_foreground">L’échange Bluetooth fonctionne uniquement lorsque cette application est visible et se suspend en la quittant. Aucun serveur ni coordonnées GPS. Les messages non enregistrés expirent en 15 minutes au maximum.</string>
+    <string name="mobile_nearby_unverified">Reçu à proximité · origine non vérifiée</string>
+    <string name="mobile_nearby_inbox">Boîte de proximité</string>
+    <plurals name="mobile_nearby_count">
+        <item quantity="one">%1$d message · conservation temporaire de 15 minutes maximum</item>
+        <item quantity="other">%1$d messages · conservation temporaire de 15 minutes maximum</item>
+    </plurals>
+    <string name="mobile_nearby_empty">Aucun message temporaire. Les appareils proches peuvent être absents, en pause ou hors de portée.</string>
+    <string name="mobile_nearby_save">Enregistrer dans l’historique</string>
+    <string name="mobile_nearby_dismiss">Retirer de la boîte temporaire</string>
+    <string name="mobile_nearby_save_failed">Enregistrement impossible. Le message a peut-être expiré ou le partage est arrêté.</string>
+    <string name="mobile_nearby_paused">En pause lorsque l’application est masquée</string>
+    <string name="mobile_nearby_permission">Accès aux appareils à proximité requis</string>
+    <string name="mobile_nearby_bluetooth">Bluetooth désactivé</string>
+    <string name="mobile_nearby_location">Localisation système désactivée</string>
+    <string name="mobile_nearby_unavailable">BLE indisponible sur cet appareil</string>
+    <string name="mobile_nearby_listening">Recherche d’appareils à proximité</string>
+    <string name="mobile_nearby_receive_only">Recherche d’appareils · réception seule</string>
+    <string name="mobile_nearby_transferring">Réception d’un original à proximité</string>
+    <string name="mobile_nearby_error">Échange arrêté. Vérifiez les autorisations et réessayez.</string>
+    <string name="mobile_allow">Autoriser</string>
+    <string name="mobile_nearby_legacy_location">Android 11 exige l’autorisation et l’activation de la localisation système pour rechercher des appareils Bluetooth. Cette application ne recueille pas de coordonnées GPS.</string>
+    <string name="mobile_nearby_saved_at">Enregistré %1$s</string>
+    <string name="mobile_nearby_cooldown">Courte pause avant une nouvelle recherche</string>
 </resources>
