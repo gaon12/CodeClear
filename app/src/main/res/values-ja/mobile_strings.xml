@@ -141,4 +141,10 @@
     <string name="mobile_change">変更</string>
     <string name="mobile_download_models">Wi-Fi でダウンロード</string>
     <string name="mobile_reception_information">緊急速報の受信について</string>
+    <string name="mobile_version">バージョン</string>
+    <string name="mobile_version_value">%1$s (%2$d)</string>
+    <string name="mobile_project_repository">GitHubリポジトリ</string>
+    <string name="mobile_contributors">貢献者</string>
+    <string name="mobile_contributors_summary">%1$s · すべての貢献者を見る</string>
+    <string name="mobile_link_unavailable">リンクを開けませんでした。ブラウザの設定を確認して、もう一度お試しください。</string>
 </resources>

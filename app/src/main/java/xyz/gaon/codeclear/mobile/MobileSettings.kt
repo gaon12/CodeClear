@@ -128,12 +128,7 @@ fun MobileSettings(
         }
     }
     if (page == SettingsPage.ABOUT) {
-        SettingsGroup {
-            SettingRow(stringResource(R.string.mobile_compatibility), onClick = {
-                info =
-                    SettingsInfo.COMPATIBILITY
-            })
-        }
+        AppAboutSettings { info = SettingsInfo.COMPATIBILITY }
     }
     disclosure?.let { route ->
         val notification = route == CaptureAccess.NOTIFICATION

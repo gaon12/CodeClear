@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
@@ -64,6 +66,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import xyz.gaon.codeclear.BuildConfig
 import xyz.gaon.codeclear.MainActivity
 import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.probe.LocalEngineKind
@@ -97,6 +100,8 @@ class MobileScreenDeviceTest {
     private var densityScale by mutableStateOf(1f)
     private var previewLanguage by mutableStateOf<String?>(null)
     private var systemSupport by mutableStateOf(SystemEngineAvailability(loaded = true))
+    private val projectLinks = mutableListOf<String>()
+    private var projectLinkFailure = false
     private var manualSupportRefreshes = 0
     private var providerSettingsOpened = 0
     private val context get() = compose.activity
@@ -151,7 +156,20 @@ class MobileScreenDeviceTest {
                         )
                     } ?: base
                 }
+                val uriHandler = remember {
+                    object : UriHandler {
+                        override fun openUri(uri: String) {
+                            projectLinks += uri
+                            if (projectLinkFailure) {
+                                throw IllegalArgumentException(
+                                    "No browser in fixture"
+                                )
+                            }
+                        }
+                    }
+                }
                 CompositionLocalProvider(
+                    LocalUriHandler provides uriHandler,
                     LocalDensity provides Density(density.density * densityScale, fontScale),
                     LocalContext provides localized,
                     LocalConfiguration provides localized.resources.configuration
@@ -271,6 +289,57 @@ class MobileScreenDeviceTest {
             compose.onNodeWithText("알림 접근").performScrollTo().performClick()
             savePreview("settings-access-${theme.name.lowercase()}", dialog = true)
             compose.onNodeWithText("취소").performClick()
+        }
+    }
+
+    @Test
+    fun appInformationShowsTheInstalledVersionAndOpensOnlyProjectLinks() {
+        compose.runOnIdle {
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            previewLanguage = "ko"
+        }
+        openSettingsPage(SettingsPage.ABOUT)
+        val version = context.getString(
+            R.string.mobile_version_value,
+            BuildConfig.VERSION_NAME,
+            BuildConfig.VERSION_CODE
+        )
+        for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
+            compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            compose.onNodeWithTag("app-version-value").assertTextEquals(version).assertIsDisplayed()
+            savePreview("about-${theme.name.lowercase()}")
+        }
+        compose.runOnIdle { fontScale = 1.8f }
+        compose.onNodeWithText(
+            text(R.string.mobile_project_repository)
+        ).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.mobile_contributors)).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(
+                listOf(
+                    "https://github.com/gaon12/CodeClear",
+                    "https://github.com/gaon12/CodeClear/graphs/contributors"
+                ),
+                projectLinks
+            )
+            projectLinkFailure = true
+        }
+        compose.onNodeWithText(
+            text(R.string.mobile_project_repository)
+        ).performScrollTo().performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_link_unavailable)
+        ).performScrollTo().assertIsDisplayed()
+        compose.runOnIdle { projectLinkFailure = false }
+        compose.onNodeWithText(
+            text(R.string.mobile_project_repository)
+        ).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.mobile_link_unavailable)).assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_compatibility)).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.mobile_close)).assertIsDisplayed().performClick()
+        compose.runOnIdle {
+            assertEquals(0, prepared)
+            assertEquals(0, settingsOpened)
         }
     }
 

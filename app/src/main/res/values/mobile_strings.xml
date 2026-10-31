@@ -141,4 +141,10 @@
     <string name="mobile_change">Change</string>
     <string name="mobile_download_models">Download on Wi-Fi</string>
     <string name="mobile_reception_information">How emergency alerts are received</string>
+    <string name="mobile_version">Version</string>
+    <string name="mobile_version_value">%1$s (%2$d)</string>
+    <string name="mobile_project_repository">GitHub repository</string>
+    <string name="mobile_contributors">Contributors</string>
+    <string name="mobile_contributors_summary">%1$s · View all contributors</string>
+    <string name="mobile_link_unavailable">Could not open the link. Check your browser settings and try again.</string>
 </resources>

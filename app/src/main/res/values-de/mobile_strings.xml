@@ -141,4 +141,10 @@
     <string name="mobile_change">Ändern</string>
     <string name="mobile_download_models">Über WLAN herunterladen</string>
     <string name="mobile_reception_information">So werden Notfallwarnungen empfangen</string>
+    <string name="mobile_version">Version</string>
+    <string name="mobile_version_value">%1$s (%2$d)</string>
+    <string name="mobile_project_repository">GitHub-Repository</string>
+    <string name="mobile_contributors">Mitwirkende</string>
+    <string name="mobile_contributors_summary">%1$s · Alle Mitwirkenden ansehen</string>
+    <string name="mobile_link_unavailable">Der Link konnte nicht geöffnet werden. Prüfen Sie Ihre Browsereinstellungen und versuchen Sie es erneut.</string>
 </resources>

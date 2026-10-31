@@ -141,4 +141,10 @@
     <string name="mobile_change">변경</string>
     <string name="mobile_download_models">Wi-Fi로 다운로드</string>
     <string name="mobile_reception_information">재난문자 수신 안내</string>
+    <string name="mobile_version">버전</string>
+    <string name="mobile_version_value">%1$s (%2$d)</string>
+    <string name="mobile_project_repository">GitHub 저장소</string>
+    <string name="mobile_contributors">기여자</string>
+    <string name="mobile_contributors_summary">%1$s · 전체 기여자 보기</string>
+    <string name="mobile_link_unavailable">링크를 열 수 없습니다. 브라우저 설정을 확인하고 다시 시도해 주세요.</string>
 </resources>

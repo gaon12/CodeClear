@@ -50,6 +50,13 @@ class UiLocaleResourcesDeviceTest {
             )
             assertFalse(support.contains("%1"))
             assertEquals(permissionActions[tag], localized.getString(R.string.mobile_open_settings))
+            val version = localized.getString(R.string.mobile_version_value, "2.3.4", 99)
+            assertTrue(version.contains("2.3.4") && version.contains("99"))
+            assertFalse(version.contains("%1"))
+            assertTrue(
+                localized.getString(R.string.mobile_contributors_summary, "TEST_OWNER")
+                    .contains("TEST_OWNER")
+            )
             for (id in listOf(
                 R.string.mobile_notification_disclosure,
                 R.string.mobile_accessibility_disclosure,
