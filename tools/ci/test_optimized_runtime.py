@@ -8,7 +8,12 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
-from tools.ci.optimized_runtime import certificate, local_fixture_options, validate
+from tools.ci.optimized_runtime import (
+    certificate,
+    local_fixture_options,
+    replace_process,
+    validate,
+)
 
 
 class OptimizedFixtureTest(unittest.TestCase):
@@ -23,6 +28,8 @@ class OptimizedFixtureTest(unittest.TestCase):
         def device(*parts):
             if "getprop" in parts:
                 return properties[parts[-1]]
+            if "force-stop" in parts:
+                raise AssertionError("Do not revoke capture access with force-stop")
             raise RuntimeError("fixture mutation checkpoint")
 
         def command(parts, **kwargs):
@@ -68,6 +75,21 @@ class OptimizedFixtureTest(unittest.TestCase):
                 "install" in call.args or "am" in call.args
                 for call in device.call_args_list
             )
+        )
+
+    def test_an_unchanged_process_does_not_establish_restart_persistence(self):
+        device = Mock(side_effect=["123", "Success", "123"])
+        with self.assertRaisesRegex(RuntimeError, "did not replace the process"):
+            replace_process(device, Path("candidate.apk"), Mock())
+
+    def test_an_install_failure_does_not_launch_or_force_stop_the_app(self):
+        device = Mock(side_effect=["123", "Failure"])
+        start = Mock()
+        with self.assertRaisesRegex(RuntimeError, "replacement failed"):
+            replace_process(device, Path("candidate.apk"), start)
+        start.assert_not_called()
+        self.assertFalse(
+            any("force-stop" in call.args for call in device.call_args_list)
         )
 
     def options(self, remote="false", notification="true"):

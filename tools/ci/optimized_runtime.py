@@ -2,6 +2,7 @@
 
 import base64
 import hashlib
+import json
 import re
 import shlex
 import subprocess
@@ -57,6 +58,18 @@ def certificate(output):
     if len(digests) != 1:
         raise RuntimeError("The APK must expose one reviewed signing certificate")
     return next(iter(digests))
+
+
+def replace_process(device, signed, start):
+    previous_pid = device("shell", "pidof", APP)
+    if "Success" not in device("install", "-r", str(signed)):
+        raise RuntimeError("The optimized package replacement failed")
+    start()
+    current_pid = device("shell", "pidof", APP)
+    if not previous_pid or not current_pid or previous_pid == current_pid:
+        raise RuntimeError(
+            "The optimized package replacement did not replace the process"
+        )
 
 
 def validate(device, sdk, cli, serial):
@@ -126,19 +139,25 @@ def validate(device, sdk, cli, serial):
             "Reject an optimized upgrade with a different signing certificate"
         )
 
-    device("shell", "am", "force-stop", APP)
     options = device("shell", "run-as", APP, "cat", "shared_prefs/mobile_options.xml")
     # Seed only this debug fixture's local target/view choices before the non-debuggable
     # upgrade. Normal OS capture confirmations were already completed by the receiver test.
     device(
         "shell",
         shlex.join(
-            ["run-as", APP, "sh", "-c", "cat > shared_prefs/mobile_options.xml"]
+            [
+                "run-as",
+                APP,
+                "sh",
+                "-c",
+                (
+                    "cat > shared_prefs/mobile_options.fixture.xml && "
+                    "mv shared_prefs/mobile_options.fixture.xml shared_prefs/mobile_options.xml"
+                ),
+            ]
         ),
         input=local_fixture_options(options),
     )
-    if "Success" not in device("install", "-r", str(signed)):
-        raise RuntimeError("The optimized upgrade did not install")
     ui = ConsentUi(device, cli, serial, {APP})
 
     def start():
@@ -172,6 +191,32 @@ def validate(device, sdk, cli, serial):
             ):
                 return
             time.sleep(0.5)
+        print(
+            "Optimized reconnect diagnostics: "
+            + json.dumps(
+                {
+                    "notification_granted": "ProbeNotificationListener"
+                    in device(
+                        "shell",
+                        "settings",
+                        "get",
+                        "secure",
+                        "enabled_notification_listeners",
+                    ),
+                    "accessibility_granted": "ProbeAccessibilityService"
+                    in device(
+                        "shell",
+                        "settings",
+                        "get",
+                        "secure",
+                        "enabled_accessibility_services",
+                    ),
+                    "process_present": bool(device("shell", "pidof", APP)),
+                    "service_metadata": meta[:8000],
+                }
+            ),
+            flush=True,
+        )
         raise RuntimeError(
             "Capture services did not reconnect after the optimized upgrade"
         )
@@ -210,7 +255,9 @@ def validate(device, sdk, cli, serial):
     try:
         device("shell", "svc", "wifi", "disable")
         device("shell", "svc", "data", "disable")
-        start()
+        # Force-stop clears accessibility grants on reviewed Android versions.
+        # Normal package replacement restarts code while preserving existing access.
+        replace_process(device, signed, start)
         reconnect()
         payload = (
             (0x5201).to_bytes(2, "big")
@@ -246,11 +293,10 @@ def validate(device, sdk, cli, serial):
             flush=True,
         )
         ui.stop()
-        device("shell", "am", "force-stop", APP)
-        start()
+        replace_process(device, signed, start)
         verify_result()
         print(
-            "Optimized original and local result persisted after a process restart.",
+            "Optimized original and local result persisted after package replacement and a verified process restart.",
             flush=True,
         )
     finally:

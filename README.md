@@ -97,8 +97,9 @@ non-debuggable APK and signs it with the disposable runner's Android debug key.
 After normal capture preparation, it seeds local-only translation/view preferences
 in the debug fixture, upgrades to the optimized APK, and checks an exact Chinese
 script conversion offline plus restart persistence through the product UI. This
-runtime fixture does not validate the local-consent UX or production signing. It
-uses no production key and publishes no APK or test artifact.
+runtime fixture verifies process replacement during the upgrade and again during
+the persistence reinstall. It does not validate the local-consent UX or production
+signing. It uses no production key and publishes no APK or test artifact.
 
 ## Source map
 
