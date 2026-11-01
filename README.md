@@ -83,6 +83,11 @@ directory in the single `app` module. Main packages under
 `src/debug/kotlin` contains diagnostic entry points. `src/testDebug/kotlin`
 contains JVM tests, and `src/androidTest/kotlin` contains instrumented tests.
 
+Within `mobile`, `MobileController` owns product state and consent decisions.
+`AlertTranslationQueue` selects and completes translation jobs while preserving
+their producing engine and work generation. `HistoryWorker` serializes storage
+operations, bounds pending work, and releases storage after active work completes.
+
 ## Contributing
 
 Follow [AGENTS.md](AGENTS.md). Keep changes focused: edit, format and lint, run the

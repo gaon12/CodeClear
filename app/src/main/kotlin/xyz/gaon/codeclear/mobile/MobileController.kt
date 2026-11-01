@@ -4,17 +4,10 @@ import android.content.Context
 import android.os.CancellationSignal
 import android.os.Handler
 import android.os.Looper
-import android.os.OperationCanceledException
-import java.util.concurrent.ArrayBlockingQueue
-import java.util.concurrent.RejectedExecutionException
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import xyz.gaon.codeclear.nearby.NearbyOriginal
 import xyz.gaon.codeclear.probe.CaptureObserver
 import xyz.gaon.codeclear.probe.LocalEngine
-import xyz.gaon.codeclear.probe.LocalInput
-import xyz.gaon.codeclear.probe.LocalResult
 import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeNotificationListener
@@ -43,24 +36,22 @@ data class MobileState(
     val storageError: Boolean = false
 )
 
-/** Owns database work and one translation at a time. Activities render state and submit actions. */
+/** Coordinates product state and consent; workers own history execution and translation jobs. */
 class MobileController(
     private val context: Context,
     private val store: AlertHistoryStore,
     private val preferences: OptionsStorage,
-    private val engine: LocalEngine,
+    engine: LocalEngine,
     private val changed: (MobileState) -> Unit,
-    private val translated: (Long, String, TranslationEngineKind) -> Unit = { _, _, _ -> },
+    translated: (Long, String, TranslationEngineKind) -> Unit = { _, _, _ -> },
     private val deleted: (Long?) -> Unit = {},
     private val releaseEngine: () -> Unit = {},
-    private val cancelEngine: () -> Unit = {},
+    cancelEngine: () -> Unit = {},
     private val captured: (Long, CapturedAlert) -> Unit = { _, _ -> },
     private val networkCountry: () -> ReceptionCountry? = NetworkCountry(context)::read,
     private val optionsReady: (MobileOptions) -> Unit = {}
 ) : CaptureObserver,
     AutoCloseable {
-    private data class Work(val ticket: TranslationTicket, val epoch: Long, val modelEpoch: Long)
-    private data class Candidate(val ticket: TranslationTicket, val cached: SavedTranslation?)
     private data class ObservationKey(
         val source: String,
         val identity: String,
@@ -73,9 +64,16 @@ class MobileController(
         val detail: SavedAlert?
     )
     private val main = Handler(Looper.getMainLooper())
-    private val worker = ThreadPoolExecutor(0, 1, 30, TimeUnit.SECONDS, ArrayBlockingQueue(128))
-    private val workEpoch = AtomicLong()
-    private val modelEpoch = AtomicLong()
+    private val worker = HistoryWorker(store::close, ::failStorage)
+    private val translations = AlertTranslationQueue(
+        store,
+        worker,
+        engine,
+        ::translationSelection,
+        ::refresh,
+        translated,
+        cancelEngine
+    )
     private val captureGeneration = AtomicLong(ProbeSession.currentGeneration())
     private val observationIds = linkedMapOf<Long, Long>() // Accessed only on the database worker.
 
@@ -89,9 +87,6 @@ class MobileController(
     private var optionsRevision = 0L
     private var optionsSaving = false
     private var stopNearbyOnLoad = false
-    private var selecting = false
-    private var active: Work? = null
-    private var engineRunning = false
     private var handlingFailure = false
     private var capturePaused = false
 
@@ -116,7 +111,7 @@ class MobileController(
             if (stopRequested) io({ preferences.save(resolved) }) {}
             syncCaptureConsent(refreshSources = true)
             refresh()
-            kick()
+            translations.kick()
         }
     }
 
@@ -146,8 +141,7 @@ class MobileController(
                 options.serverAllowed != state.options.serverAllowed ||
                 options.labsEnabled != state.options.labsEnabled
         if (changedWork) {
-            workEpoch.incrementAndGet()
-            cancelEngine()
+            translations.invalidate()
         }
         update(
             state.copy(
@@ -178,7 +172,7 @@ class MobileController(
                 optionsSaving = false
                 optionsReady(options)
                 refresh()
-                kick()
+                translations.kick()
             }
         }
     }
@@ -257,7 +251,7 @@ class MobileController(
             if (generation == captureGeneration.get() && !capturePaused) {
                 if (observation.created) captured(observation.id, enriched)
                 refresh()
-                kick()
+                translations.kick()
             }
         }
     }
@@ -290,10 +284,10 @@ class MobileController(
             complete(null)
             return
         }
-        val epoch = workEpoch.get()
+        val epoch = translations.generation
         val options = state.options
         io({
-            if (epoch != workEpoch.get() || !allowed()) return@io null
+            if (epoch != translations.generation || !allowed()) return@io null
             store.insert(
                 CapturedAlert(
                     sourcePackage = "xyz.gaon.codeclear.nearby",
@@ -314,8 +308,8 @@ class MobileController(
             }
         }, onFailure = { complete(null) }) { id ->
             refresh()
-            kick()
-            complete(id.takeIf { epoch == workEpoch.get() && allowed() })
+            translations.kick()
+            complete(id.takeIf { epoch == translations.generation && allowed() })
         }
     }
 
@@ -385,12 +379,12 @@ class MobileController(
         openDetail(id, target, engine)
         update(state.copy(detailSourceLanguage = originalLanguageCode(originalLanguage)))
         if (!state.options.translationAllowed) return
-        val epoch = workEpoch.get()
+        val epoch = translations.generation
         io({
-            if (epoch == workEpoch.get()) store.queueRetry(id, target, engine)
+            if (epoch == translations.generation) store.queueRetry(id, target, engine)
         }) {
             refresh()
-            kick()
+            translations.kick()
         }
     }
 
@@ -467,13 +461,14 @@ class MobileController(
         val target = state.options.target.languageTag
         val selectedEngine = state.options.engine
         // A target change prepares visible records, not an unrequested translation of all history.
-        io({ ids.forEach { store.queueTranslation(it, target, selectedEngine) } }) { kick() }
+        io({
+            ids.forEach { store.queueTranslation(it, target, selectedEngine) }
+        }) { translations.kick() }
     }
 
     fun delete(id: Long?) {
         requireMain()
-        workEpoch.incrementAndGet()
-        cancelEngine()
+        translations.invalidate()
         queryRevision++
         queryCancellation?.cancel()
         ProbeSession.clear()
@@ -490,7 +485,7 @@ class MobileController(
             store.recoverInterruptedWork()
         }) {
             refresh()
-            kick()
+            translations.kick()
         }
     }
 
@@ -506,13 +501,13 @@ class MobileController(
         ) {
             return
         }
-        val epoch = workEpoch.get()
+        val epoch = translations.generation
         io({
-            epoch == workEpoch.get() && store.queueRetry(id, target, selectedEngine)
+            epoch == translations.generation && store.queueRetry(id, target, selectedEngine)
         }) { queued ->
-            if (queued && epoch == workEpoch.get()) {
+            if (queued && epoch == translations.generation) {
                 refresh()
-                kick()
+                translations.kick()
             }
         }
     }
@@ -522,11 +517,7 @@ class MobileController(
         selectedEngine: TranslationEngineKind = TranslationEngineKind.ML_KIT
     ) {
         requireMain()
-        modelEpoch.incrementAndGet()
-        io({ store.requeueMissingModels(target, selectedEngine) }) {
-            refresh()
-            kick()
-        }
+        translations.modelsPrepared(target, selectedEngine)
     }
 
     fun retryStorage() {
@@ -538,149 +529,24 @@ class MobileController(
         }
     }
 
-    private fun kick() {
+    private fun translationSelection(): TranslationSelection? {
         if (closed || !state.loaded || state.storageError || !state.options.translationAllowed ||
-            active != null || optionsSaving ||
-            selecting
+            optionsSaving
         ) {
-            return
+            return null
         }
-        selecting = true
-        val epoch = workEpoch.get()
-        val target = state.options.target
-        val selectedEngine = state.options.engine
-        val detailId = state.detailId
-        val detailTarget = state.detailTarget?.takeIf {
-            it != target.languageTag && state.detailEngine == selectedEngine
-        }
-        io({
-            val detailTicket = if (detailId != null && detailTarget != null) {
-                store.beginTranslation(detailId, detailTarget, engine = selectedEngine)
-            } else {
-                null
+        return TranslationSelection(
+            state.options.target,
+            state.options.engine,
+            state.detailId,
+            state.detailTarget?.takeIf {
+                it != state.options.target.languageTag && state.detailEngine == state.options.engine
             }
-            val candidate = detailTicket?.let { ticket ->
-                Candidate(
-                    ticket,
-                    store.cachedTranslation(ticket.original, ticket.target, selectedEngine)
-                )
-            }
-            candidate ?: store.nextQueued(target.languageTag, selectedEngine)?.let { id ->
-                store.beginTranslation(
-                    id,
-                    target.languageTag,
-                    engine = selectedEngine
-                )?.let { ticket ->
-                    Candidate(
-                        ticket,
-                        store.cachedTranslation(ticket.original, target.languageTag, selectedEngine)
-                    )
-                }
-            }
-        }) { candidate ->
-            selecting = false
-            if (epoch != workEpoch.get()) {
-                kick()
-                return@io
-            }
-            if (candidate != null) {
-                val job = Work(candidate.ticket, epoch, modelEpoch.get())
-                if (candidate.cached == null) {
-                    run(job)
-                } else {
-                    active = job
-                    finish(job, candidate.cached)
-                }
-            }
-        }
+        )
     }
 
-    private fun run(job: Work) {
-        active = job
-        refresh()
-        val target = LocalTarget.entries.first { it.languageTag == job.ticket.target }
-        // Model preparation is a separate explicit action; background translation never downloads.
-        engineRunning = true
-        engine.run(
-            LocalInput(job.ticket.alertId, job.ticket.original, target, job.ticket.engine),
-            false
-        ) { result ->
-            engineRunning = false
-            val saved = when (result) {
-                is LocalResult.Ready -> SavedTranslation(
-                    TranslationPhase.READY,
-                    result.text,
-                    result.source,
-                    engine = job.ticket.engine,
-                    sameLanguage = result.sameLanguage
-                )
-
-                LocalResult.Quota -> SavedTranslation(TranslationPhase.QUOTA)
-
-                LocalResult.TooLong -> SavedTranslation(TranslationPhase.TOO_LONG)
-
-                LocalResult.NeedsModels -> SavedTranslation(TranslationPhase.NEEDS_MODELS)
-
-                LocalResult.UnknownLanguage -> SavedTranslation(TranslationPhase.UNKNOWN_LANGUAGE)
-
-                LocalResult.Unavailable -> SavedTranslation(TranslationPhase.UNAVAILABLE)
-
-                LocalResult.UnsupportedPair -> SavedTranslation(TranslationPhase.UNSUPPORTED_PAIR)
-
-                else -> SavedTranslation(TranslationPhase.FAILED)
-            }
-            finish(job, saved.copy(engine = job.ticket.engine))
-        }
-    }
-
-    private fun finish(job: Work, result: SavedTranslation) {
-        if (closed || active != job) return
-        io({
-            if (job.epoch != workEpoch.get()) return@io false
-            val saved = store.finishTranslation(job.ticket, result)
-            // A download can complete while an older SDK attempt is still reporting missing packs.
-            if (saved && result.phase == TranslationPhase.NEEDS_MODELS &&
-                job.modelEpoch != modelEpoch.get() && job.epoch == workEpoch.get()
-            ) {
-                store.queueRetry(job.ticket.alertId, job.ticket.target, job.ticket.engine)
-            }
-            saved
-        }) { saved ->
-            if (active == job) active = null
-            if (saved && job.epoch == workEpoch.get()) {
-                if (result.phase ==
-                    TranslationPhase.READY
-                ) {
-                    translated(job.ticket.alertId, job.ticket.target, job.ticket.engine)
-                }
-                refresh()
-            }
-            kick()
-        }
-    }
-
-    private fun <T> io(block: () -> T, onFailure: () -> Unit = {}, success: (T) -> Unit) {
-        if (closed) return
-        try {
-            worker.execute {
-                if (closed) return@execute
-                try {
-                    val result = block()
-                    main.post { if (!closed) success(result) }
-                } catch (_: OperationCanceledException) {
-                    // A newer view request owns the UI; cancellation is not a storage failure.
-                } catch (_: Exception) {
-                    main.post {
-                        failStorage()
-                        onFailure()
-                    }
-                }
-            }
-        } catch (_: RejectedExecutionException) {
-            failStorage()
-            onFailure()
-        }
-    }
+    private fun <T> io(block: () -> T, onFailure: () -> Unit = {}, success: (T) -> Unit) =
+        worker.submit(block, onFailure, success)
 
     private fun failStorage() {
         if (closed || handlingFailure) return
@@ -688,12 +554,9 @@ class MobileController(
         initializing = false
         optionsSaving = false
         optionsRevision++
-        selecting = false
-        workEpoch.incrementAndGet()
-        cancelEngine()
+        translations.storageFailed()
         queryRevision++
         queryCancellation?.cancel()
-        if (!engineRunning) active = null
         update(
             state.copy(
                 storageError = true,
@@ -720,20 +583,18 @@ class MobileController(
 
     fun awaitClosed(timeoutMillis: Long): Boolean {
         check(Looper.myLooper() != Looper.getMainLooper())
-        return worker.awaitTermination(timeoutMillis, TimeUnit.MILLISECONDS)
+        return worker.awaitClosed(timeoutMillis)
     }
 
     override fun close() {
         requireMain()
         if (closed) return
         closed = true
-        workEpoch.incrementAndGet()
+        translations.close()
         subscription.close()
         queryCancellation?.cancel()
         main.removeCallbacksAndMessages(null)
-        worker.queue.clear()
-        worker.execute { store.close() }
-        worker.shutdown()
+        worker.close()
         releaseEngine()
     }
 }
