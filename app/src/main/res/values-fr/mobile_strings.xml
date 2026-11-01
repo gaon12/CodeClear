@@ -1,8 +1,8 @@
 <resources>
     <string name="mobile_ui_language_title">Langue de l’application</string>
-    <string name="result_channel">Résultats de traduction</string>
-    <string name="result_title">La traduction de l’alerte est prête</string>
-    <string name="result_body">Touchez pour voir l’original et la traduction.</string>
+    <string name="result_channel">Alertes d’urgence</string>
+    <string name="result_title">Alerte d’urgence</string>
+    <string name="result_body">Déverrouillez pour lire l’alerte enregistrée.</string>
     <string name="mobile_alert">Alerte d’urgence</string>
     <string name="mobile_captured">Recueilli le %1$s</string>
     <string name="mobile_original">Original</string>
@@ -30,7 +30,7 @@
     <string name="mobile_translation_settings">Traduction</string>
     <string name="mobile_local_description">Traduisez sur cet appareil avec ML Kit. La conversion chinoise propose les écritures simplifiée et traditionnelle.</string>
     <string name="mobile_appearance">Apparence</string>
-    <string name="mobile_result_notifications">Notifications de traduction</string>
+    <string name="mobile_result_notifications">Notifications des alertes d’urgence</string>
     <string name="mobile_privacy">Confidentialité et historique</string>
     <string name="mobile_delete_all">Supprimer tout l’historique</string>
     <string name="mobile_compatibility">Compatibilité de l’appareil</string>
@@ -112,7 +112,7 @@
     <string name="mobile_notifications">Notifications</string>
     <string name="mobile_on">Activé</string>
     <string name="mobile_off">Désactivé</string>
-    <string name="mobile_result_notification_summary">Recevez une notification lorsque la traduction est prête. Le texte des alertes reste masqué.</string>
+    <string name="mobile_result_notification_summary">Affiche le texte des alertes collectées, puis met à jour la même notification lorsque la traduction est prête. L’écran verrouillé respecte vos réglages de confidentialité Android.</string>
     <string name="mobile_data_storage">Stockage des données</string>
     <string name="mobile_about">À propos</string>
     <string name="mobile_capture_unavailable">Réception directe non prise en charge</string>
@@ -206,7 +206,7 @@
     <string name="mobile_models_query_failed">Impossible de lire la liste des modèles. Réessayez.</string>
     <string name="mobile_required_access">Autoriser les permissions nécessaires</string>
     <string name="mobile_required_access_notice">Ces permissions permettent de lire les alertes et de signaler les traductions prêtes. Autorisez-les dans les paramètres Android, puis revenez pour continuer.</string>
-    <string name="mobile_notification_permission_reason">Recevez une notification lorsqu’une traduction est prête. Autorisez les notifications dans Android.</string>
+    <string name="mobile_notification_permission_reason">Autorisez les notifications dans Android pour voir les alertes collectées et les mises à jour de traduction.</string>
     <string name="mobile_intro_purpose">CodeClear conserve les alertes originales sur votre appareil et les traduit dans une langue que vous comprenez. Vous pouvez lire, rechercher ou écouter les messages enregistrés. L’application complète l’alerte système originale.</string>
     <string name="mobile_model_review">Vérifiez les modèles de langue nécessaires.</string>
     <string name="mobile_model_preparing">Préparation des modèles par Wi-Fi…</string>

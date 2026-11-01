@@ -61,12 +61,22 @@ class ResultNotificationsDeviceTest {
         val manager = context.getSystemService(NotificationManager::class.java)
         owner.cancel(null)
         try {
-            owner.post(88, "en", engine = TranslationEngineKind.SYSTEM)
+            owner.post(
+                88,
+                "en",
+                engine = TranslationEngineKind.SYSTEM,
+                body = "[DRILL] Original alert"
+            )
             await { manager.activeNotifications.any { it.tag == "result-88" } }
             val previous = manager.activeNotifications.first {
                 it.tag == "result-88"
             }.notification.contentIntent
-            owner.post(88, "en", engine = TranslationEngineKind.ML_KIT)
+            owner.post(
+                88,
+                "en",
+                engine = TranslationEngineKind.ML_KIT,
+                body = "[DRILL] Updated alert"
+            )
             await {
                 manager.activeNotifications.firstOrNull { it.tag == "result-88" }
                     ?.notification?.contentIntent != previous
@@ -84,12 +94,22 @@ class ResultNotificationsDeviceTest {
         val manager = context.getSystemService(NotificationManager::class.java)
         owner.cancel(null)
         try {
-            owner.post(89, "en", engine = TranslationEngineKind.SYSTEM)
+            owner.post(
+                89,
+                "en",
+                engine = TranslationEngineKind.SYSTEM,
+                body = "[DRILL] Original alert"
+            )
             await { manager.activeNotifications.any { it.tag == "result-89" } }
             val previous = manager.activeNotifications.first { it.tag == "result-89" }
                 .notification.contentIntent
             owner.cancel(89)
-            owner.post(89, "de", engine = TranslationEngineKind.ML_KIT)
+            owner.post(
+                89,
+                "de",
+                engine = TranslationEngineKind.ML_KIT,
+                body = "[DRILL] Updated alert"
+            )
             await {
                 val notice = manager.activeNotifications.firstOrNull { it.tag == "result-89" }
                 notice != null && notice.notification.contentIntent != previous
@@ -118,7 +138,7 @@ class ResultNotificationsDeviceTest {
         val owner = ResultNotifications(english)
         val manager = context.getSystemService(NotificationManager::class.java)
         try {
-            owner.post(71, "de", korean)
+            owner.post(71, "de", korean, body = "[DRILL] Localized notification")
             await { manager.activeNotifications.any { it.tag == "result-71" } }
             val notice = manager.activeNotifications.first { it.tag == "result-71" }.notification
             assertEquals(
@@ -138,13 +158,13 @@ class ResultNotificationsDeviceTest {
     }
 
     @Test
-    fun notificationsRemainGenericBoundedAndIndependentlyCancellable() {
+    fun notificationsShowPrivateBodiesAndRemainBoundedAndIndependentlyCancellable() {
         val owner = ResultNotifications(context)
         val manager = context.getSystemService(NotificationManager::class.java)
         assertTrue("This test requires user-enabled result notifications", owner.allowed())
         owner.cancel(null)
         try {
-            for (id in 1L..22L) owner.post(id, "en")
+            for (id in 1L..22L) owner.post(id, "en", body = "[DRILL] Alert $id")
             await(timeoutMillis = 20_000) {
                 manager.activeNotifications.count { it.tag?.startsWith("result-") == true } ==
                     20 &&
@@ -157,10 +177,16 @@ class ResultNotificationsDeviceTest {
             assertFalse(active.any { it.tag == "result-1" })
             val notification = active.first { it.tag == "result-22" }.notification
             assertEquals(
-                context.getString(R.string.result_body),
+                "[DRILL] Alert 22",
                 notification.extras.getCharSequence(Notification.EXTRA_TEXT).toString()
             )
             assertEquals(Notification.VISIBILITY_PRIVATE, notification.visibility)
+            assertEquals(
+                context.getString(R.string.result_body),
+                notification.publicVersion.extras.getCharSequence(
+                    Notification.EXTRA_TEXT
+                ).toString()
+            )
             assertNull(notification.fullScreenIntent)
             assertEquals("translation-results", notification.group)
             await {
@@ -174,7 +200,7 @@ class ResultNotificationsDeviceTest {
             assertTrue(summary.flags and Notification.FLAG_GROUP_SUMMARY != 0)
             assertNull(summary.fullScreenIntent)
             val previous = notification.contentIntent
-            owner.post(22, "de")
+            owner.post(22, "de", body = "[DRILL] Updated alert")
             await {
                 manager.activeNotifications.firstOrNull {
                     it.tag == "result-22"
@@ -212,7 +238,7 @@ class ResultNotificationsDeviceTest {
         val manager = context.getSystemService(NotificationManager::class.java)
         owner.cancel(null)
         try {
-            for (id in 101L..106L) owner.post(id, "en")
+            for (id in 101L..106L) owner.post(id, "en", body = "[DRILL] Alert $id")
             owner.cancel(null)
             // Platform cancellation is asynchronous; first observe its completion, then
             // allow enough time for a stale dispatch callback to expose a resurrection.

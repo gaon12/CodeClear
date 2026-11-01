@@ -21,7 +21,7 @@ internal class AlertTranslationQueue(
     private val engine: TranslationEngine,
     private val selection: () -> TranslationSelection?,
     private val refresh: () -> Unit,
-    private val translated: (Long, String, TranslationEngineKind) -> Unit,
+    private val translated: (Long, String, TranslationEngineKind, String) -> Unit,
     private val cancelEngine: () -> Unit
 ) : AutoCloseable {
     private data class Work(val ticket: TranslationTicket, val epoch: Long, val modelEpoch: Long)
@@ -164,8 +164,9 @@ internal class AlertTranslationQueue(
         }) { saved ->
             if (active == job) active = null
             if (saved && job.epoch == generation) {
-                if (result.phase == TranslationPhase.READY) {
-                    translated(job.ticket.alertId, job.ticket.target, job.ticket.engine)
+                val body = result.text
+                if (result.phase == TranslationPhase.READY && body != null) {
+                    translated(job.ticket.alertId, job.ticket.target, job.ticket.engine, body)
                 }
                 refresh()
             }

@@ -1,8 +1,8 @@
 <resources>
     <string name="mobile_ui_language_title">App-Sprache</string>
-    <string name="result_channel">Übersetzungsergebnisse</string>
-    <string name="result_title">Übersetzung der Notfallwarnung bereit</string>
-    <string name="result_body">Tippen, um Original und Übersetzung anzuzeigen.</string>
+    <string name="result_channel">Notfallwarnungen</string>
+    <string name="result_title">Notfallwarnung</string>
+    <string name="result_body">Entsperren Sie das Gerät, um die gespeicherte Warnung zu lesen.</string>
     <string name="mobile_alert">Notfallwarnung</string>
     <string name="mobile_captured">Erfasst: %1$s</string>
     <string name="mobile_original">Original</string>
@@ -30,7 +30,7 @@
     <string name="mobile_translation_settings">Übersetzung</string>
     <string name="mobile_local_description">Übersetzen Sie mit ML Kit auf diesem Gerät. Chinesisch unterstützt vereinfachte und traditionelle Schrift.</string>
     <string name="mobile_appearance">Darstellung</string>
-    <string name="mobile_result_notifications">Ergebnisbenachrichtigungen</string>
+    <string name="mobile_result_notifications">Benachrichtigungen für Notfallwarnungen</string>
     <string name="mobile_privacy">Datenschutz und Verlauf</string>
     <string name="mobile_delete_all">Gesamten Verlauf löschen</string>
     <string name="mobile_compatibility">Gerätekompatibilität</string>
@@ -112,7 +112,7 @@
     <string name="mobile_notifications">Benachrichtigungen</string>
     <string name="mobile_on">Ein</string>
     <string name="mobile_off">Aus</string>
-    <string name="mobile_result_notification_summary">Benachrichtigung bei fertiger Übersetzung. Warntexte werden nicht in Benachrichtigungen angezeigt.</string>
+    <string name="mobile_result_notification_summary">Zeigt erfasste Warntexte und aktualisiert dieselbe Benachrichtigung, sobald die Übersetzung bereit ist. Für den Sperrbildschirm gelten die Android-Datenschutzeinstellungen.</string>
     <string name="mobile_data_storage">Datenspeicherung</string>
     <string name="mobile_about">Über die App</string>
     <string name="mobile_capture_unavailable">Direkter Empfang nicht unterstützt</string>
@@ -205,7 +205,7 @@
     <string name="mobile_models_query_failed">Die Modellliste konnte nicht gelesen werden. Versuchen Sie es erneut.</string>
     <string name="mobile_required_access">Erforderliche Berechtigungen erlauben</string>
     <string name="mobile_required_access_notice">Diese Berechtigungen ermöglichen das Lesen von Warnmeldungen und Benachrichtigungen über fertige Übersetzungen. Erlauben Sie den Zugriff in den Android-Einstellungen und kehren Sie zurück.</string>
-    <string name="mobile_notification_permission_reason">Erhalten Sie eine Benachrichtigung, sobald eine Übersetzung fertig ist. Erlauben Sie Benachrichtigungen in Android.</string>
+    <string name="mobile_notification_permission_reason">Erlauben Sie Benachrichtigungen in Android, um erfasste Warnungen und Übersetzungen zu sehen.</string>
     <string name="mobile_intro_purpose">CodeClear speichert Warnmeldungen auf Ihrem Gerät und übersetzt sie in eine verständliche Sprache. Gespeicherte Nachrichten lassen sich lesen, suchen und vorlesen. Die App ergänzt die ursprüngliche Systemwarnung.</string>
     <string name="mobile_model_review">Prüfen Sie die benötigten Sprachmodelle.</string>
     <string name="mobile_model_preparing">Sprachmodelle werden über WLAN vorbereitet…</string>

@@ -1,8 +1,8 @@
 <resources>
     <string name="mobile_ui_language_title">应用语言</string>
-    <string name="result_channel">翻译结果</string>
-    <string name="result_title">紧急警报翻译已完成</string>
-    <string name="result_body">点按查看原文和译文。</string>
+    <string name="result_channel">紧急警报通知</string>
+    <string name="result_title">紧急警报</string>
+    <string name="result_body">解锁后查看已保存的警报。</string>
     <string name="mobile_alert">紧急警报</string>
     <string name="mobile_captured">采集时间：%1$s</string>
     <string name="mobile_original">原文</string>
@@ -30,7 +30,7 @@
     <string name="mobile_translation_settings">翻译</string>
     <string name="mobile_local_description">使用 ML Kit 在设备内翻译，中文支持简体与繁体转换。</string>
     <string name="mobile_appearance">外观</string>
-    <string name="mobile_result_notifications">翻译结果通知</string>
+    <string name="mobile_result_notifications">紧急警报通知</string>
     <string name="mobile_privacy">隐私与记录</string>
     <string name="mobile_delete_all">删除全部记录</string>
     <string name="mobile_compatibility">设备兼容性</string>
@@ -112,7 +112,7 @@
     <string name="mobile_notifications">通知</string>
     <string name="mobile_on">已开启</string>
     <string name="mobile_off">已关闭</string>
-    <string name="mobile_result_notification_summary">翻译完成时通知。不在通知中显示警报正文。</string>
+    <string name="mobile_result_notification_summary">显示已收集的警报内容，并在译文就绪后更新同一条通知。锁屏预览遵循 Android 隐私设置。</string>
     <string name="mobile_data_storage">数据存储说明</string>
     <string name="mobile_about">关于应用</string>
     <string name="mobile_capture_unavailable">不支持直接接收</string>
@@ -204,7 +204,7 @@
     <string name="mobile_models_query_failed">无法读取模型列表，请重试。</string>
     <string name="mobile_required_access">请授予必要权限</string>
     <string name="mobile_required_access_notice">读取紧急警报和通知翻译结果需要以下权限。请在 Android 设置中允许访问，返回后即可继续使用。</string>
-    <string name="mobile_notification_permission_reason">翻译完成时接收通知。请在 Android 设置中允许通知。</string>
+    <string name="mobile_notification_permission_reason">请在 Android 中允许通知，以查看已收集的警报和译文更新。</string>
     <string name="mobile_intro_purpose">CodeClear 将紧急警报原文保存在设备上，并翻译成您能理解的语言。您可以阅读、搜索或收听已保存的消息。本应用用于辅助系统原始警报。</string>
     <string name="mobile_model_review">请确认所需的语言模型。</string>
     <string name="mobile_model_preparing">正在通过 Wi-Fi 准备语言模型…</string>

@@ -31,6 +31,7 @@ class MobileControllerDeviceTest {
     private val engine = ControlledEngine()
     private val notices = mutableListOf<Long>()
     private val noticeEngines = mutableListOf<TranslationEngineKind>()
+    private val noticeBodies = mutableListOf<String>()
     private val savedOptions = mutableListOf<MobileOptions>()
     private var diagnosticScope: AutoCloseable? = null
 
@@ -140,6 +141,7 @@ class MobileControllerDeviceTest {
         onMain { engine.complete("[DRILL] Fresh model result 112") }
         await { it.latest?.translation?.phase == TranslationPhase.READY }
         assertEquals(id, latest.get().latest!!.id)
+        assertEquals("[DRILL] Fresh model result 112", onMain { noticeBodies.single() })
     }
 
     @Test
@@ -598,9 +600,10 @@ class MobileControllerDeviceTest {
                 preferences,
                 engine,
                 changed = latest::set,
-                translated = { id, _, producer ->
+                translated = { id, _, producer, body ->
                     notices += id
                     noticeEngines += producer
+                    noticeBodies += body
                 },
                 optionsReady = savedOptions::add
             ).also { it.start() }

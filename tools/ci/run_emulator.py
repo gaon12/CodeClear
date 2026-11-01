@@ -28,6 +28,7 @@ FIXTURES = {
     "capture.CaptureObserverDeviceTest": 3,
     "capture.CaptureServiceComponentsDeviceTest": 2,
     "mobile.MobileScreenDeviceTest": 58,
+    "mobile.NotificationContentDeviceTest": 1,
     "mobile.UiLocaleResourcesDeviceTest": 1,
     "probe.PreviewDeviceTest": 3,
     "mobile.ModelInventoryDeviceTest": 4,
@@ -50,6 +51,50 @@ FIXTURES = {
 
 def command(*args, timeout=120, **kwargs):
     return subprocess.run(args, check=True, text=True, timeout=timeout, **kwargs)
+
+
+def own_notification_has_body(dump, body):
+    active = re.search(r"(?ms)^  Notification List:[ \t]*\n(.*?)(?=^  \S|\Z)", dump)
+    if active is None:
+        return False
+    for record in re.split(r"(?m)^[ \t]*NotificationRecord\(", active.group(1))[1:]:
+        header = record.splitlines()[0]
+        if not re.search(r"\bpkg=xyz\.gaon\.codeclear(?=[\s,)])", header):
+            continue
+        if not re.search(r"\btag=result-\d+(?=[\s,)])", header):
+            continue
+        values = re.findall(
+            r"(?m)^[ \t]*android\.text=String[ \t]*\((.*)\)[ \t]*$", record
+        )
+        if body in values:
+            return True
+    return False
+
+
+def wait_for_alert_notification(device, body):
+    _require(
+        device("shell", "getprop", "ro.kernel.qemu") == "1",
+        "Notification fixtures require a disposable emulator",
+    )
+    deadline = time.monotonic() + 15
+    dump = ""
+    while time.monotonic() < deadline:
+        dump = device("shell", "dumpsys", "notification", "--noredact", timeout=10)
+        if own_notification_has_body(dump, body):
+            print(
+                "Own alert notification contains the exact source body with translation disabled.",
+                flush=True,
+            )
+            return
+        time.sleep(0.25)
+    headers = [
+        line.strip()[:300]
+        for line in dump.splitlines()
+        if line.lstrip().startswith("NotificationRecord(")
+        and re.search(r"\bpkg=xyz\.gaon\.codeclear(?=[\s,)])", line)
+    ]
+    print("Own notification record metadata: " + repr(headers[:21]), flush=True)
+    raise RuntimeError("The owned app did not post its captured synthetic alert body")
 
 
 def wait_for_boot(device, process, timeout=240):
@@ -439,7 +484,11 @@ def main():
             ]:
                 install_fixture(device, "app/build/outputs/apk/" + apk)
 
-            selected = ",".join("xyz.gaon.codeclear." + name for name in FIXTURES)
+            fixtures = dict(FIXTURES)
+            # Newer guests need a separate normal notification-consent flow.
+            if args.api < 33:
+                fixtures["mobile.ResultNotificationsDeviceTest"] = 6
+            selected = ",".join("xyz.gaon.codeclear." + name for name in fixtures)
             fixtures_started = True
             output = device(
                 "shell",
@@ -465,7 +514,7 @@ def main():
                     r"Time: |OK \(|FAILURES!!!|Tests run:|INSTRUMENTATION_FAILED", line
                 ):
                     print(line, flush=True)
-            expected = sum(FIXTURES.values())
+            expected = sum(fixtures.values())
             passed = f"OK ({expected} tests)" in output and "FAILURES!!!" not in output
             if passed:
                 print(
@@ -476,7 +525,7 @@ def main():
                 # Every selected fixture is synthetic and runs only on this owned AVD.
                 print("Incomplete instrumentation tail: " + output[-6000:], flush=True)
             if args.system_receiver:
-                from system_receiver import validate
+                from system_receiver import BODIES, validate
 
                 validate(
                     device,
@@ -485,6 +534,7 @@ def main():
                     serial,
                     args.receiver_mode,
                 )
+                wait_for_alert_notification(device, BODIES[-1])
             if args.optimized:
                 from optimized_runtime import validate as validate_optimized
 

@@ -1,8 +1,8 @@
 <resources>
     <string name="mobile_ui_language_title">App language</string>
-    <string name="result_channel">Translation results</string>
-    <string name="result_title">Emergency alert translation ready</string>
-    <string name="result_body">Tap to view the original and translation.</string>
+    <string name="result_channel">Emergency alerts</string>
+    <string name="result_title">Emergency alert</string>
+    <string name="result_body">Unlock to read the saved alert.</string>
     <string name="mobile_alert">Emergency alert</string>
     <string name="mobile_captured">Captured %1$s</string>
     <string name="mobile_original">Original</string>
@@ -31,7 +31,7 @@
     <string name="mobile_translation_settings">Translation</string>
     <string name="mobile_local_description">Translate on this device with ML Kit. Chinese script conversion supports simplified and traditional output.</string>
     <string name="mobile_appearance">Appearance</string>
-    <string name="mobile_result_notifications">Result notifications</string>
+    <string name="mobile_result_notifications">Emergency alert notifications</string>
     <string name="mobile_privacy">Privacy and history</string>
     <string name="mobile_privacy_description">Originals and translations stay in private device storage until you delete them. No account or synchronization. App backup and transfer are disabled. Alert text leaves the device only when you separately allow and use MyMemory server translation; the provider may retain submitted text.</string>
     <string name="mobile_delete_all">Delete all history</string>
@@ -112,7 +112,7 @@
     <string name="mobile_notifications">Notifications</string>
     <string name="mobile_on">On</string>
     <string name="mobile_off">Off</string>
-    <string name="mobile_result_notification_summary">Get notified when a translation is ready. Alert text is kept out of notifications.</string>
+    <string name="mobile_result_notification_summary">Shows captured alert text and updates the same notification when translation is ready. Lock-screen previews follow Android privacy settings.</string>
     <string name="mobile_data_storage">How data is stored</string>
     <string name="mobile_about">About</string>
     <string name="mobile_capture_unavailable">Direct reception is not supported</string>
@@ -205,7 +205,7 @@
     <string name="mobile_models_query_failed">Could not read the model list. Try again.</string>
     <string name="mobile_required_access">Allow required permissions</string>
     <string name="mobile_required_access_notice">These permissions let the app read emergency alerts and notify you when translations are ready. Allow access in Android settings, then return to continue.</string>
-    <string name="mobile_notification_permission_reason">Receive a notification when a translation is ready. Allow notifications in Android settings.</string>
+    <string name="mobile_notification_permission_reason">Allow notifications in Android to see captured alerts and translation updates.</string>
     <string name="mobile_intro_purpose">CodeClear keeps emergency-alert originals on your device and translates them into a language you understand. Read, search or listen to saved messages. It supplements the original system warning.</string>
     <string name="mobile_model_review">Review the required language models.</string>
     <string name="mobile_model_preparing">Preparing models over Wi-Fi…</string>

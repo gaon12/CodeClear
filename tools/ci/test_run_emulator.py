@@ -9,12 +9,62 @@ from tools.ci.run_emulator import (
     image_for_profile,
     install_fixture,
     main,
+    own_notification_has_body,
     user_zero_unlocked,
     verify_avd_target,
+    wait_for_alert_notification,
     wait_for_boot,
     wait_for_package_manager,
     wait_for_unlock,
 )
+
+
+class NotificationDumpTest(unittest.TestCase):
+    def dump(self, package="xyz.gaon.codeclear", tag="result-42"):
+        return (
+            "  Notification List:\n"
+            f"    NotificationRecord(0x123: pkg={package} id=1 tag={tag} user=0)\n"
+            "      android.text=String ([DRILL] Synthetic body)\n"
+            "  mArchive=empty\n"
+        )
+
+    def test_only_an_owned_active_child_can_satisfy_the_body_check(self):
+        self.assertTrue(
+            own_notification_has_body(self.dump(), "[DRILL] Synthetic body")
+        )
+        for package, tag in [
+            ("com.google.android.cellbroadcastreceiver", "result-42"),
+            ("xyz.gaon.codeclear.other", "result-42"),
+            ("xyz.gaon.codeclear", "translation-summary"),
+        ]:
+            self.assertFalse(
+                own_notification_has_body(
+                    self.dump(package, tag), "[DRILL] Synthetic body"
+                )
+            )
+
+    def test_archived_or_different_body_notifications_do_not_prove_current_display(
+        self,
+    ):
+        self.assertFalse(
+            own_notification_has_body(self.dump(), "[DRILL] Different body")
+        )
+        self.assertFalse(
+            own_notification_has_body(
+                self.dump().replace(
+                    "Notification List:", "Enqueued Notification List:"
+                ),
+                "[DRILL] Synthetic body",
+            )
+        )
+        archived = "  Notification List:\n  mArchive=\n" + self.dump()
+        self.assertFalse(own_notification_has_body(archived, "[DRILL] Synthetic body"))
+
+    def test_physical_device_is_rejected_before_reading_notification_payloads(self):
+        device = Mock(return_value="0")
+        with self.assertRaisesRegex(RuntimeError, "disposable emulator"):
+            wait_for_alert_notification(device, "[DRILL] Synthetic body")
+        device.assert_called_once_with("shell", "getprop", "ro.kernel.qemu")
 
 
 class DiagnosticArgumentsTest(unittest.TestCase):

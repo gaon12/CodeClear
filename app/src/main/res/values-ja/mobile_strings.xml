@@ -1,8 +1,8 @@
 <resources>
     <string name="mobile_ui_language_title">アプリの言語</string>
-    <string name="result_channel">翻訳結果</string>
-    <string name="result_title">緊急速報の翻訳が完了しました</string>
-    <string name="result_body">タップして原文と翻訳を表示します。</string>
+    <string name="result_channel">緊急速報の通知</string>
+    <string name="result_title">緊急速報</string>
+    <string name="result_body">ロックを解除して保存された速報を確認してください。</string>
     <string name="mobile_alert">緊急速報</string>
     <string name="mobile_captured">取得：%1$s</string>
     <string name="mobile_original">原文</string>
@@ -30,7 +30,7 @@
     <string name="mobile_translation_settings">翻訳</string>
     <string name="mobile_local_description">ML Kitを使い、端末内で翻訳します。中国語は簡体字と繁体字の変換に対応しています。</string>
     <string name="mobile_appearance">表示設定</string>
-    <string name="mobile_result_notifications">翻訳結果の通知</string>
+    <string name="mobile_result_notifications">緊急速報の通知</string>
     <string name="mobile_privacy">プライバシーと履歴</string>
     <string name="mobile_delete_all">履歴をすべて削除</string>
     <string name="mobile_compatibility">端末の互換性</string>
@@ -112,7 +112,7 @@
     <string name="mobile_notifications">通知</string>
     <string name="mobile_on">オン</string>
     <string name="mobile_off">オフ</string>
-    <string name="mobile_result_notification_summary">翻訳が完了したら通知します。警報の本文は通知に表示しません。</string>
+    <string name="mobile_result_notification_summary">取得した緊急速報の本文を表示し、翻訳が準備できると同じ通知を更新します。ロック画面の表示は Android のプライバシー設定に従います。</string>
     <string name="mobile_data_storage">データの保存について</string>
     <string name="mobile_about">アプリについて</string>
     <string name="mobile_capture_unavailable">直接受信には非対応</string>
@@ -204,7 +204,7 @@
     <string name="mobile_models_query_failed">モデル一覧を取得できませんでした。再試行してください。</string>
     <string name="mobile_required_access">必要な権限を許可してください</string>
     <string name="mobile_required_access_notice">緊急速報の読み取りと翻訳完了の通知には、以下の権限が必要です。Androidの設定で許可してから戻ると、利用を続けられます。</string>
-    <string name="mobile_notification_permission_reason">翻訳が完了したときに通知します。Androidの設定で通知を許可してください。</string>
+    <string name="mobile_notification_permission_reason">取得した緊急速報と翻訳を確認するには、Android で通知を許可してください。</string>
     <string name="mobile_intro_purpose">CodeClearは緊急速報の原文を端末に保存し、理解できる言語に翻訳します。保存したメッセージの閲覧、検索、読み上げができます。システムの元の警告を補助するアプリです。</string>
     <string name="mobile_model_review">必要な言語モデルを確認してください。</string>
     <string name="mobile_model_preparing">Wi-Fiで言語モデルを準備しています。</string>

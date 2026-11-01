@@ -23,7 +23,7 @@ class MobileController(
     private val preferences: OptionsStorage,
     engine: TranslationEngine,
     private val changed: (MobileState) -> Unit,
-    translated: (Long, String, TranslationEngineKind) -> Unit = { _, _, _ -> },
+    translated: (Long, String, TranslationEngineKind, String) -> Unit = { _, _, _, _ -> },
     private val deleted: (Long?) -> Unit = {},
     private val releaseEngine: () -> Unit = {},
     cancelEngine: () -> Unit = {},

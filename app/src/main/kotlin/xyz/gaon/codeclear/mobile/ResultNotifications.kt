@@ -23,7 +23,14 @@ data class RecordDestination(
     val engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
 )
 
-/** No raw alert, translated text, or source heading enters the notification payload. */
+internal fun boundedNotificationBody(body: String): String {
+    require(body.length in 1..16384 && body.isNotBlank())
+    if (body.length <= 4096) return body
+    val end = if (body[4094].isHighSurrogate()) 4094 else 4095
+    return body.take(end) + "…"
+}
+
+/** Show bounded alert contents with a redacted public version and identifier-only deep links. */
 class ResultNotifications(private val context: Context) {
     private val manager = context.getSystemService(NotificationManager::class.java)
     private val posted = linkedSetOf<String>()
@@ -44,9 +51,11 @@ class ResultNotifications(private val context: Context) {
         id: Long,
         target: String,
         strings: Context = context,
-        engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
+        engine: TranslationEngineKind = TranslationEngineKind.ML_KIT,
+        body: String
     ) {
         require(id > 0 && target in HistoryText.targets)
+        require(body.length in 1..16384 && body.isNotBlank())
         if (!allowed()) return
         manager.createNotificationChannel(
             NotificationChannel(
@@ -71,6 +80,20 @@ class ResultNotifications(private val context: Context) {
             evicted += oldest
         }
         if (evicted.isNotEmpty()) rememberCancellation(evicted)
+        val notification = buildNotification(id, target, strings, engine, body)
+        pending.remove(tag)
+        pending[tag] = notification
+        scheduleDispatch()
+    }
+
+    internal fun buildNotification(
+        id: Long,
+        target: String,
+        strings: Context,
+        engine: TranslationEngineKind,
+        body: String
+    ): Notification {
+        val display = boundedNotificationBody(body)
         val intent = Intent(context, MainActivity::class.java)
             .setData(destinationUri(id, target, engine))
             .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
@@ -80,21 +103,27 @@ class ResultNotifications(private val context: Context) {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        val notification = Notification.Builder(context, CHANNEL)
+        val publicView = Notification.Builder(context, CHANNEL)
             .setSmallIcon(R.drawable.ic_result)
             .setContentTitle(strings.getString(R.string.result_title))
             .setContentText(strings.getString(R.string.result_body))
             .setContentIntent(action)
+            .setVisibility(Notification.VISIBILITY_PUBLIC)
+            .build()
+        return Notification.Builder(context, CHANNEL)
+            .setSmallIcon(R.drawable.ic_result)
+            .setContentTitle(strings.getString(R.string.result_title))
+            .setContentText(display)
+            .setStyle(Notification.BigTextStyle().bigText(display))
+            .setContentIntent(action)
             .setGroup(GROUP)
             .setGroupAlertBehavior(Notification.GROUP_ALERT_SUMMARY)
             .setVisibility(Notification.VISIBILITY_PRIVATE)
-            .setCategory(Notification.CATEGORY_STATUS)
+            .setPublicVersion(publicView)
+            .setCategory(Notification.CATEGORY_MESSAGE)
             .setOnlyAlertOnce(true)
             .setAutoCancel(true)
             .build()
-        pending.remove(tag)
-        pending[tag] = notification
-        scheduleDispatch()
     }
 
     @Synchronized

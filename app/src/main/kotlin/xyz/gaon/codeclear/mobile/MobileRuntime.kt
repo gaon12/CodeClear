@@ -87,18 +87,8 @@ class MobileRuntime(context: Context) {
                 sharingConfigured = enabled
             }
         },
-        translated = { id, target, producer ->
-            val language = state.options.uiLanguage
-            val localized = if (Build.VERSION.SDK_INT < 33 && language.isNotEmpty()) {
-                context.createConfigurationContext(
-                    Configuration(context.resources.configuration).apply {
-                        setLocales(LocaleList.forLanguageTags(language))
-                    }
-                )
-            } else {
-                context
-            }
-            notifications.post(id, target, localized, producer)
+        translated = { id, target, producer, body ->
+            notifications.post(id, target, notificationStrings(), producer, body)
         },
         deleted = {
             notifications.cancel(it)
@@ -113,13 +103,35 @@ class MobileRuntime(context: Context) {
             systemEngine.cancel()
             myMemory.cancel()
         },
-        captured = nearby::offer,
+        captured = { id, capture ->
+            nearby.offer(id, capture)
+            notifications.post(
+                id,
+                state.options.target.languageTag,
+                notificationStrings(),
+                state.options.engine,
+                capture.original
+            )
+        },
         optionsReady = {
             myMemory.authorize(
                 it.engine == TranslationEngineKind.MY_MEMORY && it.translationAllowed
             )
         }
     )
+
+    private fun notificationStrings(): Context {
+        val language = state.options.uiLanguage
+        return if (Build.VERSION.SDK_INT < 33 && language.isNotEmpty()) {
+            application.createConfigurationContext(
+                Configuration(application.resources.configuration).apply {
+                    setLocales(LocaleList.forLanguageTags(language))
+                }
+            )
+        } else {
+            application
+        }
+    }
     val models =
         ModelPreparation(MlKitModelPreparationBackend(), {
             inventory.preparationChanged(preparation, it)
