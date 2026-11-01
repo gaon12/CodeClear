@@ -67,7 +67,15 @@ class ConsentUi:
             windows = json.loads(output.read_text(encoding="utf-8"))
         if self.focused_package() != package:
             raise RuntimeError("The focused window changed while reading its layout")
-        applications = [w for w in windows if w.get("type") == "APPLICATION"]
+        applications = [
+            w
+            for w in windows
+            if w.get("type") == "APPLICATION"
+            or any(
+                n.get("resource-id", "").startswith(package + ":")
+                for n in w.get("content", [])
+            )
+        ]
         if not applications:
             raise RuntimeError("No application window was exposed")
         window = max(applications, key=lambda w: w.get("layer", -1))

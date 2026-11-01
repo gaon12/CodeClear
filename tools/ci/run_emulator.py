@@ -72,6 +72,7 @@ def main():
     parser.add_argument("--api", type=int, choices=[30, 31, 35], required=True)
     parser.add_argument("--prepare", action="store_true")
     parser.add_argument("--system-receiver", action="store_true")
+    parser.add_argument("--receiver-mode", choices=["off", "on"], default="off")
     args = parser.parse_args()
     # SDK tools and the emulator must share the same owned AVD index and data directory.
     android_user = Path(os.environ["RUNNER_TEMP"]) / "codeclear-android"
@@ -255,7 +256,11 @@ def main():
                 from system_receiver import validate
 
                 validate(
-                    device, args.api, sdk / "cmdline-tools/23.0/bin/android", serial
+                    device,
+                    args.api,
+                    sdk / "cmdline-tools/23.0/bin/android",
+                    serial,
+                    args.receiver_mode,
                 )
             _require(
                 passed,

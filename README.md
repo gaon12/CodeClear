@@ -78,11 +78,14 @@ data, enables capture through the app disclosures and ordinary Android Settings
 confirmations, and injects known drill messages into the genuine system receiver.
 It compares the complete expected original set after automatic capture and an
 explicit original-source action. It never acknowledges system alert warnings.
-It also changes testing mode through the ordinary dialer and verifies the source's
-own state report against its installed public resources. Automatic capture is
-checked with testing mode OFF and ON separately, including the complete known
-seven-original set. These debug-emulator injections do not establish physical
-radio reception or other manufacturers' firmware support.
+Each testing mode uses a separate fresh guest. The workflow changes mode through
+the ordinary dialer and verifies the source's own state report against its installed
+public resources. It checks the first original automatically before any source
+action, then checks recovery of the complete seven-original set after two rapid
+batches and explicit source actions. An older undismissed warning can hide later
+bodies, so switching modes within one pending queue does not establish fresh
+automatic capture in the second mode. These debug-emulator injections do not
+establish physical radio reception or other manufacturers' firmware support.
 
 ## Source map
 

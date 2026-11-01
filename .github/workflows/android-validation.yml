@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   emulator:
-    name: AOSP API ${{ matrix.api }}
+    name: AOSP API ${{ matrix.api }} / mode ${{ matrix.mode }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
@@ -25,6 +25,7 @@ jobs:
       max-parallel: 3
       matrix:
         api: [30, 31, 35]
+        mode: ${{ fromJSON(inputs.system_receiver && '["off","on"]' || '["off"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -46,4 +47,5 @@ jobs:
       - name: Run isolated software fixtures
         run: >-
           python3 tools/ci/run_emulator.py --api '${{ matrix.api }}'
+          --receiver-mode '${{ matrix.mode }}'
           ${{ inputs.system_receiver && '--system-receiver' || '' }}

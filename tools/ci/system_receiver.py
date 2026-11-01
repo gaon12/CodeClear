@@ -28,9 +28,10 @@ BODIES = (
 )
 
 
-def validate(device, api, cli, serial):
+def validate(device, api, cli, serial, mode):
     from consent_ui import ConsentUi
 
+    _require(mode in {"off", "on"}, "Review the requested receiver mode")
     # Never clear an app, change grants, or inject a PDU on an owner's physical device.
     if device("shell", "getprop", "ro.kernel.qemu") != "1":
         raise RuntimeError("Receiver fixtures require a disposable emulator")
@@ -419,27 +420,6 @@ def validate(device, api, cli, serial):
             "0",
         )
 
-    inject(BODIES[0], 0x5101)
-    wait_for({BODIES[0]})
-    print(
-        "Fresh-default receiver injection: exact original automatically persisted without a source action.",
-        flush=True,
-    )
-    device("shell", "input", "keyevent", "KEYCODE_HOME")
-    inject(BODIES[1], 0x5111)
-    inject(BODIES[2], 0x5121)
-    time.sleep(2)
-    device("shell", "input", "keyevent", "KEYCODE_HOME")
-    start_app()
-    click("Open original system alert")
-    resume_capture()
-    # The source opens normally. Never press its confirmation or dismiss its warnings.
-    if check_complete_set(set(BODIES[:3])):
-        print(
-            "Stacked receiver injection: all three exact originals recovered, including the earlier original.",
-            flush=True,
-        )
-
     def source_label(name):
         for namespace in [source, "com.android.cellbroadcastreceiver"]:
             try:
@@ -515,51 +495,60 @@ def validate(device, api, cli, serial):
             "The dialer did not produce a verified source testing-mode change"
         )
 
-    # Observe the source's own state message, rather than assuming which state a toggle selected.
-    if toggle_mode():
-        _require(toggle_mode() is False)
+    # Each mode uses its own fresh guest so an older undismissed warning cannot
+    # hide the first automatic-capture fixture in the other mode.
+    desired = mode == "on"
+    if toggle_mode() != desired:
+        _require(toggle_mode() == desired)
     print(
-        "Testing mode OFF confirmed by the installed source's own state message.",
+        "Testing mode "
+        + mode.upper()
+        + " confirmed by the installed source's own state message.",
         flush=True,
     )
-    inject(BODIES[3], 0x5131)
-    if check_complete_set({BODIES[3]}):
-        print(
-            "Explicit mode OFF: a fresh exact original was captured without a source action.",
-            flush=True,
-        )
-    _require(toggle_mode() is True)
     try:
+        inject(BODIES[0], 0x5101)
+        wait_for({BODIES[0]})
         print(
-            "Testing mode ON confirmed by the installed source's own state message.",
+            "Explicit mode "
+            + mode.upper()
+            + ": fresh exact original automatically persisted before any source action.",
             flush=True,
         )
-        inject(BODIES[4], 0x5141)
-        if check_complete_set({BODIES[4]}):
+        start_app()
+        inject(BODIES[1], 0x5111)
+        inject(BODIES[2], 0x5121)
+        time.sleep(2)
+        start_app()
+        click("Open original system alert")
+        resume_capture()
+        if check_complete_set(set(BODIES[:3])):
             print(
-                "Explicit mode ON: a fresh exact original was captured automatically.",
+                "Stacked receiver injection: all three exact originals recovered without acknowledging warnings.",
                 flush=True,
             )
-        device("shell", "input", "keyevent", "KEYCODE_HOME")
-        inject(BODIES[5], 0x5151)
-        inject(BODIES[6], 0x5161)
+        start_app()
+        for index in range(3, len(BODIES)):
+            inject(BODIES[index], 0x5101 + index * 0x10)
         time.sleep(2)
-        device("shell", "input", "keyevent", "KEYCODE_HOME")
         start_app()
         click("Open original system alert")
         resume_capture()
         if check_complete_set(set(BODIES)):
             print(
-                "Explicit mode ON: automatic capture and the complete seven-original set verified.",
+                "Explicit mode "
+                + mode.upper()
+                + ": complete seven-original set recovered.",
                 flush=True,
             )
     finally:
-        _require(toggle_mode() is False)
-    print(
-        "Testing mode restored OFF. These receiver injections do not establish physical RF.",
-        flush=True,
-    )
+        if desired:
+            _require(toggle_mode() is False)
     _require(
         not incomplete_sets,
         "Incomplete synthetic original sets remain: " + repr(incomplete_sets),
+    )
+    print(
+        "Testing mode OFF at completion. Receiver injection does not establish physical RF.",
+        flush=True,
     )

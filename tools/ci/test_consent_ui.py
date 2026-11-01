@@ -114,3 +114,38 @@ class ConsentUiTest(unittest.TestCase):
         ).replace("package=com.android.settings", "package=other.package")
         with self.assertRaisesRegex(RuntimeError, "outside an owned"):
             self.ui.focused_package()
+
+    def test_an_owned_settings_confirmation_can_be_a_system_window(self):
+        def dump(args, **kwargs):
+            path = Path(
+                next(a.split("=", 1)[1] for a in args if a.startswith("--output="))
+            )
+            path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "type": "SYSTEM",
+                            "layer": 9,
+                            "content": [
+                                {
+                                    "text": "status",
+                                    "resource-id": "com.android.systemui:id/status",
+                                },
+                            ],
+                        },
+                        {
+                            "type": "SYSTEM",
+                            "layer": 8,
+                            "content": [
+                                {
+                                    "text": "Allow",
+                                    "resource-id": "com.android.settings:id/allow",
+                                },
+                            ],
+                        },
+                    ]
+                )
+            )
+
+        with patch("tools.ci.consent_ui.subprocess.run", side_effect=dump):
+            self.assertEqual(["Allow"], [n.get("text") for n in self.ui.layout()])
