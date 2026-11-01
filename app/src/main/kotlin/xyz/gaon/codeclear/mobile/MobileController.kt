@@ -4,14 +4,10 @@ import android.content.Context
 import android.os.CancellationSignal
 import android.os.Handler
 import android.os.Looper
-import java.util.concurrent.atomic.AtomicLong
 import xyz.gaon.codeclear.nearby.NearbyOriginal
 import xyz.gaon.codeclear.probe.CaptureObserver
 import xyz.gaon.codeclear.probe.ProbeEnvironment
-import xyz.gaon.codeclear.probe.ProbeNotificationListener
-import xyz.gaon.codeclear.probe.ProbeRadio
 import xyz.gaon.codeclear.probe.ProbeRecord
-import xyz.gaon.codeclear.probe.ProbeRoute
 import xyz.gaon.codeclear.probe.ProbeSession
 import xyz.gaon.codeclear.probe.isUnlocked
 import xyz.gaon.codeclear.reception.NetworkCountry
@@ -19,22 +15,6 @@ import xyz.gaon.codeclear.reception.ReceptionCountry
 import xyz.gaon.codeclear.translation.TranslationEngine
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 import xyz.gaon.codeclear.translation.TranslationTarget
-
-data class MobileState(
-    val loaded: Boolean = false,
-    val options: MobileOptions = MobileOptions(),
-    val records: List<SavedAlert> = emptyList(),
-    val latest: SavedAlert? = null,
-    val detailId: Long? = null,
-    val detailTarget: String? = null,
-    val detailEngine: TranslationEngineKind? = null,
-    val detailSourceLanguage: String? = null,
-    val detail: SavedAlert? = null,
-    val query: String = "",
-    val beforeId: Long = Long.MAX_VALUE,
-    val loading: Boolean = false,
-    val storageError: Boolean = false
-)
 
 /** Coordinates product state and consent; workers own history execution and translation jobs. */
 class MobileController(
@@ -47,22 +27,11 @@ class MobileController(
     private val deleted: (Long?) -> Unit = {},
     private val releaseEngine: () -> Unit = {},
     cancelEngine: () -> Unit = {},
-    private val captured: (Long, CapturedAlert) -> Unit = { _, _ -> },
-    private val networkCountry: () -> ReceptionCountry? = NetworkCountry(context)::read,
+    captured: (Long, CapturedAlert) -> Unit = { _, _ -> },
+    networkCountry: () -> ReceptionCountry? = NetworkCountry(context)::read,
     private val optionsReady: (MobileOptions) -> Unit = {}
 ) : CaptureObserver,
     AutoCloseable {
-    private data class ObservationKey(
-        val source: String,
-        val identity: String,
-        val title: String,
-        val body: String
-    )
-    private data class ViewSnapshot(
-        val records: List<SavedAlert>,
-        val latest: SavedAlert?,
-        val detail: SavedAlert?
-    )
     private val main = Handler(Looper.getMainLooper())
     private val worker = HistoryWorker(store::close, ::failStorage)
     private val translations = AlertTranslationQueue(
@@ -74,11 +43,19 @@ class MobileController(
         translated,
         cancelEngine
     )
-    private val captureGeneration = AtomicLong(ProbeSession.currentGeneration())
-    private val observationIds = linkedMapOf<Long, Long>() // Accessed only on the database worker.
-
-    // Main-thread owned and bounded to 128 entries.
-    private val seenObservations = linkedSetOf<ObservationKey>()
+    private val ingestion = AlertCaptureIngestor(
+        store,
+        worker,
+        { state },
+        { ProbeEnvironment.read(context) },
+        captured,
+        networkCountry,
+        changed = {
+            refresh()
+            translations.kick()
+        }
+    )
+    private val history = AlertHistoryReader(store)
     private val subscription = ProbeSession.observe(this)
     private var queryRevision = 0L
     private var queryCancellation: CancellationSignal? = null
@@ -88,7 +65,6 @@ class MobileController(
     private var optionsSaving = false
     private var stopNearbyOnLoad = false
     private var handlingFailure = false
-    private var capturePaused = false
 
     @Volatile private var closed = false
     var state = MobileState()
@@ -109,7 +85,7 @@ class MobileController(
             optionsReady(resolved)
             update(state.copy(loaded = true, options = resolved, storageError = false))
             if (stopRequested) io({ preferences.save(resolved) }) {}
-            syncCaptureConsent(refreshSources = true)
+            ingestion.syncConsent(refreshSources = true)
             refresh()
             translations.kick()
         }
@@ -163,7 +139,7 @@ class MobileController(
                 }
             )
         )
-        syncCaptureConsent()
+        ingestion.syncConsent()
         io({
             preferences.save(options)
             if (changedWork) store.recoverInterruptedWork()
@@ -177,101 +153,18 @@ class MobileController(
         }
     }
 
-    private fun syncCaptureConsent(refreshSources: Boolean = false) {
-        if (capturePaused) return
-        val options = state.options
-        val notification = options.notificationConsent && !capturePaused
-        val accessibility = options.accessibilityConsent && !capturePaused
-        val notificationChanged =
-            ProbeSession.state.notificationConsent != notification
-        val accessibilityChanged =
-            ProbeSession.state.accessibilityConsent != accessibility
-        if (notificationChanged) {
-            ProbeSession.configure(ProbeRoute.NOTIFICATION, notification)
-        }
-        if (accessibilityChanged) {
-            ProbeSession.configure(ProbeRoute.ACCESSIBILITY, accessibility)
-        }
-        if (notification &&
-            (notificationChanged || accessibilityChanged || refreshSources)
-        ) {
-            ProbeNotificationListener.inspectConsentedSources()
-        }
-    }
-
-    /** Debug diagnostics own temporary consent separately and must not write product history. */
+    /** Debug diagnostics never write product history. */
     fun pauseCapture(paused: Boolean) {
         requireMain()
-        capturePaused = paused
-        if (paused) {
-            ProbeSession.configure(ProbeRoute.NOTIFICATION, false)
-            ProbeSession.configure(ProbeRoute.ACCESSIBILITY, false)
-        }
-        if (state.loaded) syncCaptureConsent(refreshSources = !paused)
+        ingestion.pauseCapture(paused)
     }
 
-    override fun added(generation: Long, record: ProbeRecord) {
-        requireMain()
-        if (!state.loaded || closed || capturePaused ||
-            generation != captureGeneration.get()
-        ) {
-            return
-        }
-        val environment = ProbeEnvironment.read(context)
-        val options = state.options
-        val capture = record.toHistoryCapture(
-            environment.systemPackages,
-            environment.radio == ProbeRadio.PRESENT,
-            options.notificationConsent && environment.notificationGranted,
-            options.accessibilityConsent && environment.accessibilityGranted
-        ) ?: return
-        val key = capture.sourceIdentity?.let {
-            ObservationKey(capture.sourcePackage, it, capture.title, capture.original)
-        }
-        if (key != null && key in seenObservations) return
-        if (key != null) {
-            seenObservations += key
-            if (seenObservations.size > 128) seenObservations.remove(seenObservations.first())
-        }
-        io({
-            if (generation != captureGeneration.get()) return@io null
-            val enriched = capture.copy(
-                context = capture.context.copy(
-                    country = capture.context.country ?: networkCountry()
-                )
-            )
-            store.insertObservation(enriched)?.also { observation ->
-                val id = observation.id
-                store.queueTranslation(id, options.target.languageTag, options.engine)
-                observationIds[record.id] = id
-                if (observationIds.size > 128) observationIds.remove(observationIds.keys.first())
-            }?.let { it to enriched }
-        }) { result ->
-            val (observation, enriched) = result ?: return@io
-            if (generation == captureGeneration.get() && !capturePaused) {
-                if (observation.created) captured(observation.id, enriched)
-                refresh()
-                translations.kick()
-            }
-        }
-    }
+    override fun added(generation: Long, record: ProbeRecord) = ingestion.added(generation, record)
 
-    override fun updated(generation: Long, record: ProbeRecord) {
-        if (closed || capturePaused || generation != captureGeneration.get()) return
-        io({
-            if (generation == captureGeneration.get()) {
-                observationIds[record.id]?.let {
-                    store.updateHeading(it, record.observation.headingHint.name)
-                }
-            }
-        }) { refresh() }
-    }
+    override fun updated(generation: Long, record: ProbeRecord) =
+        ingestion.updated(generation, record)
 
-    override fun cleared(generation: Long) {
-        captureGeneration.set(generation)
-        seenObservations.clear()
-        if (!closed && !state.storageError) io({ observationIds.clear() }) {}
-    }
+    override fun cleared(generation: Long) = ingestion.cleared(generation)
 
     fun saveNearby(
         original: NearbyOriginal,
@@ -397,35 +290,7 @@ class MobileController(
         val request = state
         update(state.copy(loading = true))
         io({
-            ViewSnapshot(
-                store.page(
-                    request.query,
-                    request.options.target.languageTag,
-                    request.beforeId,
-                    cancellation = cancellation,
-                    engine = request.options.engine
-                ),
-                store.page(
-                    "",
-                    request.options.target.languageTag,
-                    limit = 1,
-                    engine = request.options.engine,
-                    nativeOnly = true
-                )
-                    .firstOrNull() ?: store.page(
-                    "",
-                    request.options.target.languageTag,
-                    limit = 1,
-                    engine = request.options.engine
-                ).firstOrNull(),
-                request.detailId?.let {
-                    store.find(
-                        it,
-                        request.detailTarget ?: request.options.target.languageTag,
-                        request.detailEngine ?: request.options.engine
-                    )
-                }
-            )
+            history.read(request, cancellation)
         }) { view ->
             if (revision == queryRevision) {
                 update(
@@ -570,7 +435,7 @@ class MobileController(
                 )
             )
         )
-        syncCaptureConsent()
+        ingestion.syncConsent()
         handlingFailure = false
     }
 
@@ -592,6 +457,7 @@ class MobileController(
         closed = true
         translations.close()
         subscription.close()
+        ingestion.close()
         queryCancellation?.cancel()
         main.removeCallbacksAndMessages(null)
         worker.close()
