@@ -58,7 +58,7 @@ class MobileController(
     private val networkCountry: () -> ReceptionCountry? = NetworkCountry(context)::read
 ) : CaptureObserver,
     AutoCloseable {
-    private data class Work(val ticket: TranslationTicket, val epoch: Long)
+    private data class Work(val ticket: TranslationTicket, val epoch: Long, val modelEpoch: Long)
     private data class Candidate(val ticket: TranslationTicket, val cached: SavedTranslation?)
     private data class ObservationKey(
         val source: String,
@@ -74,6 +74,7 @@ class MobileController(
     private val main = Handler(Looper.getMainLooper())
     private val worker = ThreadPoolExecutor(0, 1, 30, TimeUnit.SECONDS, ArrayBlockingQueue(128))
     private val workEpoch = AtomicLong()
+    private val modelEpoch = AtomicLong()
     private val captureGeneration = AtomicLong(ProbeSession.currentGeneration())
     private val observationIds = linkedMapOf<Long, Long>() // Accessed only on the database worker.
 
@@ -504,9 +505,11 @@ class MobileController(
     }
 
     fun modelsPrepared(
-        target: String = state.options.target.languageTag,
+        target: String? = null,
         selectedEngine: LocalEngineKind = LocalEngineKind.ML_KIT
     ) {
+        requireMain()
+        modelEpoch.incrementAndGet()
         io({ store.requeueMissingModels(target, selectedEngine) }) {
             refresh()
             kick()
@@ -568,7 +571,7 @@ class MobileController(
                 return@io
             }
             if (candidate != null) {
-                val job = Work(candidate.ticket, epoch)
+                val job = Work(candidate.ticket, epoch, modelEpoch.get())
                 if (candidate.cached == null) {
                     run(job)
                 } else {
@@ -616,7 +619,15 @@ class MobileController(
     private fun finish(job: Work, result: SavedTranslation) {
         if (closed || active != job) return
         io({
-            if (job.epoch == workEpoch.get()) store.finishTranslation(job.ticket, result) else false
+            if (job.epoch != workEpoch.get()) return@io false
+            val saved = store.finishTranslation(job.ticket, result)
+            // A download can complete while an older SDK attempt is still reporting missing packs.
+            if (saved && result.phase == TranslationPhase.NEEDS_MODELS &&
+                job.modelEpoch != modelEpoch.get() && job.epoch == workEpoch.get()
+            ) {
+                store.queueRetry(job.ticket.alertId, job.ticket.target, job.ticket.engine)
+            }
+            saved
         }) { saved ->
             if (active == job) active = null
             if (saved && job.epoch == workEpoch.get()) {

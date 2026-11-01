@@ -55,6 +55,77 @@ class MobileControllerDeviceTest {
     }
 
     @Test
+    fun anOlderMissingModelResponseRetriesOnceAfterPreparationCompletes() {
+        val id = store.insert(capture("[DRILL] Preparation raced an active translation"))!!
+        start()
+        await { engine.calls == 1 && it.latest?.id == id }
+        onMain {
+            controller!!.modelsPrepared()
+            engine.completeWith(LocalResult.NeedsModels)
+        }
+        await { engine.calls == 2 }
+        onMain { engine.completeWith(LocalResult.NeedsModels) }
+        await { !it.loading && it.latest?.translation?.phase == TranslationPhase.NEEDS_MODELS }
+        assertEquals(2, engine.calls)
+        onMain { controller!!.modelsPrepared() }
+        await { engine.calls == 3 }
+        onMain { engine.complete("[DRILL] Fresh model result 112") }
+        await { it.latest?.translation?.phase == TranslationPhase.READY }
+        assertEquals(id, latest.get().latest!!.id)
+    }
+
+    @Test
+    fun preparedModelsRetryTheOpenJapaneseResultWithoutChangingTheEnglishDefault() {
+        val id = store.insert(capture("[DRILL] Installed models"))!!
+        val ready = store.beginTranslation(id, "en")!!
+        store.finishTranslation(
+            ready,
+            SavedTranslation(TranslationPhase.READY, "Saved English", "ko")
+        )
+        val missing = store.beginTranslation(id, "ja")!!
+        store.finishTranslation(missing, SavedTranslation(TranslationPhase.NEEDS_MODELS))
+        val other = store.beginTranslation(id, "de", engine = LocalEngineKind.SYSTEM)!!
+        store.finishTranslation(
+            other,
+            SavedTranslation(TranslationPhase.NEEDS_MODELS, engine = LocalEngineKind.SYSTEM)
+        )
+        start()
+        await { it.latest?.translation?.text == "Saved English" }
+        onMain { controller!!.openDetail(id, "ja", LocalEngineKind.ML_KIT) }
+        await { it.detail?.translation?.phase == TranslationPhase.NEEDS_MODELS }
+        onMain { controller!!.modelsPrepared() }
+        await { engine.calls == 1 }
+        assertEquals(LocalTarget.JAPANESE, onMain { engine.inputs.single().target })
+        onMain { engine.complete("[DRILL] 準備完了 112") }
+        await { it.detail?.translation?.phase == TranslationPhase.READY }
+        assertEquals(LocalTarget.ENGLISH, latest.get().options.target)
+        assertEquals("Saved English", latest.get().latest?.translation?.text)
+        assertEquals(
+            TranslationPhase.NEEDS_MODELS,
+            store.find(id, "de", LocalEngineKind.SYSTEM)!!.translation!!.phase
+        )
+        assertEquals(1, engine.calls)
+    }
+
+    @Test
+    fun preparedModelsRemainQueuedWhileTranslationIsDisabledAndSurviveReopeningHistory() {
+        val id = store.insert(capture("[DRILL] Another installed model"))!!
+        for (language in listOf("ja", "fr")) {
+            val ticket = store.beginTranslation(id, language)!!
+            store.finishTranslation(ticket, SavedTranslation(TranslationPhase.NEEDS_MODELS))
+        }
+        start(local = false)
+        await { it.loaded && !it.loading }
+        onMain { controller!!.modelsPrepared() }
+        await { !it.loading }
+        onMain { controller!!.openDetail(id, "ja", LocalEngineKind.ML_KIT) }
+        await { it.detail?.translation?.phase == TranslationPhase.QUEUED }
+        assertEquals(0, engine.calls)
+        assertEquals(TranslationPhase.QUEUED, store.find(id, "fr")!!.translation!!.phase)
+        assertEquals(0, notices.size)
+    }
+
+    @Test
     fun notificationDetailKeepsItsSavedLanguageWhenTheDefaultChanges() {
         val id = store.insert(capture("[DRILL] Pinned language"))!!
         for (target in listOf("en", "de")) {

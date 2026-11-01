@@ -358,17 +358,21 @@ class AlertHistoryStore(
         )
     }
 
-    fun requeueMissingModels(target: String, engine: LocalEngineKind = LocalEngineKind.ML_KIT) {
-        require(target in HistoryText.targets)
+    fun requeueMissingModels(
+        target: String? = null,
+        engine: LocalEngineKind = LocalEngineKind.ML_KIT
+    ) {
+        require(target == null || target in HistoryText.targets)
+        val arguments = mutableListOf<Any>(
+            TranslationPhase.QUEUED.name,
+            engine.key,
+            TranslationPhase.NEEDS_MODELS.name
+        )
+        if (target != null) arguments += target
         database.execSQL(
             "UPDATE translations SET phase=?, revision=revision+1 " +
-                "WHERE target=? AND engine=? AND phase=?",
-            arrayOf(
-                TranslationPhase.QUEUED.name,
-                target,
-                engine.key,
-                TranslationPhase.NEEDS_MODELS.name
-            )
+                "WHERE engine=? AND phase=?" + if (target != null) " AND target=?" else "",
+            arguments.toTypedArray()
         )
     }
 
