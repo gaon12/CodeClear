@@ -1,5 +1,7 @@
 """Exercise an optimized APK using only disposable-guest fixtures and a CI debug key."""
 
+import base64
+import hashlib
 import re
 import shlex
 import subprocess
@@ -34,17 +36,24 @@ def local_fixture_options(xml):
 
 
 def certificate(output):
+    blocks = re.findall(
+        r"-----BEGIN CERTIFICATE-----\s*([A-Za-z0-9+/=\s]+?)\s*-----END CERTIFICATE-----",
+        output,
+    )
+    if not blocks or len(blocks) != output.count("-----BEGIN CERTIFICATE-----"):
+        raise RuntimeError("The APK must expose verified PEM certificates")
     digests = set()
-    for line in output.splitlines():
-        if "certificate SHA-256 digest:" not in line:
-            continue
-        match = re.fullmatch(
-            r"(?:Signer #\d+|V[1-4](?:\.1)? Signer):? certificate SHA-256 digest: ([0-9a-fA-F]{64})",
-            line.strip(),
-        )
-        if match is None:
-            raise RuntimeError("Review the unrecognized APK certificate report format")
-        digests.add(match.group(1).lower())
+    for block in blocks:
+        encoded = "".join(block.split())
+        if len(encoded) > 16384:
+            raise RuntimeError("Review the oversized APK certificate")
+        try:
+            decoded = base64.b64decode(encoded, validate=True)
+        except ValueError as error:
+            raise RuntimeError("Invalid APK certificate encoding") from error
+        if not decoded:
+            raise RuntimeError("Empty APK certificate")
+        digests.add(hashlib.sha256(decoded).hexdigest())
     if len(digests) != 1:
         raise RuntimeError("The APK must expose one reviewed signing certificate")
     return next(iter(digests))
@@ -105,10 +114,14 @@ def validate(device, sdk, cli, serial):
             signer,
             "verify",
             "--print-certs",
+            "--print-certs-pem",
             "app/build/outputs/apk/debug/app-debug.apk",
         )
     )
-    if certificate(run(signer, "verify", "--print-certs", signed)) != debug_certificate:
+    if (
+        certificate(run(signer, "verify", "--print-certs", "--print-certs-pem", signed))
+        != debug_certificate
+    ):
         raise RuntimeError(
             "Reject an optimized upgrade with a different signing certificate"
         )

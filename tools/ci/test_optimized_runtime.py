@@ -1,14 +1,51 @@
 """Protect fixture consent boundaries and APK signer interpretation."""
 
+import base64
+import hashlib
 import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from unittest.mock import Mock
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
 from tools.ci.optimized_runtime import certificate, local_fixture_options, validate
 
 
 class OptimizedFixtureTest(unittest.TestCase):
+    def test_both_verified_apks_supply_pem_before_any_app_fixture_is_changed(self):
+        properties = {
+            "ro.kernel.qemu": "1",
+            "ro.debuggable": "1",
+            "ro.hardware": "ranchu",
+            "ro.build.version.sdk": "30",
+        }
+
+        def device(*parts):
+            if "getprop" in parts:
+                return properties[parts[-1]]
+            raise RuntimeError("fixture mutation checkpoint")
+
+        def command(parts, **kwargs):
+            if "debuggable" in parts:
+                output = "false"
+            elif "application-id" in parts:
+                output = "xyz.gaon.codeclear"
+            elif "verify" in parts:
+                output = (
+                    self.pem(b"same verified identity")
+                    if "--print-certs-pem" in parts
+                    else "V2 Signer: certificate SHA-256 digest: " + "a" * 64
+                )
+            else:
+                output = ""
+            return SimpleNamespace(stdout=output)
+
+        with (
+            patch("tools.ci.optimized_runtime.subprocess.run", side_effect=command),
+            self.assertRaisesRegex(RuntimeError, "fixture mutation checkpoint"),
+        ):
+            validate(device, Path("/sdk"), "/android", "emulator-5554")
+
     def test_a_physical_device_is_rejected_before_any_fixture_or_signing_work(self):
         device = Mock(return_value="0")
         with self.assertRaisesRegex(RuntimeError, "owned disposable emulator"):
@@ -66,34 +103,35 @@ class OptimizedFixtureTest(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, "normal capture preparation"):
             local_fixture_options(self.options(notification="false"))
 
-    def test_an_unsigned_or_ambiguous_certificate_report_is_rejected(self):
-        for report in [
-            "",
-            "Signer #1 certificate SHA-256 digest: "
-            + "a" * 64
-            + "\n"
-            + "Signer #1 certificate SHA-256 digest: "
-            + "b" * 64,
-        ]:
-            with self.assertRaises(RuntimeError):
-                certificate(report)
-
-    def test_the_current_apksigner_v2_report_is_recognized(self):
-        self.assertEqual(
-            "a" * 64, certificate("V2 Signer: certificate SHA-256 digest: " + "a" * 64)
+    def pem(self, value):
+        return (
+            "-----BEGIN CERTIFICATE-----\n"
+            + base64.b64encode(value).decode("ascii")
+            + "\n-----END CERTIFICATE-----"
         )
 
-    def test_signature_schemes_must_agree_on_the_same_identity(self):
-        report = "V2 Signer: certificate SHA-256 digest: " + "a" * 64
+    def test_the_public_certificate_identity_does_not_depend_on_signer_labels(self):
+        value = b"verified certificate fixture"
         self.assertEqual(
-            "a" * 64,
+            hashlib.sha256(value).hexdigest(),
             certificate(
-                report + "\nV3 Signer: certificate SHA-256 digest: " + "a" * 64
+                "V3.0 Signer: (minSdkVersion=30, maxSdkVersion=2147483647)\n"
+                + self.pem(value)
             ),
         )
-        with self.assertRaises(RuntimeError):
-            certificate(report + "\nV3 Signer: certificate SHA-256 digest: " + "b" * 64)
 
-    def test_an_unknown_signer_format_is_rejected(self):
-        with self.assertRaisesRegex(RuntimeError, "unrecognized"):
-            certificate("V99 Signer: certificate SHA-256 digest: " + "a" * 64)
+    def test_multiple_signature_schemes_must_agree_on_one_identity(self):
+        first = self.pem(b"same identity")
+        self.assertEqual(certificate(first), certificate(first + "\n" + first))
+        with self.assertRaisesRegex(RuntimeError, "one reviewed signing certificate"):
+            certificate(first + "\n" + self.pem(b"different identity"))
+
+    def test_missing_or_malformed_pem_certificates_are_rejected(self):
+        for output in [
+            "",
+            "V2 Signer: certificate SHA-256 digest: " + "a" * 64,
+            "-----BEGIN CERTIFICATE-----\n?\n-----END CERTIFICATE-----",
+            "-----BEGIN CERTIFICATE-----\nA\n-----END CERTIFICATE-----",
+        ]:
+            with self.assertRaises(RuntimeError):
+                certificate(output)
