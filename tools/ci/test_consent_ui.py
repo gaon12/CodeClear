@@ -86,3 +86,7 @@ class ConsentUiTest(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.ui.scroll()
         self.assertEqual(1, self.device.call_count)
+
+    def test_focus_reads_the_display_section(self):
+        self.assertEqual("com.android.settings", self.ui.focused_package())
+        self.device.assert_called_once_with("shell", "dumpsys", "window")

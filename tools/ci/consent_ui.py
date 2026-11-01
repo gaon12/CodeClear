@@ -16,10 +16,14 @@ class ConsentUi:
         self.permitted = permitted
 
     def focused_package(self):
-        windows = self.device("shell", "dumpsys", "window", "windows")
+        # Current focus belongs to DisplayContent, outside the windows-only dump.
+        windows = self.device("shell", "dumpsys", "window")
         matches = re.findall(r"mCurrentFocus=Window\{[^\n]*?\s([\w.]+)/", windows)
         if len(matches) != 1 or matches[0] not in self.permitted:
-            raise RuntimeError("Refusing UI input outside an owned consent window")
+            raise RuntimeError(
+                "Refusing UI input outside an owned consent window; focused packages: "
+                + repr(matches[:3])
+            )
         return matches[0]
 
     def layout(self):
