@@ -3,6 +3,7 @@
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import time
 from pathlib import Path
@@ -78,6 +79,26 @@ def main():
             "pixel_2",
             input="no\n",
         )
+        avd_root = Path(
+            os.environ.get("ANDROID_AVD_HOME", Path.home() / ".android/avd")
+        )
+        config = avd_root / (name + ".avd/config.ini")
+        values = dict(
+            line.split("=", 1)
+            for line in config.read_text().splitlines()
+            if "=" in line
+        )
+        values.update(
+            {
+                "disk.dataPartition.size": "2G",
+                "hw.sdCard": "no",
+                "hw.ramSize": "2048",
+                "hw.lcd.width": "720",
+                "hw.lcd.height": "1280",
+                "hw.lcd.density": "320",
+            }
+        )
+        config.write_text("".join(f"{key}={value}\n" for key, value in values.items()))
         return
 
     if not os.access("/dev/kvm", os.R_OK | os.W_OK):
@@ -93,6 +114,9 @@ def main():
 
     report = Path("app/build/reports/remote-validation")
     report.mkdir(parents=True, exist_ok=True)
+    print(
+        f"Runner free disk: {shutil.disk_usage('.').free // (1024**2)} MiB", flush=True
+    )
     with (report / "emulator.log").open("w") as log:
         process = subprocess.Popen(
             [
@@ -102,6 +126,8 @@ def main():
                 "-port",
                 "5554",
                 "-memory",
+                "2048",
+                "-partition-size",
                 "2048",
                 "-cores",
                 "2",
@@ -189,6 +215,14 @@ def main():
                 f"Passed {expected} software fixtures. This is not CellBroadcast or RF acceptance.",
                 flush=True,
             )
+        except BaseException:
+            log.flush()
+            print("Emulator diagnostic tail:", flush=True)
+            for line in (
+                (report / "emulator.log").read_text(errors="replace").splitlines()[-40:]
+            ):
+                print(line[:500], flush=True)
+            raise
         finally:
             try:
                 device("emu", "kill", timeout=15)
