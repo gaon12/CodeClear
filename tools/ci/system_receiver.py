@@ -210,7 +210,16 @@ def validate(device, api, cli, serial, mode):
     start_app()
     click("Next")
     if api >= 33:
-        click("Result notifications")
+        notification_label = device(
+            "shell",
+            "cmd",
+            "overlay",
+            "lookup",
+            APP,
+            APP + ":string/mobile_result_notifications",
+        )
+        _require(bool(notification_label) and len(notification_label) <= 128)
+        click(notification_label)
         click("Allow", scrolls=0)
     click("Notification access")
     click("Open settings", scrolls=0)
