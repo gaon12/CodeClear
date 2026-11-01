@@ -52,6 +52,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '25'
+          cache: gradle
       - name: Check validation driver
         run: python3 -m unittest discover -s tools/ci -p 'test_*.py'
       - name: Prepare Android SDK
