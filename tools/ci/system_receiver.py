@@ -40,6 +40,10 @@ def validate(device, api):
     if api not in {30, 31, 35}:
         raise RuntimeError("Review this source profile before injection")
     _require("Success" in device("shell", "pm", "clear", APP))
+    application_label = device(
+        "shell", "cmd", "overlay", "lookup", APP, APP + ":string/app_name"
+    )
+    _require(bool(application_label) and len(application_label) <= 128)
     permitted_ui = {
         APP,
         "android",
@@ -160,7 +164,9 @@ def validate(device, api):
             if confirm is not None:
                 tap(confirm)
                 continue
-            own_header = any(matches(n, [service_label, "CodeClear"]) for n in nodes)
+            own_header = any(
+                matches(n, [service_label, application_label]) for n in nodes
+            )
             enable_row = next(
                 (
                     n
@@ -170,7 +176,7 @@ def validate(device, api):
                         n,
                         [
                             "Allow notification access",
-                            "Use CodeClear",
+                            "Use " + application_label,
                             "Use " + service_label,
                         ],
                     )
@@ -185,7 +191,7 @@ def validate(device, api):
                 (
                     n
                     for n in nodes
-                    if matches(n, [service_label, "CodeClear"])
+                    if matches(n, [service_label, application_label])
                     and n.get("enabled") == "true"
                 ),
                 None,
