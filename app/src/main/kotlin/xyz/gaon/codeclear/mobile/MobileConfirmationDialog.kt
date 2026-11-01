@@ -1,6 +1,7 @@
 package xyz.gaon.codeclear.mobile
 
 import android.view.Gravity
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -17,8 +18,18 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
@@ -35,6 +46,9 @@ fun MobileConfirmationDialog(
     confirmButton: @Composable () -> Unit,
     dismissButton: (@Composable () -> Unit)? = null
 ) {
+    var frame by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var cardBounds by remember { mutableStateOf(Rect.Zero) }
+    val dismiss by rememberUpdatedState(onDismissRequest)
     Dialog(onDismissRequest, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         val view = LocalView.current
         DisposableEffect(view) {
@@ -43,8 +57,26 @@ fun MobileConfirmationDialog(
             window?.setGravity(Gravity.BOTTOM)
             onDispose { previousGravity?.let { window.setGravity(it) } }
         }
-        BoxWithConstraints(Modifier.widthIn(max = 480.dp).fillMaxWidth().padding(16.dp)) {
-            Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surface) {
+        BoxWithConstraints(
+            Modifier.widthIn(max = 480.dp).fillMaxWidth().testTag("confirmation-backdrop")
+                .onGloballyPositioned { frame = it }
+                .pointerInput(Unit) {
+                    detectTapGestures { position ->
+                        val coordinates = frame?.takeIf { it.isAttached }
+                        if (coordinates != null && cardBounds != Rect.Zero &&
+                            !cardBounds.contains(coordinates.localToRoot(position))
+                        ) {
+                            dismiss()
+                        }
+                    }
+                }.padding(16.dp)
+        ) {
+            Surface(
+                modifier = Modifier.onGloballyPositioned { cardBounds = it.boundsInRoot() }
+                    .testTag("confirmation-card"),
+                shape = RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.surface
+            ) {
                 Column(Modifier.heightIn(max = maxHeight).padding(24.dp)) {
                     ProvideTextStyle(MaterialTheme.typography.titleLarge) { title() }
                     Box(Modifier.weight(1f, fill = false).padding(top = 16.dp, bottom = 12.dp)) {

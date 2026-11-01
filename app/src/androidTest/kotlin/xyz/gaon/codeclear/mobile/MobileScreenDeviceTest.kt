@@ -1372,6 +1372,11 @@ class MobileScreenDeviceTest {
     fun singleDialogCloseUsesTheEntireActionWidth() {
         openSettingsPage(SettingsPage.PRIVACY)
         compose.onNodeWithText(text(R.string.mobile_data_storage)).performScrollTo().performClick()
+        compose.onNodeWithTag("confirmation-card").performTouchInput { click(Offset(centerX, 4f)) }
+        compose.onNodeWithTag("confirmation-actions").assertIsDisplayed()
+        compose.onNodeWithTag("confirmation-backdrop").performTouchInput { click(Offset(2f, 2f)) }
+        compose.onNodeWithTag("confirmation-actions").assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_data_storage)).performClick()
         val actionsWidth = compose.onNodeWithTag(
             "confirmation-actions"
         ).fetchSemanticsNode().boundsInRoot.width
