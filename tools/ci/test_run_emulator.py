@@ -6,12 +6,33 @@ from unittest.mock import Mock, patch
 
 from tools.ci.run_emulator import (
     guest_diagnostics,
+    image_for_profile,
     install_fixture,
     user_zero_unlocked,
     wait_for_boot,
     wait_for_package_manager,
     wait_for_unlock,
 )
+
+
+class SystemImageProfileTest(unittest.TestCase):
+    def test_stable_16k_profiles_remain_distinct_from_default_images(self):
+        self.assertEqual(
+            "system-images;android-35;google_apis_ps16k;x86_64",
+            image_for_profile("35-16k"),
+        )
+        self.assertEqual(
+            "system-images;android-37.2;google_apis_ps16k;x86_64",
+            image_for_profile("37-16k"),
+        )
+        self.assertEqual(
+            "system-images;android-37.0;default;x86_64", image_for_profile("37")
+        )
+        self.assertEqual(
+            "system-images;android-30;default;x86_64", image_for_profile("30")
+        )
+        with self.assertRaises(ValueError):
+            image_for_profile("35;unexpected")
 
 
 class GuestUnlockTest(unittest.TestCase):

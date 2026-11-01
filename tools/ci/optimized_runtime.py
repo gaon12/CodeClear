@@ -143,15 +143,17 @@ def validate(device, sdk, cli, serial):
         device("shell", "getprop", "ro.kernel.qemu") != "1"
         or device("shell", "getprop", "ro.debuggable") != "1"
         or device("shell", "getprop", "ro.hardware") not in {"ranchu", "goldfish"}
-        or device("shell", "getprop", "ro.build.version.sdk") not in {"30", "37"}
+        or device("shell", "getprop", "ro.build.version.sdk") not in {"30", "35", "37"}
     ):
         raise RuntimeError("Optimized fixtures require an owned disposable emulator")
 
     if (
-        device("shell", "getprop", "ro.build.version.sdk") == "37"
+        device("shell", "getprop", "ro.build.version.sdk") in {"35", "37"}
         and device("shell", "getconf", "PAGE_SIZE") != "16384"
     ):
-        raise RuntimeError("The optimized API 37 fixture requires actual 16 KiB pages")
+        raise RuntimeError(
+            "The optimized API 35/37 fixture requires actual 16 KiB pages"
+        )
 
     def run(*parts):
         return subprocess.run(

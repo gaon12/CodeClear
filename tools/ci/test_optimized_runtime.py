@@ -113,15 +113,17 @@ class OptimizedFixtureTest(unittest.TestCase):
             "ro.build.version.sdk": "37",
             "PAGE_SIZE": "4096",
         }
-        device = Mock(side_effect=lambda *parts: properties[parts[-1]])
-        with self.assertRaisesRegex(RuntimeError, "actual 16 KiB pages"):
-            validate(device, Path("/sdk"), "/android", "emulator-5554")
-        self.assertFalse(
-            any(
-                "install" in call.args or "am" in call.args
-                for call in device.call_args_list
+        for api in ["35", "37"]:
+            properties["ro.build.version.sdk"] = api
+            device = Mock(side_effect=lambda *parts: properties[parts[-1]])
+            with self.assertRaisesRegex(RuntimeError, "actual 16 KiB pages"):
+                validate(device, Path("/sdk"), "/android", "emulator-5554")
+            self.assertFalse(
+                any(
+                    "install" in call.args or "am" in call.args
+                    for call in device.call_args_list
+                )
             )
-        )
 
     def test_an_unchanged_process_does_not_establish_restart_persistence(self):
         device = Mock(side_effect=["123", "Success", "123"])

@@ -67,6 +67,15 @@ def wait_for_boot(device, process, timeout=240):
     raise TimeoutError("Emulator did not finish booting within the allowed time")
 
 
+def image_for_profile(profile):
+    if profile not in {str(api) for api in range(30, 38)} | {"35-16k", "37-16k"}:
+        raise ValueError("Review the requested system image profile")
+    api = int(profile.split("-", 1)[0])
+    platform = "37.2" if profile == "37-16k" else "37.0" if api == 37 else str(api)
+    tag = "google_apis_ps16k" if profile.endswith("-16k") else "default"
+    return f"system-images;android-{platform};{tag};x86_64"
+
+
 def wait_for_package_manager(device, process, timeout=60):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -187,7 +196,7 @@ def guest_diagnostics(device, boot_only=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    profiles = [str(api) for api in range(30, 38)] + ["37-16k"]
+    profiles = [str(api) for api in range(30, 38)] + ["35-16k", "37-16k"]
     selection = parser.add_mutually_exclusive_group(required=True)
     selection.add_argument("--api", type=int, choices=range(30, 38))
     selection.add_argument("--profile", choices=profiles)
@@ -200,8 +209,8 @@ def main():
     args.api = int(profile.split("-", 1)[0])
     if args.optimized and not args.system_receiver:
         parser.error("--optimized requires normal system receiver preparation")
-    if args.optimized and profile not in {"30", "37-16k"}:
-        parser.error("--optimized reviews API 30 and the API 37 16 KiB profile")
+    if args.optimized and profile not in {"30", "35-16k", "37-16k"}:
+        parser.error("--optimized reviews API 30 and the API 35/37 16 KiB profiles")
     # SDK tools and the emulator must share the same owned AVD index and data directory.
     android_user = Path(os.environ["RUNNER_TEMP"]) / "codeclear-android"
     avd_root = android_user / "avd"
@@ -211,16 +220,15 @@ def main():
     os.environ["ANDROID_AVD_HOME"] = str(avd_root)
     sdk = Path(os.environ["ANDROID_HOME"])
     cli = sdk / "cmdline-tools/latest/bin"
-    image = (
-        "system-images;android-37.2;google_apis_ps16k;x86_64"
-        if profile == "37-16k"
-        else f"system-images;android-{'37.0' if args.api == 37 else args.api};default;x86_64"
-    )
+    image = image_for_profile(profile)
     name = "codeclear-" + profile
-    partition_mib = 4096 if profile == "37-16k" else 2048
+    sixteen_k = profile.endswith("-16k")
+    partition_mib = 4096 if sixteen_k else 2048
     # Newer guests lost PackageManager or displayed launcher ANRs at 2 GiB.
     # These limits apply only to the isolated hosted VM, never the owner's PC.
-    memory_mib = 4096 if args.api >= 37 else 3072 if args.api >= 36 else 2048
+    memory_mib = (
+        4096 if args.api >= 37 or sixteen_k else 3072 if args.api >= 36 else 2048
+    )
     if args.prepare:
         command(
             str(cli / "sdkmanager"),
@@ -261,7 +269,7 @@ def main():
         )
         values.update(
             {
-                "disk.dataPartition.size": "4G" if profile == "37-16k" else "2G",
+                "disk.dataPartition.size": "4G" if sixteen_k else "2G",
                 "hw.sdCard": "no",
                 "hw.ramSize": str(memory_mib),
                 "hw.lcd.width": "720",
@@ -345,7 +353,7 @@ def main():
                 + f"; guest RAM {memory_mib} MiB; 2 cores",
                 flush=True,
             )
-            if profile == "37-16k":
+            if sixteen_k:
                 _require(
                     device("shell", "getconf", "PAGE_SIZE") == "16384",
                     "The requested 16 KiB profile has the wrong actual page size",
