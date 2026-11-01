@@ -1,5 +1,6 @@
 """Validate controlled receiver injection through ordinary app and Settings consent UI."""
 
+import json
 import re
 import shlex
 import subprocess
@@ -74,11 +75,14 @@ def validate(device, api):
         raise RuntimeError("Could not read the disposable emulator's UI")
 
     def matches(node, labels):
-        return any(
-            label.casefold()
-            in {line.casefold() for line in node.get("text", "").splitlines()}
-            for label in labels
-        )
+        exposed = set()
+        for attribute in ["text", "content-desc"]:
+            value = node.get(attribute, "")
+            exposed.add(" ".join(value.split()).casefold())
+            exposed.update(
+                " ".join(line.split()).casefold() for line in re.split(r"[\n,]", value)
+            )
+        return any(" ".join(label.split()).casefold() in exposed for label in labels)
 
     def tap(node):
         _require(
@@ -115,11 +119,35 @@ def validate(device, api):
         )
 
     def finish_grant(key, service_label):
+        previous_screen = None
         for _ in range(10):
             if grant_present(key):
                 start_app()
                 return
             nodes = layout()
+            # This runs only on a fresh owned AVD, before issuing any receiver messages.
+            screen = [
+                {
+                    name: (n.get(name) or "")[:120]
+                    for name in [
+                        "text",
+                        "content-desc",
+                        "resource-id",
+                        "class",
+                        "checked",
+                        "enabled",
+                    ]
+                }
+                for n in nodes
+                if n.get("package") in permitted_ui
+                and (n.get("text") or n.get("content-desc"))
+            ][:30]
+            if screen != previous_screen:
+                print(
+                    "Capture grant screen: " + json.dumps(screen, ensure_ascii=False),
+                    flush=True,
+                )
+                previous_screen = screen
             confirm = next(
                 (
                     n

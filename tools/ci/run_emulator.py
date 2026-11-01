@@ -14,7 +14,7 @@ def _require(condition, message="Emulator validation condition failed"):
         raise RuntimeError(message)
 
 
-# Exclude live providers, model downloads, radio/Bluetooth tests, and owner-granted access tests.
+# Exclude live providers, model downloads, installed voices, radios, and owner-granted access tests.
 FIXTURES = {
     "mobile.MobileControllerDeviceTest": 20,
     "mobile.HistoryWorkerDeviceTest": 6,
@@ -33,7 +33,12 @@ FIXTURES = {
     "mobile.ModelInventoryDeviceTest": 4,
     "mobile.ModelPreparationDeviceTest": 7,
     "mobile.OriginalLanguageIdentifierDeviceTest": 1,
-    "mobile.SpeechPlaybackDeviceTest": 7,
+    "mobile.SpeechPlaybackDeviceTest#stopBeforeInitializationNeverQueuesSpeech": 1,
+    "mobile.SpeechPlaybackDeviceTest#replacementDuringInitializationOnlySpeaksTheLatestText": 1,
+    "mobile.SpeechPlaybackDeviceTest#cancellationDuringVoiceQueryAndLateCompletionCannotRestorePlayback": 1,
+    "mobile.SpeechPlaybackDeviceTest#missingOrNetworkVoicesNeverSpeakAndInitializationFailureCanRetry": 1,
+    "mobile.SpeechPlaybackDeviceTest#focusLossAndCompletionReleaseTheCurrentRequest": 1,
+    "mobile.SpeechPlaybackDeviceTest#unicodeChunksPreserveTheWholeTextAndVoiceSelectionRequiresInstalledOfflineData": 1,
     "translation.SystemEngineDeviceTest": 8,
     "translation.SystemTranslationProtocolDeviceTest": 1,
     "translation.MyMemoryEngineDeviceTest": 1,

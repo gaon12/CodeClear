@@ -70,7 +70,7 @@ clean checkout on standard Linux runners and runs an explicit software-fixture
 allowlist on disposable AOSP API 30, 31, and 35 emulators. Each emulator uses two
 cores and 2 GiB of guest RAM. The default software-fixture path does not use
 provider keys, download translation models, grant capture access, or test physical reception. Live-provider,
-Bluetooth, prepared-model, and owner-granted capture tests require separate
+Bluetooth, installed-voice, prepared-model, and owner-granted capture tests require separate
 environments. No APK or test artifact is published by the workflow.
 
 Its separate `system_receiver` option resets only the disposable emulator's app
