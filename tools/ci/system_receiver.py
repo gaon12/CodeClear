@@ -99,10 +99,12 @@ def validate(device, api):
         time.sleep(0.4)
 
     def click(*labels, scrolls=12):
+        last_nodes = []
         for attempt in range(scrolls + 1):
+            last_nodes = layout()
             nodes = [
                 n
-                for n in layout()
+                for n in last_nodes
                 if matches(n, labels)
                 and n.get("enabled") == "true"
                 and n.get("package") in permitted_ui
@@ -112,6 +114,22 @@ def validate(device, api):
                 return
             if attempt < scrolls:
                 device("shell", "input", "swipe", "360", "1030", "360", "380", "250")
+        print(
+            "Unavailable control screen: "
+            + json.dumps(
+                [
+                    {
+                        key: (n.get(key) or "")[:160]
+                        for key in ["text", "content-desc", "package", "resource-id"]
+                    }
+                    for n in last_nodes
+                    if n.get("package") in permitted_ui
+                    and (n.get("text") or n.get("content-desc"))
+                ][:35],
+                ensure_ascii=False,
+            ),
+            flush=True,
+        )
         raise RuntimeError(
             "Expected consent/navigation control was unavailable: " + labels[0]
         )
@@ -239,13 +257,21 @@ def validate(device, api):
     finish_grant(
         "enabled_accessibility_services", "CodeClear · Emergency alert dialogs"
     )
-    click("Next")
-    click("Done")
 
-    preferences = ET.fromstring(
-        device("shell", "run-as", APP, "cat", "shared_prefs/mobile_options.xml")
+    def read_options():
+        preferences = ET.fromstring(
+            device("shell", "run-as", APP, "cat", "shared_prefs/mobile_options.xml")
+        )
+        return {n.get("name"): n.get("value", n.text) for n in preferences}
+
+    for _ in range(6):
+        if read_options().get("setup_complete") == "true":
+            break
+        click("Next", "Done")
+    values = read_options()
+    _require(
+        values.get("setup_complete") == "true", "The normal tutorial did not finish"
     )
-    values = {n.get("name"): n.get("value", n.text) for n in preferences}
     _require(
         values.get("notification_consent")
         == values.get("accessibility_consent")
