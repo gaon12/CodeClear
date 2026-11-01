@@ -13,7 +13,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: optimized-runtime-${{ github.ref }}
+  # Isolate profile validation while serializing retries for the same profile.
+  group: optimized-runtime-${{ github.ref }}-${{ inputs.profile }}
   cancel-in-progress: false
 
 jobs:
