@@ -5,10 +5,39 @@ import unittest
 from unittest.mock import Mock, patch
 
 from tools.ci.run_emulator import (
+    guest_diagnostics,
     install_fixture,
     wait_for_boot,
     wait_for_package_manager,
 )
+
+
+class GuestDiagnosticsTest(unittest.TestCase):
+    @patch("builtins.print")
+    def test_a_missing_service_does_not_prevent_other_crash_diagnostics(self, output):
+        device = Mock(side_effect=[RuntimeError("offline"), "123", ""])
+        guest_diagnostics(device)
+        self.assertEqual(3, device.call_count)
+        self.assertTrue(any("PIDs: 123" in c.args[0] for c in output.call_args_list))
+
+    @patch("builtins.print")
+    def test_crash_frames_and_classes_exclude_message_and_alert_text(self, output):
+        device = Mock(
+            side_effect=[
+                "MemAvailable: 123 kB\nPrivate: secret",
+                "123",
+                (
+                    "java.lang.OutOfMemoryError: secret alert body\n"
+                    " at android.app.ActivityThread.main(ActivityThread.java:42)\n"
+                    "Private message: secret"
+                ),
+            ]
+        )
+        guest_diagnostics(device)
+        printed = "\n".join(c.args[0] for c in output.call_args_list)
+        self.assertIn("OutOfMemoryError", printed)
+        self.assertIn("ActivityThread.java:42", printed)
+        self.assertNotIn("secret", printed)
 
 
 class EmulatorBootTest(unittest.TestCase):

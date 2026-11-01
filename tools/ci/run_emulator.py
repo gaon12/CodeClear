@@ -109,6 +109,39 @@ def install_fixture(device, apk):
             time.sleep(2)
 
 
+def guest_diagnostics(device):
+    """Keep system-death evidence bounded without printing receiver message text."""
+    for parts in [
+        ("shell", "cat", "/proc/meminfo"),
+        ("shell", "pidof", "system_server"),
+        ("shell", "logcat", "-b", "crash", "-d", "-t", "80"),
+    ]:
+        try:
+            output = device(*parts, timeout=10)
+            lines = []
+            for line in output.splitlines():
+                if parts[-1] == "/proc/meminfo":
+                    if re.match(
+                        r"Mem(?:Total|Free|Available):|Swap(?:Total|Free):", line
+                    ):
+                        lines.append(line)
+                elif parts[-1] == "system_server":
+                    if re.fullmatch(r"[0-9 ]*", line):
+                        lines.append("system_server PIDs: " + line)
+                else:
+                    exception = re.search(r"([\w.$]+(?:Exception|Error))(?=:|$)", line)
+                    frame = re.search(r"\bat ([\w.$]+\([^)]{0,180}\))", line)
+                    if exception:
+                        lines.append("Crash exception class: " + exception.group(1))
+                    if frame:
+                        lines.append("Crash frame: " + frame.group(1))
+            print("Guest diagnostic: " + "\n".join(lines[:40]), flush=True)
+        except (subprocess.SubprocessError, OSError, RuntimeError):
+            print(
+                "Guest diagnostic command unavailable: " + repr(parts[:3]), flush=True
+            )
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     profiles = [str(api) for api in range(30, 38)] + ["37-16k"]
@@ -142,6 +175,9 @@ def main():
     )
     name = "codeclear-" + profile
     partition_mib = 4096 if profile == "37-16k" else 2048
+    # Newer guests lost PackageManager or displayed launcher ANRs at 2 GiB.
+    # These limits apply only to the isolated hosted VM, never the owner's PC.
+    memory_mib = 4096 if args.api >= 37 else 3072 if args.api >= 36 else 2048
     if args.prepare:
         command(
             str(cli / "sdkmanager"),
@@ -184,7 +220,7 @@ def main():
             {
                 "disk.dataPartition.size": "4G" if profile == "37-16k" else "2G",
                 "hw.sdCard": "no",
-                "hw.ramSize": "2048",
+                "hw.ramSize": str(memory_mib),
                 "hw.lcd.width": "720",
                 "hw.lcd.height": "1280",
                 "hw.lcd.density": "320",
@@ -207,7 +243,8 @@ def main():
             ).stdout.strip()
         except subprocess.CalledProcessError as error:
             raise RuntimeError(
-                f"Device command {parts[:3]} failed: {error.stderr[:1000]}"
+                f"Device command {parts[:3]} failed (exit {error.returncode}): "
+                f"stderr={error.stderr[:1000]!r}; stdout={error.stdout[:1000]!r}"
             ) from error
 
     report = Path("app/build/reports/remote-validation")
@@ -224,7 +261,7 @@ def main():
                 "-port",
                 "5554",
                 "-memory",
-                "2048",
+                str(memory_mib),
                 "-partition-size",
                 str(partition_mib),
                 "-cores",
@@ -257,7 +294,8 @@ def main():
             )
             print(
                 f"Disposable profile {profile} (SDK {args.api}); page size "
-                + device("shell", "getconf", "PAGE_SIZE"),
+                + device("shell", "getconf", "PAGE_SIZE")
+                + f"; guest RAM {memory_mib} MiB; 2 cores",
                 flush=True,
             )
             if profile == "37-16k":
@@ -334,6 +372,7 @@ def main():
                 "Software fixture failures remain; receiver results are separate evidence",
             )
         except BaseException:
+            guest_diagnostics(device)
             log.flush()
             print("Emulator diagnostic tail:", flush=True)
             for line in (
