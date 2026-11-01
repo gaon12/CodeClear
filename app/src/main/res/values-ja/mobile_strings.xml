@@ -239,4 +239,5 @@
     <string name="mobile_model_progress_notice">SDKは転送量や割合を提供しないため、準備できたモデル数を表示します。閉じても準備は続きます。</string>
     <string name="mobile_model_download_notice">モデルは言語ごとに約30 MBです。Wi-Fiとストレージを使用し、閉じてもダウンロードが続く場合があります。モデルの準備で警報本文を送信しません。</string>
     <string name="mobile_model_update_pending">インストール済み · 更新確認待ち</string>
+    <string name="mobile_system_preparation_explanation">システム翻訳モデルは、端末にインストールされたシステムサービスが管理します。公開されたモデル設定があれば開けますが、Androidにはこれらを直接ダウンロードする共通APIがありません。公開された言語ペアや設定がない場合はML Kitをご利用ください。通常の翻訳アプリを入れても、対応するシステムサービスが追加されるとは限りません。</string>
 </resources>

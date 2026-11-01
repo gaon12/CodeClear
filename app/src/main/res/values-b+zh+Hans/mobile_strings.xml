@@ -239,4 +239,5 @@
     <string name="mobile_model_progress_notice">SDK 不提供下载字节数或百分比，因此显示已准备好的模型数量。关闭窗口后仍会继续准备。</string>
     <string name="mobile_model_download_notice">每个语言模型约 30 MB。下载需要 Wi-Fi 和存储空间，关闭窗口后仍可能继续。准备模型时不会上传警报正文。</string>
     <string name="mobile_model_update_pending">已安装 · 等待检查更新</string>
+    <string name="mobile_system_preparation_explanation">系统翻译模型由设备上安装的系统服务提供方管理。如果提供方公开了模型设置，可以打开；Android 没有直接下载这些模型的通用 API。如果没有公开的语言对或设置，请使用 ML Kit。安装普通翻译应用不一定会添加兼容的系统服务。</string>
 </resources>

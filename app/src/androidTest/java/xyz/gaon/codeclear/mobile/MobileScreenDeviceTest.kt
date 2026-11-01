@@ -1516,7 +1516,7 @@ class MobileScreenDeviceTest {
         openEnginePicker()
         compose.onNode(
             hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
-        ).assertIsNotEnabled()
+        ).assertIsNotSelected()
         compose.onNodeWithText(
             context.getString(R.string.mobile_engine_pair_missing, languageName("ko"))
         ).assertIsDisplayed()
@@ -1555,9 +1555,36 @@ class MobileScreenDeviceTest {
         compose.onNodeWithText(text(R.string.mobile_engine_query_failed)).assertIsDisplayed()
         compose.onNode(
             hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
-        ).assertIsNotEnabled()
+        ).assertIsNotSelected()
         compose.runOnIdle { systemSupport = SystemEngineAvailability(loaded = true) }
         compose.onNodeWithText(text(R.string.mobile_engine_unavailable)).assertIsDisplayed()
+    }
+
+    @Test
+    fun unavailableSystemEngineOpensPreparationHelpWithoutChangingTheEngine() {
+        compose.runOnIdle {
+            systemSupport =
+                SystemEngineAvailability(loaded = true, platformSupported = true)
+        }
+        openEnginePicker()
+        compose.onNode(
+            hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
+        ).performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_system_preparation_explanation)
+        ).assertIsDisplayed()
+        compose.onNodeWithText(
+            text(R.string.mobile_system_models_action)
+        ).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(LocalEngineKind.ML_KIT, state.options.engine)
+            assertEquals(1, providerSettingsOpened)
+            assertEquals(0, prepared)
+        }
+        compose.onNodeWithText(text(R.string.mobile_close)).performClick()
+        compose.onNode(
+            hasText(text(R.string.mobile_engine_mlkit)) and isRadioChoice()
+        ).assertIsSelected()
     }
 
     @Test
@@ -1621,7 +1648,7 @@ class MobileScreenDeviceTest {
         openEnginePicker()
         compose.onNode(
             hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
-        ).assertIsNotEnabled()
+        ).assertIsSelected()
         compose.onNode(
             hasText(text(R.string.mobile_engine_mlkit)) and isRadioChoice()
         ).performClick()

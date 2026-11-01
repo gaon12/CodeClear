@@ -240,4 +240,5 @@
     <string name="mobile_model_progress_notice">Le SDK ne fournit ni nombre d’octets ni pourcentage. Le nombre de modèles prêts est affiché. La préparation continue après la fermeture.</string>
     <string name="mobile_model_download_notice">Chaque modèle fait environ 30 Mo. Le téléchargement utilise le Wi-Fi et du stockage et peut continuer après la fermeture. Aucun texte d’alerte n’est envoyé pour préparer les modèles.</string>
     <string name="mobile_model_update_pending">Installé · Vérification des mises à jour en attente</string>
+    <string name="mobile_system_preparation_explanation">Les modèles système sont gérés par le fournisseur installé. CodeClear peut ouvrir ses réglages publics, si disponibles. Android ne propose pas d’API générale pour télécharger ces modèles. Sans paires de langues ni réglages publics, utilisez ML Kit. Une application de traduction ordinaire ne fournit pas forcément un service système compatible.</string>
 </resources>

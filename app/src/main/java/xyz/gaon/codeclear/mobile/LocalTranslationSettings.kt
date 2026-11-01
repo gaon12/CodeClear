@@ -30,6 +30,7 @@ private data class TranslationChange(val engine: LocalEngineKind, val enable: Bo
 fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
     var enginePicker by remember { mutableStateOf(false) }
     var targetPicker by remember { mutableStateOf(false) }
+    var systemPreparation by remember { mutableStateOf(false) }
     var proposal by remember { mutableStateOf<TranslationChange?>(null) }
     val availability = actions.systemAvailability
     val support = availability.targets[options.target] ?: SystemTargetSupport()
@@ -107,12 +108,12 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                             RadioChoiceRow(
                                 stringResource(engineLabel(engine)),
                                 selected = engine == options.engine,
-                                enabled = engine == LocalEngineKind.ML_KIT || systemSelectable,
+                                enabled = !availability.loading || engine == LocalEngineKind.ML_KIT,
                                 onClick = {
                                     enginePicker = false
-                                    if (engine !=
-                                        options.engine
-                                    ) {
+                                    if (engine == LocalEngineKind.SYSTEM && !systemSelectable) {
+                                        systemPreparation = true
+                                    } else if (engine != options.engine) {
                                         proposal =
                                             TranslationChange(engine, enable = false)
                                     }
@@ -138,6 +139,43 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                 TextButton(onClick = {
                     enginePicker = false
                 }) { Text(stringResource(R.string.mobile_close)) }
+            }
+        )
+    }
+    if (systemPreparation) {
+        MobileConfirmationDialog(
+            onDismissRequest = {
+                systemPreparation = false
+                enginePicker = true
+            },
+            title = { Text(stringResource(R.string.mobile_engine_system)) },
+            text = {
+                Column(
+                    Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    SystemSupportStatus(availability, options.target)
+                    Text(stringResource(R.string.mobile_system_preparation_explanation))
+                    TextButton(onClick = {
+                        actions.refreshSystem(true)
+                    }, enabled = !availability.loading) {
+                        Text(stringResource(R.string.mobile_engine_refresh))
+                    }
+                    TextButton(
+                        onClick = actions.systemSettings,
+                        enabled = availability.platformSupported
+                    ) {
+                        Text(stringResource(R.string.mobile_system_models_action))
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    systemPreparation = false
+                    enginePicker = true
+                }) {
+                    Text(stringResource(R.string.mobile_close))
+                }
             }
         )
     }
