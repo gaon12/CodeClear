@@ -30,7 +30,7 @@ def tap_testing_code(device, ui, package, digits):
         ]
         # The SDK reader omits the platform's showing-hint flag. The owned
         # English Google dialpad can expose its nonnumeric hint as node text.
-        if len(cleared) == 1 and cleared[0].get("text", "") in {"", "Phone number"}:
+        if len(cleared) == 1 and cleared[0].get("text", "") in {"", "Phone Number"}:
             break
         if attempt < 4:
             time.sleep(0.25)

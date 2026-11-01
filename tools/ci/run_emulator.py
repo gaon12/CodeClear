@@ -416,6 +416,22 @@ def main():
                     ),
                     keypad_controls=True,
                 )
+                # This fresh guest has received no PDU and contains no owner data.
+                # Report only mode-related source diagnostics, never alert contents.
+                source_log = device(
+                    "shell",
+                    "logcat",
+                    "-d",
+                    "-t",
+                    "100",
+                    "-s",
+                    "CellBroadcastReceiver:D",
+                )
+                for line in source_log.splitlines():
+                    if "mode" in line.casefold():
+                        print(
+                            "Preparation source diagnostic: " + line[:300], flush=True
+                        )
                 return
             for apk in [
                 "debug/app-debug.apk",

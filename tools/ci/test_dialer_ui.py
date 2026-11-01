@@ -54,7 +54,7 @@ class DialerInputTest(unittest.TestCase):
     def test_google_empty_hint_is_not_treated_as_remaining_digits(self):
         self.ui.focused_package.return_value = "com.google.android.dialer"
         first = self.google_pad("0")
-        hint = self.google_pad("Phone number")
+        hint = self.google_pad("Phone Number")
         self.ui.layout.side_effect = [first, first, hint, *[hint for _ in range(12)]]
         enter_testing_code(self.device, self.ui, keypad_controls=True)
         self.assertEqual(14, self.ui.tap.call_count)
