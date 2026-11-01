@@ -34,12 +34,20 @@ def local_fixture_options(xml):
 
 
 def certificate(output):
-    matches = re.findall(
-        r"Signer #1 certificate SHA-256 digest: ([0-9a-fA-F]{64})", output
-    )
-    if len(matches) != 1:
+    digests = set()
+    for line in output.splitlines():
+        if "certificate SHA-256 digest:" not in line:
+            continue
+        match = re.fullmatch(
+            r"(?:Signer #\d+|V[1-4](?:\.1)? Signer):? certificate SHA-256 digest: ([0-9a-fA-F]{64})",
+            line.strip(),
+        )
+        if match is None:
+            raise RuntimeError("Review the unrecognized APK certificate report format")
+        digests.add(match.group(1).lower())
+    if len(digests) != 1:
         raise RuntimeError("The APK must expose one reviewed signing certificate")
-    return matches[0].lower()
+    return next(iter(digests))
 
 
 def validate(device, sdk, cli, serial):

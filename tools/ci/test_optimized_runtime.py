@@ -59,3 +59,23 @@ class OptimizedFixtureTest(unittest.TestCase):
         ]:
             with self.assertRaises(RuntimeError):
                 certificate(report)
+
+    def test_the_current_apksigner_v2_report_is_recognized(self):
+        self.assertEqual(
+            "a" * 64, certificate("V2 Signer: certificate SHA-256 digest: " + "a" * 64)
+        )
+
+    def test_signature_schemes_must_agree_on_the_same_identity(self):
+        report = "V2 Signer: certificate SHA-256 digest: " + "a" * 64
+        self.assertEqual(
+            "a" * 64,
+            certificate(
+                report + "\nV3 Signer: certificate SHA-256 digest: " + "a" * 64
+            ),
+        )
+        with self.assertRaises(RuntimeError):
+            certificate(report + "\nV3 Signer: certificate SHA-256 digest: " + "b" * 64)
+
+    def test_an_unknown_signer_format_is_rejected(self):
+        with self.assertRaisesRegex(RuntimeError, "unrecognized"):
+            certificate("V99 Signer: certificate SHA-256 digest: " + "a" * 64)
