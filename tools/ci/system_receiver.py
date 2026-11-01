@@ -30,6 +30,7 @@ BODIES = (
 
 def validate(device, api, cli, serial, mode):
     from consent_ui import ConsentUi
+    from dialer_ui import enter_testing_code
 
     _require(mode in {"off", "on"}, "Review the requested receiver mode")
     # Never clear an app, change grants, or inject a PDU on an owner's physical device.
@@ -449,7 +450,7 @@ def validate(device, api, cli, serial, mode):
             "logcat",
             "-d",
             "-t",
-            "200",
+            "3000",
             "-v",
             "epoch",
             "-s",
@@ -460,31 +461,11 @@ def validate(device, api, cli, serial, mode):
     def toggle_mode():
         before = set(mode_entries())
         device("shell", "input", "keyevent", "KEYCODE_HOME")
-        # A nonempty ordinary DIAL intent opens the keypad; deleting it also clears
-        # Dialer's digitsFilledByIntent guard before the user-like secret-code input.
-        device(
-            "shell", "am", "start", "-a", "android.intent.action.DIAL", "-d", "tel:0"
+        dialer = ConsentUi(
+            device, cli, serial, {"com.android.dialer", "com.google.android.dialer"}
         )
-        time.sleep(1)
-        # Type through the ordinary dialer; never broadcast a privileged secret-code action.
-        device(
-            "shell",
-            "input",
-            "keyevent",
-            "KEYCODE_DEL",
-            "KEYCODE_STAR",
-            "KEYCODE_POUND",
-            "KEYCODE_STAR",
-            "KEYCODE_POUND",
-            "KEYCODE_2",
-            "KEYCODE_6",
-            "KEYCODE_2",
-            "KEYCODE_7",
-            "KEYCODE_POUND",
-            "KEYCODE_STAR",
-            "KEYCODE_POUND",
-            "KEYCODE_STAR",
-        )
+        enter_testing_code(device, dialer)
+        resume_capture()
         deadline = time.monotonic() + 15
         while time.monotonic() < deadline:
             changed = [line for line in mode_entries() if line not in before]
