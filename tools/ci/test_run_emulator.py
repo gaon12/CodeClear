@@ -9,6 +9,7 @@ from tools.ci.run_emulator import (
     image_for_profile,
     install_fixture,
     user_zero_unlocked,
+    verify_avd_target,
     wait_for_boot,
     wait_for_package_manager,
     wait_for_unlock,
@@ -16,6 +17,15 @@ from tools.ci.run_emulator import (
 
 
 class SystemImageProfileTest(unittest.TestCase):
+    def test_stale_zero_or_different_api_metadata_is_rejected_before_boot(self):
+        for target in ["android-0", "android-36", "android-37beta", ""]:
+            with self.assertRaises(RuntimeError):
+                verify_avd_target("target=" + target, 37)
+        with self.assertRaises(RuntimeError):
+            verify_avd_target("target=android-37.0\ntarget=android-37.2", 37)
+        for target in ["android-37", "android-37.0", "android-37.2"]:
+            self.assertEqual(target, verify_avd_target("target=" + target + "\n", 37))
+
     def test_stable_16k_profiles_remain_distinct_from_default_images(self):
         self.assertEqual(
             "system-images;android-35;google_apis_ps16k;x86_64",

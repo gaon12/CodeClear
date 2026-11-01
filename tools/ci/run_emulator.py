@@ -76,6 +76,18 @@ def image_for_profile(profile):
     return f"system-images;android-{platform};{tag};x86_64"
 
 
+def verify_avd_target(text, api):
+    targets = re.findall(r"(?m)^target=(\S+)\s*$", text)
+    if (
+        len(targets) != 1
+        or re.fullmatch(rf"android-{api}(?:\.[0-9]+)?", targets[0]) is None
+    ):
+        raise RuntimeError(
+            "AVD metadata does not match the selected Android API: " + repr(targets)
+        )
+    return targets[0]
+
+
 def wait_for_package_manager(device, process, timeout=60):
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
@@ -240,6 +252,13 @@ def main():
         command(
             str(cli / "sdkmanager"),
             "cmdline-tools;23.0",
+            timeout=600,
+        )
+        # The hosted runner's preinstalled `latest` can misread minor API levels
+        # and create android-0 AVDs. Use the installed version for all image work.
+        cli = sdk / "cmdline-tools/23.0/bin"
+        command(
+            str(cli / "sdkmanager"),
             "platform-tools",
             "emulator",
             "platforms;android-37.0",
@@ -261,6 +280,10 @@ def main():
             str(avd_root / (name + ".avd")),
             input="no\n",
         )
+        target = verify_avd_target(
+            (avd_root / (name + ".ini")).read_text(encoding="utf-8"), args.api
+        )
+        print("Verified AVD target: " + target + "; image " + image, flush=True)
         config = avd_root / (name + ".avd/config.ini")
         values = dict(
             line.split("=", 1)
