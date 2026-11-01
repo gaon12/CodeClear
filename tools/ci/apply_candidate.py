@@ -51,9 +51,16 @@ def candidate_paths(numstat):
             r"app/src/(?:main|testDebug|androidTest)/kotlin/(?:[A-Za-z0-9_]+/)*[A-Za-z0-9_]+\.kt",
             path,
         )
-        if not kotlin and path != "tools/ci/run_emulator.py":
+        localized_strings = re.fullmatch(
+            r"app/src/main/res/values(?:-ko|-ja|-fr|-de|-b\+zh\+Hans|-b\+zh\+Hant)?/mobile_strings\.xml",
+            path,
+        )
+        icon = re.fullmatch(r"app/src/main/res/drawable/ic_[a-z0-9_]+\.xml", path)
+        if not (
+            kotlin or localized_strings or icon or path == "tools/ci/run_emulator.py"
+        ):
             raise ValueError(
-                "Candidate paths must be Kotlin sources or the fixture allowlist"
+                "Candidate paths must be Kotlin, reviewed UI resources or the fixture allowlist"
             )
         paths.append(path)
     if not paths or len(paths) > 16 or len(set(paths)) != len(paths):

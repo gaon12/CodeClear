@@ -50,3 +50,28 @@ class CandidateTest(unittest.TestCase):
 
     def test_normal_workflow_dispatch_requires_no_candidate(self):
         self.assertIsNone(candidate_patch("", "", "a" * 40))
+
+    def test_localized_mobile_labels_and_textual_icons_can_be_reviewed_before_commit(
+        self,
+    ):
+        for path in [
+            "app/src/main/res/values/mobile_strings.xml",
+            "app/src/main/res/values-ko/mobile_strings.xml",
+            "app/src/main/res/values-b+zh+Hant/mobile_strings.xml",
+            "app/src/main/res/drawable/ic_copy.xml",
+        ]:
+            self.assertEqual([path], candidate_paths("1\t0\t" + path + "\x00"))
+
+    def test_ui_candidates_cannot_modify_manifest_backup_rules_or_local_configuration(
+        self,
+    ):
+        for path in [
+            "app/src/main/AndroidManifest.xml",
+            "app/src/main/res/xml/backup_rules.xml",
+            "app/src/main/res/values/config.xml",
+            "app/src/main/res/values-unknown/mobile_strings.xml",
+            "app/src/main/res/drawable/../../local.properties",
+            "app/src/main/res/drawable/ic_copy.png",
+        ]:
+            with self.assertRaises(ValueError):
+                candidate_paths("1\t0\t" + path + "\x00")
