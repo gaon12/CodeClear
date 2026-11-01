@@ -50,12 +50,18 @@ def main():
     image = f"system-images;android-{args.api};default;x86_64"
     name = f"codeclear-api-{args.api}"
     if args.prepare:
-        command(str(cli / "sdkmanager"), "--licenses", input="yes\n" * 100, timeout=180)
+        command(
+            str(cli / "sdkmanager"),
+            "--licenses",
+            input="yes\n" * 100,
+            timeout=180,
+            stdout=subprocess.DEVNULL,
+        )
         command(
             str(cli / "sdkmanager"),
             "platform-tools",
             "emulator",
-            "platforms;android-37",
+            "platforms;android-37.0",
             "build-tools;37.0.0",
             image,
             timeout=600,
