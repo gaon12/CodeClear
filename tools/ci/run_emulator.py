@@ -1,6 +1,7 @@
 """Run a reviewed fixture allowlist on a disposable, resource-bounded Linux AVD."""
 
 import argparse
+import json
 import os
 import re
 import shutil
@@ -447,21 +448,59 @@ def main():
                 device("shell", "settings", "put", "global", key, "0")
             if args.dialer_only:
                 from consent_ui import ConsentUi
-                from dialer_ui import enter_testing_code
+                from dialer_ui import enter_testing_code, testing_code_metadata
 
                 print(
                     "Dialer preparation only; no app, capture or RF acceptance.",
                     flush=True,
                 )
-                enter_testing_code(
+                dialer = ConsentUi(
                     device,
-                    ConsentUi(
-                        device,
-                        sdk / "cmdline-tools/23.0/bin/android",
-                        serial,
-                        {"com.android.dialer", "com.google.android.dialer"},
+                    sdk / "cmdline-tools/23.0/bin/android",
+                    serial,
+                    {"com.android.dialer", "com.google.android.dialer"},
+                )
+                enter_testing_code(device, dialer, keypad_controls=True)
+                try:
+                    nodes = dialer.layout()
+                    print(
+                        "Preparation field metadata: "
+                        + json.dumps(
+                            testing_code_metadata(nodes, dialer.focused_package())
+                        ),
+                        flush=True,
+                    )
+                finally:
+                    dialer.stop()
+                features = device("shell", "pm", "list", "features")
+                print(
+                    "Preparation telephony features: "
+                    + json.dumps(
+                        [
+                            line
+                            for line in features.splitlines()
+                            if line.startswith("feature:android.hardware.telephony")
+                        ][:20]
                     ),
-                    keypad_controls=True,
+                    flush=True,
+                )
+                holders = device(
+                    "shell",
+                    "cmd",
+                    "role",
+                    "get-role-holders",
+                    "android.app.role.DIALER",
+                )
+                print(
+                    "Preparation default dialer: "
+                    + json.dumps(
+                        [
+                            p
+                            for p in holders.splitlines()
+                            if p in {"com.android.dialer", "com.google.android.dialer"}
+                        ]
+                    ),
+                    flush=True,
                 )
                 # This fresh guest has received no PDU and contains no owner data.
                 # Report only mode-related source diagnostics, never alert contents.
@@ -470,7 +509,7 @@ def main():
                     "logcat",
                     "-d",
                     "-t",
-                    "100",
+                    "20000",
                     "-s",
                     "CellBroadcastReceiver:D",
                 )

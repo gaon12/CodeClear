@@ -4,6 +4,21 @@ import json
 import time
 
 
+def testing_code_metadata(nodes, package):
+    """Describe owned-field completion without exposing arbitrary dialer contents."""
+    fields = [
+        n.get("text", "")
+        for n in nodes
+        if n.get("resource-id") == package + ":id/digits"
+    ]
+    return {
+        "fields": len(fields),
+        "retained_testing_code": len(fields) == 1 and fields[0] == "*#*#2627#*#*",
+        "empty_or_hint": len(fields) == 1 and fields[0] in {"", "Phone Number"},
+        "text_lengths": [len(t) for t in fields[:3]],
+    }
+
+
 def tap_testing_code(device, ui, package, digits):
     if digits.get("text", "") not in {"", "0"}:
         raise RuntimeError("The owned dialer has unexpected existing digits")

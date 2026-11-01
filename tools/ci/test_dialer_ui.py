@@ -4,7 +4,7 @@ import unittest
 import xml.etree.ElementTree as ET
 from unittest.mock import Mock, patch
 
-from tools.ci.dialer_ui import enter_testing_code
+from tools.ci.dialer_ui import enter_testing_code, testing_code_metadata
 
 
 class DialerInputTest(unittest.TestCase):
@@ -17,6 +17,35 @@ class DialerInputTest(unittest.TestCase):
                 for name in ["deleteButton", "star", "pound", "two", "six", "seven"]
             ],
         ]
+
+    def test_post_entry_metadata_distinguishes_retained_code_from_consumed_input(self):
+        for text, retained, empty in [
+            ("*#*#2627#*#*", True, False),
+            ("", False, True),
+            ("Phone Number", False, True),
+        ]:
+            result = testing_code_metadata(
+                self.google_pad(text), "com.google.android.dialer"
+            )
+            self.assertEqual(retained, result["retained_testing_code"])
+            self.assertEqual(empty, result["empty_or_hint"])
+
+    def test_post_entry_metadata_never_exposes_unknown_digits_or_other_resource_owners(
+        self,
+    ):
+        arbitrary = "991234567890"
+        result = testing_code_metadata(
+            self.google_pad(arbitrary), "com.google.android.dialer"
+        )
+        self.assertNotIn(arbitrary, str(result))
+        self.assertFalse(result["retained_testing_code"])
+        self.assertFalse(result["empty_or_hint"])
+        self.assertEqual(
+            0,
+            testing_code_metadata(self.google_pad(arbitrary), "com.android.dialer")[
+                "fields"
+            ],
+        )
 
     def test_google_testing_code_uses_real_keypad_controls_and_never_calls(self):
         self.ui.focused_package.return_value = "com.google.android.dialer"
