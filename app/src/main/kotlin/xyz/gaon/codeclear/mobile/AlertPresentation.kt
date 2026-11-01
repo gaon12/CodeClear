@@ -46,8 +46,10 @@ fun AlertPresentation(
     compact: Boolean = false,
     speechActions: MobileActions? = null
 ) {
+    // Script conversion can change the text even when the language codes match.
     val translatedReady = alert.translation?.phase == TranslationPhase.READY &&
-        !alert.translation.text.isNullOrBlank() && !alert.translation.sameLanguage
+        !alert.translation.text.isNullOrBlank() &&
+        (!alert.translation.sameLanguage || alert.translation.text != alert.capture.original)
     var showOriginal by rememberSaveable(alert.id, target, viewMode) {
         mutableStateOf(!translatedReady)
     }

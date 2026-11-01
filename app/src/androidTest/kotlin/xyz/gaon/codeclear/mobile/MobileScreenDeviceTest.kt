@@ -658,6 +658,48 @@ class MobileScreenDeviceTest {
     }
 
     @Test
+    fun singleMessageViewExposesChangedScriptButAvoidsAnIdenticalSameLanguageResult() {
+        val original = "【演练】请远离车站，注意安全。"
+        val converted = "【演練】請遠離車站，注意安全。"
+        val alert = record(1).let {
+            it.copy(
+                capture = it.capture.copy(original = original),
+                translation = SavedTranslation(
+                    TranslationPhase.READY,
+                    converted,
+                    "zh",
+                    sameLanguage = true
+                )
+            )
+        }
+        compose.runOnIdle {
+            state = state.copy(
+                latest = alert,
+                options = state.options.copy(
+                    target = TranslationTarget.TRADITIONAL_CHINESE,
+                    messageViewMode = MessageViewMode.SWITCH
+                )
+            )
+        }
+        compose.onNodeWithTag("mobile-feed").performScrollToNode(hasText(converted))
+        compose.onNodeWithText(converted).assertIsDisplayed()
+        compose.onNodeWithText(original).assertDoesNotExist()
+        compose.onNodeWithTag("speech-translation").performClick()
+        compose.runOnIdle { assertEquals(converted to "zh-Hant", spokenMessages.last()) }
+        compose.onNodeWithTag("switch-message").performClick()
+        compose.onNodeWithTag("mobile-feed").performScrollToNode(hasText(original))
+        compose.onNodeWithText(original).assertIsDisplayed()
+        compose.onNodeWithText(converted).assertDoesNotExist()
+        compose.runOnIdle {
+            state = state.copy(
+                latest = alert.copy(translation = alert.translation!!.copy(text = original))
+            )
+        }
+        compose.onNodeWithText(original).assertIsDisplayed()
+        compose.onNodeWithTag("switch-message").assertDoesNotExist()
+    }
+
+    @Test
     fun singleMessageViewKeepsTheOriginalReadableWhenTranslationIsUnavailable() {
         val original = state.latest!!.capture.original
         compose.runOnIdle {
