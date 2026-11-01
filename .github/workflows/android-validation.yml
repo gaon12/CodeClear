@@ -12,6 +12,14 @@ on:
         description: Validate synthetic system receiver injection through normal consent UI
         type: boolean
         default: false
+      candidate_patch_b64:
+        description: Optional public Kotlin source patch; never include private data or credentials
+        type: string
+        default: ''
+      candidate_base_sha:
+        description: Exact checkout commit for the optional candidate
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -35,6 +43,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Apply optional public-source candidate
+        env:
+          CANDIDATE_PATCH_B64: ${{ inputs.candidate_patch_b64 }}
+          CANDIDATE_BASE_SHA: ${{ inputs.candidate_base_sha }}
+        run: python3 tools/ci/apply_candidate.py
       - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
