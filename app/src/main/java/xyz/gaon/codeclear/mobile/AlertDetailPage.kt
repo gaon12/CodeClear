@@ -52,7 +52,12 @@ internal fun AlertDetailPage(
 }
 
 @Composable
-internal fun AlertDetailBody(state: MobileState, actions: MobileActions) {
+internal fun AlertDetailBody(
+    state: MobileState,
+    actions: MobileActions,
+    compact: Boolean = false,
+    openDetails: (() -> Unit)? = null
+) {
     val alert = state.detail
     if (alert == null) {
         Text(
@@ -64,19 +69,31 @@ internal fun AlertDetailBody(state: MobileState, actions: MobileActions) {
         val target = state.detailTarget ?: state.options.target.languageTag
         val engine = state.detailEngine ?: state.options.engine
         val active = state.options.localConsent && engine == state.options.engine
-        DetailTargetPicker(alert, state, actions)
-        AlertPresentation(alert, target, active, {
-            actions.retry(alert.id, target, engine)
-        }, { actions.prepare(alert, target, engine) }, engine = engine)
-        AlertMetadata(alert)
-        OutlinedButton(
-            onClick = { actions.delete(alert.id) },
-            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("delete-alert"),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.error
-            )
-        ) {
-            Text(stringResource(R.string.mobile_delete))
+        if (!compact) DetailTargetPicker(alert, state, actions)
+        AlertPresentation(
+            alert,
+            target,
+            active,
+            {
+                actions.retry(alert.id, target, engine)
+            },
+            { actions.prepare(alert, target, engine) },
+            details = openDetails,
+            engine = engine,
+            viewMode = state.options.messageViewMode,
+            compact = compact
+        )
+        if (!compact) AlertMetadata(alert)
+        if (!compact) {
+            OutlinedButton(
+                onClick = { actions.delete(alert.id) },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp).testTag("delete-alert"),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error
+                )
+            ) {
+                Text(stringResource(R.string.mobile_delete))
+            }
         }
     }
 }

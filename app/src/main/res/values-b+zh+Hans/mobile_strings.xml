@@ -203,4 +203,10 @@
     <string name="mobile_nearby_stop">停止共享</string>
     <string name="mobile_nearby_background_needed">后台接收尚未运行。请保持应用打开并检查权限。</string>
     <string name="mobile_nearby_background_location">Android 11后台蓝牙搜索需要在应用设置中将位置权限设为“始终允许”。没有该额外权限时，仍可在应用显示时共享。</string>
+    <string name="mobile_message_view">消息显示方式</string>
+    <string name="mobile_message_both">同时显示原文与译文</string>
+    <string name="mobile_message_switch">逐一切换显示</string>
+    <string name="mobile_view_original">查看原文</string>
+    <string name="mobile_view_translation">查看译文</string>
+    <string name="mobile_translation_short_notice">自动翻译，请同时核对原文。</string>
 </resources>

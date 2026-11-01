@@ -203,4 +203,10 @@
     <string name="mobile_nearby_stop">停止共享</string>
     <string name="mobile_nearby_background_needed">背景接收尚未執行。請保持應用程式開啟並檢查權限。</string>
     <string name="mobile_nearby_background_location">Android 11背景藍牙搜尋需要在應用程式設定中將位置權限設為「一律允許」。沒有該額外權限時，仍可在應用程式顯示時共享。</string>
+    <string name="mobile_message_view">訊息顯示方式</string>
+    <string name="mobile_message_both">同時顯示原文與譯文</string>
+    <string name="mobile_message_switch">逐一切換顯示</string>
+    <string name="mobile_view_original">查看原文</string>
+    <string name="mobile_view_translation">查看譯文</string>
+    <string name="mobile_translation_short_notice">自動翻譯，請同時核對原文。</string>
 </resources>

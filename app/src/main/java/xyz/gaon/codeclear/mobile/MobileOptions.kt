@@ -8,6 +8,7 @@ import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
 
 enum class ThemeChoice { SYSTEM, LIGHT, DARK }
+enum class MessageViewMode { BOTH, SWITCH }
 
 data class MobileOptions(
     val notificationConsent: Boolean = false,
@@ -19,7 +20,8 @@ data class MobileOptions(
     val setupComplete: Boolean = false,
     val engine: LocalEngineKind = LocalEngineKind.ML_KIT,
     val nearbyEnabled: Boolean = false,
-    val labsEnabled: Boolean = false
+    val labsEnabled: Boolean = false,
+    val messageViewMode: MessageViewMode = MessageViewMode.SWITCH
 )
 
 fun defaultTarget(
@@ -74,7 +76,10 @@ class MobileOptionsStorage(
             engine = engine ?: LocalEngineKind.ML_KIT,
             nearbyEnabled =
                 currentDisclosure && labsEnabled && saved.getBoolean("nearby_enabled", false),
-            labsEnabled = labsEnabled
+            labsEnabled = labsEnabled,
+            messageViewMode = MessageViewMode.entries.firstOrNull {
+                it.name == saved.getString("message_view_mode", null)
+            } ?: MessageViewMode.SWITCH
         )
     }
 
@@ -89,6 +94,7 @@ class MobileOptionsStorage(
             .putString("local_engine", options.engine.key)
             .putBoolean("nearby_enabled", options.nearbyEnabled)
             .putBoolean("labs_enabled", options.labsEnabled)
+            .putString("message_view_mode", options.messageViewMode.name)
             .putBoolean("setup_complete", options.setupComplete)
             .putString("target", options.target.name).putString("theme", options.theme.name)
             .putString("ui_language", options.uiLanguage).commit()

@@ -203,4 +203,10 @@
     <string name="mobile_nearby_stop">공유 중지</string>
     <string name="mobile_nearby_background_needed">백그라운드 수신이 실행되지 않았습니다. 앱을 열어 둔 채 권한을 확인해 주세요.</string>
     <string name="mobile_nearby_background_location">Android 11에서 백그라운드 블루투스 검색을 하려면 앱 설정에서 위치 권한을 ‘항상 허용’으로 바꿔야 합니다. 추가 권한 없이도 앱이 화면에 있을 때는 공유할 수 있습니다.</string>
+    <string name="mobile_message_view">문자 표시 방식</string>
+    <string name="mobile_message_both">원문과 번역문 함께 보기</string>
+    <string name="mobile_message_switch">하나씩 전환해서 보기</string>
+    <string name="mobile_view_original">원문 보기</string>
+    <string name="mobile_view_translation">번역문 보기</string>
+    <string name="mobile_translation_short_notice">자동 번역입니다. 원문도 확인하세요.</string>
 </resources>

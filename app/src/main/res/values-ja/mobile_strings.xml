@@ -203,4 +203,10 @@
     <string name="mobile_nearby_stop">共有を停止</string>
     <string name="mobile_nearby_background_needed">バックグラウンド受信は停止中です。アプリを開いたまま権限を確認してください。</string>
     <string name="mobile_nearby_background_location">Android 11のバックグラウンドBluetooth検索には、アプリ設定で位置情報を「常に許可」にする必要があります。この追加権限なしでも画面表示中は共有できます。</string>
+    <string name="mobile_message_view">メッセージの表示</string>
+    <string name="mobile_message_both">原文と訳文を並べて表示</string>
+    <string name="mobile_message_switch">1つずつ切り替える</string>
+    <string name="mobile_view_original">原文を表示</string>
+    <string name="mobile_view_translation">訳文を表示</string>
+    <string name="mobile_translation_short_notice">自動翻訳です。原文も確認してください。</string>
 </resources>

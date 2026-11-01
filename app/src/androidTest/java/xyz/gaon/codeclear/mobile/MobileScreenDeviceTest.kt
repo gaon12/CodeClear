@@ -43,6 +43,8 @@ import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -133,7 +135,10 @@ class MobileScreenDeviceTest {
             state =
                 MobileState(
                     loaded = true,
-                    options = MobileOptions(localConsent = true),
+                    options = MobileOptions(
+                        localConsent = true,
+                        messageViewMode = MessageViewMode.BOTH
+                    ),
                     latest = record,
                     records = listOf(record)
                 )
@@ -306,6 +311,77 @@ class MobileScreenDeviceTest {
     }
 
     @Test
+    fun singleMessageViewStartsWithTranslationAndSwitchesToTheOriginal() {
+        val original = state.latest!!.capture.original
+        val translated = state.latest!!.translation!!.text!!
+        compose.runOnIdle {
+            state =
+                state.copy(options = state.options.copy(messageViewMode = MessageViewMode.SWITCH))
+        }
+        compose.onNodeWithTag("mobile-feed").performScrollToNode(hasText(translated))
+        compose.onNodeWithText(translated).assertIsDisplayed()
+        compose.onNodeWithText(original).assertDoesNotExist()
+        compose.onNodeWithTag("switch-message").performScrollTo().performClick()
+        compose.onNodeWithTag("mobile-feed").performScrollToNode(hasText(original))
+        compose.onNodeWithText(original).assertIsDisplayed()
+        compose.onNodeWithText(translated).assertDoesNotExist()
+        compose.onNodeWithTag("switch-message").performScrollTo().performClick()
+        compose.onNodeWithTag("mobile-feed").performScrollToNode(hasText(translated))
+        compose.onNodeWithText(translated).assertIsDisplayed()
+        openSettingsPage(SettingsPage.APPEARANCE)
+        compose.onNodeWithText(text(R.string.mobile_message_view)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_message_both)).performClick()
+        assertEquals(MessageViewMode.BOTH, configured.messageViewMode)
+    }
+
+    @Test
+    fun singleMessageViewKeepsTheOriginalReadableWhenTranslationIsUnavailable() {
+        val original = state.latest!!.capture.original
+        compose.runOnIdle {
+            state = state.copy(
+                options = state.options.copy(messageViewMode = MessageViewMode.SWITCH),
+                latest = state.latest!!.copy(translation = null)
+            )
+        }
+        compose.onNodeWithTag("mobile-feed").performScrollToNode(hasText(original))
+        compose.onNodeWithText(original).assertIsDisplayed()
+        compose.onNodeWithTag("switch-message").assertDoesNotExist()
+        val translated = record(1).translation!!.text!!
+        compose.runOnIdle { state = state.copy(latest = record(1)) }
+        compose.onNodeWithTag("mobile-feed").performScrollToNode(hasText(translated))
+        compose.onNodeWithText(translated).assertIsDisplayed()
+        compose.onNodeWithText(original).assertDoesNotExist()
+    }
+
+    @Test
+    fun alertModalStaysWithinTheScreenAndLeavesManagementToTheDetailPage() {
+        compose.runOnIdle {
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            state =
+                state.copy(options = state.options.copy(messageViewMode = MessageViewMode.SWITCH))
+        }
+        compose.onNodeWithTag(
+            "mobile-feed"
+        ).performScrollToNode(hasText(text(R.string.mobile_details)))
+        compose.onNodeWithText(text(R.string.mobile_details)).performClick()
+        val bounds = compose.onNodeWithTag("alert-modal-card").fetchSemanticsNode().boundsInRoot
+        assertTrue(
+            bounds.height < context.windowManager.maximumWindowMetrics.bounds.height() * 0.8f
+        )
+        compose.onNodeWithTag("alert-modal-close").assertIsDisplayed()
+        compose.onNode(
+            hasText(state.latest!!.translation!!.text!!) and
+                hasAnyAncestor(hasTestTag("alert-modal-card"))
+        ).assertIsDisplayed()
+        compose.onNodeWithTag("delete-alert").assertDoesNotExist()
+        compose.onNodeWithTag("alert-metadata").assertDoesNotExist()
+        savePreview("compact-alert-modal", dialog = true)
+        compose.onNodeWithTag("alert-modal-details").performClick()
+        compose.onNodeWithTag("history-detail").assertIsDisplayed()
+        compose.onNodeWithTag("delete-alert").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
     fun verifiedKoreanCategoryAppearsAndUnverifiedPeerCategoryStaysHidden() {
         val original = record(1).let {
             it.copy(
@@ -316,6 +392,7 @@ class MobileScreenDeviceTest {
             )
         }
         compose.runOnIdle { state = state.copy(latest = original) }
+        compose.onNodeWithTag("mobile-feed").performScrollToNode(hasTestTag("national-alert-type"))
         compose.onNodeWithTag("national-alert-type").assertIsDisplayed()
         compose.runOnIdle {
             state = state.copy(
@@ -394,7 +471,9 @@ class MobileScreenDeviceTest {
         compose.onNodeWithTag("destination-1").performClick()
         compose.onNodeWithText(text(R.string.mobile_nearby_inbox)).performClick()
         compose.onNodeWithText(original.title).performClick()
-        compose.onNodeWithTag("save-nearby").performScrollTo().performClick()
+        compose.onNode(hasScrollAction() and hasAnyAncestor(hasTestTag("nearby-inbox")))
+            .performScrollToNode(hasTestTag("save-nearby"))
+        compose.onNodeWithTag("save-nearby").performClick()
         compose.onNodeWithTag("history-detail").assertIsDisplayed()
         compose.runOnIdle { assertEquals(0, nearbySaves) }
     }
@@ -420,6 +499,8 @@ class MobileScreenDeviceTest {
         compose.onNodeWithText(text(R.string.mobile_nearby_inbox)).performClick()
         compose.onNodeWithTag("nearby-inbox").assertIsDisplayed()
         compose.onNodeWithText(original.title).performClick()
+        compose.onNode(hasScrollAction() and hasAnyAncestor(hasTestTag("nearby-inbox")))
+            .performScrollToNode(hasText(original.body))
         compose.onNodeWithText(original.body).assertIsDisplayed()
         compose.runOnIdle { assertEquals(0, nearbySaves) }
         compose.onNodeWithTag("destination-1").performClick()
@@ -430,7 +511,9 @@ class MobileScreenDeviceTest {
             compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
             savePreview("nearby-original-${theme.name.lowercase()}")
         }
-        compose.onNodeWithTag("save-nearby").performScrollTo().performClick()
+        compose.onNode(hasScrollAction() and hasAnyAncestor(hasTestTag("nearby-inbox")))
+            .performScrollToNode(hasTestTag("save-nearby"))
+        compose.onNodeWithTag("save-nearby").performClick()
         compose.onNodeWithTag("history-detail").assertIsDisplayed()
         compose.runOnIdle {
             assertEquals(1, nearbySaves)
@@ -1485,10 +1568,17 @@ class MobileScreenDeviceTest {
         }
         for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
             compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            compose.onNodeWithTag("mobile-feed").performScrollToIndex(0)
             compose.onNodeWithTag("home-overview").assertIsDisplayed()
+            compose.onNodeWithTag(
+                "mobile-feed"
+            ).performScrollToNode(hasText(text(R.string.mobile_home_empty_title)))
             compose.onNodeWithText(text(R.string.mobile_home_empty_title)).assertIsDisplayed()
             savePreview("home-empty-${theme.name.lowercase()}")
         }
+        compose.onNodeWithTag(
+            "mobile-feed"
+        ).performScrollToNode(hasText(text(R.string.mobile_collection)))
         compose.onNodeWithText(text(R.string.mobile_collection)).performClick()
         compose.onNodeWithTag("settings-detail-title")
             .assertTextEquals(text(R.string.mobile_collection))
@@ -1524,7 +1614,9 @@ class MobileScreenDeviceTest {
         for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
             compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
             compose.onNodeWithTag("mobile-feed").performScrollToNode(hasText(translated))
+            compose.onNodeWithTag("mobile-feed").performScrollToNode(hasText(original))
             compose.onNodeWithText(original).assertIsDisplayed()
+            compose.onNodeWithTag("mobile-feed").performScrollToNode(hasText(translated))
             compose.onNodeWithText(translated).assertIsDisplayed()
             savePreview("mobile-ko-${theme.name.lowercase()}")
         }

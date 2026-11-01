@@ -46,6 +46,7 @@ fun MobileSettings(
     var info by remember { mutableStateOf<SettingsInfo?>(null) }
     var themePicker by remember { mutableStateOf(false) }
     var uiLanguagePicker by remember { mutableStateOf(false) }
+    var messageViewPicker by remember { mutableStateOf(false) }
     val captureAvailable = environment.radio != ProbeRadio.ABSENT
     if (page == SettingsPage.CAPTURE) {
         SettingsGroup {
@@ -102,6 +103,18 @@ fun MobileSettings(
     }
     if (page == SettingsPage.APPEARANCE) {
         SettingsGroup {
+            SettingRow(
+                stringResource(R.string.mobile_message_view),
+                stringResource(
+                    if (options.messageViewMode == MessageViewMode.SWITCH) {
+                        R.string.mobile_message_switch
+                    } else {
+                        R.string.mobile_message_both
+                    }
+                ),
+                onClick = { messageViewPicker = true }
+            )
+            SettingDivider()
             SettingRow(
                 stringResource(R.string.mobile_screen_mode),
                 stringResource(themeLabel(options.theme)),
@@ -270,6 +283,20 @@ fun MobileSettings(
         ) {
             themePicker = false
             actions.configure(options.copy(theme = ThemeChoice.entries[it]))
+        }
+    }
+    if (messageViewPicker) {
+        ChoiceDialog(
+            stringResource(R.string.mobile_message_view),
+            listOf(
+                stringResource(R.string.mobile_message_both),
+                stringResource(R.string.mobile_message_switch)
+            ),
+            { messageViewPicker = false },
+            options.messageViewMode.ordinal
+        ) {
+            messageViewPicker = false
+            actions.configure(options.copy(messageViewMode = MessageViewMode.entries[it]))
         }
     }
     if (uiLanguagePicker) {

@@ -41,6 +41,7 @@ class MobileOptionsStorageDeviceTest {
                 assertFalse(options.setupComplete)
                 assertFalse(options.nearbyEnabled)
                 assertFalse(options.labsEnabled)
+                assertEquals(MessageViewMode.SWITCH, options.messageViewMode)
             }
         } finally {
             Locale.setDefault(original)
@@ -61,7 +62,8 @@ class MobileOptionsStorageDeviceTest {
                     uiLanguage = "fr",
                     theme = ThemeChoice.DARK,
                     nearbyEnabled = true,
-                    labsEnabled = true
+                    labsEnabled = true,
+                    messageViewMode = MessageViewMode.BOTH
                 )
             )
             Locale.setDefault(Locale.JAPAN)
@@ -71,6 +73,7 @@ class MobileOptionsStorageDeviceTest {
             assertEquals(ThemeChoice.DARK, options.theme)
             assertTrue(options.nearbyEnabled)
             assertTrue(options.labsEnabled)
+            assertEquals(MessageViewMode.BOTH, options.messageViewMode)
             assertFalse(options.localConsent)
         } finally {
             Locale.setDefault(original)
