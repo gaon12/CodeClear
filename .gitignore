@@ -15,6 +15,7 @@
 local.properties
 /.dev/
 /.kotlin/
+__pycache__/
 /.env
 /.env.*
 *.jks

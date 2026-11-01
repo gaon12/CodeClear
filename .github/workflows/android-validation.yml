@@ -1,0 +1,40 @@
+name: Android validation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-validation-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  emulator:
+    name: AOSP API ${{ matrix.api }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        api: [30, 31, 35]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Prepare Android SDK
+        run: python3 tools/ci/run_emulator.py --api '${{ matrix.api }}' --prepare
+      - name: Check clean checkout and build test APKs
+        run: >-
+          ./gradlew --no-daemon --max-workers=2 --console=plain
+          :app:lintDebug :app:lintRelease :app:testDebugUnitTest
+          :app:assembleDebug :app:assembleDebugAndroidTest
+          :app:bundleReleaseClassesToCompileJar
+      - name: Run isolated software fixtures
+        run: python3 tools/ci/run_emulator.py --api '${{ matrix.api }}'
