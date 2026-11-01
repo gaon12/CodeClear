@@ -15,7 +15,7 @@ import java.util.concurrent.RejectedExecutionException
 open class NotificationCaptureService : NotificationListenerService() {
     private val main = Handler(Looper.getMainLooper())
     private val snapshots = Executors.newSingleThreadExecutor()
-    private var snapshotPending = false
+    private val snapshotGate = NotificationSnapshotGate()
     private var connected = false
 
     override fun dump(fd: FileDescriptor, writer: PrintWriter, args: Array<out String>) {
@@ -23,6 +23,7 @@ open class NotificationCaptureService : NotificationListenerService() {
     }
 
     override fun onListenerConnected() {
+        snapshotGate.invalidate()
         connected = true
         current = WeakReference(this)
         ProbeSession.setConnected(ProbeRoute.NOTIFICATION, true)
@@ -30,12 +31,14 @@ open class NotificationCaptureService : NotificationListenerService() {
     }
 
     override fun onListenerDisconnected() {
+        snapshotGate.invalidate()
         connected = false
         ProbeSourceActions.clear()
         ProbeSession.setConnected(ProbeRoute.NOTIFICATION, false)
     }
 
     override fun onDestroy() {
+        snapshotGate.invalidate()
         connected = false
         if (current.get() === this) current.clear()
         snapshots.shutdownNow()
@@ -45,13 +48,21 @@ open class NotificationCaptureService : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
-        if (!isUnlocked() || sbn.user != Process.myUserHandle()) return
         // Reject unrelated packages before reading any of their extras.
-        if (sbn.packageName !in ProbeSourcePolicy.candidatePackages &&
-            !(sbn.packageName == "com.android.shell" && ProbeSession.state.shellFixture)
-        ) {
-            return
-        }
+        if (!isCandidate(sbn)) return
+        snapshotGate.observed(sbn.key)
+        capture(sbn)
+    }
+
+    private fun isCandidate(sbn: StatusBarNotification): Boolean =
+        sbn.user == Process.myUserHandle() &&
+            (
+                sbn.packageName in ProbeSourcePolicy.candidatePackages ||
+                    (sbn.packageName == "com.android.shell" && ProbeSession.state.shellFixture)
+                )
+
+    private fun capture(sbn: StatusBarNotification) {
+        if (!isUnlocked() || !isCandidate(sbn)) return
         val environment = ProbeEnvironment.read(this)
         val ticket = ProbeSession.ticket(ProbeRoute.NOTIFICATION, environment) ?: return
         val origin = ProbeSourcePolicy.classify(
@@ -113,15 +124,16 @@ open class NotificationCaptureService : NotificationListenerService() {
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification) {
+        if (isCandidate(sbn)) snapshotGate.observed(sbn.key)
         ProbeSourceActions.removed(sbn.key)
     }
 
     private fun inspectCurrent() {
-        if (!connected || snapshotPending || !isUnlocked()) return
+        if (!connected || !isUnlocked()) return
         val ticket =
             ProbeSession.ticket(ProbeRoute.NOTIFICATION, ProbeEnvironment.read(this)) ?: return
         val allowShell = ProbeSession.state.shellFixture
-        snapshotPending = true
+        if (!snapshotGate.begin()) return
         try {
             snapshots.execute {
                 val found = try {
@@ -139,14 +151,19 @@ open class NotificationCaptureService : NotificationListenerService() {
                     emptyList()
                 }
                 main.post {
-                    snapshotPending = false
-                    if (connected && ProbeSession.currentGeneration() == ticket) {
-                        found.forEach(::onNotificationPosted)
+                    val generationMatches = ProbeSession.currentGeneration() == ticket
+                    try {
+                        if (connected && generationMatches) {
+                            found.filter { snapshotGate.accepts(it.key) }.forEach(::capture)
+                        }
+                    } finally {
+                        val refresh = snapshotGate.finish()
+                        if (connected && (refresh || !generationMatches)) inspectCurrent()
                     }
                 }
             }
         } catch (_: RejectedExecutionException) {
-            snapshotPending = false
+            snapshotGate.finish()
         }
     }
 
