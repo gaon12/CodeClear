@@ -120,7 +120,10 @@ fun MobileScreen(
     val tutorialScroll = rememberLazyListState()
     // A lazy item provider can update before its parent replaces the attached scroll state.
     val currentTab = tab
-    val showTutorial = tutorial
+    val firstRun = state.loaded && !state.options.setupComplete
+    val showTutorial = tutorial || firstRun
+    val restoreAccess = state.loaded && state.options.setupComplete &&
+        requiredAccessMissing(environment, actions.notificationsAllowed)
     val currentStep = step
     LaunchedEffect(showTutorial, currentStep) {
         if (showTutorial) tutorialScroll.scrollToItem(0)
@@ -138,7 +141,7 @@ fun MobileScreen(
     } else {
         homeScroll
     }
-    BackHandler(enabled = showTutorial) {
+    BackHandler(enabled = showTutorial && (!firstRun || step > 0)) {
         if (step > 0) step-- else tutorial = false
     }
     LaunchedEffect(scrollResetSequence) {
@@ -149,26 +152,32 @@ fun MobileScreen(
     }
     MobileTheme(state.options.theme) {
         Scaffold(containerColor = MaterialTheme.colorScheme.background, bottomBar = {
-            MobileNavigation(currentTab) { destination ->
-                tutorial = false
-                if (destination == tab) {
-                    step = 0
-                    if (destination == 1) nearbyPage = false
-                    if (destination == 1 && isHistoryDetail) {
-                        historyDetailId = null
-                        actions.detail(null)
-                    }
-                    if (destination == 2) {
-                        settingsState.removeState(settingsEntry)
-                        settingsEntry++
-                        settingsPage = null
+            if (!firstRun && !restoreAccess) {
+                MobileNavigation(currentTab) { destination ->
+                    tutorial = false
+                    if (destination == tab) {
+                        step = 0
+                        if (destination == 1) nearbyPage = false
+                        if (destination == 1 && isHistoryDetail) {
+                            historyDetailId = null
+                            actions.detail(null)
+                        }
+                        if (destination == 2) {
+                            settingsState.removeState(settingsEntry)
+                            settingsEntry++
+                            settingsPage = null
+                        } else {
+                            scrollResetTarget = destination
+                            scrollResetSequence++
+                            if (destination == 1 &&
+                                state.beforeId != Long.MAX_VALUE
+                            ) {
+                                actions.newest()
+                            }
+                        }
                     } else {
-                        scrollResetTarget = destination
-                        scrollResetSequence++
-                        if (destination == 1 && state.beforeId != Long.MAX_VALUE) actions.newest()
+                        tab = destination
                     }
-                } else {
-                    tab = destination
                 }
             }
         }) { padding ->
@@ -176,7 +185,15 @@ fun MobileScreen(
                 Modifier.fillMaxSize().padding(padding),
                 contentAlignment = Alignment.TopCenter
             ) {
-                if (currentTab == 1 && nearbyPage && !isHistoryDetail) {
+                if (restoreAccess && !showTutorial) {
+                    RequiredAccessPage(state, environment, session, actions) {
+                        tutorial = true
+                        step =
+                            0
+                    }
+                    return@Box
+                }
+                if (currentTab == 1 && nearbyPage && !isHistoryDetail && !showTutorial) {
                     androidx.compose.foundation.layout.Box(
                         Modifier.widthIn(max = 880.dp).fillMaxSize()
                     ) {
@@ -188,7 +205,7 @@ fun MobileScreen(
                     }
                     return@Box
                 }
-                if (currentTab == 1 && isHistoryDetail) {
+                if (currentTab == 1 && isHistoryDetail && !showTutorial) {
                     val back = {
                         historyDetailId = null
                         actions.detail(null)
@@ -237,7 +254,7 @@ fun MobileScreen(
                                 R.string.mobile_history
                             }
                         ),
-                        back = if (showTutorial) {
+                        back = if (showTutorial && (!firstRun || step > 0)) {
                             { if (step > 0) step-- else tutorial = false }
                         } else {
                             null
@@ -281,6 +298,11 @@ fun MobileScreen(
                                         )[currentStep]
                                     )
                                 ) {
+                                    if (currentStep ==
+                                        0
+                                    ) {
+                                        Text(stringResource(R.string.mobile_intro_purpose))
+                                    }
                                     Text(
                                         stringResource(
                                             listOf(
@@ -290,7 +312,37 @@ fun MobileScreen(
                                             )[currentStep]
                                         )
                                     )
-                                    if (currentStep == 2) ModelManagement(actions)
+                                    if (currentStep == 1) {
+                                        NotificationPermissionSetup(actions)
+                                        if (environment.radio == ProbeRadio.PRESENT) {
+                                            MobileSettings(
+                                                SettingsPage.CAPTURE,
+                                                state,
+                                                environment,
+                                                session,
+                                                actions,
+                                                tutorial = {},
+                                                showTutorialLink = false
+                                            )
+                                        } else {
+                                            Text(
+                                                stringResource(
+                                                    if (environment.radio ==
+                                                        ProbeRadio.ABSENT
+                                                    ) {
+                                                        R.string.mobile_wifi_only
+                                                    } else {
+                                                        R.string.mobile_radio_unknown
+                                                    }
+                                                )
+                                            )
+                                        }
+                                    }
+                                    if (currentStep ==
+                                        2
+                                    ) {
+                                        LocalTranslationSettings(state.options, actions)
+                                    }
                                     Row {
                                         if (currentStep >
                                             0
@@ -593,7 +645,7 @@ fun MobileScreen(
                 }
             }
         }
-        if (state.detailId != null && !isHistoryDetail) {
+        if (state.detailId != null && !isHistoryDetail && !showTutorial && !restoreAccess) {
             BackHandler { actions.detail(null) }
             Dialog(onDismissRequest = {
                 actions.detail(null)

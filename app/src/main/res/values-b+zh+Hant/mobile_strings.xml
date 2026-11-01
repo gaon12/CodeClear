@@ -223,4 +223,8 @@
     <string name="mobile_models_download">檢查並下載</string>
     <string name="mobile_models_update">檢查模型更新</string>
     <string name="mobile_models_query_failed">無法讀取模型清單，請重試。</string>
+    <string name="mobile_required_access">請授予必要權限</string>
+    <string name="mobile_required_access_notice">讀取緊急警報和通知翻譯結果需要以下權限。請在 Android 設定中允許存取，返回後即可繼續使用。</string>
+    <string name="mobile_notification_permission_reason">翻譯完成時接收通知。請在 Android 設定中允許通知。</string>
+    <string name="mobile_intro_purpose">CodeClear 將緊急警報原文保存在裝置上，並翻譯成您能理解的語言。您可以閱讀、搜尋或聆聽已儲存的訊息。本應用程式用於輔助系統原始警報。</string>
 </resources>

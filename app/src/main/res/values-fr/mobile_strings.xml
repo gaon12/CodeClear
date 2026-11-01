@@ -224,4 +224,8 @@
     <string name="mobile_models_download">Vérifier et télécharger</string>
     <string name="mobile_models_update">Vérifier les mises à jour</string>
     <string name="mobile_models_query_failed">Impossible de lire la liste des modèles. Réessayez.</string>
+    <string name="mobile_required_access">Autoriser les permissions nécessaires</string>
+    <string name="mobile_required_access_notice">Ces permissions permettent de lire les alertes et de signaler les traductions prêtes. Autorisez-les dans les paramètres Android, puis revenez pour continuer.</string>
+    <string name="mobile_notification_permission_reason">Recevez une notification lorsqu’une traduction est prête. Autorisez les notifications dans Android.</string>
+    <string name="mobile_intro_purpose">CodeClear conserve les alertes originales sur votre appareil et les traduit dans une langue que vous comprenez. Vous pouvez lire, rechercher ou écouter les messages enregistrés. L’application complète l’alerte système originale.</string>
 </resources>

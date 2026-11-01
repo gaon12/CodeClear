@@ -223,4 +223,8 @@
     <string name="mobile_models_download">확인 및 다운로드</string>
     <string name="mobile_models_update">모델 업데이트 확인</string>
     <string name="mobile_models_query_failed">모델 목록을 확인하지 못했습니다. 다시 확인해 주세요.</string>
+    <string name="mobile_required_access">필요한 권한을 허용해 주세요</string>
+    <string name="mobile_required_access_notice">재난문자를 읽고 번역 결과를 알리려면 아래 권한이 필요합니다. Android 설정에서 허용한 뒤 돌아오면 계속 사용할 수 있습니다.</string>
+    <string name="mobile_notification_permission_reason">번역이 끝나면 알림으로 알려드립니다. Android에서 알림을 허용해 주세요.</string>
+    <string name="mobile_intro_purpose">CodeClear는 재난문자 원문을 기기에 보관하고 이해할 수 있는 언어로 번역합니다. 저장된 문자를 읽고 검색하거나 음성으로 들을 수 있습니다. 시스템의 원본 경고를 보조하는 앱입니다.</string>
 </resources>

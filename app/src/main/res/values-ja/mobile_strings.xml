@@ -223,4 +223,8 @@
     <string name="mobile_models_download">確認してダウンロード</string>
     <string name="mobile_models_update">モデルの更新を確認</string>
     <string name="mobile_models_query_failed">モデル一覧を取得できませんでした。再試行してください。</string>
+    <string name="mobile_required_access">必要な権限を許可してください</string>
+    <string name="mobile_required_access_notice">緊急速報の読み取りと翻訳完了の通知には、以下の権限が必要です。Androidの設定で許可してから戻ると、利用を続けられます。</string>
+    <string name="mobile_notification_permission_reason">翻訳が完了したときに通知します。Androidの設定で通知を許可してください。</string>
+    <string name="mobile_intro_purpose">CodeClearは緊急速報の原文を端末に保存し、理解できる言語に翻訳します。保存したメッセージの閲覧、検索、読み上げができます。システムの元の警告を補助するアプリです。</string>
 </resources>

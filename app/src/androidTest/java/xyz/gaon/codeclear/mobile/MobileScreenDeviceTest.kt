@@ -144,6 +144,7 @@ class MobileScreenDeviceTest {
                     loaded = true,
                     options = MobileOptions(
                         localConsent = true,
+                        setupComplete = true,
                         messageViewMode = MessageViewMode.BOTH
                     ),
                     latest = record,
@@ -331,6 +332,84 @@ class MobileScreenDeviceTest {
             context.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             scope?.close()
         }
+    }
+
+    @Test
+    fun firstRunExplainsTheAppAndPermissionsBeforeOptionalModelPreparation() {
+        compose.runOnIdle {
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            state = state.copy(options = state.options.copy(setupComplete = false))
+            notificationsAllowed = false
+        }
+        compose.onNodeWithTag("destination-0").assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_intro_purpose)).assertIsDisplayed()
+        savePreview("initial-guidance")
+        compose.onNodeWithText(text(R.string.mobile_next)).performScrollTo().performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_notification_permission_reason)
+        ).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_result_notifications)).performClick()
+        compose.runOnIdle {
+            assertEquals(1, notificationRequests)
+            notificationsAllowed = true
+        }
+        compose.onNodeWithText(text(R.string.mobile_next)).performScrollTo().performClick()
+        compose.onNodeWithTag("mobile-feed").performScrollToNode(hasTestTag("model-management"))
+        compose.runOnIdle {
+            assertTrue(requestedModels.isEmpty())
+            assertEquals(1, notificationRequests)
+        }
+        compose.onNodeWithText(text(R.string.mobile_done)).performScrollTo().performClick()
+        compose.onNodeWithTag("destination-0").assertIsDisplayed()
+        compose.runOnIdle { assertTrue(configured.setupComplete) }
+    }
+
+    @Test
+    fun missingRequiredAccessMasksExistingDetailsAndRestoresNavigationAfterRealGrantChanges() {
+        compose.runOnIdle {
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            state = state.copy(detailId = 1, detail = record(1))
+            environment = environment.copy(accessibilityGranted = false)
+        }
+        compose.onNodeWithTag("required-access").assertIsDisplayed()
+        compose.onNodeWithTag("alert-modal-card").assertDoesNotExist()
+        compose.onNodeWithTag("destination-0").assertDoesNotExist()
+        savePreview("required-access")
+        compose.onNodeWithText(
+            text(R.string.mobile_accessibility_access)
+        ).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.mobile_open_settings)).performClick()
+        compose.runOnIdle {
+            assertEquals(1, settingsOpened)
+            assertEquals(Settings.ACTION_ACCESSIBILITY_SETTINGS, lastSettingsAction)
+        }
+        compose.onNodeWithTag("required-access").assertIsDisplayed()
+        compose.runOnIdle { environment = environment.copy(accessibilityGranted = true) }
+        compose.onNodeWithTag("required-access").assertDoesNotExist()
+        compose.onNodeWithTag("alert-modal-card").assertIsDisplayed()
+    }
+
+    @Test
+    fun wifiOnlyHardwareNeedsNotificationsButNeverRequiresCellularCaptureAccess() {
+        compose.runOnIdle {
+            environment =
+                environment.copy(
+                    radio = ProbeRadio.ABSENT,
+                    notificationGranted = false,
+                    accessibilityGranted = false
+                )
+        }
+        compose.onNodeWithTag("destination-0").assertIsDisplayed()
+        compose.runOnIdle { notificationsAllowed = false }
+        compose.onNodeWithTag("required-access").assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_notification_access)).assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_accessibility_access)).assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_result_notifications)).performClick()
+        compose.runOnIdle {
+            assertEquals(1, notificationRequests)
+            notificationsAllowed = true
+        }
+        compose.onNodeWithTag("destination-0").assertIsDisplayed()
     }
 
     @Test
@@ -659,7 +738,10 @@ class MobileScreenDeviceTest {
         }
         switchControl(text(R.string.mobile_result_notifications)).assertIsOn()
         compose.runOnIdle { notificationsAllowed = false }
-        switchControl(text(R.string.mobile_result_notifications)).assertIsOff()
+        compose.onNodeWithTag("required-access").assertIsDisplayed()
+        compose.onNodeWithTag("destination-2").assertDoesNotExist()
+        compose.runOnIdle { notificationsAllowed = true }
+        switchControl(text(R.string.mobile_result_notifications)).assertIsOn()
     }
 
     @Test
@@ -1580,6 +1662,7 @@ class MobileScreenDeviceTest {
             text(R.string.mobile_open_settings)
         ).assertIsDisplayed().performClick()
         compose.runOnIdle { assertEquals(1, settingsOpened) }
+        compose.runOnIdle { environment = environment.copy(notificationGranted = true) }
         openSettingsPage(SettingsPage.TRANSLATION)
         compose.onNodeWithText(
             text(R.string.mobile_target_language)
@@ -1600,13 +1683,14 @@ class MobileScreenDeviceTest {
             fontScale = 1.8f
             environment = environment.copy(notificationGranted = false)
         }
-        openSettingsPage(SettingsPage.CAPTURE)
+        compose.onNodeWithTag("required-access").assertIsDisplayed()
         compose.onNodeWithText(
             text(R.string.mobile_notification_access)
         ).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_open_settings)).assertIsDisplayed()
         compose.onNodeWithText(text(R.string.mobile_cancel)).assertIsDisplayed().performClick()
         compose.runOnIdle { assertEquals(0, settingsOpened) }
+        compose.runOnIdle { environment = environment.copy(notificationGranted = true) }
         openSettingsPage(SettingsPage.TRANSLATION)
         compose.onNodeWithText(
             text(R.string.mobile_target_language)

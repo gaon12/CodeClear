@@ -326,6 +326,11 @@ class MainActivity : AppCompatActivity() {
         systemSettingsOpened = false
     }
 
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus && !isFinishing && !isDestroyed) refreshAccess()
+    }
+
     override fun onPause() {
         systemSettingsRequest++
         super.onPause()

@@ -224,4 +224,8 @@
     <string name="mobile_models_download">Check and download</string>
     <string name="mobile_models_update">Check model updates</string>
     <string name="mobile_models_query_failed">Could not read the model list. Try again.</string>
+    <string name="mobile_required_access">Allow required permissions</string>
+    <string name="mobile_required_access_notice">These permissions let the app read emergency alerts and notify you when translations are ready. Allow access in Android settings, then return to continue.</string>
+    <string name="mobile_notification_permission_reason">Receive a notification when a translation is ready. Allow notifications in Android settings.</string>
+    <string name="mobile_intro_purpose">CodeClear keeps emergency-alert originals on your device and translates them into a language you understand. Read, search or listen to saved messages. It supplements the original system warning.</string>
 </resources>

@@ -39,7 +39,8 @@ fun MobileSettings(
     session: ProbeSessionState,
     actions: MobileActions,
     tutorial: () -> Unit,
-    navigate: (SettingsPage) -> Unit = {}
+    navigate: (SettingsPage) -> Unit = {},
+    showTutorialLink: Boolean = true
 ) {
     val options = state.options
     var disclosure by remember { mutableStateOf<CaptureAccess?>(null) }
@@ -76,8 +77,10 @@ fun MobileSettings(
                     info = SettingsInfo.RESTRICTED_ACCESS
                 })
             }
-            SettingDivider()
-            SettingRow(stringResource(R.string.mobile_tutorial), onClick = tutorial)
+            if (showTutorialLink) {
+                SettingDivider()
+                SettingRow(stringResource(R.string.mobile_tutorial), onClick = tutorial)
+            }
         }
     }
     if (page == SettingsPage.SHARING) NearbySettings(state, actions)
