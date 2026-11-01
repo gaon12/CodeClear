@@ -97,3 +97,7 @@ class ConsentUiTest(unittest.TestCase):
     def test_focus_reads_the_display_section(self):
         self.assertEqual("com.android.settings", self.ui.focused_package())
         self.device.assert_called_once_with("shell", "dumpsys", "window")
+
+    def test_a_settings_confirmation_can_use_a_package_only_window_title(self):
+        self.device.return_value = "mCurrentFocus=Window{abc u0 com.android.settings}"
+        self.assertEqual("com.android.settings", self.ui.focused_package())

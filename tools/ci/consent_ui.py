@@ -20,7 +20,9 @@ class ConsentUi:
         # Current focus belongs to DisplayContent, outside the windows-only dump.
         for attempt in range(20):
             windows = self.device("shell", "dumpsys", "window")
-            matches = re.findall(r"mCurrentFocus=Window\{[^\n]*?\s([\w.]+)/", windows)
+            matches = re.findall(
+                r"mCurrentFocus=Window\{[^\s}]+\s+u\d+\s+([\w.]+)(?:/|\})", windows
+            )
             if matches or attempt == 19:
                 break
             time.sleep(0.25)

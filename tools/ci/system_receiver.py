@@ -341,6 +341,29 @@ def validate(device, api, cli, serial):
             "The complete expected synthetic original set was not recovered"
         )
 
+    incomplete_sets = []
+
+    def check_complete_set(expected):
+        try:
+            wait_for(expected)
+            return True
+        except AssertionError:
+            absent = expected - saved()
+            missing = [index + 1 for index, body in enumerate(BODIES) if body in absent]
+            incomplete_sets.append(missing)
+            print("Missing synthetic original indices: " + repr(missing), flush=True)
+            print(
+                device(
+                    "shell",
+                    "dumpsys",
+                    "activity",
+                    "service",
+                    APP + "/.probe.ProbeNotificationListener",
+                )[:12000],
+                flush=True,
+            )
+            return False
+
     def inject(body, sequence):
         payload = (
             sequence.to_bytes(2, "big")
@@ -380,11 +403,11 @@ def validate(device, api, cli, serial):
     click("Open original system alert")
     resume_capture()
     # The source opens normally. Never press its confirmation or dismiss its warnings.
-    wait_for(set(BODIES[:3]))
-    print(
-        "Stacked receiver injection: all three exact originals recovered, including the earlier original.",
-        flush=True,
-    )
+    if check_complete_set(set(BODIES[:3])):
+        print(
+            "Stacked receiver injection: all three exact originals recovered, including the earlier original.",
+            flush=True,
+        )
 
     def source_label(name):
         for namespace in [source, "com.android.cellbroadcastreceiver"]:
@@ -426,10 +449,31 @@ def validate(device, api, cli, serial):
     def toggle_mode():
         before = set(mode_entries())
         device("shell", "input", "keyevent", "KEYCODE_HOME")
-        device("shell", "am", "start", "-a", "android.intent.action.DIAL", "-d", "tel:")
+        # A nonempty ordinary DIAL intent opens the keypad; deleting it also clears
+        # Dialer's digitsFilledByIntent guard before the user-like secret-code input.
+        device(
+            "shell", "am", "start", "-a", "android.intent.action.DIAL", "-d", "tel:0"
+        )
         time.sleep(1)
         # Type through the ordinary dialer; never broadcast a privileged secret-code action.
-        device("shell", shlex.join(["input", "text", "*#*#2627#*#*"]))
+        device(
+            "shell",
+            "input",
+            "keyevent",
+            "KEYCODE_DEL",
+            "KEYCODE_STAR",
+            "KEYCODE_POUND",
+            "KEYCODE_STAR",
+            "KEYCODE_POUND",
+            "KEYCODE_2",
+            "KEYCODE_6",
+            "KEYCODE_2",
+            "KEYCODE_7",
+            "KEYCODE_POUND",
+            "KEYCODE_STAR",
+            "KEYCODE_POUND",
+            "KEYCODE_STAR",
+        )
         deadline = time.monotonic() + 15
         while time.monotonic() < deadline:
             changed = [line for line in mode_entries() if line not in before]
@@ -469,14 +513,18 @@ def validate(device, api, cli, serial):
         start_app()
         click("Open original system alert")
         resume_capture()
-        wait_for(set(BODIES))
-        print(
-            "Explicit mode ON: automatic capture and the complete seven-original set verified.",
-            flush=True,
-        )
+        if check_complete_set(set(BODIES)):
+            print(
+                "Explicit mode ON: automatic capture and the complete seven-original set verified.",
+                flush=True,
+            )
     finally:
         _require(toggle_mode() is False)
     print(
         "Testing mode restored OFF. These receiver injections do not establish physical RF.",
         flush=True,
+    )
+    _require(
+        not incomplete_sets,
+        "Incomplete synthetic original sets remain: " + repr(incomplete_sets),
     )
