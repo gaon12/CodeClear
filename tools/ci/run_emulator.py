@@ -47,6 +47,21 @@ def command(*args, timeout=120, **kwargs):
     return subprocess.run(args, check=True, text=True, timeout=timeout, **kwargs)
 
 
+def wait_for_boot(device, process, timeout=240):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if process.poll() is not None:
+            raise RuntimeError("Emulator exited before boot; inspect emulator.log")
+        try:
+            if device("shell", "getprop", "sys.boot_completed", timeout=10) == "1":
+                return
+        except (subprocess.SubprocessError, OSError, RuntimeError):
+            # The owned emulator can be absent or offline while its ADB transport starts.
+            pass
+        time.sleep(2)
+    raise TimeoutError("Emulator did not finish booting within the allowed time")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--api", type=int, choices=[30, 31, 35], required=True)
@@ -118,6 +133,7 @@ def main():
         # Only the disposable hosted runner's emulator device is affected.
         command("sudo", "chmod", "a+rw", "/dev/kvm")
     adb = str(sdk / "platform-tools/adb")
+    command(adb, "start-server")
     serial = "emulator-5554"
 
     def device(*parts, **kwargs):
@@ -165,23 +181,7 @@ def main():
             stderr=subprocess.STDOUT,
         )
         try:
-            deadline = time.monotonic() + 240
-            while time.monotonic() < deadline:
-                if process.poll() is not None:
-                    raise RuntimeError(
-                        "Emulator exited before boot; inspect emulator.log"
-                    )
-                try:
-                    if (
-                        device("shell", "getprop", "sys.boot_completed", timeout=10)
-                        == "1"
-                    ):
-                        break
-                except (subprocess.SubprocessError, OSError):
-                    pass
-                time.sleep(2)
-            else:
-                raise TimeoutError("Emulator did not finish booting within 240 seconds")
+            wait_for_boot(device, process)
             _require(device("shell", "getprop", "ro.kernel.qemu") == "1")
             _require(device("shell", "getprop", "ro.debuggable") == "1")
             _require(
@@ -264,7 +264,7 @@ def main():
         finally:
             try:
                 device("emu", "kill", timeout=15)
-            except (subprocess.SubprocessError, OSError):
+            except (subprocess.SubprocessError, OSError, RuntimeError):
                 process.terminate()
             try:
                 process.wait(timeout=20)
