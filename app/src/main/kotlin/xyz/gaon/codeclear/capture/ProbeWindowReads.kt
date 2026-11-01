@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.capture
 
 data class ProbeAlertWindow(val packageName: String, val windowId: Int, val revision: Long)
 

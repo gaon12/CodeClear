@@ -22,9 +22,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.ProbeEnvironment
-import xyz.gaon.codeclear.probe.ProbeRadio
-import xyz.gaon.codeclear.probe.ProbeSessionState
+import xyz.gaon.codeclear.capture.ProbeEnvironment
+import xyz.gaon.codeclear.capture.ProbeRadio
+import xyz.gaon.codeclear.capture.ProbeSessionState
 
 @Composable
 internal fun HomeOverview(

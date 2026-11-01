@@ -33,6 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.Lifecycle
+import xyz.gaon.codeclear.capture.ProbeEnvironment
+import xyz.gaon.codeclear.capture.ProbeSession
+import xyz.gaon.codeclear.capture.ProbeSourceActions
 import xyz.gaon.codeclear.mobile.MobileActions
 import xyz.gaon.codeclear.mobile.MobileConfirmationDialog
 import xyz.gaon.codeclear.mobile.MobileOptions
@@ -46,9 +49,6 @@ import xyz.gaon.codeclear.mobile.UiLanguages
 import xyz.gaon.codeclear.mobile.mobileRuntime
 import xyz.gaon.codeclear.nearby.NearbyAccess
 import xyz.gaon.codeclear.nearby.NearbyBackgroundService
-import xyz.gaon.codeclear.probe.ProbeEnvironment
-import xyz.gaon.codeclear.probe.ProbeSession
-import xyz.gaon.codeclear.probe.ProbeSourceActions
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 import xyz.gaon.codeclear.translation.TranslationTarget
 

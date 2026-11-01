@@ -74,7 +74,8 @@ directory in the single `app` module. Main packages under
 | Package | Responsibility |
 | --- | --- |
 | `mobile` | Product screens, settings, history, runtime ownership, and work coordination |
-| `probe` | Alert-source observation, extraction, and diagnostics |
+| `capture` | Alert-source observation, extraction, source verification, and capture services |
+| `probe` | Stable Android service entry points that preserve existing user grants |
 | `translation` | Shared translation contracts, on-device engines, MyMemory transport, and future server response contracts |
 | `nearby` | Experimental Bluetooth relay protocol, radio work, and peer inbox |
 | `reception` | Radio/network country context and country-code mappings |

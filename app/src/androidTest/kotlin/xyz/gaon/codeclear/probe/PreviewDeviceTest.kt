@@ -22,6 +22,11 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.capture.ProbeBodyEvidence
+import xyz.gaon.codeclear.capture.ProbeObservation
+import xyz.gaon.codeclear.capture.ProbeOrigin
+import xyz.gaon.codeclear.capture.ProbeRoute
+import xyz.gaon.codeclear.capture.ProbeSession
 import xyz.gaon.codeclear.translation.TranslationResult
 import xyz.gaon.codeclear.translation.TranslationState
 import xyz.gaon.codeclear.translation.TranslationTarget

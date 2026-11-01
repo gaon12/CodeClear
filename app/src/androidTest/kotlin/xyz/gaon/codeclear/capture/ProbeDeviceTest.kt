@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.capture
 
 import android.app.UiAutomation
 import android.content.ComponentName
@@ -27,6 +27,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.probe.CaptureProbeActivity
+import xyz.gaon.codeclear.probe.ProbeNotificationListener
 
 /** Uses only synthetic shell notifications after the owner has granted system access. */
 @RunWith(AndroidJUnit4::class)

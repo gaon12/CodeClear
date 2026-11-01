@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.capture
 
 /** Package candidates do not establish full-body capture support or public-alert provenance. */
 object ProbeSourcePolicy {

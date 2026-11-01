@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.capture
 
 import android.annotation.SuppressLint
 import android.content.Context

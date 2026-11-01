@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.capture
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse

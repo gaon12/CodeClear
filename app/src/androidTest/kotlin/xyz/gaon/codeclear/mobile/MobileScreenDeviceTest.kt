@@ -74,12 +74,12 @@ import org.junit.Rule
 import org.junit.Test
 import xyz.gaon.codeclear.BuildConfig
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.capture.ProbeEnvironment
+import xyz.gaon.codeclear.capture.ProbeRadio
+import xyz.gaon.codeclear.capture.ProbeSessionState
 import xyz.gaon.codeclear.nearby.NearbyState
 import xyz.gaon.codeclear.nearby.NearbyStatus
 import xyz.gaon.codeclear.nearby.RelayProtocol
-import xyz.gaon.codeclear.probe.ProbeEnvironment
-import xyz.gaon.codeclear.probe.ProbeRadio
-import xyz.gaon.codeclear.probe.ProbeSessionState
 import xyz.gaon.codeclear.reception.CountryEvidence
 import xyz.gaon.codeclear.reception.ReceptionCountry
 import xyz.gaon.codeclear.translation.SystemEngineAvailability

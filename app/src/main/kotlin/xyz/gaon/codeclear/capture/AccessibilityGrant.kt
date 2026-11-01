@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.capture
 
 /** Match only this component; short class names are valid in the secure setting. */
 internal fun hasAccessibilityGrant(

@@ -7,9 +7,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.ProbeEnvironment
-import xyz.gaon.codeclear.probe.ProbeRadio
-import xyz.gaon.codeclear.probe.ProbeSessionState
+import xyz.gaon.codeclear.capture.ProbeEnvironment
+import xyz.gaon.codeclear.capture.ProbeRadio
+import xyz.gaon.codeclear.capture.ProbeSessionState
 
 @Composable
 internal fun TutorialStep(

@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.capture
 
 enum class ProbeSourceActionFailure { UNAVAILABLE, TIMEOUT, UNSUPPORTED, LIMITED }
 

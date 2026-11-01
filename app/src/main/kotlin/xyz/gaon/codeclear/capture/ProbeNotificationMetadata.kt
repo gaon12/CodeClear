@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.capture
 
 object ProbeNotificationMetadata {
     fun bodyEvidence(

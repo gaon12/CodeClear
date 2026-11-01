@@ -12,9 +12,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.google.mlkit.nl.translate.TranslateLanguage
 import xyz.gaon.codeclear.BuildConfig
+import xyz.gaon.codeclear.capture.ProbeSession
 import xyz.gaon.codeclear.nearby.NearbyBackgroundService
 import xyz.gaon.codeclear.nearby.NearbySharing
-import xyz.gaon.codeclear.probe.ProbeSession
 import xyz.gaon.codeclear.translation.MlKitLocalEngine
 import xyz.gaon.codeclear.translation.MyMemoryEngine
 import xyz.gaon.codeclear.translation.SystemEngineAvailability

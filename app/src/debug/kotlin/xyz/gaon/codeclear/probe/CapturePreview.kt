@@ -51,6 +51,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.capture.ProbeBodyEvidence
+import xyz.gaon.codeclear.capture.ProbeEnvironment
+import xyz.gaon.codeclear.capture.ProbeHeadingKind
+import xyz.gaon.codeclear.capture.ProbeObservation
+import xyz.gaon.codeclear.capture.ProbeOrigin
+import xyz.gaon.codeclear.capture.ProbeRadio
+import xyz.gaon.codeclear.capture.ProbeRecord
+import xyz.gaon.codeclear.capture.ProbeRoute
+import xyz.gaon.codeclear.capture.ProbeSession
+import xyz.gaon.codeclear.capture.ProbeSessionState
+import xyz.gaon.codeclear.capture.localInput
 import xyz.gaon.codeclear.translation.TranslationInput
 import xyz.gaon.codeclear.translation.TranslationResult
 import xyz.gaon.codeclear.translation.TranslationState

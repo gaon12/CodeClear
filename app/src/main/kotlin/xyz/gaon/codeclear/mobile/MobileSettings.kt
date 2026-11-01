@@ -17,9 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.ProbeEnvironment
-import xyz.gaon.codeclear.probe.ProbeRadio
-import xyz.gaon.codeclear.probe.ProbeSessionState
+import xyz.gaon.codeclear.capture.ProbeEnvironment
+import xyz.gaon.codeclear.capture.ProbeRadio
+import xyz.gaon.codeclear.capture.ProbeSessionState
 
 private enum class SettingsInfo { RESTRICTED_ACCESS, PRIVACY, COMPATIBILITY }
 private enum class CaptureAccess { NOTIFICATION, ACCESSIBILITY }

@@ -1,9 +1,9 @@
 package xyz.gaon.codeclear.mobile
 
-import xyz.gaon.codeclear.probe.ProbeBodyEvidence
-import xyz.gaon.codeclear.probe.ProbeOrigin
-import xyz.gaon.codeclear.probe.ProbeRecord
-import xyz.gaon.codeclear.probe.ProbeRoute
+import xyz.gaon.codeclear.capture.ProbeBodyEvidence
+import xyz.gaon.codeclear.capture.ProbeOrigin
+import xyz.gaon.codeclear.capture.ProbeRecord
+import xyz.gaon.codeclear.capture.ProbeRoute
 import xyz.gaon.codeclear.reception.CountryEvidence
 import xyz.gaon.codeclear.reception.ReceptionCountry
 

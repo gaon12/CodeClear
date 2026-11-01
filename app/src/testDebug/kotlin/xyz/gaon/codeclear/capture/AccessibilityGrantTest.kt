@@ -1,8 +1,9 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.capture
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import xyz.gaon.codeclear.probe.ProbeAccessibilityService
 
 class AccessibilityGrantTest {
     private val owner = "xyz.gaon.codeclear"

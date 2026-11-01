@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.capture
 
 import android.app.PendingIntent
 import android.content.Intent
@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import xyz.gaon.codeclear.probe.CaptureProbeActivity
 
 class SourceActionDeviceTest {
     @Suppress("DEPRECATION")

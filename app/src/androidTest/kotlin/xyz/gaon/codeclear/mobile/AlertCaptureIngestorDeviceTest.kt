@@ -11,15 +11,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import xyz.gaon.codeclear.probe.ProbeBodyEvidence
-import xyz.gaon.codeclear.probe.ProbeEnvironment
-import xyz.gaon.codeclear.probe.ProbeHeadingKind
-import xyz.gaon.codeclear.probe.ProbeObservation
-import xyz.gaon.codeclear.probe.ProbeOrigin
-import xyz.gaon.codeclear.probe.ProbeRadio
-import xyz.gaon.codeclear.probe.ProbeRecord
-import xyz.gaon.codeclear.probe.ProbeRoute
-import xyz.gaon.codeclear.probe.ProbeSession
+import xyz.gaon.codeclear.capture.ProbeBodyEvidence
+import xyz.gaon.codeclear.capture.ProbeEnvironment
+import xyz.gaon.codeclear.capture.ProbeHeadingKind
+import xyz.gaon.codeclear.capture.ProbeObservation
+import xyz.gaon.codeclear.capture.ProbeOrigin
+import xyz.gaon.codeclear.capture.ProbeRadio
+import xyz.gaon.codeclear.capture.ProbeRecord
+import xyz.gaon.codeclear.capture.ProbeRoute
+import xyz.gaon.codeclear.capture.ProbeSession
 
 class AlertCaptureIngestorDeviceTest {
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()

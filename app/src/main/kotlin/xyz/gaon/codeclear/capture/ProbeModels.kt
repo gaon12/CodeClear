@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.capture
 
 import xyz.gaon.codeclear.translation.TranslationInput
 import xyz.gaon.codeclear.translation.TranslationTarget
@@ -65,7 +65,7 @@ data class BoundedText(val value: String, val limited: Boolean) {
     }
 }
 
-/** Temporary diagnostic observations are separate from the future persistent user history. */
+/** Temporary diagnostic observations remain separate from persistent product history. */
 class ProbeBuffer(private val capacity: Int = 40) {
     init {
         require(capacity in 1..40)

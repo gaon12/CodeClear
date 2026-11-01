@@ -3,13 +3,13 @@ package xyz.gaon.codeclear.mobile
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
-import xyz.gaon.codeclear.probe.ProbeBodyEvidence
-import xyz.gaon.codeclear.probe.ProbeBroadcastFields
-import xyz.gaon.codeclear.probe.ProbeHeadingKind
-import xyz.gaon.codeclear.probe.ProbeObservation
-import xyz.gaon.codeclear.probe.ProbeOrigin
-import xyz.gaon.codeclear.probe.ProbeRecord
-import xyz.gaon.codeclear.probe.ProbeRoute
+import xyz.gaon.codeclear.capture.ProbeBodyEvidence
+import xyz.gaon.codeclear.capture.ProbeBroadcastFields
+import xyz.gaon.codeclear.capture.ProbeHeadingKind
+import xyz.gaon.codeclear.capture.ProbeObservation
+import xyz.gaon.codeclear.capture.ProbeOrigin
+import xyz.gaon.codeclear.capture.ProbeRecord
+import xyz.gaon.codeclear.capture.ProbeRoute
 
 class CaptureMappingTest {
     private val source = "com.google.android.cellbroadcastreceiver"
