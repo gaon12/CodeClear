@@ -37,6 +37,8 @@ jobs:
           ./gradlew --no-daemon --max-workers=2 --console=plain
           :app:lintDebug :app:lintRelease :app:testDebugUnitTest
           :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease
+      - name: Free disposable runner disk
+        run: python3 tools/ci/free_runner_disk.py
       - name: Verify optimized offline runtime and persistence
         run: >-
           python3 tools/ci/run_emulator.py --profile '${{ fromJSON('{"30":"30","35-16k":"35-16k","37-16k":"37-16k"}')[inputs.profile] }}'

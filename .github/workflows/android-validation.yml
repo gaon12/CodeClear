@@ -62,6 +62,8 @@ jobs:
           :app:lintDebug :app:lintRelease :app:testDebugUnitTest
           :app:assembleDebug :app:assembleDebugAndroidTest
           :app:bundleReleaseClassesToCompileJar
+      - name: Free disposable runner disk
+        run: python3 tools/ci/free_runner_disk.py
       - name: Run isolated software fixtures
         run: >-
           python3 tools/ci/run_emulator.py --profile '${{ matrix.profile }}'
