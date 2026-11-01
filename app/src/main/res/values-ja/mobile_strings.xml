@@ -20,7 +20,6 @@
     <string name="mobile_times_notice">アプリの取得時刻と元アプリの受信時刻です。災害の発生時刻は確認されていません。</string>
     <string name="mobile_received">元アプリの受信：%1$s</string>
     <string name="mobile_posted">通知の投稿：%1$s</string>
-    <string name="mobile_source">取得元：%1$s</string>
     <string name="mobile_collection">緊急速報の取得</string>
     <string name="mobile_notification_access">通知へのアクセス</string>
     <string name="mobile_accessibility_access">ユーザー補助へのアクセス</string>
@@ -230,4 +229,9 @@
     <string name="mobile_server_description">MyMemory · インターネット · 個別の許可が必要</string>
     <string name="mobile_server_translation_notice">自動翻訳は不正確な場合があります。原文と公式の指示を確認してください。</string>
     <string name="mobile_engine_remote_disabled">このエンジンを選択するには、%1$s で MyMemory のリモート翻訳を許可してください。</string>
+    <string name="mobile_message_actions">%1$sをコピーまたは共有</string>
+    <string name="mobile_copy_body">本文をコピー</string>
+    <string name="mobile_share_body">本文を共有</string>
+    <string name="mobile_body_copied">本文をコピーしました。</string>
+    <string name="mobile_text_action_failed">本文をコピーまたは共有できません。</string>
 </resources>

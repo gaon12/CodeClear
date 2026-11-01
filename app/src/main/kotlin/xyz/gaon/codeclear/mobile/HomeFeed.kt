@@ -78,7 +78,7 @@ internal fun LazyListScope.homeFeed(
                 { actions.detail(latest.id) },
                 engine = state.options.engine,
                 viewMode = state.options.messageViewMode,
-                speechActions = actions
+                messageActions = actions
             )
         }
     }

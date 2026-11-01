@@ -32,7 +32,7 @@ class UiLocaleResourcesDeviceTest {
             "fr" to "Ouvrir les paramètres",
             "de" to "Einstellungen öffnen"
         )
-        val chineseSources = mutableListOf<String>()
+        val chineseCopyLabels = mutableListOf<String>()
         for ((tag, home) in expected) {
             val localized = context.createConfigurationContext(
                 Configuration(context.resources.configuration).apply {
@@ -81,11 +81,14 @@ class UiLocaleResourcesDeviceTest {
                 assertTrue(received.isNotBlank())
                 if (tag == "en" && count == 1) assertTrue(received.startsWith("1 recent message"))
             }
+            val actions = localized.getString(R.string.mobile_message_actions, "DRILL")
+            assertTrue(actions.contains("DRILL"))
+            assertFalse(actions.contains("%1"))
             if (tag.startsWith("zh-")) {
-                chineseSources +=
-                    localized.getString(R.string.mobile_source, "test.system.receiver")
+                chineseCopyLabels +=
+                    localized.getString(R.string.mobile_copy_body)
             }
         }
-        assertNotEquals(chineseSources[0], chineseSources[1])
+        assertNotEquals(chineseCopyLabels[0], chineseCopyLabels[1])
     }
 }

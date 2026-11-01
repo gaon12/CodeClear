@@ -52,6 +52,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
@@ -108,6 +109,8 @@ class MobileScreenDeviceTest {
     private var lastSettingsAction = ""
     private var originalLanguageRequests = 0
     private var speechState by mutableStateOf(SpeechState())
+    private val copiedBodies = mutableListOf<String>()
+    private val sharedBodies = mutableListOf<String>()
     private val spokenMessages = mutableListOf<Pair<String, String>>()
     private var inventory by mutableStateOf(
         ModelInventoryState(loaded = true, downloaded = primaryModelLanguages)
@@ -312,6 +315,8 @@ class MobileScreenDeviceTest {
                             nearby = nearby.copy(originals = emptyList())
                             complete(saved.id)
                         },
+                        copyBody = { copiedBodies.add(it) },
+                        shareBody = { sharedBodies.add(it) },
                         speechState = speechState,
                         readAloud = { key, body, language ->
                             spokenMessages.add(body to language)
@@ -752,6 +757,29 @@ class MobileScreenDeviceTest {
         compose.onNodeWithTag("alert-modal-details").performClick()
         compose.onNodeWithTag("history-detail").assertIsDisplayed()
         compose.onNodeWithTag("delete-alert").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun originalAndTranslationActionsUseTheirOwnBodiesWithoutDisplayingTheSourcePackage() {
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performClick()
+        val original = state.detail!!.capture.original
+        val translated = state.detail!!.translation!!.text!!
+        val originalMenu = text(R.string.mobile_message_actions, text(R.string.mobile_original))
+        val translatedMenu = text(
+            R.string.mobile_message_actions,
+            text(R.string.mobile_translation, languageName("ko"))
+        )
+        for ((menu, body) in listOf(originalMenu to original, translatedMenu to translated)) {
+            compose.onNodeWithContentDescription(menu).performScrollTo().performClick()
+            compose.onNodeWithText(text(R.string.mobile_copy_body)).performClick()
+            compose.runOnIdle { assertEquals(body, copiedBodies.last()) }
+            compose.onNodeWithContentDescription(menu).performClick()
+            compose.onNodeWithText(text(R.string.mobile_share_body)).performClick()
+            compose.runOnIdle { assertEquals(body, sharedBodies.last()) }
+        }
+        compose.onNodeWithText(state.detail!!.capture.sourcePackage, substring = true)
+            .assertDoesNotExist()
     }
 
     @Test

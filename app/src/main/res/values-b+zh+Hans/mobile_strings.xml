@@ -20,7 +20,6 @@
     <string name="mobile_times_notice">这里显示的是应用采集时间和来源接收时间，并非已确认的灾害发生时间。</string>
     <string name="mobile_received">来源接收时间：%1$s</string>
     <string name="mobile_posted">通知发布时间：%1$s</string>
-    <string name="mobile_source">来源：%1$s</string>
     <string name="mobile_collection">警报采集</string>
     <string name="mobile_notification_access">通知访问权限</string>
     <string name="mobile_accessibility_access">无障碍访问权限</string>
@@ -230,4 +229,9 @@
     <string name="mobile_server_description">MyMemory · 使用互联网 · 需要单独允许</string>
     <string name="mobile_server_translation_notice">自动翻译可能不准确。请同时查看原始警报和官方指引。</string>
     <string name="mobile_engine_remote_disabled">请先在%1$s中允许 MyMemory 远程翻译，再选择此引擎。</string>
+    <string name="mobile_message_actions">复制或分享%1$s</string>
+    <string name="mobile_copy_body">复制正文</string>
+    <string name="mobile_share_body">分享正文</string>
+    <string name="mobile_body_copied">已复制正文</string>
+    <string name="mobile_text_action_failed">无法复制或分享此正文。</string>
 </resources>

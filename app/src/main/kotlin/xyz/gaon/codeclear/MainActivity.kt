@@ -2,6 +2,7 @@ package xyz.gaon.codeclear
 
 import android.Manifest
 import android.content.ActivityNotFoundException
+import android.content.ClipboardManager
 import android.content.Intent
 import android.database.ContentObserver
 import android.net.Uri
@@ -36,6 +37,7 @@ import androidx.lifecycle.Lifecycle
 import xyz.gaon.codeclear.capture.ProbeEnvironment
 import xyz.gaon.codeclear.capture.ProbeSession
 import xyz.gaon.codeclear.capture.ProbeSourceActions
+import xyz.gaon.codeclear.mobile.AlertTextTransfer
 import xyz.gaon.codeclear.mobile.MobileActions
 import xyz.gaon.codeclear.mobile.MobileConfirmationDialog
 import xyz.gaon.codeclear.mobile.MobileOptions
@@ -243,7 +245,9 @@ class MainActivity : AppCompatActivity() {
                             prepareTargetModels = runtime::requestTargetModels,
                             startModelDownload = runtime::startModelDownload,
                             closeModelDownload = runtime::closeModelDownload,
-                            showModelDownload = runtime::showModelDownload
+                            showModelDownload = runtime::showModelDownload,
+                            copyBody = ::copyAlertBody,
+                            shareBody = ::shareAlertBody
                         )
                     )
                 }
@@ -334,6 +338,28 @@ class MainActivity : AppCompatActivity() {
         mobileRuntime.speech.stop()
         mobileRuntime.nearby.foreground(false)
         super.onStop()
+    }
+
+    private fun copyAlertBody(body: String) {
+        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return
+        try {
+            getSystemService(ClipboardManager::class.java)
+                .setPrimaryClip(AlertTextTransfer.clip(getString(R.string.app_name), body))
+            if (Build.VERSION.SDK_INT < 33) {
+                Toast.makeText(this, R.string.mobile_body_copied, Toast.LENGTH_SHORT).show()
+            }
+        } catch (_: RuntimeException) {
+            Toast.makeText(this, R.string.mobile_text_action_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun shareAlertBody(body: String) {
+        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) return
+        try {
+            startActivity(Intent.createChooser(AlertTextTransfer.share(body), null))
+        } catch (_: RuntimeException) {
+            Toast.makeText(this, R.string.mobile_text_action_failed, Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun requestNearby() {

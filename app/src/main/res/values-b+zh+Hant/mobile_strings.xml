@@ -20,7 +20,6 @@
     <string name="mobile_times_notice">此處顯示的是應用程式擷取時間與來源接收時間，並非已確認的災害發生時間。</string>
     <string name="mobile_received">來源接收時間：%1$s</string>
     <string name="mobile_posted">通知發布時間：%1$s</string>
-    <string name="mobile_source">來源：%1$s</string>
     <string name="mobile_collection">警報擷取</string>
     <string name="mobile_notification_access">通知存取權限</string>
     <string name="mobile_accessibility_access">無障礙存取權限</string>
@@ -230,4 +229,9 @@
     <string name="mobile_server_description">MyMemory · 使用網際網路 · 需要單獨允許</string>
     <string name="mobile_server_translation_notice">自動翻譯可能不準確。請同時查看原始警報與官方指引。</string>
     <string name="mobile_engine_remote_disabled">請先在%1$s中允許 MyMemory 遠端翻譯，再選擇此引擎。</string>
+    <string name="mobile_message_actions">複製或分享%1$s</string>
+    <string name="mobile_copy_body">複製內文</string>
+    <string name="mobile_share_body">分享內文</string>
+    <string name="mobile_body_copied">已複製內文</string>
+    <string name="mobile_text_action_failed">無法複製或分享此內文。</string>
 </resources>

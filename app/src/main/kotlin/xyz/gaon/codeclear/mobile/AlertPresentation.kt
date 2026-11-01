@@ -44,7 +44,7 @@ fun AlertPresentation(
     engine: TranslationEngineKind = alert.translation?.engine ?: TranslationEngineKind.ML_KIT,
     viewMode: MessageViewMode = MessageViewMode.BOTH,
     compact: Boolean = false,
-    speechActions: MobileActions? = null
+    messageActions: MobileActions? = null
 ) {
     // Script conversion can change the text even when the language codes match.
     val translatedReady = alert.translation?.phase == TranslationPhase.READY &&
@@ -180,9 +180,10 @@ fun AlertPresentation(
                     MessagePanel(
                         stringResource(R.string.mobile_original),
                         alert.capture.original,
+                        bodyActions = messageActions,
                         headerActions = {
                             switchAction()
-                            speechActions?.let {
+                            messageActions?.let {
                                 SpeechAction(
                                     "${alert.id}:$target:original",
                                     alert.capture.original,
@@ -207,10 +208,14 @@ fun AlertPresentation(
                                     )
                                 ),
                             translated = !compact,
+                            bodyActions = messageActions.takeIf {
+                                alert.translation?.phase == TranslationPhase.READY &&
+                                    !alert.translation.text.isNullOrBlank()
+                            },
                             headerActions = {
                                 switchAction()
                                 if (translatedReady) {
-                                    speechActions?.let {
+                                    messageActions?.let {
                                         SpeechAction(
                                             "${alert.id}:$target:translation",
                                             alert.translation.text,

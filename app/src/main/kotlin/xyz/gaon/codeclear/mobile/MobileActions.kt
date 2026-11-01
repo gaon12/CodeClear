@@ -45,5 +45,7 @@ class MobileActions(
     ) -> Unit = { _, _ -> },
     val startModelDownload: () -> Unit = {},
     val closeModelDownload: () -> Unit = {},
-    val showModelDownload: () -> Unit = {}
+    val showModelDownload: () -> Unit = {},
+    val copyBody: (String) -> Unit = {},
+    val shareBody: (String) -> Unit = {}
 )

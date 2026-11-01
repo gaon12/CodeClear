@@ -20,7 +20,6 @@
     <string name="mobile_times_notice">These are capture and source reception times. The disaster occurrence time is not verified.</string>
     <string name="mobile_received">Source received %1$s</string>
     <string name="mobile_posted">Notification posted %1$s</string>
-    <string name="mobile_source">Source: %1$s</string>
     <string name="mobile_collection">Alert capture</string>
     <string name="mobile_notification_access">Notification access</string>
     <string name="mobile_accessibility_access">Accessibility access</string>
@@ -231,4 +230,9 @@
     <string name="mobile_server_description">MyMemory · Internet · Separate permission required</string>
     <string name="mobile_server_translation_notice">Automatic translation may be inaccurate. Follow the original alert and official guidance.</string>
     <string name="mobile_engine_remote_disabled">Allow MyMemory remote translation in %1$s to select this engine.</string>
+    <string name="mobile_message_actions">%1$s: copy or share</string>
+    <string name="mobile_copy_body">Copy text</string>
+    <string name="mobile_share_body">Share text</string>
+    <string name="mobile_body_copied">Text copied</string>
+    <string name="mobile_text_action_failed">Could not copy or share this text.</string>
 </resources>

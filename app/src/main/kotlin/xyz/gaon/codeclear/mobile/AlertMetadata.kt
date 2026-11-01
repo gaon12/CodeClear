@@ -41,14 +41,6 @@ fun AlertMetadata(alert: SavedAlert) {
                 stringResource(R.string.mobile_capture_information),
                 style = MaterialTheme.typography.titleMedium
             )
-            Text(
-                if (alert.capture.source == CaptureSource.PEER) {
-                    stringResource(R.string.mobile_nearby_unverified)
-                } else {
-                    stringResource(R.string.mobile_source, alert.capture.sourcePackage)
-                },
-                style = MaterialTheme.typography.bodyMedium
-            )
             alert.capture.context.country?.let { country ->
                 val locale = LocalConfiguration.current.locales[0].toLanguageTag()
                 Text(
