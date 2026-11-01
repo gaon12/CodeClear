@@ -24,7 +24,7 @@ import xyz.gaon.codeclear.mobile.MobileController
 import xyz.gaon.codeclear.mobile.MobileOptions
 import xyz.gaon.codeclear.mobile.OptionsStorage
 import xyz.gaon.codeclear.mobile.mobileRuntime
-import xyz.gaon.codeclear.probe.LocalEngine
+import xyz.gaon.codeclear.translation.TranslationEngine
 
 /** Real service and BLE ownership with only synthetic content and an isolated private database. */
 class BackgroundRelayDeviceTest {
@@ -77,7 +77,7 @@ class BackgroundRelayDeviceTest {
                         override fun load() = MobileOptions()
                         override fun save(options: MobileOptions) = Unit
                     },
-                    LocalEngine { _, _, _ -> error("The fixture must not translate") },
+                    TranslationEngine { _, _, _ -> error("The fixture must not translate") },
                     changed = {}
                 ).also { it.start() }
             }

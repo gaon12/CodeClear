@@ -14,12 +14,12 @@ import com.google.mlkit.nl.translate.TranslateLanguage
 import xyz.gaon.codeclear.BuildConfig
 import xyz.gaon.codeclear.nearby.NearbyBackgroundService
 import xyz.gaon.codeclear.nearby.NearbySharing
-import xyz.gaon.codeclear.probe.LocalEngine
-import xyz.gaon.codeclear.probe.MlKitLocalEngine
 import xyz.gaon.codeclear.probe.ProbeSession
-import xyz.gaon.codeclear.probe.SystemEngineAvailability
-import xyz.gaon.codeclear.probe.SystemLocalEngine
+import xyz.gaon.codeclear.translation.MlKitLocalEngine
 import xyz.gaon.codeclear.translation.MyMemoryEngine
+import xyz.gaon.codeclear.translation.SystemEngineAvailability
+import xyz.gaon.codeclear.translation.SystemLocalEngine
+import xyz.gaon.codeclear.translation.TranslationEngine
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 class MobileApplication : Application() {
@@ -54,7 +54,7 @@ class MobileRuntime(context: Context) {
     var systemAvailability by mutableStateOf(SystemEngineAvailability())
         private set
     val systemEngine = SystemLocalEngine(context) { systemAvailability = it }
-    private val engine = LocalEngine { input, download, complete ->
+    private val engine = TranslationEngine { input, download, complete ->
         when (input.engine) {
             TranslationEngineKind.ML_KIT -> mlKit.run(input, download, complete)
             TranslationEngineKind.SYSTEM -> systemEngine.run(input, download, complete)
@@ -145,7 +145,10 @@ class MobileRuntime(context: Context) {
         inventory.refresh(force = true)
     }
 
-    fun requestTargetModels(target: xyz.gaon.codeclear.probe.LocalTarget, alert: SavedAlert?) {
+    fun requestTargetModels(
+        target: xyz.gaon.codeclear.translation.TranslationTarget,
+        alert: SavedAlert?
+    ) {
         check(Looper.myLooper() == Looper.getMainLooper())
         if (models.busy) return showModelDownload()
         if (alert == null) {

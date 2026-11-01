@@ -18,8 +18,8 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 @Composable
 internal fun ServerTranslationSettings(options: MobileOptions, actions: MobileActions) {
@@ -60,7 +60,7 @@ internal fun ServerTranslationSettings(options: MobileOptions, actions: MobileAc
     if (targetPicker) {
         ChoiceDialog(
             stringResource(R.string.mobile_target_language),
-            LocalTarget.entries.map {
+            TranslationTarget.entries.map {
                 languageName(it.languageTag)
             },
             {
@@ -70,7 +70,7 @@ internal fun ServerTranslationSettings(options: MobileOptions, actions: MobileAc
             options.target.ordinal
         ) {
             targetPicker = false
-            actions.configure(options.copy(target = LocalTarget.entries[it]))
+            actions.configure(options.copy(target = TranslationTarget.entries[it]))
         }
     }
     if (disclosure) {

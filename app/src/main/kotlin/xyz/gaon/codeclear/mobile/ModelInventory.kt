@@ -10,9 +10,9 @@ import com.google.mlkit.nl.translate.TranslateRemoteModel
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
-import xyz.gaon.codeclear.probe.LocalTarget
+import xyz.gaon.codeclear.translation.TranslationTarget
 
-internal val primaryModelLanguages = LocalTarget.entries.map { it.modelCode }.toSet() - "en"
+internal val primaryModelLanguages = TranslationTarget.entries.map { it.modelCode }.toSet() - "en"
 internal val managedModelLanguages = TranslateLanguage.getAllLanguages().toSet() - "en"
 
 data class ModelInventoryState(

@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.translation
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -15,9 +15,9 @@ class SystemTranslationSupportTest {
                 SystemLanguagePair("ja", "ko", false)
             )
         )
-        assertEquals(SystemTargetSupport(1, 1), support.getValue(LocalTarget.KOREAN))
-        assertTrue(support.getValue(LocalTarget.KOREAN).available)
-        assertFalse(support.getValue(LocalTarget.ENGLISH).available)
+        assertEquals(SystemTargetSupport(1, 1), support.getValue(TranslationTarget.KOREAN))
+        assertTrue(support.getValue(TranslationTarget.KOREAN).available)
+        assertFalse(support.getValue(TranslationTarget.ENGLISH).available)
     }
 
     @Test
@@ -29,8 +29,14 @@ class SystemTranslationSupportTest {
                 SystemLanguagePair("ja", "zh", true)
             )
         )
-        assertEquals(SystemTargetSupport(2, 0), support.getValue(LocalTarget.SIMPLIFIED_CHINESE))
-        assertEquals(SystemTargetSupport(1, 1), support.getValue(LocalTarget.TRADITIONAL_CHINESE))
+        assertEquals(
+            SystemTargetSupport(2, 0),
+            support.getValue(TranslationTarget.SIMPLIFIED_CHINESE)
+        )
+        assertEquals(
+            SystemTargetSupport(1, 1),
+            support.getValue(TranslationTarget.TRADITIONAL_CHINESE)
+        )
     }
 
     @Test
@@ -51,7 +57,7 @@ class SystemTranslationSupportTest {
         val support = summarizeSystemTargets(
             (1..5000).map { SystemLanguagePair("en-x-v$it", "ko", true) }
         )
-        assertEquals(4096, support.getValue(LocalTarget.KOREAN).readyPairs)
-        assertEquals(LocalTarget.entries.toSet(), support.keys)
+        assertEquals(4096, support.getValue(TranslationTarget.KOREAN).readyPairs)
+        assertEquals(TranslationTarget.entries.toSet(), support.keys)
     }
 }

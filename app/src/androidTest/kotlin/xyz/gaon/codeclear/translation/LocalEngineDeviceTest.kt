@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.translation
 
 import android.os.Bundle
 import android.os.Process
@@ -21,8 +21,8 @@ class LocalEngineDeviceTest {
     @Test
     fun bundledLanguageIdentificationRunsWithoutAModelDownload() {
         val body = "[DRILL] This is only a test. Do not enter the dangerous area near Gate 3."
-        val result = runEngine(body, LocalTarget.ENGLISH)
-        assertEquals(LocalResult.Ready(body, "en", true), result)
+        val result = runEngine(body, TranslationTarget.ENGLISH)
+        assertEquals(TranslationResult.Ready(body, "en", true), result)
     }
 
     @Test
@@ -30,8 +30,8 @@ class LocalEngineDeviceTest {
         val body = "[演练] 请勿进入危险区域。请留在安全地点。14:05，112，3 km。"
         val expected = "[演練] 請勿進入危險區域。請留在安全地點。14:05，112，3 km。"
         assertEquals(
-            LocalResult.Ready(expected, "zh", true),
-            runEngine(body, LocalTarget.TRADITIONAL_CHINESE)
+            TranslationResult.Ready(expected, "zh", true),
+            runEngine(body, TranslationTarget.TRADITIONAL_CHINESE)
         )
     }
 
@@ -49,11 +49,11 @@ class LocalEngineDeviceTest {
         if (arguments.getString("requireNativeTranslation") == "true") assertTrue("ko" in before)
         val result = runEngine(
             "[DRILL] Stay inside. Keep away from windows and call 112 for help.",
-            LocalTarget.KOREAN
+            TranslationTarget.KOREAN
         )
         if ("ko" in before) {
-            assertTrue(result is LocalResult.Ready)
-            val translated = result as LocalResult.Ready
+            assertTrue(result is TranslationResult.Ready)
+            val translated = result as TranslationResult.Ready
             assertEquals("en", translated.source)
             assertFalse(translated.sameLanguage)
             assertTrue(
@@ -62,24 +62,24 @@ class LocalEngineDeviceTest {
                 }
             )
         } else {
-            assertEquals(LocalResult.NeedsModels, result)
+            assertEquals(TranslationResult.NeedsModels, result)
         }
         assertEquals(before, downloaded())
         instrumentation.sendStatus(
             0,
             Bundle().apply {
                 putBoolean("codeclear_native_64_bit", Process.is64Bit())
-                putBoolean("codeclear_native_output_ready", result is LocalResult.Ready)
+                putBoolean("codeclear_native_output_ready", result is TranslationResult.Ready)
             }
         )
     }
 
-    private fun runEngine(body: String, target: LocalTarget): LocalResult {
+    private fun runEngine(body: String, target: TranslationTarget): TranslationResult {
         val latch = CountDownLatch(1)
-        val result = AtomicReference<LocalResult>()
+        val result = AtomicReference<TranslationResult>()
         val engine = MlKitLocalEngine()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
-            engine.run(LocalInput(1, body, target), false) {
+            engine.run(TranslationInput(1, body, target), false) {
                 result.set(it)
                 latch.countDown()
             }

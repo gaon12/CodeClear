@@ -7,8 +7,6 @@ import android.os.Looper
 import java.util.concurrent.atomic.AtomicLong
 import xyz.gaon.codeclear.nearby.NearbyOriginal
 import xyz.gaon.codeclear.probe.CaptureObserver
-import xyz.gaon.codeclear.probe.LocalEngine
-import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeNotificationListener
 import xyz.gaon.codeclear.probe.ProbeRadio
@@ -18,7 +16,9 @@ import xyz.gaon.codeclear.probe.ProbeSession
 import xyz.gaon.codeclear.probe.isUnlocked
 import xyz.gaon.codeclear.reception.NetworkCountry
 import xyz.gaon.codeclear.reception.ReceptionCountry
+import xyz.gaon.codeclear.translation.TranslationEngine
 import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 data class MobileState(
     val loaded: Boolean = false,
@@ -41,7 +41,7 @@ class MobileController(
     private val context: Context,
     private val store: AlertHistoryStore,
     private val preferences: OptionsStorage,
-    engine: LocalEngine,
+    engine: TranslationEngine,
     private val changed: (MobileState) -> Unit,
     translated: (Long, String, TranslationEngineKind) -> Unit = { _, _, _ -> },
     private val deleted: (Long?) -> Unit = {},
@@ -369,7 +369,7 @@ class MobileController(
 
     fun changeDetailTarget(id: Long, target: String, originalLanguage: String) {
         requireMain()
-        val choice = LocalTarget.entries.firstOrNull { it.languageTag == target } ?: return
+        val choice = TranslationTarget.entries.firstOrNull { it.languageTag == target } ?: return
         if (id != state.detailId || !state.loaded || state.storageError || closed ||
             !canTranslateDetailTo(choice, originalLanguage)
         ) {

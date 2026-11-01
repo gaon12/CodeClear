@@ -74,8 +74,8 @@ directory in the single `app` module. Main packages under
 | Package | Responsibility |
 | --- | --- |
 | `mobile` | Product screens, settings, history, runtime ownership, and work coordination |
-| `probe` | Alert-source observation, extraction, diagnostics, and existing translation adapters |
-| `translation` | Shared engine identifiers, MyMemory transport, operation rules, and future server response contracts |
+| `probe` | Alert-source observation, extraction, and diagnostics |
+| `translation` | Shared translation contracts, on-device engines, MyMemory transport, and future server response contracts |
 | `nearby` | Experimental Bluetooth relay protocol, radio work, and peer inbox |
 | `reception` | Radio/network country context and country-code mappings |
 | `ui/theme` | Shared theme definitions |

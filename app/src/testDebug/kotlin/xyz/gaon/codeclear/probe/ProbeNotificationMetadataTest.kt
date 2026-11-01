@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Test
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 class ProbeNotificationMetadataTest {
     @Test
@@ -34,7 +35,7 @@ class ProbeNotificationMetadataTest {
         )
         assertEquals(ProbeBodyEvidence.UNVERIFIED, evidence)
         listOf("3 unread alerts", "미확인 경보 3건", "3件の未読アラート", "3 alertes non lues").forEach { title ->
-            assertNull(record(title, evidence).localInput(LocalTarget.ENGLISH))
+            assertNull(record(title, evidence).localInput(TranslationTarget.ENGLISH))
         }
     }
 
@@ -87,12 +88,14 @@ class ProbeNotificationMetadataTest {
     @Test
     fun readableIndividualFieldsTranslateWhileEmptyLimitedAndGroupedBodiesDoNot() {
         val record = record("[DRILL] Stay indoors.", ProbeBodyEvidence.VISIBLE_DIALOG_FIELD)
-        assertNotNull(record.localInput(LocalTarget.ENGLISH))
+        assertNotNull(record.localInput(TranslationTarget.ENGLISH))
         listOf(
             record.observation.copy(body = ""),
             record.observation.copy(limited = true),
             record.observation.copy(groupSummary = true)
-        ).forEach { assertNull(record.copy(observation = it).localInput(LocalTarget.ENGLISH)) }
+        ).forEach {
+            assertNull(record.copy(observation = it).localInput(TranslationTarget.ENGLISH))
+        }
     }
 
     private fun record(body: String, evidence: ProbeBodyEvidence) = ProbeRecord(

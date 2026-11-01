@@ -7,15 +7,12 @@ import java.util.concurrent.atomic.AtomicReference
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import xyz.gaon.codeclear.probe.LocalInput
-import xyz.gaon.codeclear.probe.LocalResult
-import xyz.gaon.codeclear.probe.LocalTarget
 
 /** Sends one constant synthetic phrase only, without reading history or changing product permission. */
 class MyMemoryLiveDeviceTest {
     @Test fun explicitlyAuthorizedSyntheticPhraseReturnsARealServerTranslation() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
-        val result = AtomicReference<LocalResult>()
+        val result = AtomicReference<TranslationResult>()
         val completed = CountDownLatch(1)
         val storage = object : RemoteBudgetStorage {
             var snapshot: RemoteBudgetSnapshot? = null
@@ -37,10 +34,10 @@ class MyMemoryLiveDeviceTest {
             )
             owner.get().authorize(true)
             owner.get().run(
-                LocalInput(
+                TranslationInput(
                     1,
                     "This is a synthetic translation connection test.",
-                    LocalTarget.JAPANESE,
+                    TranslationTarget.JAPANESE,
                     TranslationEngineKind.MY_MEMORY
                 ),
                 false
@@ -51,8 +48,11 @@ class MyMemoryLiveDeviceTest {
         }
         try {
             assertTrue(completed.await(50, TimeUnit.SECONDS))
-            assertTrue("Synthetic remote result must be ready", result.get() is LocalResult.Ready)
-            val ready = result.get() as LocalResult.Ready
+            assertTrue(
+                "Synthetic remote result must be ready",
+                result.get() is TranslationResult.Ready
+            )
+            val ready = result.get() as TranslationResult.Ready
             assertEquals("en", ready.source)
             assertTrue(ready.text.isNotBlank())
             assertTrue(ready.text != "This is a synthetic translation connection test.")

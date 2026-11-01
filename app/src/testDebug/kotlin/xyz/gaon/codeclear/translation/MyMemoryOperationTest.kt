@@ -9,9 +9,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
-import xyz.gaon.codeclear.probe.LocalInput
-import xyz.gaon.codeclear.probe.LocalResult
-import xyz.gaon.codeclear.probe.LocalTarget
 
 class MyMemoryOperationTest {
     private class Storage : RemoteBudgetStorage {
@@ -93,16 +90,19 @@ class MyMemoryOperationTest {
                 { 0 }
             )
         assertEquals(
-            LocalResult.Unavailable,
+            TranslationResult.Unavailable,
             operation.run(input("Synthetic"), RemoteCancellation())
         )
         allowed = true
         assertEquals(
-            LocalResult.Ready("Synthetic", "ko", true),
-            operation.run(input("Synthetic", LocalTarget.KOREAN), RemoteCancellation())
+            TranslationResult.Ready("Synthetic", "ko", true),
+            operation.run(input("Synthetic", TranslationTarget.KOREAN), RemoteCancellation())
         )
         storage.writable = false
-        assertEquals(LocalResult.Failed, operation.run(input("Synthetic"), RemoteCancellation()))
+        assertEquals(
+            TranslationResult.Failed,
+            operation.run(input("Synthetic"), RemoteCancellation())
+        )
         assertEquals(0, calls.get())
         assertNull(storage.value)
     }
@@ -125,7 +125,7 @@ class MyMemoryOperationTest {
                 { 0 }
             )
         assertEquals(
-            LocalResult.Failed,
+            TranslationResult.Failed,
             operation.run(input("x".repeat(800)), RemoteCancellation())
         )
         assertEquals(1, calls)
@@ -148,13 +148,22 @@ class MyMemoryOperationTest {
                 { true },
                 { 0 }
             )
-        assertEquals(LocalResult.Quota, operation.run(input("Synthetic"), RemoteCancellation()))
+        assertEquals(
+            TranslationResult.Quota,
+            operation.run(input("Synthetic"), RemoteCancellation())
+        )
         assertEquals(5000, storage.value!!.used)
-        assertEquals(LocalResult.Quota, operation.run(input("Synthetic"), RemoteCancellation()))
+        assertEquals(
+            TranslationResult.Quota,
+            operation.run(input("Synthetic"), RemoteCancellation())
+        )
         assertEquals(1, calls)
         storage.value = null
         reply = MyMemoryReply.Text("x".repeat(16385))
-        assertEquals(LocalResult.Failed, operation.run(input("Synthetic"), RemoteCancellation()))
+        assertEquals(
+            TranslationResult.Failed,
+            operation.run(input("Synthetic"), RemoteCancellation())
+        )
         assertEquals(2, calls)
     }
 
@@ -180,12 +189,12 @@ class MyMemoryOperationTest {
                 { now }
             )
         assertEquals(
-            LocalResult.Failed,
+            TranslationResult.Failed,
             operation.run(input("x".repeat(800)), RemoteCancellation())
         )
         assertEquals(1, calls)
     }
 
-    private fun input(body: String, target: LocalTarget = LocalTarget.ENGLISH) =
-        LocalInput(1, body, target, TranslationEngineKind.MY_MEMORY)
+    private fun input(body: String, target: TranslationTarget = TranslationTarget.ENGLISH) =
+        TranslationInput(1, body, target, TranslationEngineKind.MY_MEMORY)
 }

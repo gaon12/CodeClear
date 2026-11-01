@@ -2,7 +2,7 @@ package xyz.gaon.codeclear.mobile
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import xyz.gaon.codeclear.probe.LocalTarget
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 class UiLanguagesTest {
     @Test
@@ -23,18 +23,18 @@ class UiLanguagesTest {
 
     @Test
     fun initialTranslationTargetAlsoPreservesAnExplicitChineseScript() {
-        assertEquals(LocalTarget.SIMPLIFIED_CHINESE, defaultTarget("zh-Hans-HK"))
-        assertEquals(LocalTarget.TRADITIONAL_CHINESE, defaultTarget("zh-Hant-CN"))
+        assertEquals(TranslationTarget.SIMPLIFIED_CHINESE, defaultTarget("zh-Hans-HK"))
+        assertEquals(TranslationTarget.TRADITIONAL_CHINESE, defaultTarget("zh-Hant-CN"))
     }
 
     @Test
     fun initialTranslationTargetUsesThePrimarySupportedLanguageOrEnglishFallback() {
-        assertEquals(LocalTarget.KOREAN, defaultTarget("ko-KR,en-US"))
-        assertEquals(LocalTarget.JAPANESE, defaultTarget("ja-JP"))
-        assertEquals(LocalTarget.FRENCH, defaultTarget("fr-CA"))
-        assertEquals(LocalTarget.GERMAN, defaultTarget("de-DE"))
-        assertEquals(LocalTarget.ENGLISH, defaultTarget("es-ES"))
-        assertEquals(LocalTarget.ENGLISH, defaultTarget(""))
+        assertEquals(TranslationTarget.KOREAN, defaultTarget("ko-KR,en-US"))
+        assertEquals(TranslationTarget.JAPANESE, defaultTarget("ja-JP"))
+        assertEquals(TranslationTarget.FRENCH, defaultTarget("fr-CA"))
+        assertEquals(TranslationTarget.GERMAN, defaultTarget("de-DE"))
+        assertEquals(TranslationTarget.ENGLISH, defaultTarget("es-ES"))
+        assertEquals(TranslationTarget.ENGLISH, defaultTarget(""))
     }
 
     @Test

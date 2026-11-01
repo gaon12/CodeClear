@@ -39,8 +39,8 @@ import java.text.DateFormat
 import java.util.Date
 import java.util.TimeZone
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 fun languageName(tag: String): String = when (tag) {
     "ko" -> "한국어"

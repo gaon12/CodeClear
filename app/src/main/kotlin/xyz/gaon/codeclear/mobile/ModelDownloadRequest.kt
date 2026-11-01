@@ -1,12 +1,12 @@
 package xyz.gaon.codeclear.mobile
 
 import java.util.Locale
-import xyz.gaon.codeclear.probe.LocalTarget
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 data class ModelDownloadRequest(
     val languages: Set<String>,
     val body: String? = null,
-    val target: LocalTarget? = null,
+    val target: TranslationTarget? = null,
     val sourceKnown: Boolean = true,
     val checkUpdates: Boolean = false,
     val started: Boolean = false,

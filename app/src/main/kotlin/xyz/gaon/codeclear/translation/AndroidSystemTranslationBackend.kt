@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.translation
 
 import android.content.Context
 import android.icu.util.ULocale

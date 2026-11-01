@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.res.Resources
 import android.os.Looper
 import androidx.core.app.LocaleManagerCompat
-import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 enum class ThemeChoice { SYSTEM, LIGHT, DARK }
 enum class MessageViewMode { BOTH, SWITCH }
@@ -14,7 +14,7 @@ data class MobileOptions(
     val notificationConsent: Boolean = false,
     val accessibilityConsent: Boolean = false,
     val localConsent: Boolean = false,
-    val target: LocalTarget = defaultTarget(),
+    val target: TranslationTarget = defaultTarget(),
     val theme: ThemeChoice = ThemeChoice.SYSTEM,
     val uiLanguage: String = "",
     val setupComplete: Boolean = false,
@@ -33,10 +33,11 @@ data class MobileOptions(
 
 fun defaultTarget(
     systemLanguages: String = Resources.getSystem().configuration.locales.toLanguageTags()
-): LocalTarget {
+): TranslationTarget {
     // App-specific language changes must not replace the device language used for first-run defaults.
     val language = UiLanguages.normalize(systemLanguages)
-    return LocalTarget.entries.firstOrNull { it.languageTag == language } ?: LocalTarget.ENGLISH
+    return TranslationTarget.entries.firstOrNull { it.languageTag == language }
+        ?: TranslationTarget.ENGLISH
 }
 
 interface OptionsStorage {
@@ -61,7 +62,7 @@ class MobileOptionsStorage(
         val engine = TranslationEngineKind.entries.firstOrNull { it.key == engineKey }
             ?.takeIf { it != TranslationEngineKind.MY_MEMORY || labsEnabled }
         val target =
-            LocalTarget.entries.firstOrNull { it.name == saved.getString("target", null) }
+            TranslationTarget.entries.firstOrNull { it.name == saved.getString("target", null) }
                 ?: defaultTarget(LocaleManagerCompat.getSystemLocales(context).toLanguageTags())
         val theme =
             ThemeChoice.entries.firstOrNull { it.name == saved.getString("theme", null) }

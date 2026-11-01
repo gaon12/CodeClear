@@ -55,7 +55,7 @@ import xyz.gaon.codeclear.probe.ProbeBodyEvidence
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeRadio
 import xyz.gaon.codeclear.probe.ProbeSessionState
-import xyz.gaon.codeclear.probe.SystemEngineAvailability
+import xyz.gaon.codeclear.translation.SystemEngineAvailability
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 class MobileActions(
@@ -94,7 +94,7 @@ class MobileActions(
     val prepareModel: (String) -> Unit = {},
     val modelDownload: ModelDownloadRequest? = null,
     val prepareTargetModels: (
-        xyz.gaon.codeclear.probe.LocalTarget,
+        xyz.gaon.codeclear.translation.TranslationTarget,
         SavedAlert?
     ) -> Unit = { _, _ -> },
     val startModelDownload: () -> Unit = {},

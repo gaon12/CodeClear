@@ -46,11 +46,11 @@ import xyz.gaon.codeclear.mobile.UiLanguages
 import xyz.gaon.codeclear.mobile.mobileRuntime
 import xyz.gaon.codeclear.nearby.NearbyAccess
 import xyz.gaon.codeclear.nearby.NearbyBackgroundService
-import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeSession
 import xyz.gaon.codeclear.probe.ProbeSourceActions
 import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 private data class PendingDeletion(val id: Long?)
 
@@ -190,7 +190,7 @@ class MainActivity : AppCompatActivity() {
                                         openSystemTranslationSettings()
                                     } else if (engine == TranslationEngineKind.ML_KIT) {
                                         runtime.requestTargetModels(
-                                            LocalTarget.entries.first {
+                                            TranslationTarget.entries.first {
                                                 it.languageTag ==
                                                     target
                                             },

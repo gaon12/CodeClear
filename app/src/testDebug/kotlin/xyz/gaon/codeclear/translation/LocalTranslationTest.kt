@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.translation
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -6,17 +6,17 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LocalTranslationTest {
-    private class Engine : LocalEngine {
+    private class Engine : TranslationEngine {
         data class Call(
-            val input: LocalInput,
+            val input: TranslationInput,
             val download: Boolean,
-            val done: (LocalResult) -> Unit
+            val done: (TranslationResult) -> Unit
         )
         val calls = mutableListOf<Call>()
         override fun run(
-            input: LocalInput,
+            input: TranslationInput,
             allowModelDownload: Boolean,
-            complete: (LocalResult) -> Unit
+            complete: (TranslationResult) -> Unit
         ) {
             calls += Call(input, allowModelDownload, complete)
         }
@@ -25,7 +25,7 @@ class LocalTranslationTest {
     @Test
     fun replacedInputKeepsOnlyTheLatestPendingWorkAndRejectsStaleResults() {
         val engine = Engine()
-        val coordinator = LocalTranslationCoordinator(engine) {}
+        val coordinator = TranslationCoordinator(engine) {}
         coordinator.select(input(1))
         coordinator.select(input(2))
         coordinator.select(input(3))
@@ -33,31 +33,31 @@ class LocalTranslationTest {
         engine.calls.first().done(ready("old"))
         assertEquals(2, engine.calls.size)
         assertEquals(3L, engine.calls.last().input.recordId)
-        assertEquals(LocalState.Working, coordinator.state)
+        assertEquals(TranslationState.Working, coordinator.state)
         engine.calls.last().done(ready("new"))
-        assertEquals(LocalState.Finished(ready("new")), coordinator.state)
+        assertEquals(TranslationState.Finished(ready("new")), coordinator.state)
     }
 
     @Test
     fun deletingOrWithdrawingConsentPreventsLateResultsFromReturning() {
         val engine = Engine()
-        val coordinator = LocalTranslationCoordinator(engine) {}
+        val coordinator = TranslationCoordinator(engine) {}
         coordinator.select(input(1))
         coordinator.select(null)
         engine.calls.first().done(ready("late"))
-        assertEquals(LocalState.Idle, coordinator.state)
+        assertEquals(TranslationState.Idle, coordinator.state)
         assertEquals(1, engine.calls.size)
     }
 
     @Test
     fun duplicateSelectionDoesNotTranslateAgainAndRetryIsExplicit() {
         val engine = Engine()
-        val coordinator = LocalTranslationCoordinator(engine) {}
+        val coordinator = TranslationCoordinator(engine) {}
         coordinator.select(input(1))
         coordinator.select(input(1))
         coordinator.retry()
         assertEquals(1, engine.calls.size)
-        engine.calls.first().done(LocalResult.Failed)
+        engine.calls.first().done(TranslationResult.Failed)
         coordinator.select(input(1))
         assertEquals(1, engine.calls.size)
         coordinator.retry()
@@ -68,23 +68,23 @@ class LocalTranslationTest {
     @Test
     fun changingTargetDoesNotCarryDownloadApprovalToAnotherRequest() {
         val engine = Engine()
-        val coordinator = LocalTranslationCoordinator(engine) {}
+        val coordinator = TranslationCoordinator(engine) {}
         coordinator.select(input(1))
-        engine.calls.first().done(LocalResult.NeedsModels)
+        engine.calls.first().done(TranslationResult.NeedsModels)
         coordinator.retry(allowModelDownload = true)
         assertTrue(engine.calls.last().download)
-        coordinator.select(input(1).copy(target = LocalTarget.JAPANESE))
+        coordinator.select(input(1).copy(target = TranslationTarget.JAPANESE))
         engine.calls[1].done(ready("stale"))
         assertFalse(engine.calls.last().download)
-        assertEquals(LocalTarget.JAPANESE, engine.calls.last().input.target)
+        assertEquals(TranslationTarget.JAPANESE, engine.calls.last().input.target)
     }
 
     @Test
     fun downloadCannotBeStartedFromAnUnrelatedFailureState() {
         val engine = Engine()
-        val coordinator = LocalTranslationCoordinator(engine) {}
+        val coordinator = TranslationCoordinator(engine) {}
         coordinator.select(input(1))
-        engine.calls.first().done(LocalResult.UnknownLanguage)
+        engine.calls.first().done(TranslationResult.UnknownLanguage)
         coordinator.retry(allowModelDownload = true)
         assertEquals(1, engine.calls.size)
     }
@@ -94,12 +94,18 @@ class LocalTranslationTest {
         val converter = ChineseScriptConverter()
         val simplified = "[演练] 请勿进入危险区域。14:05，112，3 km。서울 东京 ひらがな 🚨 https://example.org/a?x=1"
         val traditional = "[演練] 請勿進入危險區域。14:05，112，3 km。서울 東京 ひらがな 🚨 https://example.org/a?x=1"
-        assertEquals(traditional, converter.convert(simplified, LocalTarget.TRADITIONAL_CHINESE))
-        assertEquals(simplified, converter.convert(traditional, LocalTarget.SIMPLIFIED_CHINESE))
-        assertEquals(simplified, converter.convert(simplified, LocalTarget.ENGLISH))
+        assertEquals(
+            traditional,
+            converter.convert(simplified, TranslationTarget.TRADITIONAL_CHINESE)
+        )
+        assertEquals(
+            simplified,
+            converter.convert(traditional, TranslationTarget.SIMPLIFIED_CHINESE)
+        )
+        assertEquals(simplified, converter.convert(simplified, TranslationTarget.ENGLISH))
     }
 
     private fun input(id: Long) =
-        LocalInput(id, "[DRILL] Do not enter Zone $id.", LocalTarget.KOREAN)
-    private fun ready(text: String) = LocalResult.Ready(text, "en", false)
+        TranslationInput(id, "[DRILL] Do not enter Zone $id.", TranslationTarget.KOREAN)
+    private fun ready(text: String) = TranslationResult.Ready(text, "en", false)
 }

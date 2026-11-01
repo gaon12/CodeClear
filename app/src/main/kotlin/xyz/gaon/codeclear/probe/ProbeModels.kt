@@ -1,5 +1,7 @@
 package xyz.gaon.codeclear.probe
 
+import xyz.gaon.codeclear.translation.TranslationInput
+import xyz.gaon.codeclear.translation.TranslationTarget
 enum class ProbeRoute { NOTIFICATION, ACCESSIBILITY }
 
 enum class ProbeOrigin { SYSTEM_CANDIDATE, SHELL_FIXTURE }
@@ -45,10 +47,10 @@ data class ProbeObservation(
 
 data class ProbeRecord(val id: Long, val observation: ProbeObservation)
 
-fun ProbeRecord.localInput(target: LocalTarget): LocalInput? = observation.takeIf {
+fun ProbeRecord.localInput(target: TranslationTarget): TranslationInput? = observation.takeIf {
     it.bodyEvidence != ProbeBodyEvidence.UNVERIFIED && it.body.isNotBlank() &&
         !it.groupSummary && !it.limited
-}?.let { LocalInput(id, it.body, target) }
+}?.let { TranslationInput(id, it.body, target) }
 
 data class BoundedText(val value: String, val limited: Boolean) {
     companion object {

@@ -10,17 +10,13 @@ import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
-import xyz.gaon.codeclear.probe.ChineseScriptConverter
-import xyz.gaon.codeclear.probe.LocalEngine
-import xyz.gaon.codeclear.probe.LocalInput
-import xyz.gaon.codeclear.probe.LocalResult
 
 /** Process-owned authorization is granted only after the separate remote preference is saved. */
 class MyMemoryEngine(
     context: Context,
     transportFactory: () -> MyMemoryTransport = { HttpsMyMemoryTransport() },
     suppliedBudget: RemoteDailyBudget? = null
-) : LocalEngine {
+) : TranslationEngine {
     private val main = Handler(Looper.getMainLooper())
     private val worker = ThreadPoolExecutor(0, 1, 30, TimeUnit.SECONDS, ArrayBlockingQueue(1))
     private val scripts = ChineseScriptConverter()
@@ -41,14 +37,14 @@ class MyMemoryEngine(
     }
 
     override fun run(
-        input: LocalInput,
+        input: TranslationInput,
         allowModelDownload: Boolean,
-        complete: (LocalResult) -> Unit
+        complete: (TranslationResult) -> Unit
     ) {
         checkMain()
         check(!closed && active == null)
         if (!authorized || input.engine != TranslationEngineKind.MY_MEMORY) {
-            complete(LocalResult.Unavailable)
+            complete(TranslationResult.Unavailable)
             return
         }
         val cancellation = RemoteCancellation()
@@ -69,7 +65,7 @@ class MyMemoryEngine(
                         SystemClock::elapsedRealtime
                     ).run(input, cancellation)
                 } catch (_: Exception) {
-                    LocalResult.Failed
+                    TranslationResult.Failed
                 }
                 main.post {
                     main.removeCallbacks(timeout)
@@ -80,7 +76,7 @@ class MyMemoryEngine(
         } catch (_: RejectedExecutionException) {
             main.removeCallbacks(timeout)
             active = null
-            complete(LocalResult.Failed)
+            complete(TranslationResult.Failed)
         }
     }
 

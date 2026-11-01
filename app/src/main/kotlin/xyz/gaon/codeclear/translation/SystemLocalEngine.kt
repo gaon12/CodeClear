@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.translation
 
 import android.content.Context
 import android.os.Handler
@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 class SystemLocalEngine(
     private val backend: SystemTranslationBackend,
     private val availabilityChanged: (SystemEngineAvailability) -> Unit = {}
-) : LocalEngine {
+) : TranslationEngine {
     constructor(context: Context, changed: (SystemEngineAvailability) -> Unit = {}) :
         this(systemTranslationBackend(context), changed)
 
@@ -30,9 +30,9 @@ class SystemLocalEngine(
         private set
 
     override fun run(
-        input: LocalInput,
+        input: TranslationInput,
         allowModelDownload: Boolean,
-        complete: (LocalResult) -> Unit
+        complete: (TranslationResult) -> Unit
     ) {
         requireMain()
         check(!closed && active == null)
@@ -54,7 +54,7 @@ class SystemLocalEngine(
             }
         } catch (_: RejectedExecutionException) {
             active = null
-            main.post { if (!closed) complete(LocalResult.Failed) }
+            main.post { if (!closed) complete(TranslationResult.Failed) }
         }
     }
 

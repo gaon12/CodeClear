@@ -10,8 +10,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 class MobileOptionsStorageDeviceTest {
     @Test
@@ -22,8 +22,8 @@ class MobileOptionsStorageDeviceTest {
         val language = UiLanguages.normalize(
             LocaleManagerCompat.getSystemLocales(context).toLanguageTags()
         )
-        val expected = LocalTarget.entries.firstOrNull { it.languageTag == language }
-            ?: LocalTarget.ENGLISH
+        val expected = TranslationTarget.entries.firstOrNull { it.languageTag == language }
+            ?: TranslationTarget.ENGLISH
         try {
             for (locale in listOf(Locale.JAPAN, Locale.FRANCE)) {
                 Locale.setDefault(locale)
@@ -58,7 +58,7 @@ class MobileOptionsStorageDeviceTest {
         try {
             storage.save(
                 storage.load().copy(
-                    target = LocalTarget.GERMAN,
+                    target = TranslationTarget.GERMAN,
                     uiLanguage = "fr",
                     theme = ThemeChoice.DARK,
                     nearbyEnabled = true,
@@ -68,7 +68,7 @@ class MobileOptionsStorageDeviceTest {
             )
             Locale.setDefault(Locale.JAPAN)
             val options = storage.load()
-            assertEquals(LocalTarget.GERMAN, options.target)
+            assertEquals(TranslationTarget.GERMAN, options.target)
             assertEquals("fr", options.uiLanguage)
             assertEquals(ThemeChoice.DARK, options.theme)
             assertTrue(options.nearbyEnabled)

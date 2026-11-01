@@ -10,13 +10,13 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import xyz.gaon.codeclear.probe.LocalInput
-import xyz.gaon.codeclear.probe.LocalResult
-import xyz.gaon.codeclear.probe.LocalTarget
-import xyz.gaon.codeclear.probe.MlKitLocalEngine
-import xyz.gaon.codeclear.probe.SystemLanguagePair
-import xyz.gaon.codeclear.probe.SystemTranslationSession
-import xyz.gaon.codeclear.probe.systemTranslationBackend
+import xyz.gaon.codeclear.translation.MlKitLocalEngine
+import xyz.gaon.codeclear.translation.SystemLanguagePair
+import xyz.gaon.codeclear.translation.SystemTranslationSession
+import xyz.gaon.codeclear.translation.TranslationInput
+import xyz.gaon.codeclear.translation.TranslationResult
+import xyz.gaon.codeclear.translation.TranslationTarget
+import xyz.gaon.codeclear.translation.systemTranslationBackend
 
 /** Provider probes use constants, never the owner's stored alert text or automatic downloads. */
 class TranslationAvailabilityDeviceTest {
@@ -33,13 +33,13 @@ class TranslationAvailabilityDeviceTest {
         val engine = MlKitLocalEngine()
         val ready = mutableListOf<String>()
         try {
-            for (target in listOf(LocalTarget.JAPANESE, LocalTarget.ENGLISH)) {
+            for (target in listOf(TranslationTarget.JAPANESE, TranslationTarget.ENGLISH)) {
                 if (!installed.containsAll(setOf("ko", target.modelCode) - "en")) continue
-                val result = AtomicReference<LocalResult>()
+                val result = AtomicReference<TranslationResult>()
                 val done = CountDownLatch(1)
                 instrumentation.runOnMainSync {
                     engine.run(
-                        LocalInput(1, "[DRILL] 번역 기능 점검입니다. 안전한 장소로 이동하세요. 112", target),
+                        TranslationInput(1, "[DRILL] 번역 기능 점검입니다. 안전한 장소로 이동하세요. 112", target),
                         false
                     ) {
                         result.set(it)
@@ -47,8 +47,8 @@ class TranslationAvailabilityDeviceTest {
                     }
                 }
                 assertTrue(done.await(55, TimeUnit.SECONDS))
-                assertTrue(result.get() is LocalResult.Ready)
-                assertTrue((result.get() as LocalResult.Ready).text.contains("112"))
+                assertTrue(result.get() is TranslationResult.Ready)
+                assertTrue((result.get() as TranslationResult.Ready).text.contains("112"))
                 ready += target.languageTag
             }
         } finally {

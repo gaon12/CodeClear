@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.translation
 
 import android.os.Build
 import android.os.Bundle
@@ -17,7 +17,8 @@ import org.junit.Test
 class SystemEngineDeviceTest {
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()
     private val owners = mutableListOf<SystemLocalEngine>()
-    private val input = LocalInput(1, "[DRILL] Leave Gate 3. Call 112.", LocalTarget.KOREAN)
+    private val input =
+        TranslationInput(1, "[DRILL] Leave Gate 3. Call 112.", TranslationTarget.KOREAN)
 
     @After
     fun releaseOwnedWorkers() {
@@ -40,7 +41,11 @@ class SystemEngineDeviceTest {
     fun theInstalledProviderEitherTranslatesAPreparedPairOrExplainsItsAbsence() {
         val backend = systemTranslationBackend(instrumentation.targetContext)
         val capabilities = backend.capabilities()
-        val pair = SystemTranslationOperation.selectPair(capabilities, "en", LocalTarget.KOREAN)
+        val pair = SystemTranslationOperation.selectPair(
+            capabilities,
+            "en",
+            TranslationTarget.KOREAN
+        )
         val scripts = ChineseScriptConverter()
         val result = SystemTranslationOperation(backend, scripts::convert).run(input)
         instrumentation.sendStatus(
@@ -54,17 +59,17 @@ class SystemEngineDeviceTest {
         )
         when {
             !backend.supported || capabilities.isEmpty() -> assertEquals(
-                LocalResult.Unavailable,
+                TranslationResult.Unavailable,
                 result
             )
 
-            pair == null -> assertEquals(LocalResult.UnsupportedPair, result)
+            pair == null -> assertEquals(TranslationResult.UnsupportedPair, result)
 
-            !pair.ready -> assertEquals(LocalResult.NeedsModels, result)
+            !pair.ready -> assertEquals(TranslationResult.NeedsModels, result)
 
             else -> {
-                assertTrue(result is LocalResult.Ready)
-                val translated = result as LocalResult.Ready
+                assertTrue(result is TranslationResult.Ready)
+                val translated = result as TranslationResult.Ready
                 assertTrue(translated.text.contains("112"))
                 assertFalse(translated.sameLanguage)
                 assertEquals("en", translated.source)
@@ -76,18 +81,18 @@ class SystemEngineDeviceTest {
     fun backgroundTranslationConvertsChineseAndReturnsOnTheMainThread() {
         val backend = Backend()
         backend.pairs = listOf(SystemLanguagePair("en", "zh", true))
-        val result = AtomicReference<LocalResult>()
+        val result = AtomicReference<TranslationResult>()
         val finished = CountDownLatch(1)
         val engine = owner(backend)
         onMain {
-            engine.run(input.copy(target = LocalTarget.TRADITIONAL_CHINESE), false) {
+            engine.run(input.copy(target = TranslationTarget.TRADITIONAL_CHINESE), false) {
                 check(Looper.myLooper() == Looper.getMainLooper())
                 result.set(it)
                 finished.countDown()
             }
         }
         assertTrue(finished.await(10, TimeUnit.SECONDS))
-        assertEquals(LocalResult.Ready("[演練] 112", "en", false), result.get())
+        assertEquals(TranslationResult.Ready("[演練] 112", "en", false), result.get())
         assertEquals(1, backend.session.closes.get())
     }
 
@@ -102,7 +107,7 @@ class SystemEngineDeviceTest {
         }
         val engine = owner(backend)
         val finished = CountDownLatch(1)
-        val result = AtomicReference<LocalResult>()
+        val result = AtomicReference<TranslationResult>()
         onMain {
             engine.run(input, false) {
                 result.set(it)
@@ -112,7 +117,7 @@ class SystemEngineDeviceTest {
         assertTrue(entered.await(5, TimeUnit.SECONDS))
         onMain { engine.cancel() }
         assertTrue(finished.await(2, TimeUnit.SECONDS))
-        assertEquals(LocalResult.Failed, result.get())
+        assertEquals(TranslationResult.Failed, result.get())
         creation.get().invoke(backend.session)
         assertEquals(1, backend.session.closes.get())
         assertEquals(0, backend.session.requests.get())
@@ -170,7 +175,7 @@ class SystemEngineDeviceTest {
             assertEquals(backend.pairs, engine.availability.pairs)
             assertEquals(
                 SystemTargetSupport(1, 0),
-                engine.availability.targets.getValue(LocalTarget.KOREAN)
+                engine.availability.targets.getValue(TranslationTarget.KOREAN)
             )
         } finally {
             release.countDown()

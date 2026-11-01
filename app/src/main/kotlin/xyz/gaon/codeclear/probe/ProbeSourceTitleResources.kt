@@ -13,6 +13,7 @@ import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 object ProbeSourceTitleResources {
     private val main = Handler(Looper.getMainLooper())
@@ -93,7 +94,7 @@ object ProbeSourceTitleResources {
         val locales = buildSet {
             repeat(minOf(systemLocales.size(), 4)) { add(systemLocales[it]) }
             repeat(minOf(configuration.locales.size(), 4)) { add(configuration.locales[it]) }
-            LocalTarget.entries.forEach { add(Locale.forLanguageTag(it.languageTag)) }
+            TranslationTarget.entries.forEach { add(Locale.forLanguageTag(it.languageTag)) }
         }
         val labels = mutableListOf<Pair<ProbeHeadingKind, String>>()
         for (locale in locales) {

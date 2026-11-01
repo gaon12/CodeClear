@@ -20,8 +20,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import java.util.concurrent.atomic.AtomicBoolean
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 @Composable
 internal fun DetailTargetPicker(alert: SavedAlert, state: MobileState, actions: MobileActions) {
@@ -91,7 +91,7 @@ internal fun DetailTargetPicker(alert: SavedAlert, state: MobileState, actions: 
                             )
                         )
                     }
-                    for (choice in LocalTarget.entries) {
+                    for (choice in TranslationTarget.entries) {
                         val allowed = canTranslateDetailTo(choice, source)
                         RadioChoiceRow(
                             if (source != null && !allowed) {

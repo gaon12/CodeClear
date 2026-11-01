@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.translation
 
 import com.ibm.icu.text.Transliterator
 
@@ -7,9 +7,9 @@ class ChineseScriptConverter {
     private val simplified by lazy { Transliterator.getInstance("Traditional-Simplified") }
     private val traditional by lazy { Transliterator.getInstance("Simplified-Traditional") }
 
-    fun convert(text: String, target: LocalTarget): String = when (target) {
-        LocalTarget.SIMPLIFIED_CHINESE -> simplified.transliterate(text)
-        LocalTarget.TRADITIONAL_CHINESE -> traditional.transliterate(text)
+    fun convert(text: String, target: TranslationTarget): String = when (target) {
+        TranslationTarget.SIMPLIFIED_CHINESE -> simplified.transliterate(text)
+        TranslationTarget.TRADITIONAL_CHINESE -> traditional.transliterate(text)
         else -> text
     }
 }

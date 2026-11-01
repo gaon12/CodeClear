@@ -51,6 +51,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.translation.TranslationInput
+import xyz.gaon.codeclear.translation.TranslationResult
+import xyz.gaon.codeclear.translation.TranslationState
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 @Composable
 internal fun CapturePreview(
@@ -61,7 +65,7 @@ internal fun CapturePreview(
     var destination by rememberSaveable { mutableStateOf(0) }
     var detailId by rememberSaveable { mutableStateOf<Long?>(null) }
     var showConsent by remember { mutableStateOf(false) }
-    var downloadInput by remember { mutableStateOf<LocalInput?>(null) }
+    var downloadInput by remember { mutableStateOf<TranslationInput?>(null) }
     val session = ProbeSession.state
     val selected = if (detailId == null) {
         session.records.lastOrNull()
@@ -76,7 +80,7 @@ internal fun CapturePreview(
     val translation = if (input == ProbeLocalTranslation.input) {
         ProbeLocalTranslation.state
     } else {
-        LocalState.Working
+        TranslationState.Working
     }
     val labels = listOf(R.string.preview_home, R.string.preview_history, R.string.preview_settings)
     val icons =
@@ -228,7 +232,7 @@ private fun PreviewHome(
     environment: ProbeEnvironment,
     session: ProbeSessionState,
     record: ProbeRecord?,
-    translation: LocalState,
+    translation: TranslationState,
     configure: () -> Unit,
     consent: () -> Unit,
     download: () -> Unit,
@@ -446,8 +450,8 @@ private fun headingName(kind: ProbeHeadingKind): String = stringResource(
 
 @Composable
 private fun TranslationText(
-    state: LocalState,
-    input: LocalInput?,
+    state: TranslationState,
+    input: TranslationInput?,
     consent: () -> Unit,
     download: () -> Unit,
     retry: () -> Unit = { input?.let { ProbeLocalTranslation.retry(it) } }
@@ -466,7 +470,7 @@ private fun TranslationText(
 
         input == null -> Text(stringResource(R.string.preview_not_translatable))
 
-        state == LocalState.Working -> {
+        state == TranslationState.Working -> {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -476,8 +480,8 @@ private fun TranslationText(
             }
         }
 
-        state is LocalState.Finished -> when (val result = state.result) {
-            is LocalResult.Ready -> {
+        state is TranslationState.Finished -> when (val result = state.result) {
+            is TranslationResult.Ready -> {
                 if (result.sameLanguage) {
                     Text(
                         stringResource(
@@ -499,7 +503,7 @@ private fun TranslationText(
                 )
             }
 
-            LocalResult.NeedsModels -> {
+            TranslationResult.NeedsModels -> {
                 Text(stringResource(R.string.preview_needs_models))
                 Button(onClick = download) { Text(stringResource(R.string.preview_download)) }
             }
@@ -508,7 +512,7 @@ private fun TranslationText(
                 Text(
                     stringResource(
                         if (result ==
-                            LocalResult.UnknownLanguage
+                            TranslationResult.UnknownLanguage
                         ) {
                             R.string.preview_unknown_language
                         } else {
@@ -607,7 +611,7 @@ private fun TargetPicker() {
             Text(stringResource(R.string.preview_target, targetName(ProbeLocalTranslation.target)))
         }
         DropdownMenu(expanded, onDismissRequest = { expanded = false }) {
-            LocalTarget.entries.forEach { target ->
+            TranslationTarget.entries.forEach { target ->
                 DropdownMenuItem(text = { Text(targetName(target)) }, onClick = {
                     ProbeLocalTranslation.chooseTarget(target)
                     expanded = false
@@ -618,15 +622,15 @@ private fun TargetPicker() {
 }
 
 @Composable
-private fun targetName(target: LocalTarget): String = stringResource(
+private fun targetName(target: TranslationTarget): String = stringResource(
     when (target) {
-        LocalTarget.KOREAN -> R.string.preview_ko
-        LocalTarget.SIMPLIFIED_CHINESE -> R.string.preview_zh_hans
-        LocalTarget.TRADITIONAL_CHINESE -> R.string.preview_zh_hant
-        LocalTarget.JAPANESE -> R.string.preview_ja
-        LocalTarget.ENGLISH -> R.string.preview_en
-        LocalTarget.FRENCH -> R.string.preview_fr
-        LocalTarget.GERMAN -> R.string.preview_de
+        TranslationTarget.KOREAN -> R.string.preview_ko
+        TranslationTarget.SIMPLIFIED_CHINESE -> R.string.preview_zh_hans
+        TranslationTarget.TRADITIONAL_CHINESE -> R.string.preview_zh_hant
+        TranslationTarget.JAPANESE -> R.string.preview_ja
+        TranslationTarget.ENGLISH -> R.string.preview_en
+        TranslationTarget.FRENCH -> R.string.preview_fr
+        TranslationTarget.GERMAN -> R.string.preview_de
     }
 )
 

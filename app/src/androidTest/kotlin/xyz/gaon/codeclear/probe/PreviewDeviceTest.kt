@@ -22,6 +22,9 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.translation.TranslationResult
+import xyz.gaon.codeclear.translation.TranslationState
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 @RunWith(AndroidJUnit4::class)
 class PreviewDeviceTest {
@@ -35,7 +38,7 @@ class PreviewDeviceTest {
             ProbeSession.configure(ProbeRoute.NOTIFICATION, false)
             ProbeSession.configure(ProbeRoute.ACCESSIBILITY, false)
             ProbeLocalTranslation.enable(false)
-            ProbeLocalTranslation.chooseTarget(LocalTarget.ENGLISH)
+            ProbeLocalTranslation.chooseTarget(TranslationTarget.ENGLISH)
             add(1)
         }
     }
@@ -56,7 +59,8 @@ class PreviewDeviceTest {
             .performScrollTo().assertIsDisplayed()
         compose.runOnIdle { ProbeLocalTranslation.enable(true) }
         compose.waitUntil(30_000) {
-            (ProbeLocalTranslation.state as? LocalState.Finished)?.result is LocalResult.Ready
+            val result = (ProbeLocalTranslation.state as? TranslationState.Finished)?.result
+            result is TranslationResult.Ready
         }
         compose.onAllNodesWithText(body(1))[1].performScrollTo().assertIsDisplayed()
         // Capture only this synthetic fixture while both real capture consents are disabled.

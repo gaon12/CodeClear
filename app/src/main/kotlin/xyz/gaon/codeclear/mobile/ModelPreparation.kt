@@ -11,7 +11,7 @@ import com.google.mlkit.nl.translate.TranslateRemoteModel
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
-import xyz.gaon.codeclear.probe.LocalTarget
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 enum class PreparationPhase { IDLE, IDENTIFYING, WAITING_FOR_WIFI, READY, UNKNOWN_LANGUAGE, FAILED }
 
@@ -71,7 +71,7 @@ class ModelPreparation(
 
     fun prepare(
         body: String,
-        target: LocalTarget,
+        target: TranslationTarget,
         approved: Boolean,
         installed: Set<String> = emptySet()
     ) {

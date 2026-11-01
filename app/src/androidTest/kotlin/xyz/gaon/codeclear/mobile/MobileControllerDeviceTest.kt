@@ -15,11 +15,11 @@ import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import xyz.gaon.codeclear.nearby.RelayProtocol
-import xyz.gaon.codeclear.probe.LocalEngine
-import xyz.gaon.codeclear.probe.LocalInput
-import xyz.gaon.codeclear.probe.LocalResult
-import xyz.gaon.codeclear.probe.LocalTarget
+import xyz.gaon.codeclear.translation.TranslationEngine
 import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.TranslationInput
+import xyz.gaon.codeclear.translation.TranslationResult
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 class MobileControllerDeviceTest {
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()
@@ -129,10 +129,10 @@ class MobileControllerDeviceTest {
         await { engine.calls == 1 && it.latest?.id == id }
         onMain {
             controller!!.modelsPrepared()
-            engine.completeWith(LocalResult.NeedsModels)
+            engine.completeWith(TranslationResult.NeedsModels)
         }
         await { engine.calls == 2 }
-        onMain { engine.completeWith(LocalResult.NeedsModels) }
+        onMain { engine.completeWith(TranslationResult.NeedsModels) }
         await { !it.loading && it.latest?.translation?.phase == TranslationPhase.NEEDS_MODELS }
         assertEquals(2, engine.calls)
         onMain { controller!!.modelsPrepared() }
@@ -163,10 +163,10 @@ class MobileControllerDeviceTest {
         await { it.detail?.translation?.phase == TranslationPhase.NEEDS_MODELS }
         onMain { controller!!.modelsPrepared() }
         await { engine.calls == 1 }
-        assertEquals(LocalTarget.JAPANESE, onMain { engine.inputs.single().target })
+        assertEquals(TranslationTarget.JAPANESE, onMain { engine.inputs.single().target })
         onMain { engine.complete("[DRILL] 準備完了 112") }
         await { it.detail?.translation?.phase == TranslationPhase.READY }
-        assertEquals(LocalTarget.ENGLISH, latest.get().options.target)
+        assertEquals(TranslationTarget.ENGLISH, latest.get().options.target)
         assertEquals("Saved English", latest.get().latest?.translation?.text)
         assertEquals(
             TranslationPhase.NEEDS_MODELS,
@@ -208,10 +208,13 @@ class MobileControllerDeviceTest {
         onMain { controller!!.openDetail(id, "en") }
         await { it.detail?.translation?.text == "Saved en" }
         onMain {
-            controller!!.changeOptions(controller!!.state.options.copy(target = LocalTarget.GERMAN))
+            controller!!.changeOptions(
+                controller!!.state.options.copy(target = TranslationTarget.GERMAN)
+            )
         }
         await {
-            it.options.target == LocalTarget.GERMAN && it.latest?.translation?.text == "Saved de" &&
+            it.options.target == TranslationTarget.GERMAN &&
+                it.latest?.translation?.text == "Saved de" &&
                 it.detailTarget == "en" && it.detail?.translation?.text == "Saved en"
         }
         assertEquals(0, onMain { engine.calls })
@@ -231,10 +234,10 @@ class MobileControllerDeviceTest {
         assertEquals(1, onMain { engine.calls })
         onMain { engine.complete("Default English") }
         await { engine.calls == 2 }
-        assertEquals(LocalTarget.GERMAN, onMain { engine.inputs.last().target })
+        assertEquals(TranslationTarget.GERMAN, onMain { engine.inputs.last().target })
         onMain { engine.complete("Selected German") }
         await { it.detail?.translation?.text == "Selected German" }
-        assertEquals(LocalTarget.ENGLISH, latest.get().options.target)
+        assertEquals(TranslationTarget.ENGLISH, latest.get().options.target)
         assertEquals("ko", latest.get().detailSourceLanguage)
         assertEquals("Default English", latest.get().latest?.translation?.text)
     }
@@ -252,7 +255,7 @@ class MobileControllerDeviceTest {
         onMain { controller!!.changeDetailTarget(second, "de", "ko") }
         await { it.detailTarget == "de" && !it.loading }
         assertEquals(0, onMain { engine.calls })
-        assertEquals(LocalTarget.ENGLISH, latest.get().options.target)
+        assertEquals(TranslationTarget.ENGLISH, latest.get().options.target)
         assertFalse(latest.get().options.localConsent)
     }
 
@@ -297,17 +300,21 @@ class MobileControllerDeviceTest {
         await { it.latest?.translation?.text == "English result" }
         assertEquals(1, onMain { engine.calls })
         onMain {
-            controller!!.changeOptions(controller!!.state.options.copy(target = LocalTarget.GERMAN))
+            controller!!.changeOptions(
+                controller!!.state.options.copy(target = TranslationTarget.GERMAN)
+            )
         }
         await { engine.calls == 2 }
         onMain {
-            controller!!.changeOptions(controller!!.state.options.copy(target = LocalTarget.FRENCH))
+            controller!!.changeOptions(
+                controller!!.state.options.copy(target = TranslationTarget.FRENCH)
+            )
         }
         onMain { engine.complete("Stale German") }
         await { engine.calls == 3 }
         onMain { engine.complete("French result") }
         await { it.latest?.translation?.text == "French result" }
-        assertEquals(LocalTarget.FRENCH, latest.get().options.target)
+        assertEquals(TranslationTarget.FRENCH, latest.get().options.target)
     }
 
     @Test
@@ -393,7 +400,7 @@ class MobileControllerDeviceTest {
         val id = store.insert(capture("[DRILL] System retry"))!!
         start(selectedEngine = TranslationEngineKind.SYSTEM)
         await { engine.calls == 1 }
-        onMain { engine.completeWith(LocalResult.Unavailable) }
+        onMain { engine.completeWith(TranslationResult.Unavailable) }
         await { it.latest?.translation?.phase == TranslationPhase.UNAVAILABLE }
         assertEquals(TranslationEngineKind.SYSTEM, latest.get().latest?.translation?.engine)
         onMain {
@@ -406,12 +413,14 @@ class MobileControllerDeviceTest {
             controller!!.retry(id, "en", TranslationEngineKind.SYSTEM)
         }
         await { engine.calls == 2 }
-        onMain { engine.completeWith(LocalResult.UnsupportedPair) }
+        onMain { engine.completeWith(TranslationResult.UnsupportedPair) }
         await { it.latest?.translation?.phase == TranslationPhase.UNSUPPORTED_PAIR }
         onMain { controller!!.retry(id, "en", TranslationEngineKind.SYSTEM) }
         await { engine.calls == 3 }
         onMain {
-            engine.completeWith(LocalResult.Ready("Regional language result", "es-419", false))
+            engine.completeWith(
+                TranslationResult.Ready("Regional language result", "es-419", false)
+            )
         }
         await { it.latest?.translation?.sourceLanguage == "es-419" }
         assertEquals(listOf(TranslationEngineKind.SYSTEM), onMain { noticeEngines.toList() })
@@ -572,7 +581,7 @@ class MobileControllerDeviceTest {
                 private var options =
                     MobileOptions(
                         localConsent = local,
-                        target = LocalTarget.ENGLISH,
+                        target = TranslationTarget.ENGLISH,
                         engine = selectedEngine
                     )
                 override fun load() = options
@@ -621,14 +630,14 @@ class MobileControllerDeviceTest {
         1700000000000
     )
 
-    private class ControlledEngine : LocalEngine {
+    private class ControlledEngine : TranslationEngine {
         @Volatile var calls = 0
-        private var callback: ((LocalResult) -> Unit)? = null
-        val inputs = mutableListOf<LocalInput>()
+        private var callback: ((TranslationResult) -> Unit)? = null
+        val inputs = mutableListOf<TranslationInput>()
         override fun run(
-            input: LocalInput,
+            input: TranslationInput,
             allowModelDownload: Boolean,
-            complete: (LocalResult) -> Unit
+            complete: (TranslationResult) -> Unit
         ) {
             check(callback == null)
             check(!allowModelDownload)
@@ -637,9 +646,9 @@ class MobileControllerDeviceTest {
             callback = complete
         }
         fun complete(text: String, sameLanguage: Boolean = false) {
-            completeWith(LocalResult.Ready(text, "en", sameLanguage))
+            completeWith(TranslationResult.Ready(text, "en", sameLanguage))
         }
-        fun completeWith(result: LocalResult) {
+        fun completeWith(result: TranslationResult) {
             val done = callback!!
             callback = null
             done(result)

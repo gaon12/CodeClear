@@ -1,14 +1,14 @@
 package xyz.gaon.codeclear.mobile
 
 import java.util.concurrent.atomic.AtomicLong
-import xyz.gaon.codeclear.probe.LocalEngine
-import xyz.gaon.codeclear.probe.LocalInput
-import xyz.gaon.codeclear.probe.LocalResult
-import xyz.gaon.codeclear.probe.LocalTarget
+import xyz.gaon.codeclear.translation.TranslationEngine
 import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.TranslationInput
+import xyz.gaon.codeclear.translation.TranslationResult
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 internal data class TranslationSelection(
-    val target: LocalTarget,
+    val target: TranslationTarget,
     val engine: TranslationEngineKind,
     val detailId: Long?,
     val detailTarget: String?
@@ -18,7 +18,7 @@ internal data class TranslationSelection(
 internal class AlertTranslationQueue(
     private val store: AlertHistoryStore,
     private val worker: HistoryWorker,
-    private val engine: LocalEngine,
+    private val engine: TranslationEngine,
     private val selection: () -> TranslationSelection?,
     private val refresh: () -> Unit,
     private val translated: (Long, String, TranslationEngineKind) -> Unit,
@@ -110,16 +110,16 @@ internal class AlertTranslationQueue(
     private fun run(job: Work) {
         active = job
         refresh()
-        val target = LocalTarget.entries.first { it.languageTag == job.ticket.target }
+        val target = TranslationTarget.entries.first { it.languageTag == job.ticket.target }
         // Model preparation is explicit; queue processing never downloads models.
         engineRunning = true
         engine.run(
-            LocalInput(job.ticket.alertId, job.ticket.original, target, job.ticket.engine),
+            TranslationInput(job.ticket.alertId, job.ticket.original, target, job.ticket.engine),
             false
         ) { result ->
             engineRunning = false
             val saved = when (result) {
-                is LocalResult.Ready -> SavedTranslation(
+                is TranslationResult.Ready -> SavedTranslation(
                     TranslationPhase.READY,
                     result.text,
                     result.source,
@@ -127,19 +127,23 @@ internal class AlertTranslationQueue(
                     sameLanguage = result.sameLanguage
                 )
 
-                LocalResult.Quota -> SavedTranslation(TranslationPhase.QUOTA)
+                TranslationResult.Quota -> SavedTranslation(TranslationPhase.QUOTA)
 
-                LocalResult.TooLong -> SavedTranslation(TranslationPhase.TOO_LONG)
+                TranslationResult.TooLong -> SavedTranslation(TranslationPhase.TOO_LONG)
 
-                LocalResult.NeedsModels -> SavedTranslation(TranslationPhase.NEEDS_MODELS)
+                TranslationResult.NeedsModels -> SavedTranslation(TranslationPhase.NEEDS_MODELS)
 
-                LocalResult.UnknownLanguage -> SavedTranslation(TranslationPhase.UNKNOWN_LANGUAGE)
+                TranslationResult.UnknownLanguage -> SavedTranslation(
+                    TranslationPhase.UNKNOWN_LANGUAGE
+                )
 
-                LocalResult.Unavailable -> SavedTranslation(TranslationPhase.UNAVAILABLE)
+                TranslationResult.Unavailable -> SavedTranslation(TranslationPhase.UNAVAILABLE)
 
-                LocalResult.UnsupportedPair -> SavedTranslation(TranslationPhase.UNSUPPORTED_PAIR)
+                TranslationResult.UnsupportedPair -> SavedTranslation(
+                    TranslationPhase.UNSUPPORTED_PAIR
+                )
 
-                LocalResult.Failed -> SavedTranslation(TranslationPhase.FAILED)
+                TranslationResult.Failed -> SavedTranslation(TranslationPhase.FAILED)
             }
             finish(job, saved.copy(engine = job.ticket.engine))
         }

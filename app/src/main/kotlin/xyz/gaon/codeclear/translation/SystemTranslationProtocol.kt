@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.translation
 
 import android.view.translation.TranslationRequest
 import android.view.translation.TranslationRequestValue

@@ -1,4 +1,4 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.translation
 
 import java.util.Locale
 import java.util.concurrent.CountDownLatch
@@ -15,7 +15,7 @@ internal fun Sequence<SystemLanguagePair>.supportedSystemPairs(): List<SystemLan
             Locale.forLanguageTag(it.target).language in systemTargetLanguages
     }.distinct().take(4096).toList()
 
-private val systemTargetLanguages = LocalTarget.entries.map { it.modelCode }.toSet()
+private val systemTargetLanguages = TranslationTarget.entries.map { it.modelCode }.toSet()
 
 interface SystemTranslationSession : AutoCloseable {
     fun translate(body: String, complete: (String?) -> Unit)
@@ -33,7 +33,7 @@ interface SystemTranslationBackend {
 /** One worker owns an operation. Cancellation can be requested from any thread. */
 class SystemTranslationOperation(
     private val backend: SystemTranslationBackend,
-    private val convert: (String, LocalTarget) -> String,
+    private val convert: (String, TranslationTarget) -> String,
     private val creationTimeoutMillis: Long = 10_000,
     private val responseTimeoutMillis: Long = 20_000
 ) {
@@ -49,32 +49,32 @@ class SystemTranslationOperation(
         waiting.get()?.countDown()
     }
 
-    fun run(input: LocalInput): LocalResult {
-        if (cancelled.get()) return LocalResult.Failed
+    fun run(input: TranslationInput): TranslationResult {
+        if (cancelled.get()) return TranslationResult.Failed
         return try {
-            if (!backend.supported) return LocalResult.Unavailable
+            if (!backend.supported) return TranslationResult.Unavailable
             val source = backend.identify(input.body)?.takeIf(::validSystemLanguage)
-                ?: return LocalResult.UnknownLanguage
-            if (cancelled.get()) return LocalResult.Failed
+                ?: return TranslationResult.UnknownLanguage
+            if (cancelled.get()) return TranslationResult.Failed
             val capabilities = backend.capabilities().asSequence().supportedSystemPairs()
-            if (cancelled.get()) return LocalResult.Failed
-            if (capabilities.isEmpty()) return LocalResult.Unavailable
+            if (cancelled.get()) return TranslationResult.Failed
+            if (capabilities.isEmpty()) return TranslationResult.Unavailable
             val sourceLocale = Locale.forLanguageTag(source)
             if (sourceLocale.language == input.target.modelCode) {
                 return ready(input.body, input.target, source, true)
             }
             val pair = selectPair(capabilities, source, input.target)
-                ?: return LocalResult.UnsupportedPair
-            if (!pair.ready) return LocalResult.NeedsModels
-            val session = awaitSession(pair) ?: return LocalResult.Failed
+                ?: return TranslationResult.UnsupportedPair
+            if (!pair.ready) return TranslationResult.NeedsModels
+            val session = awaitSession(pair) ?: return TranslationResult.Failed
             session.use {
-                if (cancelled.get()) return LocalResult.Failed
+                if (cancelled.get()) return TranslationResult.Failed
                 val result = AtomicReference<String?>()
                 val received = AtomicBoolean()
                 val latch = CountDownLatch(1)
                 waiting.set(latch)
                 try {
-                    if (cancelled.get()) return LocalResult.Failed
+                    if (cancelled.get()) return TranslationResult.Failed
                     session.translate(input.body) { text ->
                         if (received.compareAndSet(false, true)) {
                             result.set(text?.takeIf { it.isNotBlank() && it.length <= 16384 })
@@ -84,16 +84,21 @@ class SystemTranslationOperation(
                     if (!latch.await(responseTimeoutMillis, TimeUnit.MILLISECONDS) ||
                         cancelled.get()
                     ) {
-                        return LocalResult.Failed
+                        return TranslationResult.Failed
                     }
-                    ready(result.get() ?: return LocalResult.Failed, input.target, source, false)
+                    ready(
+                        result.get() ?: return TranslationResult.Failed,
+                        input.target,
+                        source,
+                        false
+                    )
                 } finally {
                     waiting.compareAndSet(latch, null)
                 }
             }
         } catch (_: Exception) {
             // Provider and identification exceptions can contain the original; never expose them.
-            LocalResult.Failed
+            TranslationResult.Failed
         }
     }
 
@@ -115,16 +120,20 @@ class SystemTranslationOperation(
 
     private fun ready(
         text: String,
-        target: LocalTarget,
+        target: TranslationTarget,
         source: String,
         sameLanguage: Boolean
-    ): LocalResult {
-        if (cancelled.get() || text.isBlank() || text.length > 16384) return LocalResult.Failed
+    ): TranslationResult {
+        if (cancelled.get() || text.isBlank() ||
+            text.length > 16384
+        ) {
+            return TranslationResult.Failed
+        }
         val converted = convert(text, target)
         return if (cancelled.get() || converted.isBlank() || converted.length > 16384) {
-            LocalResult.Failed
+            TranslationResult.Failed
         } else {
-            LocalResult.Ready(converted, source, sameLanguage)
+            TranslationResult.Ready(converted, source, sameLanguage)
         }
     }
 
@@ -167,7 +176,7 @@ class SystemTranslationOperation(
         internal fun selectPair(
             capabilities: List<SystemLanguagePair>,
             source: String,
-            target: LocalTarget
+            target: TranslationTarget
         ): SystemLanguagePair? {
             val sourceLocale = Locale.forLanguageTag(source)
             val targetScript = Locale.forLanguageTag(target.languageTag).script

@@ -79,15 +79,15 @@ import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.nearby.NearbyState
 import xyz.gaon.codeclear.nearby.NearbyStatus
 import xyz.gaon.codeclear.nearby.RelayProtocol
-import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeRadio
 import xyz.gaon.codeclear.probe.ProbeSessionState
-import xyz.gaon.codeclear.probe.SystemEngineAvailability
-import xyz.gaon.codeclear.probe.SystemLanguagePair
 import xyz.gaon.codeclear.reception.CountryEvidence
 import xyz.gaon.codeclear.reception.ReceptionCountry
+import xyz.gaon.codeclear.translation.SystemEngineAvailability
+import xyz.gaon.codeclear.translation.SystemLanguagePair
 import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 /** Renders synthetic-only state. The real runtime is paused and its history is never modified. */
 class MobileScreenDeviceTest {
@@ -562,7 +562,7 @@ class MobileScreenDeviceTest {
         ).performScrollTo().performClick()
         compose.onNode(hasText("日本語") and isRadioChoice()).performScrollTo().performClick()
         compose.runOnIdle {
-            assertEquals(LocalTarget.JAPANESE, configured.target)
+            assertEquals(TranslationTarget.JAPANESE, configured.target)
             assertTrue(requestedModels.isEmpty())
         }
         compose.onNodeWithTag("model-download-dialog").assertExists()
@@ -1579,7 +1579,10 @@ class MobileScreenDeviceTest {
         compose.runOnIdle {
             state =
                 state.copy(
-                    options = state.options.copy(localConsent = false, target = LocalTarget.KOREAN)
+                    options = state.options.copy(
+                        localConsent = false,
+                        target = TranslationTarget.KOREAN
+                    )
                 )
             systemSupport =
                 SystemEngineAvailability(
@@ -1616,7 +1619,7 @@ class MobileScreenDeviceTest {
     @Test
     fun wrongTargetsStayUnavailableAndSettingsActionsDoNotChangeChoices() {
         compose.runOnIdle {
-            state = state.copy(options = state.options.copy(target = LocalTarget.KOREAN))
+            state = state.copy(options = state.options.copy(target = TranslationTarget.KOREAN))
             systemSupport =
                 SystemEngineAvailability(
                     true,
@@ -1702,7 +1705,7 @@ class MobileScreenDeviceTest {
     @Test
     fun aDisappearingProviderCannotBeConfirmedThroughAnOlderDisclosure() {
         compose.runOnIdle {
-            state = state.copy(options = state.options.copy(target = LocalTarget.KOREAN))
+            state = state.copy(options = state.options.copy(target = TranslationTarget.KOREAN))
             systemSupport =
                 SystemEngineAvailability(
                     true,
@@ -1727,7 +1730,7 @@ class MobileScreenDeviceTest {
     @Test
     fun unpreparedPairsUseProviderSettingsAndTurningOffAlwaysRemainsAvailable() {
         compose.runOnIdle {
-            state = state.copy(options = state.options.copy(target = LocalTarget.KOREAN))
+            state = state.copy(options = state.options.copy(target = TranslationTarget.KOREAN))
             systemSupport =
                 SystemEngineAvailability(
                     true,
@@ -1906,7 +1909,7 @@ class MobileScreenDeviceTest {
         ).performScrollTo().performClick()
         compose.onNode(hasText("Deutsch") and isRadioChoice()).performScrollTo().performClick()
         compose.runOnIdle {
-            assertEquals(xyz.gaon.codeclear.probe.LocalTarget.GERMAN, configured.target)
+            assertEquals(xyz.gaon.codeclear.translation.TranslationTarget.GERMAN, configured.target)
         }
     }
 
@@ -1935,7 +1938,7 @@ class MobileScreenDeviceTest {
         compose.onNodeWithText(text(R.string.mobile_cancel)).assertIsDisplayed()
         compose.onNode(hasText("Deutsch") and isRadioChoice()).performScrollTo().performClick()
         compose.runOnIdle {
-            assertEquals(LocalTarget.GERMAN, configured.target)
+            assertEquals(TranslationTarget.GERMAN, configured.target)
             assertEquals(0, prepared)
         }
     }
@@ -2067,7 +2070,7 @@ class MobileScreenDeviceTest {
             state = state.copy(
                 latest = alert,
                 records = listOf(alert),
-                options = state.options.copy(target = LocalTarget.ENGLISH)
+                options = state.options.copy(target = TranslationTarget.ENGLISH)
             )
             context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }

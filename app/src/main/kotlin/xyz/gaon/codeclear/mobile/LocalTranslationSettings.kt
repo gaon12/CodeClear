@@ -19,10 +19,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.LocalTarget
-import xyz.gaon.codeclear.probe.SystemEngineAvailability
-import xyz.gaon.codeclear.probe.SystemTargetSupport
+import xyz.gaon.codeclear.translation.SystemEngineAvailability
+import xyz.gaon.codeclear.translation.SystemTargetSupport
 import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.TranslationTarget
 
 private data class TranslationChange(val engine: TranslationEngineKind, val enable: Boolean)
 
@@ -302,12 +302,12 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
         }
         ChoiceDialog(
             stringResource(R.string.mobile_target_language),
-            LocalTarget.entries.map { languageName(it.languageTag) },
+            TranslationTarget.entries.map { languageName(it.languageTag) },
             { targetPicker = false },
             selectedIndex = options.target.ordinal
         ) {
             targetPicker = false
-            val selected = LocalTarget.entries[it]
+            val selected = TranslationTarget.entries[it]
             actions.configure(options.copy(target = selected))
             if (options.engine == TranslationEngineKind.ML_KIT && selected.modelCode != "en" &&
                 (
@@ -322,7 +322,7 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
 }
 
 @Composable
-private fun SystemSupportStatus(availability: SystemEngineAvailability, target: LocalTarget) {
+private fun SystemSupportStatus(availability: SystemEngineAvailability, target: TranslationTarget) {
     val support = availability.targets[target] ?: SystemTargetSupport()
     val label = when {
         !availability.loaded || availability.loading -> stringResource(

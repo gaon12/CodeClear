@@ -8,16 +8,13 @@ import java.util.concurrent.atomic.AtomicReference
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import xyz.gaon.codeclear.probe.LocalInput
-import xyz.gaon.codeclear.probe.LocalResult
-import xyz.gaon.codeclear.probe.LocalTarget
 
 class MyMemoryEngineDeviceTest {
     @Test fun unauthorizedAndSameLanguageWorkNeverInitializeTheNetworkClient() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val created = AtomicInteger()
         val completed = CountDownLatch(1)
-        val result = AtomicReference<LocalResult>()
+        val result = AtomicReference<TranslationResult>()
         val owner = AtomicReference<MyMemoryEngine>()
         instrumentation.runOnMainSync {
             owner.set(
@@ -27,23 +24,23 @@ class MyMemoryEngineDeviceTest {
                 })
             )
             owner.get().run(
-                LocalInput(
+                TranslationInput(
                     1,
                     "This is a synthetic English language test.",
-                    LocalTarget.ENGLISH,
+                    TranslationTarget.ENGLISH,
                     TranslationEngineKind.MY_MEMORY
                 ),
                 false
             ) {
-                assertEquals(LocalResult.Unavailable, it)
+                assertEquals(TranslationResult.Unavailable, it)
             }
             assertEquals(0, created.get())
             owner.get().authorize(true)
             owner.get().run(
-                LocalInput(
+                TranslationInput(
                     1,
                     "This is a synthetic English language test.",
-                    LocalTarget.ENGLISH,
+                    TranslationTarget.ENGLISH,
                     TranslationEngineKind.MY_MEMORY
                 ),
                 false
@@ -54,8 +51,8 @@ class MyMemoryEngineDeviceTest {
         }
         try {
             assertTrue(completed.await(20, TimeUnit.SECONDS))
-            assertTrue(result.get() is LocalResult.Ready)
-            assertTrue((result.get() as LocalResult.Ready).sameLanguage)
+            assertTrue(result.get() is TranslationResult.Ready)
+            assertTrue((result.get() as TranslationResult.Ready).sameLanguage)
             assertEquals(0, created.get())
         } finally {
             instrumentation.runOnMainSync { owner.get().close() }
