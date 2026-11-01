@@ -4,6 +4,7 @@ import json
 import re
 import subprocess
 import tempfile
+import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -17,8 +18,12 @@ class ConsentUi:
 
     def focused_package(self):
         # Current focus belongs to DisplayContent, outside the windows-only dump.
-        windows = self.device("shell", "dumpsys", "window")
-        matches = re.findall(r"mCurrentFocus=Window\{[^\n]*?\s([\w.]+)/", windows)
+        for attempt in range(20):
+            windows = self.device("shell", "dumpsys", "window")
+            matches = re.findall(r"mCurrentFocus=Window\{[^\n]*?\s([\w.]+)/", windows)
+            if matches or attempt == 19:
+                break
+            time.sleep(0.25)
         if len(matches) != 1 or matches[0] not in self.permitted:
             raise RuntimeError(
                 "Refusing UI input outside an owned consent window; focused packages: "

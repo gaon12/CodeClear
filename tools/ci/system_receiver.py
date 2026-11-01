@@ -272,17 +272,41 @@ def validate(device, api, cli, serial):
     for package in [
         "com.android.cellbroadcastreceiver",
         "com.android.cellbroadcastreceiver.module",
+        "com.google.android.cellbroadcastreceiver",
     ]:
         if "package:" + package in installed:
             path = device("shell", "pm", "path", package)
+            activity = device(
+                "shell",
+                "cmd",
+                "package",
+                "resolve-activity",
+                "--brief",
+                "-n",
+                package
+                + "/com.android.cellbroadcastreceiver.CellBroadcastListActivity",
+            )
+            print(
+                "Installed receiver profile: "
+                + json.dumps(
+                    {
+                        "package": package,
+                        "path": path,
+                        "activity": activity,
+                    }
+                ),
+                flush=True,
+            )
             _require(
                 path.startswith(
                     ("package:/system/", "package:/product/", "package:/apex/")
                 )
             )
-            candidates.append(package)
+            if package + "/" in activity:
+                candidates.append(package)
     _require(
-        len(candidates) == 1, "Review an ambiguous or missing receiver before injection"
+        len(candidates) == 1,
+        "Review an ambiguous or missing receiver before injection: " + repr(candidates),
     )
     source = candidates[0]
     device(

@@ -81,11 +81,18 @@ class ConsentUiTest(unittest.TestCase):
         ):
             self.ui.layout()
 
-    def test_unknown_focus_prevents_scrolling(self):
+    @patch("tools.ci.consent_ui.time.sleep")
+    def test_unknown_focus_prevents_scrolling(self, sleep):
         self.device.return_value = "mCurrentFocus=null"
         with self.assertRaises(RuntimeError):
             self.ui.scroll()
-        self.assertEqual(1, self.device.call_count)
+        self.assertEqual(20, self.device.call_count)
+
+    @patch("tools.ci.consent_ui.time.sleep")
+    def test_a_temporary_null_focus_can_settle(self, sleep):
+        self.device.side_effect = ["mCurrentFocus=null", self.focus]
+        self.assertEqual("com.android.settings", self.ui.focused_package())
+        sleep.assert_called_once_with(0.25)
 
     def test_focus_reads_the_display_section(self):
         self.assertEqual("com.android.settings", self.ui.focused_package())
