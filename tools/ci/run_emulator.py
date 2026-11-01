@@ -109,7 +109,7 @@ def install_fixture(device, apk):
             time.sleep(2)
 
 
-def guest_diagnostics(device):
+def guest_diagnostics(device, boot_only=False):
     """Keep system-death evidence bounded without printing receiver message text."""
     for parts in [
         ("shell", "cat", "/proc/meminfo"),
@@ -140,6 +140,19 @@ def guest_diagnostics(device):
             print(
                 "Guest diagnostic command unavailable: " + repr(parts[:3]), flush=True
             )
+    if boot_only:
+        # No fixtures or receiver messages exist yet on this disposable guest.
+        # Retain boot failure reasons that cannot be inferred from class names.
+        try:
+            print(
+                "Pre-fixture system failure log: "
+                + device(
+                    "shell", "logcat", "-b", "crash", "-d", "-t", "60", timeout=10
+                )[-8000:],
+                flush=True,
+            )
+        except (subprocess.SubprocessError, OSError, RuntimeError):
+            print("Pre-fixture crash buffer unavailable.", flush=True)
 
 
 def main():
@@ -281,6 +294,7 @@ def main():
             stdout=log,
             stderr=subprocess.STDOUT,
         )
+        fixtures_started = False
         try:
             wait_for_boot(device, process)
             wait_for_package_manager(device, process)
@@ -320,6 +334,7 @@ def main():
                 install_fixture(device, "app/build/outputs/apk/" + apk)
 
             selected = ",".join("xyz.gaon.codeclear." + name for name in FIXTURES)
+            fixtures_started = True
             output = device(
                 "shell",
                 "am",
@@ -351,6 +366,9 @@ def main():
                     f"Passed {expected} software fixtures. This is not CellBroadcast or RF acceptance.",
                     flush=True,
                 )
+            else:
+                # Every selected fixture is synthetic and runs only on this owned AVD.
+                print("Incomplete instrumentation tail: " + output[-6000:], flush=True)
             if args.system_receiver:
                 from system_receiver import validate
 
@@ -372,7 +390,7 @@ def main():
                 "Software fixture failures remain; receiver results are separate evidence",
             )
         except BaseException:
-            guest_diagnostics(device)
+            guest_diagnostics(device, boot_only=not fixtures_started)
             log.flush()
             print("Emulator diagnostic tail:", flush=True)
             for line in (

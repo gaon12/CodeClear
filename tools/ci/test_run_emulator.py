@@ -14,6 +14,20 @@ from tools.ci.run_emulator import (
 
 class GuestDiagnosticsTest(unittest.TestCase):
     @patch("builtins.print")
+    def test_full_boot_reasons_require_the_explicit_pre_fixture_boundary(self, output):
+        device = Mock(return_value="boot-only reason")
+        guest_diagnostics(device)
+        self.assertEqual(3, device.call_count)
+        guest_diagnostics(device, boot_only=True)
+        self.assertEqual(7, device.call_count)
+        self.assertTrue(
+            any(
+                "Pre-fixture system failure log: boot-only reason" in c.args[0]
+                for c in output.call_args_list
+            )
+        )
+
+    @patch("builtins.print")
     def test_a_missing_service_does_not_prevent_other_crash_diagnostics(self, output):
         device = Mock(side_effect=[RuntimeError("offline"), "123", ""])
         guest_diagnostics(device)
