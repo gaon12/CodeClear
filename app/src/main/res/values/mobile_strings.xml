@@ -215,4 +215,13 @@
     <string name="mobile_speech_unavailable">No installed offline voice is available for this language. Add an offline voice in the device text-to-speech settings.</string>
     <string name="mobile_engine_no_pairs">Android exposes no compatible public translation language pairs. An installed translation app may keep its service private. Check provider settings or use ML Kit.</string>
     <string name="mobile_engine_query_failed">Could not query the system translation service. Try again; support has not been confirmed.</string>
+    <string name="mobile_models_title">Language models</string>
+    <string name="mobile_models_refresh">Refresh download status</string>
+    <string name="mobile_models_update_notice">ML Kit does not expose model versions or advance update availability. Check and download installs an update over Wi-Fi when one exists. English is the base language; both Chinese script choices share one model.</string>
+    <string name="mobile_models_installed">Installed · Tap to check for updates</string>
+    <string name="mobile_models_not_installed">Not installed · Tap to download</string>
+    <string name="mobile_models_last_checked">Update checked: %1$s</string>
+    <string name="mobile_models_download">Check and download</string>
+    <string name="mobile_models_update">Check model updates</string>
+    <string name="mobile_models_query_failed">Could not read the model list. Try again.</string>
 </resources>

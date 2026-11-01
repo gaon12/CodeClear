@@ -107,6 +107,11 @@ class MobileScreenDeviceTest {
     private var originalLanguageRequests = 0
     private var speechState by mutableStateOf(SpeechState())
     private val spokenMessages = mutableListOf<Pair<String, String>>()
+    private var inventory by mutableStateOf(
+        ModelInventoryState(loaded = true, downloaded = setOf("ko"))
+    )
+    private var modelPreparation by mutableStateOf(PreparationState())
+    private val requestedModels = mutableListOf<String>()
     private var originalLanguageReply: ((String?) -> Unit)? = null
     private var nearby by mutableStateOf(NearbyState())
     private var nearbyRequests = 0
@@ -301,7 +306,17 @@ class MobileScreenDeviceTest {
                                 spokenMessages.add(body to language)
                                 speechState = SpeechState(SpeechPhase.PLAYING, key)
                             },
-                            stopReading = { speechState = SpeechState() }
+                            stopReading = { speechState = SpeechState() },
+                            modelInventory = inventory,
+                            modelPreparation = modelPreparation,
+                            prepareModel = {
+                                requestedModels.add(it)
+                                modelPreparation =
+                                    PreparationState(
+                                        PreparationPhase.WAITING_FOR_WIFI,
+                                        modelLanguage = it
+                                    )
+                            }
                         )
                     )
                 }
@@ -315,6 +330,57 @@ class MobileScreenDeviceTest {
             context.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
             context.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             scope?.close()
+        }
+    }
+
+    @Test
+    fun modelManagementShowsInstalledStateAndOnlyDownloadsAfterAnExplicitAction() {
+        compose.runOnIdle { inventory = inventory.copy(downloaded = setOf("ko", "es")) }
+        compose.runOnIdle { context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
+        openSettingsPage(SettingsPage.TRANSLATION)
+        compose.onNodeWithTag("settings-detail").performScrollToNode(hasTestTag("model-es"))
+        val spanish = Locale.forLanguageTag(
+            "es"
+        ).getDisplayLanguage(context.resources.configuration.locales[0])
+        compose.onNode(hasText(spanish) and hasAnyAncestor(hasTestTag("model-es"))).performClick()
+        compose.onNodeWithText(text(R.string.mobile_models_update)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+        compose.onNodeWithTag("settings-detail").performScrollToNode(hasTestTag("model-ko"))
+        savePreview("model-management")
+        compose.onNode(hasText("한국어") and hasAnyAncestor(hasTestTag("model-ko"))).performClick()
+        compose.onNodeWithText(text(R.string.mobile_models_update)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+        compose.runOnIdle { assertTrue(requestedModels.isEmpty()) }
+        compose.onNode(hasText("한국어") and hasAnyAncestor(hasTestTag("model-ko"))).performClick()
+        compose.onNodeWithText(text(R.string.mobile_models_download)).performClick()
+        compose.runOnIdle { assertEquals(listOf("ko"), requestedModels) }
+        compose.onNodeWithTag("settings-detail").performScrollToNode(hasTestTag("model-ja"))
+        compose.onNode(
+            hasText("日本語") and hasAnyAncestor(hasTestTag("model-ja"))
+        ).assertIsNotEnabled()
+        compose.runOnIdle {
+            modelPreparation =
+                PreparationState(PreparationPhase.READY, modelLanguage = "ko")
+        }
+        compose.onNode(hasText("日本語") and hasAnyAncestor(hasTestTag("model-ja"))).performClick()
+        compose.onNodeWithText(text(R.string.mobile_prepare)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+    }
+
+    @Test
+    fun tutorialIncludesOptionalModelPreparationWithoutStartingDownloads() {
+        openSettingsPage(SettingsPage.CAPTURE)
+        compose.onNodeWithText(text(R.string.mobile_tutorial)).performScrollTo().performClick()
+        repeat(2) {
+            compose.onNodeWithText(text(R.string.mobile_next)).performScrollTo().performClick()
+        }
+        compose.onNodeWithTag("mobile-feed").performScrollToNode(hasTestTag("model-management"))
+        compose.onNodeWithText(text(R.string.mobile_models_update_notice)).assertIsDisplayed()
+        compose.runOnIdle { assertTrue(requestedModels.isEmpty()) }
+        compose.onNodeWithText(text(R.string.mobile_done)).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertTrue(configured.setupComplete)
+            assertTrue(requestedModels.isEmpty())
         }
     }
 
@@ -1518,7 +1584,7 @@ class MobileScreenDeviceTest {
         compose.onNodeWithText(
             text(R.string.mobile_target_language)
         ).performScrollTo().performClick()
-        compose.onNodeWithText("Deutsch").performScrollTo().performClick()
+        compose.onNode(hasText("Deutsch") and isRadioChoice()).performScrollTo().performClick()
         compose.runOnIdle {
             assertEquals(xyz.gaon.codeclear.probe.LocalTarget.GERMAN, configured.target)
         }

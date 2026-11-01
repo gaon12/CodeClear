@@ -36,56 +36,62 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
     val systemSelectable = availability.loaded && !availability.loading &&
         availability.platformSupported && !availability.queryFailed && support.available
     LaunchedEffect(Unit) { actions.refreshSystem(false) }
-    SettingsGroup {
-        SettingSwitchRow(
-            stringResource(R.string.mobile_auto_translation),
-            stringResource(if (options.localConsent) R.string.mobile_on else R.string.mobile_off),
-            checked = options.localConsent,
-            enabled =
-                options.localConsent || options.engine == LocalEngineKind.ML_KIT ||
-                    systemSelectable,
-            onCheckedChange = { enabled ->
-                if (!enabled) {
-                    actions.configure(options.copy(localConsent = false))
-                } else {
-                    proposal = TranslationChange(options.engine, enable = true)
-                }
-            }
-        )
-        SettingDivider()
-        SettingRow(
-            stringResource(R.string.mobile_target_language),
-            languageName(options.target.languageTag),
-            onClick = { targetPicker = true }
-        )
-        SettingDivider()
-        SettingRow(
-            stringResource(R.string.mobile_engine_title),
-            stringResource(engineLabel(options.engine)),
-            onClick = { enginePicker = true }
-        )
-        SettingNote(
-            stringResource(
-                if (options.engine ==
-                    LocalEngineKind.ML_KIT
-                ) {
-                    R.string.mobile_local_description
-                } else {
-                    R.string.mobile_system_description
-                }
-            )
-        )
-        if (options.engine == LocalEngineKind.SYSTEM) {
-            Column(Modifier.padding(horizontal = 24.dp)) {
-                SystemSupportStatus(availability, options.target)
-            }
-            SettingRow(
-                stringResource(R.string.mobile_system_models_action),
-                onClick = actions.systemSettings,
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        SettingsGroup {
+            SettingSwitchRow(
+                stringResource(R.string.mobile_auto_translation),
+                stringResource(
+                    if (options.localConsent) R.string.mobile_on else R.string.mobile_off
+                ),
+                checked = options.localConsent,
                 enabled =
-                    availability.loaded && !availability.loading && availability.platformSupported
+                    options.localConsent || options.engine == LocalEngineKind.ML_KIT ||
+                        systemSelectable,
+                onCheckedChange = { enabled ->
+                    if (!enabled) {
+                        actions.configure(options.copy(localConsent = false))
+                    } else {
+                        proposal = TranslationChange(options.engine, enable = true)
+                    }
+                }
             )
+            SettingDivider()
+            SettingRow(
+                stringResource(R.string.mobile_target_language),
+                languageName(options.target.languageTag),
+                onClick = { targetPicker = true }
+            )
+            SettingDivider()
+            SettingRow(
+                stringResource(R.string.mobile_engine_title),
+                stringResource(engineLabel(options.engine)),
+                onClick = { enginePicker = true }
+            )
+            SettingNote(
+                stringResource(
+                    if (options.engine ==
+                        LocalEngineKind.ML_KIT
+                    ) {
+                        R.string.mobile_local_description
+                    } else {
+                        R.string.mobile_system_description
+                    }
+                )
+            )
+            if (options.engine == LocalEngineKind.SYSTEM) {
+                Column(Modifier.padding(horizontal = 24.dp)) {
+                    SystemSupportStatus(availability, options.target)
+                }
+                SettingRow(
+                    stringResource(R.string.mobile_system_models_action),
+                    onClick = actions.systemSettings,
+                    enabled =
+                        availability.loaded && !availability.loading &&
+                            availability.platformSupported
+                )
+            }
         }
+        if (options.engine == LocalEngineKind.ML_KIT) ModelManagement(actions)
     }
     if (enginePicker) {
         MobileConfirmationDialog(

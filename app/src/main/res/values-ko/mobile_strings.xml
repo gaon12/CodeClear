@@ -214,4 +214,13 @@
     <string name="mobile_speech_unavailable">이 언어로 읽을 수 있는 오프라인 음성이 없습니다. 기기의 글자 읽어주기 설정에서 음성을 추가해 주세요.</string>
     <string name="mobile_engine_no_pairs">Android에서 앱에 공개하는 번역 언어 쌍이 없습니다. 번역 앱이 설치되어 있어도 외부 앱에는 기능을 제공하지 않을 수 있습니다. 서비스 설정을 확인하거나 ML Kit을 사용해 주세요.</string>
     <string name="mobile_engine_query_failed">시스템 번역 서비스의 지원 언어를 확인하지 못했습니다. 다시 확인해 주세요. 아직 사용 가능 여부가 확인되지 않았습니다.</string>
+    <string name="mobile_models_title">언어 모델</string>
+    <string name="mobile_models_refresh">다운로드 상태 새로고침</string>
+    <string name="mobile_models_update_notice">ML Kit은 모델 버전이나 업데이트 가능 여부를 미리 제공하지 않습니다. 확인 및 다운로드를 누르면 새 모델이 있을 때 Wi-Fi에서 갱신합니다. 영어는 기준 언어이며, 중국어 두 표기는 같은 모델을 사용합니다.</string>
+    <string name="mobile_models_installed">설치됨 · 눌러서 업데이트 확인</string>
+    <string name="mobile_models_not_installed">미설치 · 눌러서 다운로드</string>
+    <string name="mobile_models_last_checked">업데이트 확인: %1$s</string>
+    <string name="mobile_models_download">확인 및 다운로드</string>
+    <string name="mobile_models_update">모델 업데이트 확인</string>
+    <string name="mobile_models_query_failed">모델 목록을 확인하지 못했습니다. 다시 확인해 주세요.</string>
 </resources>

@@ -215,4 +215,13 @@
     <string name="mobile_speech_unavailable">Aucune voix hors ligne installée pour cette langue. Ajoutez une voix dans les paramètres de synthèse vocale de l’appareil.</string>
     <string name="mobile_engine_no_pairs">Android ne fournit aucune paire de langues publique compatible. Une application de traduction installée peut réserver son service à son propre usage. Vérifiez ses paramètres ou utilisez ML Kit.</string>
     <string name="mobile_engine_query_failed">Impossible de consulter les langues prises en charge par le service système. Réessayez ; la compatibilité reste à confirmer.</string>
+    <string name="mobile_models_title">Modèles de langue</string>
+    <string name="mobile_models_refresh">Actualiser les téléchargements</string>
+    <string name="mobile_models_update_notice">ML Kit ne fournit ni version des modèles ni disponibilité préalable des mises à jour. Vérifier et télécharger installe une mise à jour par Wi-Fi si elle existe. L’anglais est la langue de base ; les deux écritures chinoises partagent un modèle.</string>
+    <string name="mobile_models_installed">Installé · Toucher pour vérifier les mises à jour</string>
+    <string name="mobile_models_not_installed">Non installé · Toucher pour télécharger</string>
+    <string name="mobile_models_last_checked">Mise à jour vérifiée : %1$s</string>
+    <string name="mobile_models_download">Vérifier et télécharger</string>
+    <string name="mobile_models_update">Vérifier les mises à jour</string>
+    <string name="mobile_models_query_failed">Impossible de lire la liste des modèles. Réessayez.</string>
 </resources>

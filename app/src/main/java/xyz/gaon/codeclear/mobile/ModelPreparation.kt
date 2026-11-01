@@ -17,7 +17,8 @@ enum class PreparationPhase { IDLE, IDENTIFYING, WAITING_FOR_WIFI, READY, UNKNOW
 
 data class PreparationState(
     val phase: PreparationPhase = PreparationPhase.IDLE,
-    val target: String? = null
+    val target: String? = null,
+    val modelLanguage: String? = null
 )
 
 interface ModelPreparationBackend {
@@ -36,6 +37,22 @@ class ModelPreparation(
     private var generation = 0L
     private var active = false
     private var withdrawn = false
+
+    fun prepareModel(language: String, approved: Boolean): Boolean {
+        check(Looper.myLooper() == Looper.getMainLooper())
+        require(language in managedModelLanguages)
+        if (!approved || active) return false
+        active = true
+        withdrawn = false
+        val ticket = ++generation
+        publish(PreparationState(PreparationPhase.WAITING_FOR_WIFI, modelLanguage = language))
+        backend.download(setOf(language)) { success ->
+            if (ticket == generation) {
+                finish(if (success) PreparationPhase.READY else PreparationPhase.FAILED)
+            }
+        }
+        return true
+    }
 
     fun prepare(body: String, target: LocalTarget, approved: Boolean) {
         check(Looper.myLooper() == Looper.getMainLooper())
@@ -67,10 +84,12 @@ class ModelPreparation(
     /** Withdrawal invalidates UI/work callbacks; ML Kit exposes no download-cancellation contract. */
     fun withdraw() {
         check(Looper.myLooper() == Looper.getMainLooper())
+        // Explicit model management remains independent of the automatic translation choice.
+        if (active && state.modelLanguage != null) return
         // Retain the active slot until its SDK task completes to prevent duplicate downloads.
         withdrawn = true
         if (active) {
-            publish(PreparationState(PreparationPhase.WAITING_FOR_WIFI, state.target))
+            publish(state.copy(phase = PreparationPhase.WAITING_FOR_WIFI))
         } else {
             publish(PreparationState())
         }

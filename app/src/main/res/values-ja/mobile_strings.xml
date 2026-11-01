@@ -214,4 +214,13 @@
     <string name="mobile_speech_unavailable">この言語のオフライン音声がありません。端末のテキスト読み上げ設定で音声を追加してください。</string>
     <string name="mobile_engine_no_pairs">Androidが他のアプリに公開している対応言語の組み合わせがありません。翻訳アプリがあっても機能が非公開の場合があります。サービス設定を確認するか、ML Kitをご利用ください。</string>
     <string name="mobile_engine_query_failed">システム翻訳サービスの対応言語を確認できませんでした。再確認してください。利用可能かどうかは未確認です。</string>
+    <string name="mobile_models_title">言語モデル</string>
+    <string name="mobile_models_refresh">ダウンロード状態を更新</string>
+    <string name="mobile_models_update_notice">ML Kitはモデルのバージョンや更新の有無を事前に公開していません。「確認してダウンロード」で更新があればWi-Fiで取得します。英語は基準言語で、中国語の両表記は同じモデルを使用します。</string>
+    <string name="mobile_models_installed">インストール済み · タップして更新を確認</string>
+    <string name="mobile_models_not_installed">未インストール · タップしてダウンロード</string>
+    <string name="mobile_models_last_checked">更新の確認: %1$s</string>
+    <string name="mobile_models_download">確認してダウンロード</string>
+    <string name="mobile_models_update">モデルの更新を確認</string>
+    <string name="mobile_models_query_failed">モデル一覧を取得できませんでした。再試行してください。</string>
 </resources>

@@ -216,7 +216,11 @@ class MainActivity : AppCompatActivity() {
                                     runtime.speech.speak(key, body, language)
                                 }
                             },
-                            stopReading = runtime.speech::stop
+                            stopReading = runtime.speech::stop,
+                            modelInventory = runtime.modelInventory,
+                            modelPreparation = runtime.preparation,
+                            refreshModels = runtime.inventory::refresh,
+                            prepareModel = { runtime.models.prepareModel(it, approved = true) }
                         )
                     )
                 }

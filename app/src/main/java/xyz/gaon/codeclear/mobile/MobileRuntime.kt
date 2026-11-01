@@ -38,6 +38,9 @@ class MobileRuntime(context: Context) {
         private set
     var preparation by mutableStateOf(PreparationState())
         private set
+    var modelInventory by mutableStateOf(ModelInventoryState())
+        private set
+    val inventory = ModelInventory(MlKitModelInventoryBackend()) { modelInventory = it }
     val detailLanguages = OriginalLanguageIdentifier()
     val speech = SpeechPlayback(context)
     val nearby: NearbySharing = NearbySharing(context, retain = ::retainNearby)
@@ -99,7 +102,11 @@ class MobileRuntime(context: Context) {
     )
     val models =
         ModelPreparation(MlKitModelPreparationBackend(), {
+            inventory.preparationChanged(preparation, it)
             preparation = it
+            if (it.modelLanguage != null && it.phase == PreparationPhase.READY) {
+                controller.modelsPrepared()
+            }
         }, { controller.modelsPrepared(it) })
 
     private fun retainNearby(

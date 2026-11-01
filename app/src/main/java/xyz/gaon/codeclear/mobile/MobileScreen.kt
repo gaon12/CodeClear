@@ -87,7 +87,11 @@ class MobileActions(
     val saveNearby: (String, (Long?) -> Unit) -> Unit = { _, complete -> complete(null) },
     val speechState: SpeechState = SpeechState(),
     val readAloud: (String, String, String) -> Unit = { _, _, _ -> },
-    val stopReading: () -> Unit = {}
+    val stopReading: () -> Unit = {},
+    val modelInventory: ModelInventoryState = ModelInventoryState(),
+    val modelPreparation: PreparationState = PreparationState(),
+    val refreshModels: (Boolean) -> Unit = {},
+    val prepareModel: (String) -> Unit = {}
 )
 
 @Composable
@@ -286,6 +290,7 @@ fun MobileScreen(
                                             )[currentStep]
                                         )
                                     )
+                                    if (currentStep == 2) ModelManagement(actions)
                                     Row {
                                         if (currentStep >
                                             0

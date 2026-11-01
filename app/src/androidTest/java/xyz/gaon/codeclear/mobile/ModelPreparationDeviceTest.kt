@@ -2,6 +2,7 @@ package xyz.gaon.codeclear.mobile
 
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import xyz.gaon.codeclear.probe.LocalTarget
@@ -20,6 +21,28 @@ class ModelPreparationDeviceTest {
             this.languages = languages
             completion = complete
         }
+    }
+
+    @Test
+    fun explicitModelManagementSharesTheSlotWithoutEnablingAutomaticTranslation() = onMain {
+        val backend = Backend()
+        val owner = ModelPreparation(backend, {}, { error("Model inventory has no alert input") })
+        assertFalse(owner.prepareModel("ko", false))
+        assertTrue(owner.prepareModel("ko", true))
+        assertEquals(setOf("ko"), backend.languages)
+        assertFalse(owner.prepareModel("de", true))
+        owner.prepare("[DRILL] Synthetic", LocalTarget.FRENCH, true)
+        assertEquals(0, backend.identifications)
+        owner.withdraw()
+        assertEquals("ko", owner.state.modelLanguage)
+        backend.completion!!(true)
+        assertEquals(PreparationPhase.READY, owner.state.phase)
+        assertTrue(owner.prepareModel("de", true))
+        backend.completion!!(false)
+        assertEquals(PreparationPhase.FAILED, owner.state.phase)
+        assertTrue(owner.prepareModel("es", true))
+        assertEquals(setOf("es"), backend.languages)
+        backend.completion!!(true)
     }
 
     @Test
