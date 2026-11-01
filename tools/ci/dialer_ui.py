@@ -28,7 +28,9 @@ def tap_testing_code(device, ui, package, digits):
         cleared = [
             n for n in ui.layout() if n.get("resource-id") == package + ":id/digits"
         ]
-        if len(cleared) == 1 and not cleared[0].get("text", ""):
+        # The SDK reader omits the platform's showing-hint flag. The owned
+        # English Google dialpad can expose its nonnumeric hint as node text.
+        if len(cleared) == 1 and cleared[0].get("text", "") in {"", "Phone number"}:
             break
         if attempt < 4:
             time.sleep(0.25)

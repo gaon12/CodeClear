@@ -51,6 +51,24 @@ class DialerInputTest(unittest.TestCase):
             any("KEYCODE_CALL" in call.args for call in self.device.call_args_list)
         )
 
+    def test_google_empty_hint_is_not_treated_as_remaining_digits(self):
+        self.ui.focused_package.return_value = "com.google.android.dialer"
+        first = self.google_pad("0")
+        hint = self.google_pad("Phone number")
+        self.ui.layout.side_effect = [first, first, hint, *[hint for _ in range(12)]]
+        enter_testing_code(self.device, self.ui, keypad_controls=True)
+        self.assertEqual(14, self.ui.tap.call_count)
+
+    @patch("tools.ci.dialer_ui.time.sleep")
+    def test_unreviewed_nonnumeric_google_text_does_not_allow_code_entry(self, sleep):
+        self.ui.focused_package.return_value = "com.google.android.dialer"
+        first = self.google_pad("0")
+        other = self.google_pad("Unexpected field")
+        self.ui.layout.side_effect = [first, first, *[other for _ in range(5)]]
+        with self.assertRaisesRegex(RuntimeError, "was not cleared"):
+            enter_testing_code(self.device, self.ui, keypad_controls=True)
+        self.assertEqual(2, self.ui.tap.call_count)
+
     def test_unexpected_google_digits_are_neither_deleted_nor_called(self):
         self.ui.focused_package.return_value = "com.google.android.dialer"
         self.ui.layout.return_value = self.google_pad("123")
