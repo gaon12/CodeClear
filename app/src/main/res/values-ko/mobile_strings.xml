@@ -218,7 +218,6 @@
     <string name="mobile_model_progress_notice">전송량과 백분율은 SDK에서 제공하지 않아 준비가 끝난 모델 수를 표시합니다. 창을 닫아도 준비는 계속됩니다.</string>
     <string name="mobile_model_download_notice">언어 모델은 개당 약 30 MB입니다. Wi-Fi와 저장 공간을 사용하며 창을 닫아도 다운로드가 계속될 수 있습니다. 모델 준비를 위해 재난문자 본문을 업로드하지 않습니다.</string>
     <string name="mobile_model_update_pending">설치됨 · 업데이트 확인 예정</string>
-    <string name="mobile_system_preparation_explanation">시스템 번역 모델은 기기에 설치된 시스템 제공업체가 관리합니다. 제공업체가 공개한 모델 설정 화면이 있으면 열 수 있지만, Android에는 이 모델을 직접 다운로드하는 공통 API가 없습니다. 공개된 지원 언어나 설정 화면이 없다면 ML Kit을 사용해 주세요. 일반 번역 앱을 설치해도 호환되는 시스템 서비스가 추가되는 것은 아닙니다.</string>
     <string name="mobile_accessibility_restart_notice">Android 앱 정보에서 CodeClear를 강제 종료하면 접근성 서비스가 꺼질 수 있습니다. 접근성 설정에서 다시 켜 주세요. 일반 재부팅 후에는 잠금을 풀고 서비스가 다시 연결되는지 확인해 주세요. 앱이 OS 권한을 대신 켤 수는 없습니다.</string>
     <string name="mobile_engine_mymemory">MyMemory</string>
     <string name="mobile_server_permission">MyMemory 번역 허용</string>
@@ -230,4 +229,5 @@
     <string name="mobile_server_terms">제공업체 약관 및 개인정보 처리</string>
     <string name="mobile_server_description">MyMemory · 인터넷 사용 · 별도 허용 필요</string>
     <string name="mobile_server_translation_notice">자동 번역은 부정확할 수 있습니다. 원문과 공식 행동 요령을 함께 확인하세요.</string>
+    <string name="mobile_engine_remote_disabled">%1$s에서 MyMemory 원격 번역을 허용해야 선택할 수 있습니다.</string>
 </resources>

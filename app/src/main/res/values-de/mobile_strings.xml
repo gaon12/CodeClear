@@ -219,7 +219,6 @@
     <string name="mobile_model_progress_notice">Das SDK liefert keine Byte- oder Prozentangaben. Angezeigt werden fertig vorbereitete Modelle. Die Vorbereitung läuft nach dem Schließen weiter.</string>
     <string name="mobile_model_download_notice">Jedes Sprachmodell ist etwa 30 MB groß. Downloads benötigen WLAN und Speicher und können nach dem Schließen weiterlaufen. Zur Modellvorbereitung werden keine Warntexte hochgeladen.</string>
     <string name="mobile_model_update_pending">Installiert · Updateprüfung ausstehend</string>
-    <string name="mobile_system_preparation_explanation">Systemmodelle werden vom installierten Systemanbieter verwaltet. CodeClear kann dessen öffentliche Modelleinstellungen öffnen, sofern vorhanden. Android bietet keine allgemeine Download-API dafür. Ohne öffentliche Sprachpaare oder Einstellungen verwenden Sie ML Kit. Eine normale Übersetzungs-App ergänzt nicht unbedingt einen kompatiblen Systemdienst.</string>
     <string name="mobile_accessibility_restart_notice">Ein erzwungener Stopp in den Android-App-Infos kann den Bedienungshilfedienst deaktivieren. Aktivieren Sie ihn erneut in den Bedienungshilfen. Nach einem normalen Neustart entsperren Sie das Gerät und warten auf die Verbindung. CodeClear kann den OS-Zugriff nicht selbst einschalten.</string>
     <string name="mobile_engine_mymemory">MyMemory</string>
     <string name="mobile_server_permission">MyMemory-Übersetzung erlauben</string>
@@ -231,4 +230,5 @@
     <string name="mobile_server_terms">Anbieterbedingungen und Datenschutz</string>
     <string name="mobile_server_description">MyMemory · Internet · Separate Erlaubnis nötig</string>
     <string name="mobile_server_translation_notice">Automatische Übersetzungen können Fehler enthalten. Beachten Sie die Originalwarnung und offizielle Anweisungen.</string>
+    <string name="mobile_engine_remote_disabled">Erlauben Sie die MyMemory-Onlineübersetzung unter %1$s, um diese Engine auszuwählen.</string>
 </resources>

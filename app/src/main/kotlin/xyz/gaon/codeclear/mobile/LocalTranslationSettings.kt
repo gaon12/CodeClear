@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
@@ -30,12 +31,12 @@ private data class TranslationChange(val engine: TranslationEngineKind, val enab
 fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
     var enginePicker by remember { mutableStateOf(false) }
     var targetPicker by remember { mutableStateOf(false) }
-    var systemPreparation by remember { mutableStateOf(false) }
     var proposal by remember { mutableStateOf<TranslationChange?>(null) }
     val availability = actions.systemAvailability
     val support = availability.targets[options.target] ?: SystemTargetSupport()
     val systemSelectable = availability.loaded && !availability.loading &&
         availability.platformSupported && !availability.queryFailed && support.available
+    val remoteSelectable = options.labsEnabled && options.serverAllowed
     LaunchedEffect(Unit) { actions.refreshSystem(false) }
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         SettingsGroup {
@@ -45,12 +46,11 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                     if (options.translationAllowed) R.string.mobile_on else R.string.mobile_off
                 ),
                 checked = options.translationAllowed,
-                enabled =
-                    options.translationAllowed || options.engine == TranslationEngineKind.ML_KIT ||
-                        (
-                            options.engine == TranslationEngineKind.MY_MEMORY && options.labsEnabled
-                            ) ||
-                        systemSelectable,
+                enabled = options.translationAllowed || when (options.engine) {
+                    TranslationEngineKind.ML_KIT -> true
+                    TranslationEngineKind.SYSTEM -> systemSelectable
+                    TranslationEngineKind.MY_MEMORY -> remoteSelectable
+                },
                 onCheckedChange = { enabled ->
                     if (!enabled) {
                         actions.configure(
@@ -94,12 +94,15 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                 Column(Modifier.padding(horizontal = 24.dp)) {
                     SystemSupportStatus(availability, options.target)
                 }
+            }
+        }
+        if (availability.platformSupported || options.engine == TranslationEngineKind.SYSTEM) {
+            SettingsGroup {
                 SettingRow(
                     stringResource(R.string.mobile_system_models_action),
                     onClick = actions.systemSettings,
-                    enabled =
-                        availability.loaded && !availability.loading &&
-                            availability.platformSupported
+                    enabled = availability.loaded && !availability.loading &&
+                        availability.platformSupported
                 )
             }
         }
@@ -111,7 +114,7 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
             title = { Text(stringResource(R.string.mobile_engine_title)) },
             text = {
                 Column(
-                    Modifier.verticalScroll(rememberScrollState()),
+                    Modifier.verticalScroll(rememberScrollState()).testTag("engine-picker"),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Column(Modifier.selectableGroup()) {
@@ -119,18 +122,18 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                             it != TranslationEngineKind.MY_MEMORY ||
                                 options.labsEnabled
                         }.forEach { engine ->
+                            val selectable = when (engine) {
+                                TranslationEngineKind.ML_KIT -> true
+                                TranslationEngineKind.SYSTEM -> systemSelectable
+                                TranslationEngineKind.MY_MEMORY -> remoteSelectable
+                            }
                             RadioChoiceRow(
                                 stringResource(engineLabel(engine)),
                                 selected = engine == options.engine,
-                                enabled =
-                                    engine != TranslationEngineKind.SYSTEM || !availability.loading,
+                                enabled = selectable,
                                 onClick = {
-                                    enginePicker = false
-                                    if (engine == TranslationEngineKind.SYSTEM &&
-                                        !systemSelectable
-                                    ) {
-                                        systemPreparation = true
-                                    } else if (engine != options.engine) {
+                                    if (selectable && engine != options.engine) {
+                                        enginePicker = false
                                         proposal =
                                             TranslationChange(
                                                 engine,
@@ -141,63 +144,36 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                                     }
                                 }
                             )
+                            if (engine == TranslationEngineKind.SYSTEM) {
+                                SystemSupportStatus(
+                                    availability,
+                                    options.target,
+                                    Modifier.padding(start = 46.dp, bottom = 8.dp)
+                                )
+                            } else if (engine == TranslationEngineKind.MY_MEMORY && !selectable) {
+                                Text(
+                                    stringResource(
+                                        R.string.mobile_engine_remote_disabled,
+                                        stringResource(R.string.mobile_labs)
+                                    ),
+                                    Modifier.padding(start = 46.dp, bottom = 8.dp),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
-                    SystemSupportStatus(availability, options.target)
                     TextButton(onClick = {
                         actions.refreshSystem(true)
                     }, enabled = !availability.loading) {
                         Text(stringResource(R.string.mobile_engine_refresh))
                     }
-                    TextButton(
-                        onClick = actions.systemSettings,
-                        enabled =
-                            availability.loaded && !availability.loading &&
-                                availability.platformSupported
-                    ) { Text(stringResource(R.string.mobile_system_models_action)) }
                 }
             },
             confirmButton = {
                 TextButton(onClick = {
                     enginePicker = false
                 }) { Text(stringResource(R.string.mobile_close)) }
-            }
-        )
-    }
-    if (systemPreparation) {
-        MobileConfirmationDialog(
-            onDismissRequest = {
-                systemPreparation = false
-                enginePicker = true
-            },
-            title = { Text(stringResource(R.string.mobile_engine_system)) },
-            text = {
-                Column(
-                    Modifier.verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    SystemSupportStatus(availability, options.target)
-                    Text(stringResource(R.string.mobile_system_preparation_explanation))
-                    TextButton(onClick = {
-                        actions.refreshSystem(true)
-                    }, enabled = !availability.loading) {
-                        Text(stringResource(R.string.mobile_engine_refresh))
-                    }
-                    TextButton(
-                        onClick = actions.systemSettings,
-                        enabled = availability.platformSupported
-                    ) {
-                        Text(stringResource(R.string.mobile_system_models_action))
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    systemPreparation = false
-                    enginePicker = true
-                }) {
-                    Text(stringResource(R.string.mobile_close))
-                }
             }
         )
     }
@@ -237,7 +213,7 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                         if ((request.engine != TranslationEngineKind.SYSTEM || systemSelectable) &&
                             (
                                 request.engine != TranslationEngineKind.MY_MEMORY ||
-                                    options.labsEnabled
+                                    remoteSelectable
                                 )
                         ) {
                             actions.configure(
@@ -267,7 +243,7 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                         (request.engine != TranslationEngineKind.SYSTEM || systemSelectable) &&
                             (
                                 request.engine != TranslationEngineKind.MY_MEMORY ||
-                                    options.labsEnabled
+                                    remoteSelectable
                                 )
                 ) {
                     Text(
@@ -322,7 +298,11 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
 }
 
 @Composable
-private fun SystemSupportStatus(availability: SystemEngineAvailability, target: TranslationTarget) {
+private fun SystemSupportStatus(
+    availability: SystemEngineAvailability,
+    target: TranslationTarget,
+    modifier: Modifier = Modifier
+) {
     val support = availability.targets[target] ?: SystemTargetSupport()
     val label = when {
         !availability.loaded || availability.loading -> stringResource(
@@ -350,7 +330,7 @@ private fun SystemSupportStatus(availability: SystemEngineAvailability, target: 
             support.unpreparedPairs
         )
     }
-    Text(label, style = MaterialTheme.typography.bodySmall)
+    Text(label, modifier, style = MaterialTheme.typography.bodySmall)
 }
 
 fun engineLabel(engine: TranslationEngineKind): Int = when (engine) {

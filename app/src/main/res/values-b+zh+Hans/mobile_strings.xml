@@ -218,7 +218,6 @@
     <string name="mobile_model_progress_notice">SDK 不提供下载字节数或百分比，因此显示已准备好的模型数量。关闭窗口后仍会继续准备。</string>
     <string name="mobile_model_download_notice">每个语言模型约 30 MB。下载需要 Wi-Fi 和存储空间，关闭窗口后仍可能继续。准备模型时不会上传警报正文。</string>
     <string name="mobile_model_update_pending">已安装 · 等待检查更新</string>
-    <string name="mobile_system_preparation_explanation">系统翻译模型由设备上安装的系统服务提供方管理。如果提供方公开了模型设置，可以打开；Android 没有直接下载这些模型的通用 API。如果没有公开的语言对或设置，请使用 ML Kit。安装普通翻译应用不一定会添加兼容的系统服务。</string>
     <string name="mobile_accessibility_restart_notice">在 Android 应用信息中强行停止 CodeClear 可能会关闭无障碍服务。请到无障碍设置中重新开启。正常重启后，请解锁设备并等待服务重新连接。应用无法代替您开启系统访问权限。</string>
     <string name="mobile_engine_mymemory">MyMemory</string>
     <string name="mobile_server_permission">允许 MyMemory 翻译</string>
@@ -230,4 +229,5 @@
     <string name="mobile_server_terms">提供方条款和隐私政策</string>
     <string name="mobile_server_description">MyMemory · 使用互联网 · 需要单独允许</string>
     <string name="mobile_server_translation_notice">自动翻译可能不准确。请同时查看原始警报和官方指引。</string>
+    <string name="mobile_engine_remote_disabled">请先在%1$s中允许 MyMemory 远程翻译，再选择此引擎。</string>
 </resources>

@@ -35,6 +35,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsOff
@@ -1686,13 +1687,14 @@ class MobileScreenDeviceTest {
         openEnginePicker()
         compose.onNode(
             hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
-        ).assertIsNotSelected()
+        ).assertIsNotSelected().assertIsNotEnabled()
         compose.onNodeWithText(
             text(R.string.mobile_engine_pair_missing, languageName("ko"))
         ).assertIsDisplayed()
         compose.onNodeWithText(
             text(R.string.mobile_engine_refresh)
         ).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.mobile_close)).performClick()
         compose.onNodeWithText(
             text(R.string.mobile_system_models_action)
         ).performScrollTo().performClick()
@@ -1731,7 +1733,7 @@ class MobileScreenDeviceTest {
     }
 
     @Test
-    fun unavailableSystemEngineOpensPreparationHelpWithoutChangingTheEngine() {
+    fun unavailableSystemEngineExplainsItsReasonAndKeepsSettingsOutsideThePicker() {
         compose.runOnIdle {
             systemSupport =
                 SystemEngineAvailability(loaded = true, platformSupported = true)
@@ -1739,10 +1741,13 @@ class MobileScreenDeviceTest {
         openEnginePicker()
         compose.onNode(
             hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
-        ).performClick()
-        compose.onNodeWithText(
-            text(R.string.mobile_system_preparation_explanation)
-        ).assertIsDisplayed()
+        ).assertIsNotEnabled()
+        compose.onNodeWithText(text(R.string.mobile_engine_no_pairs)).assertIsDisplayed()
+        compose.onNode(
+            hasText(text(R.string.mobile_system_models_action)) and
+                hasAnyAncestor(hasTestTag("engine-picker"))
+        ).assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_close)).performClick()
         compose.onNodeWithText(
             text(R.string.mobile_system_models_action)
         ).performScrollTo().performClick()
@@ -1751,10 +1756,33 @@ class MobileScreenDeviceTest {
             assertEquals(1, providerSettingsOpened)
             assertEquals(0, prepared)
         }
-        compose.onNodeWithText(text(R.string.mobile_close)).performClick()
-        compose.onNode(
-            hasText(text(R.string.mobile_engine_mlkit)) and isRadioChoice()
-        ).assertIsSelected()
+    }
+
+    @Test
+    fun disabledRemoteConsentBlocksEngineSelectionAndStaleConfirmation() {
+        compose.runOnIdle {
+            state = state.copy(options = state.options.copy(labsEnabled = true))
+        }
+        openEnginePicker()
+        val remote = hasText(text(R.string.mobile_engine_mymemory)) and isRadioChoice()
+        compose.onNode(remote).assertIsNotEnabled()
+        compose.onNodeWithText(
+            text(R.string.mobile_engine_remote_disabled, text(R.string.mobile_labs))
+        ).assertIsDisplayed()
+        compose.runOnIdle {
+            assertFalse(state.options.serverAllowed)
+            state = state.copy(options = state.options.copy(serverAllowed = true))
+        }
+        compose.onNode(remote).assertIsEnabled().performClick()
+        compose.runOnIdle {
+            state = state.copy(options = state.options.copy(serverAllowed = false))
+        }
+        compose.onNodeWithText(text(R.string.mobile_allow)).assertIsNotEnabled()
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+        compose.runOnIdle {
+            assertEquals(TranslationEngineKind.ML_KIT, state.options.engine)
+            assertFalse(state.options.serverAllowed)
+        }
     }
 
     @Test
