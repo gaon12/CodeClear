@@ -2,7 +2,7 @@
 
 import unittest
 import xml.etree.ElementTree as ET
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from tools.ci.dialer_ui import enter_testing_code
 
@@ -43,3 +43,26 @@ class DialerInputTest(unittest.TestCase):
             ("shell", "input", "keyevent", "KEYCODE_MOVE_END", "KEYCODE_DEL"), keys[:5]
         )
         self.assertNotIn("KEYCODE_CALL", keys)
+
+    @patch("tools.ci.dialer_ui.time.sleep")
+    def test_a_launcher_transition_can_finish_before_the_dialpad_is_read(self, sleep):
+        self.ui.focused_package.side_effect = [
+            RuntimeError("launcher still focused"),
+            "com.android.dialer",
+            "com.android.dialer",
+        ]
+        self.ui.layout.return_value = [
+            ET.Element("node", {"resource-id": "com.android.dialer:id/digits"})
+        ]
+        enter_testing_code(self.device, self.ui)
+        sleep.assert_called_once_with(0.5)
+
+    @patch("tools.ci.dialer_ui.time.sleep")
+    @patch("tools.ci.dialer_ui.time.monotonic", side_effect=[0, 0, 16])
+    def test_an_unrelated_focused_app_never_receives_code_keys(self, monotonic, sleep):
+        self.ui.focused_package.side_effect = RuntimeError("unrelated owner")
+        with self.assertRaisesRegex(RuntimeError, "did not receive focus"):
+            enter_testing_code(self.device, self.ui)
+        self.assertFalse(
+            any("keyevent" in call.args for call in self.device.call_args_list)
+        )

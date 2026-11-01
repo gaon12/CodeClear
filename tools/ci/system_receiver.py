@@ -318,7 +318,6 @@ def validate(device, api, cli, serial, mode):
         "-n",
         source + "/com.android.cellbroadcastreceiver.CellBroadcastListActivity",
     )
-    device("shell", "input", "keyevent", "KEYCODE_HOME")
 
     def saved():
         literals = ",".join("'" + b.replace("'", "''") + "'" for b in BODIES)
@@ -460,7 +459,6 @@ def validate(device, api, cli, serial, mode):
 
     def toggle_mode():
         before = set(mode_entries())
-        device("shell", "input", "keyevent", "KEYCODE_HOME")
         dialer = ConsentUi(
             device, cli, serial, {"com.android.dialer", "com.google.android.dialer"}
         )

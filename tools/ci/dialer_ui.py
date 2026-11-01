@@ -1,17 +1,33 @@
 """Enter the testing code only into the focused, owned system dialpad field."""
 
 import json
+import time
 
 
 def enter_testing_code(device, ui):
     result = device(
-        "shell", "am", "start", "-W", "-a", "android.intent.action.DIAL", "-d", "tel:0"
+        "shell", "am", "start", "-a", "android.intent.action.DIAL", "-d", "tel:0"
     )
-    if "Status: ok" not in result:
-        raise RuntimeError("The normal dialer did not finish starting")
+    if "Error:" in result or not any(
+        marker in result for marker in ["Starting:", "Status: ok"]
+    ):
+        raise RuntimeError("The normal dialer did not accept its launch intent")
     try:
+        deadline = time.monotonic() + 15
+        last_error = None
+        while time.monotonic() < deadline:
+            try:
+                package = ui.focused_package()
+                if package in {"com.android.dialer", "com.google.android.dialer"}:
+                    break
+            except RuntimeError as error:
+                last_error = error
+            time.sleep(0.5)
+        else:
+            raise RuntimeError(
+                "The normal dialer did not receive focus: " + str(last_error)
+            )
         nodes = ui.layout()
-        package = ui.focused_package()
         print(
             "Dialer preparation: "
             + json.dumps(
