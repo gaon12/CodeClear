@@ -228,4 +228,16 @@
     <string name="mobile_required_access_notice">Diese Berechtigungen ermöglichen das Lesen von Warnmeldungen und Benachrichtigungen über fertige Übersetzungen. Erlauben Sie den Zugriff in den Android-Einstellungen und kehren Sie zurück.</string>
     <string name="mobile_notification_permission_reason">Erhalten Sie eine Benachrichtigung, sobald eine Übersetzung fertig ist. Erlauben Sie Benachrichtigungen in Android.</string>
     <string name="mobile_intro_purpose">CodeClear speichert Warnmeldungen auf Ihrem Gerät und übersetzt sie in eine verständliche Sprache. Gespeicherte Nachrichten lassen sich lesen, suchen und vorlesen. Die App ergänzt die ursprüngliche Systemwarnung.</string>
+    <string name="mobile_model_review">Prüfen Sie die benötigten Sprachmodelle.</string>
+    <string name="mobile_model_preparing">Sprachmodelle werden über WLAN vorbereitet…</string>
+    <string name="mobile_model_verifying">Installierte Modelle werden geprüft…</string>
+    <string name="mobile_model_stopped">Vorbereitung beendet. Bereits geladene Modelle bleiben verfügbar.</string>
+    <string name="mobile_model_pack_ready">Bereit</string>
+    <string name="mobile_model_waiting">Warten</string>
+    <string name="mobile_model_size_estimate">Geschätzter verbleibender Download: etwa %1$d MB</string>
+    <string name="mobile_model_source_plan">Die Ausgangssprache wird zuerst erkannt. Der benötigte Download kann sich ändern.</string>
+    <string name="mobile_model_progress_count">Modelle vorbereitet: %1$d/%2$d</string>
+    <string name="mobile_model_progress_notice">Das SDK liefert keine Byte- oder Prozentangaben. Angezeigt werden fertig vorbereitete Modelle. Die Vorbereitung läuft nach dem Schließen weiter.</string>
+    <string name="mobile_model_download_notice">Jedes Sprachmodell ist etwa 30 MB groß. Downloads benötigen WLAN und Speicher und können nach dem Schließen weiterlaufen. Zur Modellvorbereitung werden keine Warntexte hochgeladen.</string>
+    <string name="mobile_model_update_pending">Installiert · Updateprüfung ausstehend</string>
 </resources>

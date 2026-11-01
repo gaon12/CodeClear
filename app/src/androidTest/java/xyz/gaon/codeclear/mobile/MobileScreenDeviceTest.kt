@@ -108,10 +108,11 @@ class MobileScreenDeviceTest {
     private var speechState by mutableStateOf(SpeechState())
     private val spokenMessages = mutableListOf<Pair<String, String>>()
     private var inventory by mutableStateOf(
-        ModelInventoryState(loaded = true, downloaded = setOf("ko"))
+        ModelInventoryState(loaded = true, downloaded = primaryModelLanguages)
     )
     private var modelPreparation by mutableStateOf(PreparationState())
     private val requestedModels = mutableListOf<String>()
+    private var modelDownload by mutableStateOf<ModelDownloadRequest?>(null)
     private var originalLanguageReply: ((String?) -> Unit)? = null
     private var nearby by mutableStateOf(NearbyState())
     private var nearbyRequests = 0
@@ -311,13 +312,52 @@ class MobileScreenDeviceTest {
                             modelInventory = inventory,
                             modelPreparation = modelPreparation,
                             prepareModel = {
-                                requestedModels.add(it)
-                                modelPreparation =
-                                    PreparationState(
-                                        PreparationPhase.WAITING_FOR_WIFI,
-                                        modelLanguage = it
-                                    )
+                                modelDownload = ModelDownloadRequest(setOf(it), checkUpdates = true)
+                            },
+                            modelDownload = modelDownload,
+                            prepareTargetModels = { target, alert ->
+                                val source =
+                                    state.detailSourceLanguage ?: alert?.translation?.sourceLanguage
+                                modelDownload = ModelDownloadRequest(
+                                    (setOfNotNull(source, target.modelCode) - "en"),
+                                    alert?.capture?.original,
+                                    target.takeIf { alert != null },
+                                    sourceKnown = alert == null || source != null
+                                )
+                            },
+                            startModelDownload = {
+                                val request = modelDownload!!
+                                val completed = if (request.checkUpdates) {
+                                    emptySet()
+                                } else {
+                                    inventory.downloaded.intersect(request.languages)
+                                }
+                                requestedModels.addAll(request.languages - completed)
+                                modelPreparation = PreparationState(
+                                    PreparationPhase.WAITING_FOR_WIFI,
+                                    languages = request.languages,
+                                    completedLanguages = completed,
+                                    activeLanguage = (request.languages - completed).firstOrNull(),
+                                    checkUpdates = request.checkUpdates
+                                )
+                                modelDownload =
+                                    request.copy(started = true, body = null, target = null)
+                            },
+                            closeModelDownload = {
+                                modelDownload =
+                                    if (modelPreparation.phase ==
+                                        PreparationPhase.WAITING_FOR_WIFI
+                                    ) {
+                                        modelDownload?.copy(visible = false)
+                                    } else {
+                                        null
+                                    }
+                            },
+                            showModelDownload = {
+                                modelDownload =
+                                    modelDownload?.copy(visible = true)
                             }
+
                         )
                     )
                 }
@@ -422,17 +462,18 @@ class MobileScreenDeviceTest {
             "es"
         ).getDisplayLanguage(context.resources.configuration.locales[0])
         compose.onNode(hasText(spanish) and hasAnyAncestor(hasTestTag("model-es"))).performClick()
-        compose.onNodeWithText(text(R.string.mobile_models_update)).assertIsDisplayed()
+        compose.onNodeWithTag("model-download-dialog").assertExists()
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
         compose.onNodeWithTag("settings-detail").performScrollToNode(hasTestTag("model-ko"))
         savePreview("model-management")
         compose.onNode(hasText("한국어") and hasAnyAncestor(hasTestTag("model-ko"))).performClick()
-        compose.onNodeWithText(text(R.string.mobile_models_update)).assertIsDisplayed()
+        compose.onNodeWithTag("model-download-dialog").assertExists()
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
         compose.runOnIdle { assertTrue(requestedModels.isEmpty()) }
         compose.onNode(hasText("한국어") and hasAnyAncestor(hasTestTag("model-ko"))).performClick()
         compose.onNodeWithText(text(R.string.mobile_models_download)).performClick()
         compose.runOnIdle { assertEquals(listOf("ko"), requestedModels) }
+        compose.onNodeWithTag("model-download-close").performClick()
         compose.onNodeWithTag("settings-detail").performScrollToNode(hasTestTag("model-ja"))
         compose.onNode(
             hasText("日本語") and hasAnyAncestor(hasTestTag("model-ja"))
@@ -444,6 +485,63 @@ class MobileScreenDeviceTest {
         compose.onNode(hasText("日本語") and hasAnyAncestor(hasTestTag("model-ja"))).performClick()
         compose.onNodeWithText(text(R.string.mobile_prepare)).assertIsDisplayed()
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+    }
+
+    @Test
+    fun missingDetailLanguageOpensDownloadReviewAndShowsCompletedPackCounts() {
+        compose.runOnIdle {
+            inventory = inventory.copy(downloaded = setOf("ko"))
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_target_language)
+        ).performScrollTo().performClick()
+        compose.onNode(hasText("日本語") and isRadioChoice()).performScrollTo().performClick()
+        compose.onNodeWithTag("model-download-dialog").assertExists()
+        compose.runOnIdle { assertTrue(requestedModels.isEmpty()) }
+        savePreview("model-download-review", dialog = true)
+        compose.onNodeWithTag("model-download-confirm").performClick()
+        compose.onNodeWithTag("model-download-count").assertTextEquals(
+            context.getString(R.string.mobile_model_progress_count, 1, 2)
+        )
+        compose.runOnIdle { assertEquals(listOf("ja"), requestedModels) }
+        savePreview("model-download-progress", dialog = true)
+        compose.onNodeWithTag("model-download-close").performClick()
+        compose.runOnIdle {
+            inventory = inventory.copy(downloaded = setOf("ko", "ja"))
+            modelPreparation = modelPreparation.copy(
+                phase = PreparationPhase.READY,
+                completedLanguages = setOf("ko", "ja"),
+                activeLanguage = null
+            )
+            modelDownload = modelDownload?.copy(visible = true)
+        }
+        compose.onNodeWithTag(
+            "model-download-status"
+        ).assertTextEquals(text(R.string.mobile_models_ready))
+        compose.onNodeWithTag("model-download-count").assertTextEquals(
+            context.getString(R.string.mobile_model_progress_count, 2, 2)
+        )
+        compose.runOnIdle { assertEquals(listOf("ja"), requestedModels) }
+    }
+
+    @Test
+    fun missingDefaultLanguageCanBeSelectedButDownloadRequiresConfirmation() {
+        compose.runOnIdle { inventory = inventory.copy(downloaded = setOf("ko")) }
+        openSettingsPage(SettingsPage.TRANSLATION)
+        compose.onNodeWithText(
+            text(R.string.mobile_target_language)
+        ).performScrollTo().performClick()
+        compose.onNode(hasText("日本語") and isRadioChoice()).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(LocalTarget.JAPANESE, configured.target)
+            assertTrue(requestedModels.isEmpty())
+        }
+        compose.onNodeWithTag("model-download-dialog").assertExists()
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+        compose.runOnIdle { assertTrue(requestedModels.isEmpty()) }
     }
 
     @Test

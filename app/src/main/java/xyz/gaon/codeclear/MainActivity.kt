@@ -50,7 +50,6 @@ import xyz.gaon.codeclear.probe.ProbeSession
 import xyz.gaon.codeclear.probe.ProbeSourceActions
 
 private data class PendingDeletion(val id: Long?)
-private data class PendingPreparation(val alert: SavedAlert, val target: String)
 
 class MainActivity : AppCompatActivity() {
     private var environment by mutableStateOf<ProbeEnvironment?>(null)
@@ -152,7 +151,6 @@ class MainActivity : AppCompatActivity() {
             MobileTheme(runtime.state.options.theme) {
                 val controller = runtime.controller
                 var deletion by remember { mutableStateOf<PendingDeletion?>(null) }
-                var preparation by remember { mutableStateOf<PendingPreparation?>(null) }
                 environment?.let { current ->
                     MobileScreen(
                         runtime.state,
@@ -177,7 +175,13 @@ class MainActivity : AppCompatActivity() {
                                     ) {
                                         openSystemTranslationSettings()
                                     } else {
-                                        preparation = PendingPreparation(alert, target)
+                                        runtime.requestTargetModels(
+                                            LocalTarget.entries.first {
+                                                it.languageTag ==
+                                                    target
+                                            },
+                                            alert
+                                        )
                                     }
                                 }
                             }, ::openSettings, {
@@ -220,7 +224,12 @@ class MainActivity : AppCompatActivity() {
                             modelInventory = runtime.modelInventory,
                             modelPreparation = runtime.preparation,
                             refreshModels = runtime.inventory::refresh,
-                            prepareModel = { runtime.models.prepareModel(it, approved = true) }
+                            prepareModel = runtime::requestModel,
+                            modelDownload = runtime.modelDownload,
+                            prepareTargetModels = runtime::requestTargetModels,
+                            startModelDownload = runtime::startModelDownload,
+                            closeModelDownload = runtime::closeModelDownload,
+                            showModelDownload = runtime::showModelDownload
                         )
                     )
                 }
@@ -250,45 +259,6 @@ class MainActivity : AppCompatActivity() {
                         dismissButton = {
                             TextButton(onClick = {
                                 deletion = null
-                            }) { Text(stringResource(R.string.mobile_cancel)) }
-                        }
-                    )
-                }
-                preparation?.let { request ->
-                    MobileConfirmationDialog(
-                        onDismissRequest = {
-                            preparation = null
-                        },
-                        title = {
-                            Text(stringResource(R.string.mobile_prepare))
-                        },
-                        text = {
-                            Text(
-                                stringResource(R.string.mobile_model_notice),
-                                Modifier.verticalScroll(rememberScrollState())
-                            )
-                        },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                preparation = null
-                                if (runtime.state.options.localConsent &&
-                                    runtime.state.options.engine == LocalEngineKind.ML_KIT
-                                ) {
-                                    runtime.models.prepare(
-                                        request.alert.capture.original,
-                                        LocalTarget.entries.first {
-                                            it.languageTag ==
-                                                request.target
-                                        },
-                                        true
-                                    )
-                                }
-                            }) { Text(stringResource(R.string.mobile_download_models)) }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = {
-                                preparation =
-                                    null
                             }) { Text(stringResource(R.string.mobile_cancel)) }
                         }
                     )

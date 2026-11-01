@@ -81,12 +81,13 @@ class ModelPreparationDeviceTest {
             ModelPreparation(backend, {}, { error("Withdrawn result must not resume work") })
         owner.prepare("[DRILL] Synthetic", LocalTarget.GERMAN, true)
         backend.identification!!("fr")
-        assertEquals(setOf("fr", "de"), backend.languages)
+        assertEquals(setOf("fr"), backend.languages)
         owner.withdraw()
         owner.prepare("[DRILL] Duplicate", LocalTarget.GERMAN, true)
         assertEquals(1, backend.identifications)
         backend.completion!!(true)
         assertEquals(PreparationPhase.IDLE, owner.state.phase)
+        assertEquals(setOf("fr"), backend.languages)
     }
 
     @Test
@@ -104,6 +105,43 @@ class ModelPreparationDeviceTest {
         assertEquals(PreparationPhase.FAILED, owner.state.phase)
         owner.prepare("Synthetic", LocalTarget.FRENCH, true)
         assertEquals(3, backend.identifications)
+    }
+
+    @Test
+    fun installedPacksAreCountedAndOnlyMissingPacksDownload() = onMain {
+        val backend = Backend()
+        val ready = mutableListOf<String>()
+        val owner = ModelPreparation(backend, {}, ready::add)
+        owner.prepare("Synthetic", LocalTarget.JAPANESE, true, setOf("ko"))
+        backend.identification!!("ko")
+        assertEquals(setOf("ja"), backend.languages)
+        assertEquals(setOf("ko", "ja"), owner.state.languages)
+        assertEquals(setOf("ko"), owner.state.completedLanguages)
+        assertEquals("ja", owner.state.activeLanguage)
+        backend.completion!!(true)
+        assertEquals(setOf("ko", "ja"), owner.state.completedLanguages)
+        assertEquals(listOf("ja"), ready)
+        backend.languages = emptySet()
+        owner.prepare("Synthetic", LocalTarget.JAPANESE, true, setOf("ko", "ja"))
+        backend.identification!!("ko")
+        assertTrue(backend.languages.isEmpty())
+        assertEquals(PreparationPhase.READY, owner.state.phase)
+    }
+
+    @Test
+    fun failedSecondPackRetainsCompletedFirstPackWithoutRetrying() = onMain {
+        val backend = Backend()
+        val owner = ModelPreparation(backend, {}, { error("Incomplete pair") })
+        owner.prepare("Synthetic", LocalTarget.JAPANESE, true)
+        backend.identification!!("ko")
+        assertEquals(setOf("ko"), backend.languages)
+        backend.completion!!(true)
+        assertEquals(setOf("ja"), backend.languages)
+        assertEquals(setOf("ko"), owner.state.completedLanguages)
+        backend.completion!!(false)
+        assertEquals(PreparationPhase.FAILED, owner.state.phase)
+        assertEquals(setOf("ko"), owner.state.completedLanguages)
+        assertFalse(owner.busy)
     }
 
     private fun onMain(block: () -> Unit) =

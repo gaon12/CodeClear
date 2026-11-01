@@ -50,7 +50,7 @@ class ModelInventory(
             return
         }
         val language = current.modelLanguage
-        if (language == null) {
+        if (language == null || !current.checkUpdates) {
             refreshAfterPreparation()
         } else {
             updateFinished(language, current.phase == PreparationPhase.READY)

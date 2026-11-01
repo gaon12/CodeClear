@@ -227,4 +227,16 @@
     <string name="mobile_required_access_notice">緊急速報の読み取りと翻訳完了の通知には、以下の権限が必要です。Androidの設定で許可してから戻ると、利用を続けられます。</string>
     <string name="mobile_notification_permission_reason">翻訳が完了したときに通知します。Androidの設定で通知を許可してください。</string>
     <string name="mobile_intro_purpose">CodeClearは緊急速報の原文を端末に保存し、理解できる言語に翻訳します。保存したメッセージの閲覧、検索、読み上げができます。システムの元の警告を補助するアプリです。</string>
+    <string name="mobile_model_review">必要な言語モデルを確認してください。</string>
+    <string name="mobile_model_preparing">Wi-Fiで言語モデルを準備しています。</string>
+    <string name="mobile_model_verifying">インストール済みのモデルを確認しています。</string>
+    <string name="mobile_model_stopped">準備を中断しました。ダウンロード済みのモデルは保持されます。</string>
+    <string name="mobile_model_pack_ready">準備完了</string>
+    <string name="mobile_model_waiting">待機中</string>
+    <string name="mobile_model_size_estimate">残りのダウンロード容量の目安：約%1$d MB</string>
+    <string name="mobile_model_source_plan">原文の言語を先に確認します。必要な容量は変わる場合があります。</string>
+    <string name="mobile_model_progress_count">モデルの準備：%1$d/%2$d完了</string>
+    <string name="mobile_model_progress_notice">SDKは転送量や割合を提供しないため、準備できたモデル数を表示します。閉じても準備は続きます。</string>
+    <string name="mobile_model_download_notice">モデルは言語ごとに約30 MBです。Wi-Fiとストレージを使用し、閉じてもダウンロードが続く場合があります。モデルの準備で警報本文を送信しません。</string>
+    <string name="mobile_model_update_pending">インストール済み · 更新確認待ち</string>
 </resources>

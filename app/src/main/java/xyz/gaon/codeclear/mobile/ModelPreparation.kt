@@ -18,7 +18,11 @@ enum class PreparationPhase { IDLE, IDENTIFYING, WAITING_FOR_WIFI, READY, UNKNOW
 data class PreparationState(
     val phase: PreparationPhase = PreparationPhase.IDLE,
     val target: String? = null,
-    val modelLanguage: String? = null
+    val modelLanguage: String? = null,
+    val languages: Set<String> = emptySet(),
+    val completedLanguages: Set<String> = emptySet(),
+    val activeLanguage: String? = null,
+    val checkUpdates: Boolean = false
 )
 
 interface ModelPreparationBackend {
@@ -37,24 +41,40 @@ class ModelPreparation(
     private var generation = 0L
     private var active = false
     private var withdrawn = false
+    val busy: Boolean get() = active
 
-    fun prepareModel(language: String, approved: Boolean): Boolean {
+    fun prepareModel(
+        language: String,
+        approved: Boolean,
+        checkUpdates: Boolean = true,
+        installed: Set<String> = emptySet()
+    ): Boolean {
         check(Looper.myLooper() == Looper.getMainLooper())
         require(language in managedModelLanguages)
         if (!approved || active) return false
         active = true
         withdrawn = false
         val ticket = ++generation
-        publish(PreparationState(PreparationPhase.WAITING_FOR_WIFI, modelLanguage = language))
-        backend.download(setOf(language)) { success ->
-            if (ticket == generation) {
-                finish(if (success) PreparationPhase.READY else PreparationPhase.FAILED)
-            }
-        }
+        val complete = if (checkUpdates) emptySet() else installed.intersect(setOf(language))
+        publish(
+            PreparationState(
+                PreparationPhase.WAITING_FOR_WIFI,
+                modelLanguage = language,
+                languages = setOf(language),
+                completedLanguages = complete,
+                checkUpdates = checkUpdates
+            )
+        )
+        downloadNext(listOf(language).filterNot { it in complete }, ticket)
         return true
     }
 
-    fun prepare(body: String, target: LocalTarget, approved: Boolean) {
+    fun prepare(
+        body: String,
+        target: LocalTarget,
+        approved: Boolean,
+        installed: Set<String> = emptySet()
+    ) {
         check(Looper.myLooper() == Looper.getMainLooper())
         if (!approved || active) return
         require(body.isNotBlank() && body.length <= 8192)
@@ -66,17 +86,41 @@ class ModelPreparation(
             if (ticket != generation) return@identify
             if (withdrawn) {
                 finish(PreparationPhase.IDLE)
-            } else if (source == null) {
+            } else if (source == null || (source != "en" && source !in managedModelLanguages)) {
                 finish(PreparationPhase.UNKNOWN_LANGUAGE)
             } else if (source == target.modelCode) {
                 finish(PreparationPhase.READY)
             } else {
-                publish(state.copy(phase = PreparationPhase.WAITING_FOR_WIFI))
-                backend.download(setOf(source, target.modelCode) - "en") { success ->
-                    if (ticket == generation) {
-                        finish(if (success) PreparationPhase.READY else PreparationPhase.FAILED)
-                    }
-                }
+                val required = setOf(source, target.modelCode) - "en"
+                val complete = required.intersect(installed)
+                publish(
+                    state.copy(
+                        phase = PreparationPhase.WAITING_FOR_WIFI,
+                        languages = required,
+                        completedLanguages = complete
+                    )
+                )
+                downloadNext((required - complete).toList(), ticket)
+            }
+        }
+    }
+
+    private fun downloadNext(remaining: List<String>, ticket: Long) {
+        if (ticket != generation) return
+        if (withdrawn) return finish(PreparationPhase.IDLE)
+        val language = remaining.firstOrNull() ?: return finish(PreparationPhase.READY)
+        publish(state.copy(activeLanguage = language))
+        backend.download(setOf(language)) { success ->
+            if (ticket != generation) return@download
+            if (success) {
+                publish(
+                    state.copy(completedLanguages = state.completedLanguages + language)
+                )
+            }
+            when {
+                withdrawn -> finish(PreparationPhase.IDLE)
+                !success -> finish(PreparationPhase.FAILED)
+                else -> downloadNext(remaining.drop(1), ticket)
             }
         }
     }
@@ -97,7 +141,18 @@ class ModelPreparation(
 
     private fun finish(phase: PreparationPhase) {
         active = false
-        publish(state.copy(phase = if (withdrawn) PreparationPhase.IDLE else phase))
+        publish(
+            state.copy(
+                phase = if (withdrawn) PreparationPhase.IDLE else phase,
+                activeLanguage = if (phase ==
+                    PreparationPhase.FAILED
+                ) {
+                    state.activeLanguage
+                } else {
+                    null
+                }
+            )
+        )
         if (!withdrawn && phase == PreparationPhase.READY) state.target?.let(ready)
     }
 

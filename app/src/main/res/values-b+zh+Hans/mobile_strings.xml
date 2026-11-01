@@ -227,4 +227,16 @@
     <string name="mobile_required_access_notice">读取紧急警报和通知翻译结果需要以下权限。请在 Android 设置中允许访问，返回后即可继续使用。</string>
     <string name="mobile_notification_permission_reason">翻译完成时接收通知。请在 Android 设置中允许通知。</string>
     <string name="mobile_intro_purpose">CodeClear 将紧急警报原文保存在设备上，并翻译成您能理解的语言。您可以阅读、搜索或收听已保存的消息。本应用用于辅助系统原始警报。</string>
+    <string name="mobile_model_review">请确认所需的语言模型。</string>
+    <string name="mobile_model_preparing">正在通过 Wi-Fi 准备语言模型…</string>
+    <string name="mobile_model_verifying">正在检查已安装的模型…</string>
+    <string name="mobile_model_stopped">准备已停止。已下载的模型会保留。</string>
+    <string name="mobile_model_pack_ready">已就绪</string>
+    <string name="mobile_model_waiting">等待中</string>
+    <string name="mobile_model_size_estimate">预计剩余下载量：约 %1$d MB</string>
+    <string name="mobile_model_source_plan">将先识别原文语言，所需下载量可能发生变化。</string>
+    <string name="mobile_model_progress_count">模型准备：已完成 %1$d/%2$d</string>
+    <string name="mobile_model_progress_notice">SDK 不提供下载字节数或百分比，因此显示已准备好的模型数量。关闭窗口后仍会继续准备。</string>
+    <string name="mobile_model_download_notice">每个语言模型约 30 MB。下载需要 Wi-Fi 和存储空间，关闭窗口后仍可能继续。准备模型时不会上传警报正文。</string>
+    <string name="mobile_model_update_pending">已安装 · 等待检查更新</string>
 </resources>

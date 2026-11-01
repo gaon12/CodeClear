@@ -228,4 +228,16 @@
     <string name="mobile_required_access_notice">These permissions let the app read emergency alerts and notify you when translations are ready. Allow access in Android settings, then return to continue.</string>
     <string name="mobile_notification_permission_reason">Receive a notification when a translation is ready. Allow notifications in Android settings.</string>
     <string name="mobile_intro_purpose">CodeClear keeps emergency-alert originals on your device and translates them into a language you understand. Read, search or listen to saved messages. It supplements the original system warning.</string>
+    <string name="mobile_model_review">Review the required language models.</string>
+    <string name="mobile_model_preparing">Preparing models over Wi-Fi…</string>
+    <string name="mobile_model_verifying">Checking installed models…</string>
+    <string name="mobile_model_stopped">Preparation stopped. Models already downloaded remain available.</string>
+    <string name="mobile_model_pack_ready">Ready</string>
+    <string name="mobile_model_waiting">Waiting</string>
+    <string name="mobile_model_size_estimate">Estimated remaining download: about %1$d MB</string>
+    <string name="mobile_model_source_plan">The source language is checked first. The required download may change.</string>
+    <string name="mobile_model_progress_count">Models prepared: %1$d/%2$d</string>
+    <string name="mobile_model_progress_notice">The SDK does not expose byte counts or percentages. Completed language models are shown. You can close this window while preparation continues.</string>
+    <string name="mobile_model_download_notice">Each language model is about 30 MB. Downloads use Wi-Fi and storage, and may continue after closing this window. Alert text is not uploaded for model preparation.</string>
+    <string name="mobile_model_update_pending">Installed · Update check pending</string>
 </resources>

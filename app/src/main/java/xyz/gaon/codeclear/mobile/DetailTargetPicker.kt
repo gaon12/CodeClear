@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import java.util.concurrent.atomic.AtomicBoolean
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
 
 @Composable
@@ -63,6 +64,13 @@ internal fun DetailTargetPicker(alert: SavedAlert, state: MobileState, actions: 
         )
     }
     if (open) {
+        LaunchedEffect(Unit) {
+            if (state.options.engine ==
+                LocalEngineKind.ML_KIT
+            ) {
+                actions.refreshModels(true)
+            }
+        }
         MobileConfirmationDialog(
             onDismissRequest = { open = false },
             title = { Text(stringResource(R.string.mobile_target_language)) },
@@ -105,6 +113,21 @@ internal fun DetailTargetPicker(alert: SavedAlert, state: MobileState, actions: 
                                         choice.languageTag,
                                         original
                                     )
+                                    val required = setOf(original, choice.modelCode) - "en"
+                                    if (state.options.engine == LocalEngineKind.ML_KIT &&
+                                        !(
+                                            target == choice.languageTag &&
+                                                alert.translation?.phase == TranslationPhase.READY
+                                            ) &&
+                                        (
+                                            !actions.modelInventory.loaded ||
+                                                !actions.modelInventory.downloaded.containsAll(
+                                                    required
+                                                )
+                                            )
+                                    ) {
+                                        actions.prepareTargetModels(choice, alert)
+                                    }
                                 }
                             }
                         )

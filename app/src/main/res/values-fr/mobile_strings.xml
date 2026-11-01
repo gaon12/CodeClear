@@ -228,4 +228,16 @@
     <string name="mobile_required_access_notice">Ces permissions permettent de lire les alertes et de signaler les traductions prêtes. Autorisez-les dans les paramètres Android, puis revenez pour continuer.</string>
     <string name="mobile_notification_permission_reason">Recevez une notification lorsqu’une traduction est prête. Autorisez les notifications dans Android.</string>
     <string name="mobile_intro_purpose">CodeClear conserve les alertes originales sur votre appareil et les traduit dans une langue que vous comprenez. Vous pouvez lire, rechercher ou écouter les messages enregistrés. L’application complète l’alerte système originale.</string>
+    <string name="mobile_model_review">Vérifiez les modèles de langue nécessaires.</string>
+    <string name="mobile_model_preparing">Préparation des modèles par Wi-Fi…</string>
+    <string name="mobile_model_verifying">Vérification des modèles installés…</string>
+    <string name="mobile_model_stopped">Préparation arrêtée. Les modèles déjà téléchargés sont conservés.</string>
+    <string name="mobile_model_pack_ready">Prêt</string>
+    <string name="mobile_model_waiting">En attente</string>
+    <string name="mobile_model_size_estimate">Téléchargement restant estimé : environ %1$d Mo</string>
+    <string name="mobile_model_source_plan">La langue source est identifiée en premier. Le volume nécessaire peut changer.</string>
+    <string name="mobile_model_progress_count">Modèles préparés : %1$d/%2$d</string>
+    <string name="mobile_model_progress_notice">Le SDK ne fournit ni nombre d’octets ni pourcentage. Le nombre de modèles prêts est affiché. La préparation continue après la fermeture.</string>
+    <string name="mobile_model_download_notice">Chaque modèle fait environ 30 Mo. Le téléchargement utilise le Wi-Fi et du stockage et peut continuer après la fermeture. Aucun texte d’alerte n’est envoyé pour préparer les modèles.</string>
+    <string name="mobile_model_update_pending">Installé · Vérification des mises à jour en attente</string>
 </resources>

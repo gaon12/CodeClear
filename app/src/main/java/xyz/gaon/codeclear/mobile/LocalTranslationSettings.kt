@@ -199,6 +199,13 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
         )
     }
     if (targetPicker) {
+        LaunchedEffect(Unit) {
+            if (options.engine ==
+                LocalEngineKind.ML_KIT
+            ) {
+                actions.refreshModels(true)
+            }
+        }
         ChoiceDialog(
             stringResource(R.string.mobile_target_language),
             LocalTarget.entries.map { languageName(it.languageTag) },
@@ -206,7 +213,16 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
             selectedIndex = options.target.ordinal
         ) {
             targetPicker = false
-            actions.configure(options.copy(target = LocalTarget.entries[it]))
+            val selected = LocalTarget.entries[it]
+            actions.configure(options.copy(target = selected))
+            if (options.engine == LocalEngineKind.ML_KIT && selected.modelCode != "en" &&
+                (
+                    !actions.modelInventory.loaded ||
+                        selected.modelCode !in actions.modelInventory.downloaded
+                    )
+            ) {
+                actions.prepareTargetModels(selected, null)
+            }
         }
     }
 }

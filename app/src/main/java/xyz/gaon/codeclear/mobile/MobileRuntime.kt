@@ -10,6 +10,7 @@ import android.os.Looper
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.google.mlkit.nl.translate.TranslateLanguage
 import xyz.gaon.codeclear.BuildConfig
 import xyz.gaon.codeclear.nearby.NearbyBackgroundService
 import xyz.gaon.codeclear.nearby.NearbySharing
@@ -41,6 +42,8 @@ class MobileRuntime(context: Context) {
     var modelInventory by mutableStateOf(ModelInventoryState())
         private set
     val inventory = ModelInventory(MlKitModelInventoryBackend(), ::updateInventory)
+    var modelDownload by mutableStateOf<ModelDownloadRequest?>(null)
+        private set
     val detailLanguages = OriginalLanguageIdentifier()
     val speech = SpeechPlayback(context)
     val nearby: NearbySharing = NearbySharing(context, retain = ::retainNearby)
@@ -115,6 +118,70 @@ class MobileRuntime(context: Context) {
             (!modelInventory.loaded || value.downloaded != modelInventory.downloaded)
         modelInventory = value
         if (modelsChanged && state.loaded) controller.modelsPrepared()
+    }
+
+    fun requestModel(language: String) {
+        check(Looper.myLooper() == Looper.getMainLooper())
+        require(language in managedModelLanguages)
+        if (models.busy) return showModelDownload()
+        modelDownload = ModelDownloadRequest(setOf(language), checkUpdates = true)
+        inventory.refresh(force = true)
+    }
+
+    fun requestTargetModels(target: xyz.gaon.codeclear.probe.LocalTarget, alert: SavedAlert?) {
+        check(Looper.myLooper() == Looper.getMainLooper())
+        if (models.busy) return showModelDownload()
+        if (alert == null) {
+            if (target.modelCode == "en") return
+            modelDownload = ModelDownloadRequest(setOf(target.modelCode))
+        } else {
+            val saved = state.detailSourceLanguage.takeIf { state.detailId == alert.id }
+                ?: alert.translation?.sourceLanguage
+            val source = saved?.let(TranslateLanguage::fromLanguageTag)
+            val languages = if (source == target.modelCode) {
+                emptySet()
+            } else {
+                setOfNotNull(source, target.modelCode) - "en"
+            }
+            modelDownload = ModelDownloadRequest(
+                languages,
+                alert.capture.original,
+                target,
+                sourceKnown = source != null
+            )
+        }
+        inventory.refresh(force = true)
+    }
+
+    fun showModelDownload() {
+        check(Looper.myLooper() == Looper.getMainLooper())
+        modelDownload = modelDownload?.copy(visible = true) ?: ModelDownloadRequest(
+            preparation.languages,
+            started =
+                models.busy || preparation.phase != PreparationPhase.IDLE
+        )
+    }
+
+    fun closeModelDownload() {
+        check(Looper.myLooper() == Looper.getMainLooper())
+        modelDownload = if (models.busy) modelDownload?.copy(visible = false) else null
+    }
+
+    fun startModelDownload() {
+        check(Looper.myLooper() == Looper.getMainLooper())
+        val request = modelDownload ?: return
+        if (request.started || models.busy || !modelInventory.loaded || modelInventory.checking ||
+            modelInventory.failed
+        ) {
+            return
+        }
+        modelDownload = request.copy(started = true, body = null, target = null)
+        if (request.body != null) {
+            models.prepare(request.body, request.target!!, true, modelInventory.downloaded)
+        } else {
+            val language = request.languages.singleOrNull() ?: return closeModelDownload()
+            models.prepareModel(language, true, request.checkUpdates, modelInventory.downloaded)
+        }
     }
 
     private fun retainNearby(

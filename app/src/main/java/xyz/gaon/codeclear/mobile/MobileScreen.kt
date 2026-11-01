@@ -91,7 +91,15 @@ class MobileActions(
     val modelInventory: ModelInventoryState = ModelInventoryState(),
     val modelPreparation: PreparationState = PreparationState(),
     val refreshModels: (Boolean) -> Unit = {},
-    val prepareModel: (String) -> Unit = {}
+    val prepareModel: (String) -> Unit = {},
+    val modelDownload: ModelDownloadRequest? = null,
+    val prepareTargetModels: (
+        xyz.gaon.codeclear.probe.LocalTarget,
+        SavedAlert?
+    ) -> Unit = { _, _ -> },
+    val startModelDownload: () -> Unit = {},
+    val closeModelDownload: () -> Unit = {},
+    val showModelDownload: () -> Unit = {}
 )
 
 @Composable
@@ -693,6 +701,9 @@ fun MobileScreen(
                     }
                 }
             }
+        }
+        actions.modelDownload?.takeIf { it.visible && (!restoreAccess || showTutorial) }?.let {
+            ModelDownloadDialog(it, actions)
         }
     }
 }
