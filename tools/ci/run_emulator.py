@@ -311,6 +311,9 @@ def main():
                 "2",
                 "-gpu",
                 "swiftshader",
+                # Use GLES for this app's UI while investigating newer guest
+                # compositor crashes; the tested app does not require Vulkan.
+                *(["-feature", "-Vulkan"] if args.api >= 37 else []),
                 "-no-window",
                 "-no-audio",
                 "-no-snapshot",
