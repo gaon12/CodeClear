@@ -1,6 +1,7 @@
 package xyz.gaon.codeclear.mobile
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -17,8 +18,18 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -32,12 +43,26 @@ internal fun AlertDetailDialog(
     actions: MobileActions,
     openDetails: () -> Unit
 ) {
+    var frame by remember { mutableStateOf<LayoutCoordinates?>(null) }
+    var cardBounds by remember { mutableStateOf(Rect.Zero) }
+    val dismiss by rememberUpdatedState({ actions.detail(null) })
     BackHandler { actions.detail(null) }
     Dialog(onDismissRequest = {
         actions.detail(null)
     }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         BoxWithConstraints(
-            Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp),
+            Modifier.fillMaxSize().testTag("alert-modal-backdrop")
+                .onGloballyPositioned { frame = it }
+                .pointerInput(Unit) {
+                    detectTapGestures { position ->
+                        val coordinates = frame?.takeIf { it.isAttached }
+                        if (coordinates != null && cardBounds != Rect.Zero &&
+                            !cardBounds.contains(coordinates.localToRoot(position))
+                        ) {
+                            dismiss()
+                        }
+                    }
+                }.safeDrawingPadding().padding(24.dp),
             contentAlignment = Alignment.Center
         ) {
             Surface(
@@ -51,7 +76,8 @@ internal fun AlertDetailDialog(
                         } else {
                             0.78f
                         }
-                    ).testTag("alert-modal-card")
+                    ).onGloballyPositioned { cardBounds = it.boundsInRoot() }
+                    .testTag("alert-modal-card")
             ) {
                 Column(Modifier.padding(12.dp)) {
                     Column(

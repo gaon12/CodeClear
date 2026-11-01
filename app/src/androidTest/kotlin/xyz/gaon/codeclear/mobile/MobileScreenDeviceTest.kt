@@ -741,6 +741,13 @@ class MobileScreenDeviceTest {
         compose.onNodeWithTag("delete-alert").assertDoesNotExist()
         compose.onNodeWithTag("alert-metadata").assertDoesNotExist()
         savePreview("compact-alert-modal", dialog = true)
+        compose.onNodeWithTag("alert-modal-card").performTouchInput { click(center) }
+        compose.onNodeWithTag("alert-modal-card").assertIsDisplayed()
+        compose.onNodeWithTag("alert-modal-backdrop").performTouchInput {
+            click(Offset(2f, 2f))
+        }
+        compose.onNodeWithTag("alert-modal-card").assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_details)).performClick()
         compose.onNodeWithTag("alert-modal-details").performClick()
         compose.onNodeWithTag("history-detail").assertIsDisplayed()
         compose.onNodeWithTag("delete-alert").performScrollTo().assertIsDisplayed()
