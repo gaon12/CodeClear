@@ -337,6 +337,48 @@ def validate(device, api, cli, serial):
             if expected <= saved():
                 return
             time.sleep(0.5)
+        absent = expected - saved()
+        missing = [index + 1 for index, body in enumerate(BODIES) if body in absent]
+        print("Missing synthetic original indices: " + repr(missing), flush=True)
+        print(
+            device(
+                "shell",
+                "dumpsys",
+                "activity",
+                "service",
+                APP + "/.probe.ProbeNotificationListener",
+            )[:12000],
+            flush=True,
+        )
+        # Inspect only owned AVD logs; expose counts and known serials, never log text.
+        logs = device("shell", "logcat", "-d", "-b", "all", "-t", "3000", "-v", "brief")
+        serials = re.findall(
+            r"(?:serialNumber|mSerialNumber|serial number)\s*[:=]\s*(0x[0-9a-fA-F]+|\d+)",
+            logs,
+        )
+        known = {0x5101 + index * 0x10: index + 1 for index in range(len(BODIES))}
+        seen = [
+            known[value]
+            for text in serials
+            if (value := int(text, 16 if text.startswith("0x") else 10)) in known
+        ]
+        print("System pipeline fixture serial indices: " + repr(seen[-40:]), flush=True)
+        print(
+            "System pipeline event counts: "
+            + json.dumps(
+                {
+                    phrase: logs.count(phrase)
+                    for phrase in [
+                        "TEST_TRIGGER_CELL_BROADCAST",
+                        "Not a duplicate message",
+                        "Duplicate message detected",
+                        "Broadcast the message directly",
+                        "Requesting location for geo-fencing",
+                    ]
+                }
+            ),
+            flush=True,
+        )
         raise AssertionError(
             "The complete expected synthetic original set was not recovered"
         )
@@ -351,17 +393,6 @@ def validate(device, api, cli, serial):
             absent = expected - saved()
             missing = [index + 1 for index, body in enumerate(BODIES) if body in absent]
             incomplete_sets.append(missing)
-            print("Missing synthetic original indices: " + repr(missing), flush=True)
-            print(
-                device(
-                    "shell",
-                    "dumpsys",
-                    "activity",
-                    "service",
-                    APP + "/.probe.ProbeNotificationListener",
-                )[:12000],
-                flush=True,
-            )
             return False
 
     def inject(body, sequence):
@@ -492,11 +523,11 @@ def validate(device, api, cli, serial):
         flush=True,
     )
     inject(BODIES[3], 0x5131)
-    wait_for({BODIES[3]})
-    print(
-        "Explicit mode OFF: a fresh exact original was captured without a source action.",
-        flush=True,
-    )
+    if check_complete_set({BODIES[3]}):
+        print(
+            "Explicit mode OFF: a fresh exact original was captured without a source action.",
+            flush=True,
+        )
     _require(toggle_mode() is True)
     try:
         print(
@@ -504,7 +535,11 @@ def validate(device, api, cli, serial):
             flush=True,
         )
         inject(BODIES[4], 0x5141)
-        wait_for({BODIES[4]})
+        if check_complete_set({BODIES[4]}):
+            print(
+                "Explicit mode ON: a fresh exact original was captured automatically.",
+                flush=True,
+            )
         device("shell", "input", "keyevent", "KEYCODE_HOME")
         inject(BODIES[5], 0x5151)
         inject(BODIES[6], 0x5161)

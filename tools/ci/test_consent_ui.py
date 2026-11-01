@@ -11,15 +11,19 @@ from tools.ci.consent_ui import ConsentUi
 
 class ConsentUiTest(unittest.TestCase):
     def setUp(self):
-        self.focus = "mCurrentFocus=Window{abc u0 com.android.settings/.Settings}"
+        self.focus = (
+            "mCurrentFocus=Window{abc u0 Friendly confirmation title}\n"
+            "  Window #0 Window{abc u0 Friendly confirmation title}:\n"
+            "    mOwnerUid=1000 showForAllUsers=false package=com.android.settings appop=NONE\n"
+        )
         self.device = Mock(return_value=self.focus)
         self.ui = ConsentUi(
             self.device, "android", "emulator-5554", {"com.android.settings"}
         )
 
     def test_a_source_warning_cannot_be_tapped(self):
-        self.device.return_value = (
-            "mCurrentFocus=Window{abc u0 com.android.cellbroadcastreceiver/.Alert}"
+        self.device.return_value = self.focus.replace(
+            "package=com.android.settings", "package=com.android.cellbroadcastreceiver"
         )
         with self.assertRaisesRegex(RuntimeError, "outside an owned"):
             self.ui.tap(ET.Element("node", package="com.android.settings"))
@@ -99,5 +103,14 @@ class ConsentUiTest(unittest.TestCase):
         self.device.assert_called_once_with("shell", "dumpsys", "window")
 
     def test_a_settings_confirmation_can_use_a_package_only_window_title(self):
-        self.device.return_value = "mCurrentFocus=Window{abc u0 com.android.settings}"
+        self.device.return_value = self.focus.replace(
+            "Friendly confirmation title", "com.android.settings"
+        )
         self.assertEqual("com.android.settings", self.ui.focused_package())
+
+    def test_an_unrelated_window_cannot_claim_a_permitted_owner_in_its_title(self):
+        self.device.return_value = self.focus.replace(
+            "Friendly confirmation title", "com.android.settings/.Settings"
+        ).replace("package=com.android.settings", "package=other.package")
+        with self.assertRaisesRegex(RuntimeError, "outside an owned"):
+            self.ui.focused_package()
