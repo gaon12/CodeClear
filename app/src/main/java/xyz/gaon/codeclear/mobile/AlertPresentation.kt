@@ -62,7 +62,8 @@ fun AlertPresentation(
     details: (() -> Unit)? = null,
     engine: LocalEngineKind = alert.translation?.engine ?: LocalEngineKind.ML_KIT,
     viewMode: MessageViewMode = MessageViewMode.BOTH,
-    compact: Boolean = false
+    compact: Boolean = false,
+    speechActions: MobileActions? = null
 ) {
     val translatedReady = alert.translation?.phase == TranslationPhase.READY &&
         !alert.translation.text.isNullOrBlank() && !alert.translation.sameLanguage
@@ -196,7 +197,18 @@ fun AlertPresentation(
                     MessagePanel(
                         stringResource(R.string.mobile_original),
                         alert.capture.original,
-                        headerActions = switchAction
+                        headerActions = {
+                            switchAction()
+                            speechActions?.let {
+                                SpeechAction(
+                                    "${alert.id}:$target:original",
+                                    alert.capture.original,
+                                    alert.translation?.sourceLanguage,
+                                    "speech-original",
+                                    it
+                                )
+                            }
+                        }
                     )
                 }
                 val translated: @Composable () -> Unit = {
@@ -212,7 +224,20 @@ fun AlertPresentation(
                                     )
                                 ),
                             translated = !compact,
-                            headerActions = switchAction
+                            headerActions = {
+                                switchAction()
+                                if (translatedReady) {
+                                    speechActions?.let {
+                                        SpeechAction(
+                                            "${alert.id}:$target:translation",
+                                            alert.translation!!.text!!,
+                                            target,
+                                            "speech-translation",
+                                            it
+                                        )
+                                    }
+                                }
+                            }
                         )
                         alert.translation?.takeIf {
                             it.phase == TranslationPhase.READY && !compact &&

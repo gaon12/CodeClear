@@ -105,6 +105,8 @@ class MobileScreenDeviceTest {
     private var settingsOpened = 0
     private var lastSettingsAction = ""
     private var originalLanguageRequests = 0
+    private var speechState by mutableStateOf(SpeechState())
+    private val spokenMessages = mutableListOf<Pair<String, String>>()
     private var originalLanguageReply: ((String?) -> Unit)? = null
     private var nearby by mutableStateOf(NearbyState())
     private var nearbyRequests = 0
@@ -293,7 +295,13 @@ class MobileScreenDeviceTest {
                                 state = state.copy(records = listOf(saved) + state.records)
                                 nearby = nearby.copy(originals = emptyList())
                                 complete(saved.id)
-                            }
+                            },
+                            speechState = speechState,
+                            readAloud = { key, body, language ->
+                                spokenMessages.add(body to language)
+                                speechState = SpeechState(SpeechPhase.PLAYING, key)
+                            },
+                            stopReading = { speechState = SpeechState() }
                         )
                     )
                 }
@@ -307,6 +315,46 @@ class MobileScreenDeviceTest {
             context.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
             context.window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             scope?.close()
+        }
+    }
+
+    @Test
+    fun speechReadsTheDisplayedMessageAndStopsWhenSwitchingOrLeaving() {
+        compose.runOnIdle {
+            state =
+                state.copy(options = state.options.copy(messageViewMode = MessageViewMode.SWITCH))
+        }
+        compose.onNodeWithTag("mobile-feed").performScrollToNode(hasTestTag("speech-translation"))
+        compose.onNodeWithTag("speech-translation").performClick()
+        compose.runOnIdle {
+            assertEquals(state.latest!!.translation!!.text to "ko", spokenMessages.last())
+            assertEquals(SpeechPhase.PLAYING, speechState.phase)
+        }
+        compose.onNodeWithTag("switch-message").performClick()
+        compose.runOnIdle { assertEquals(SpeechPhase.IDLE, speechState.phase) }
+        compose.onNodeWithTag("speech-original").performClick()
+        compose.runOnIdle {
+            assertEquals(state.latest!!.capture.original to "ko", spokenMessages.last())
+        }
+        compose.onNodeWithTag("destination-2").performClick()
+        compose.runOnIdle { assertEquals(SpeechPhase.IDLE, speechState.phase) }
+    }
+
+    @Test
+    fun abandonedOriginalLanguageIdentificationCannotStartSpeech() {
+        compose.runOnIdle {
+            state = state.copy(
+                latest = state.latest!!.copy(translation = null),
+                options = state.options.copy(messageViewMode = MessageViewMode.SWITCH)
+            )
+        }
+        compose.onNodeWithTag("mobile-feed").performScrollToNode(hasTestTag("speech-original"))
+        compose.onNodeWithTag("speech-original").performClick()
+        compose.runOnIdle { assertEquals(1, originalLanguageRequests) }
+        compose.onNodeWithTag("destination-2").performClick()
+        compose.runOnIdle {
+            originalLanguageReply!!("en")
+            assertTrue(spokenMessages.isEmpty())
         }
     }
 

@@ -39,6 +39,7 @@ class MobileRuntime(context: Context) {
     var preparation by mutableStateOf(PreparationState())
         private set
     val detailLanguages = OriginalLanguageIdentifier()
+    val speech = SpeechPlayback(context)
     val nearby: NearbySharing = NearbySharing(context, retain = ::retainNearby)
     private val notifications = ResultNotifications(context)
     private val mlKit = MlKitLocalEngine()

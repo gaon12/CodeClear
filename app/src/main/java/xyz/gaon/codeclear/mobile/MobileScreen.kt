@@ -84,7 +84,10 @@ class MobileActions(
     val nearbyPermission: () -> Unit = {},
     val refreshNearby: () -> Unit = {},
     val dismissNearby: (String) -> Unit = {},
-    val saveNearby: (String, (Long?) -> Unit) -> Unit = { _, complete -> complete(null) }
+    val saveNearby: (String, (Long?) -> Unit) -> Unit = { _, complete -> complete(null) },
+    val speechState: SpeechState = SpeechState(),
+    val readAloud: (String, String, String) -> Unit = { _, _, _ -> },
+    val stopReading: () -> Unit = {}
 )
 
 @Composable
@@ -369,7 +372,8 @@ fun MobileScreen(
                                             },
                                             { actions.detail(latest.id) },
                                             engine = state.options.engine,
-                                            viewMode = state.options.messageViewMode
+                                            viewMode = state.options.messageViewMode,
+                                            speechActions = actions
                                         )
                                     }
                                 }

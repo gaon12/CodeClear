@@ -209,4 +209,7 @@
     <string name="mobile_view_original">原文を表示</string>
     <string name="mobile_view_translation">訳文を表示</string>
     <string name="mobile_translation_short_notice">自動翻訳です。原文も確認してください。</string>
+    <string name="mobile_read_aloud">読み上げ</string>
+    <string name="mobile_stop_reading">読み上げを停止</string>
+    <string name="mobile_speech_unavailable">この言語のオフライン音声がありません。端末のテキスト読み上げ設定で音声を追加してください。</string>
 </resources>

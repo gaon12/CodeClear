@@ -210,4 +210,7 @@
     <string name="mobile_view_original">Original anzeigen</string>
     <string name="mobile_view_translation">Übersetzung anzeigen</string>
     <string name="mobile_translation_short_notice">Automatisch übersetzt. Prüfen Sie auch das Original.</string>
+    <string name="mobile_read_aloud">Vorlesen</string>
+    <string name="mobile_stop_reading">Vorlesen beenden</string>
+    <string name="mobile_speech_unavailable">Für diese Sprache ist keine Offline-Stimme installiert. Fügen Sie eine Stimme in den Sprachausgabe-Einstellungen des Geräts hinzu.</string>
 </resources>

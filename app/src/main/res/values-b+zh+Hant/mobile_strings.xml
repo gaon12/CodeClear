@@ -209,4 +209,7 @@
     <string name="mobile_view_original">查看原文</string>
     <string name="mobile_view_translation">查看譯文</string>
     <string name="mobile_translation_short_notice">自動翻譯，請同時核對原文。</string>
+    <string name="mobile_read_aloud">朗讀</string>
+    <string name="mobile_stop_reading">停止朗讀</string>
+    <string name="mobile_speech_unavailable">此語言沒有已安裝的離線語音。請在裝置的文字轉語音設定中新增語音。</string>
 </resources>

@@ -37,6 +37,7 @@ import xyz.gaon.codeclear.mobile.MobileScreen
 import xyz.gaon.codeclear.mobile.MobileTheme
 import xyz.gaon.codeclear.mobile.ResultNotifications
 import xyz.gaon.codeclear.mobile.SavedAlert
+import xyz.gaon.codeclear.mobile.SpeechPhase
 import xyz.gaon.codeclear.mobile.ThemeChoice
 import xyz.gaon.codeclear.mobile.UiLanguages
 import xyz.gaon.codeclear.mobile.mobileRuntime
@@ -79,6 +80,17 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContent {
             val runtime = mobileRuntime
+            LaunchedEffect(runtime.speech.state) {
+                if (runtime.speech.state.phase == SpeechPhase.UNAVAILABLE &&
+                    runtime.speech.state.key != null
+                ) {
+                    Toast.makeText(
+                        this@MainActivity,
+                        R.string.mobile_speech_unavailable,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
             LaunchedEffect(
                 runtime.state.loaded,
                 runtime.state.options.labsEnabled,
@@ -150,6 +162,7 @@ class MainActivity : AppCompatActivity() {
                         runtime.preparation,
                         MobileActions(
                             ::configureOptions, controller::search, {
+                                runtime.speech.stop()
                                 controller.openDetail(it)
                             }, {
                                 deletion =
@@ -196,7 +209,14 @@ class MainActivity : AppCompatActivity() {
                                         complete(id)
                                     }
                                 }
-                            }
+                            },
+                            speechState = runtime.speech.state,
+                            readAloud = { key, body, language ->
+                                if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                                    runtime.speech.speak(key, body, language)
+                                }
+                            },
+                            stopReading = runtime.speech::stop
                         )
                     )
                 }
@@ -219,6 +239,7 @@ class MainActivity : AppCompatActivity() {
                                 deletion = null
                                 runtime.models.withdraw()
                                 runtime.detailLanguages.clear()
+                                runtime.speech.stop()
                                 controller.delete(request.id)
                             }) { Text(stringResource(R.string.mobile_delete)) }
                         },
@@ -307,6 +328,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
+        mobileRuntime.speech.stop()
         mobileRuntime.nearby.foreground(false)
         super.onStop()
     }
@@ -357,6 +379,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun openDestination(intent: Intent) {
         ResultNotifications.destination(intent.data)?.let {
+            mobileRuntime.speech.stop()
             mobileRuntime.controller.openDetail(it.id, it.target, it.engine)
             intent.data = null
         }

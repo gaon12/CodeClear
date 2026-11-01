@@ -81,7 +81,8 @@ internal fun AlertDetailBody(
             details = openDetails,
             engine = engine,
             viewMode = state.options.messageViewMode,
-            compact = compact
+            compact = compact,
+            speechActions = actions
         )
         if (!compact) AlertMetadata(alert)
         if (!compact) {
