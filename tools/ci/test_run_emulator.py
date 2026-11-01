@@ -7,9 +7,53 @@ from unittest.mock import Mock, patch
 from tools.ci.run_emulator import (
     guest_diagnostics,
     install_fixture,
+    user_zero_unlocked,
     wait_for_boot,
     wait_for_package_manager,
+    wait_for_unlock,
 )
+
+
+class GuestUnlockTest(unittest.TestCase):
+    def test_primary_user_state_handles_old_and_new_dumps(self):
+        for value in ["{0=3, 10=1}", "[0=RUNNING_UNLOCKED, 10=RUNNING_LOCKED]"]:
+            self.assertTrue(user_zero_unlocked("Started users state: " + value))
+        for value in ["{0=1, 10=3}", "[10=RUNNING_UNLOCKED]", "[0=3, 0=1]", "[]"]:
+            self.assertFalse(user_zero_unlocked("Started users state: " + value))
+        self.assertFalse(user_zero_unlocked("State: RUNNING_UNLOCKED"))
+
+    @patch("tools.ci.run_emulator.time.sleep")
+    def test_a_locked_fresh_guest_uses_normal_keyguard_dismissal_before_retry(
+        self, sleep
+    ):
+        device = Mock(
+            side_effect=[
+                "0",
+                "Started users state: [0=RUNNING_LOCKED]",
+                "",
+                "",
+                "Started users state: [0=RUNNING_UNLOCKED]",
+            ]
+        )
+        wait_for_unlock(device)
+        self.assertIn(
+            ("shell", "wm", "dismiss-keyguard"), [c.args for c in device.call_args_list]
+        )
+
+    def test_a_different_current_user_is_not_automatically_unlocked(self):
+        device = Mock(return_value="10")
+        with self.assertRaisesRegex(RuntimeError, "primary user"):
+            wait_for_unlock(device)
+        device.assert_called_once()
+
+    @patch("tools.ci.run_emulator.time.sleep")
+    @patch("tools.ci.run_emulator.time.monotonic", side_effect=[0, 0, 91])
+    def test_unlock_never_succeeds_from_another_profiles_unlocked_state(
+        self, clock, sleep
+    ):
+        device = Mock(side_effect=["0", "Started users state: [0=1, 10=3]", "", ""])
+        with self.assertRaises(TimeoutError):
+            wait_for_unlock(device)
 
 
 class GuestDiagnosticsTest(unittest.TestCase):

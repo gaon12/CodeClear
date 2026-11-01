@@ -109,6 +109,36 @@ def install_fixture(device, apk):
             time.sleep(2)
 
 
+def user_zero_unlocked(output):
+    match = re.search(r"(?m)^\s*Started users state: [\[{]([^\]}\n]*)[\]}]", output)
+    if match is None:
+        return False
+    states = [
+        entry.split("=", 1)[1].strip()
+        for entry in match.group(1).split(",")
+        if "=" in entry and entry.split("=", 1)[0].strip() == "0"
+    ]
+    return len(states) == 1 and states[0] in {"3", "RUNNING_UNLOCKED"}
+
+
+def wait_for_unlock(device, timeout=90):
+    if device("shell", "am", "get-current-user") != "0":
+        raise RuntimeError("The fresh guest must use its primary user")
+    deadline = time.monotonic() + timeout
+    attempts = 0
+    while time.monotonic() < deadline:
+        if user_zero_unlocked(device("shell", "dumpsys", "user", timeout=10)):
+            return
+        if attempts < 3:
+            # This fresh owned AVD has no credential. Dismiss only its keyguard,
+            # before installing apps or issuing any receiver warnings.
+            device("shell", "wm", "dismiss-keyguard")
+            device("shell", "input", "swipe", "360", "1100", "360", "250", "300")
+        attempts += 1
+        time.sleep(1)
+    raise TimeoutError("The guest primary user's credential storage did not unlock")
+
+
 def guest_diagnostics(device, boot_only=False):
     """Keep system-death evidence bounded without printing receiver message text."""
     for parts in [
@@ -319,6 +349,8 @@ def main():
                 )
             device("shell", "input", "keyevent", "KEYCODE_WAKEUP")
             device("shell", "input", "keyevent", "KEYCODE_MENU")
+            wait_for_unlock(device)
+            wait_for_package_manager(device, process)
             rotation = "set-user-rotation" if args.api == 30 else "user-rotation"
             device("shell", "wm", rotation, "lock", "0")
             for key in [
