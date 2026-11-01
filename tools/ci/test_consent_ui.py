@@ -149,3 +149,57 @@ class ConsentUiTest(unittest.TestCase):
 
         with patch("tools.ci.consent_ui.subprocess.run", side_effect=dump):
             self.assertEqual(["Allow"], [n.get("text") for n in self.ui.layout()])
+
+    def test_a_missing_sdk_settings_window_uses_the_scoped_confirmation_reader(self):
+        def dump(args, **kwargs):
+            path = Path(
+                next(a.split("=", 1)[1] for a in args if a.startswith("--output="))
+            )
+            path.write_text("[]")
+
+        with (
+            patch("tools.ci.consent_ui.subprocess.run", side_effect=dump),
+            patch.object(
+                self.ui, "settings_confirmation", return_value=["confirmation"]
+            ) as fallback,
+        ):
+            self.assertEqual(["confirmation"], self.ui.layout())
+            fallback.assert_called_once()
+
+    def test_the_product_never_uses_the_transient_confirmation_reader(self):
+        self.ui.permitted.add("xyz.gaon.codeclear")
+        self.device.return_value = self.focus.replace(
+            "package=com.android.settings", "package=xyz.gaon.codeclear"
+        )
+
+        def dump(args, **kwargs):
+            path = Path(
+                next(a.split("=", 1)[1] for a in args if a.startswith("--output="))
+            )
+            path.write_text("[]")
+
+        with (
+            patch("tools.ci.consent_ui.subprocess.run", side_effect=dump),
+            patch.object(self.ui, "settings_confirmation") as fallback,
+            self.assertRaisesRegex(RuntimeError, "No application window"),
+        ):
+            self.ui.layout()
+        fallback.assert_not_called()
+
+    def test_the_confirmation_reader_rejects_foreign_nodes_and_cleans_its_fresh_file(
+        self,
+    ):
+        def command(*parts, **kwargs):
+            if "dumpsys" in parts:
+                return self.focus
+            if "cat" in parts:
+                return '<hierarchy><node package="com.android.cellbroadcastreceiver" text="OK"/></hierarchy>'
+            return ""
+
+        self.device.side_effect = command
+        with self.assertRaisesRegex(RuntimeError, "confirmation was unavailable"):
+            self.ui.settings_confirmation()
+        calls = self.device.call_args_list
+        dump = next(call.args[-1] for call in calls if "uiautomator" in call.args)
+        self.assertRegex(dump, r"^/sdcard/codeclear-consent-[a-f0-9]{32}\.xml$")
+        self.assertEqual(("shell", "rm", "-f", dump), calls[-1].args)

@@ -3,6 +3,11 @@ name: Android validation
 on:
   workflow_dispatch:
     inputs:
+      api:
+        description: Run all reviewed profiles or one focused regression profile
+        type: choice
+        default: all
+        options: [all, '30', '31', '35']
       system_receiver:
         description: Validate synthetic system receiver injection through normal consent UI
         type: boolean
@@ -24,7 +29,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        api: [30, 31, 35]
+        api: ${{ fromJSON(inputs.api == '30' && '[30]' || inputs.api == '31' && '[31]' || inputs.api == '35' && '[35]' || '[30,31,35]') }}
         mode: ${{ fromJSON(inputs.system_receiver && '["off","on"]' || '["off"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

@@ -5,6 +5,7 @@ import re
 import subprocess
 import tempfile
 import time
+import uuid
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
@@ -77,6 +78,22 @@ class ConsentUi:
             )
         ]
         if not applications:
+            if package == "com.android.settings":
+                print(
+                    "Settings window metadata: "
+                    + json.dumps(
+                        [
+                            {
+                                "type": w.get("type"),
+                                "layer": w.get("layer"),
+                                "nodes": len(w.get("content", [])),
+                            }
+                            for w in windows
+                        ]
+                    ),
+                    flush=True,
+                )
+                return self.settings_confirmation()
             raise RuntimeError("No application window was exposed")
         window = max(applications, key=lambda w: w.get("layer", -1))
         nodes = []
@@ -99,6 +116,32 @@ class ConsentUi:
             )
             nodes.append(ET.Element("node", attributes))
         return nodes
+
+    def settings_confirmation(self):
+        # The SDK agent can omit the privileged accessibility confirmation window.
+        # Limit the legacy reader to Settings; never introduce per-dump reconnection
+        # oscillation in the product's own capture-status layout.
+        if self.focused_package() != "com.android.settings":
+            raise RuntimeError("The legacy confirmation reader requires Settings focus")
+        self.stop()
+        path = "/sdcard/codeclear-consent-" + uuid.uuid4().hex + ".xml"
+        try:
+            self.device(
+                "shell", "uiautomator", "dump", "--compressed", path, timeout=25
+            )
+            root = ET.fromstring(self.device("shell", "cat", path))
+            if self.focused_package() != "com.android.settings":
+                raise RuntimeError("Settings lost focus while reading its confirmation")
+            nodes = []
+            for node in root.iter("node"):
+                if node.get("package") in {"android", "com.android.settings"}:
+                    node.set("package", "com.android.settings")
+                    nodes.append(node)
+            if not nodes:
+                raise RuntimeError("The owned Settings confirmation was unavailable")
+            return nodes
+        finally:
+            self.device("shell", "rm", "-f", path)
 
     def tap(self, node):
         if self.focused_package() != node.get("package"):
