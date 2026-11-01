@@ -72,6 +72,70 @@ def replace_process(device, signed, start):
         )
 
 
+def verify_result(ui):
+    # Source callbacks can leave an app detail dialog open or reorder the latest
+    # record. Select this unique fixture in history before comparing either panel.
+    nodes = ui.layout()
+    close = next((n for n in nodes if n.get("text") == "Close"), None)
+    if close is not None:
+        ui.tap(close)
+        nodes = ui.layout()
+    history = next((n for n in nodes if n.get("text") == "History"), None)
+    if history is None:
+        raise RuntimeError("The optimized history destination was unavailable")
+    ui.tap(history)
+    for _ in range(12):
+        nodes = ui.layout()
+        fixture = next(
+            (
+                n
+                for n in nodes
+                if any(body in n.get("text", "") for body in [ORIGINAL, CONVERTED])
+            ),
+            None,
+        )
+        if fixture is not None:
+            ui.tap(fixture)
+            break
+        ui.scroll()
+    else:
+        raise RuntimeError("The optimized history did not expose the unique fixture")
+    seen = set()
+    for _ in range(12):
+        seen.update(node.get("text") for node in ui.layout())
+        if {ORIGINAL, CONVERTED} <= seen:
+            return
+        ui.scroll()
+        time.sleep(0.5)
+    # Print known labels and equality flags, never arbitrary alert/UI text.
+    print(
+        "Optimized detail diagnostics: "
+        + json.dumps(
+            {
+                "original_exact": ORIGINAL in seen,
+                "conversion_exact": CONVERTED in seen,
+                "known_labels": sorted(
+                    seen
+                    & {
+                        "View details",
+                        "Traditional Chinese",
+                        "Processing…",
+                        "Enable translation in Settings.",
+                        "Could not identify a supported source language.",
+                        "Could not complete this action. The original is preserved. Retry when ready.",
+                        "Prepare offline models",
+                        "Retry",
+                    }
+                ),
+            }
+        ),
+        flush=True,
+    )
+    raise RuntimeError(
+        "The optimized fixture detail did not expose the exact original and local conversion"
+    )
+
+
 def validate(device, sdk, cli, serial):
     from consent_ui import ConsentUi
 
@@ -235,21 +299,6 @@ def validate(device, sdk, cli, serial):
             ui.scroll()
         raise RuntimeError("The optimized source action was unavailable")
 
-    def verify_result():
-        for _ in range(8):
-            ui.focused_package()
-            device("shell", "input", "swipe", "360", "380", "360", "1030", "250")
-        seen = set()
-        for _ in range(8):
-            seen.update(node.get("text") for node in ui.layout())
-            if {ORIGINAL, CONVERTED} <= seen:
-                return
-            ui.scroll()
-            time.sleep(0.5)
-        raise RuntimeError(
-            "The optimized UI did not expose the exact original and local conversion"
-        )
-
     wifi = device("shell", "settings", "get", "global", "wifi_on") == "1"
     data = device("shell", "settings", "get", "global", "mobile_data") == "1"
     try:
@@ -287,14 +336,14 @@ def validate(device, sdk, cli, serial):
         open_source()
         time.sleep(2)
         start()
-        verify_result()
+        verify_result(ui)
         print(
             "Optimized non-debuggable APK: exact genuine-source original and local conversion matched offline.",
             flush=True,
         )
         ui.stop()
         replace_process(device, signed, start)
-        verify_result()
+        verify_result(ui)
         print(
             "Optimized original and local result persisted after package replacement and a verified process restart.",
             flush=True,

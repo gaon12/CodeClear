@@ -9,14 +9,60 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 from tools.ci.optimized_runtime import (
+    CONVERTED,
+    ORIGINAL,
     certificate,
     local_fixture_options,
     replace_process,
     validate,
+    verify_result,
 )
 
 
 class OptimizedFixtureTest(unittest.TestCase):
+    def nodes(self, *texts):
+        return [ET.Element("node", text=text) for text in texts]
+
+    @patch("tools.ci.optimized_runtime.time.sleep")
+    def test_both_exact_panels_must_belong_to_the_selected_fixture(self, sleep):
+        ui = Mock()
+        ui.layout.side_effect = [
+            self.nodes("Close", ORIGINAL, CONVERTED),
+            self.nodes("History"),
+            self.nodes(ORIGINAL),
+            self.nodes("View details", ORIGINAL),
+            self.nodes(CONVERTED),
+        ]
+        verify_result(ui)
+        self.assertEqual(
+            ["Close", "History", ORIGINAL],
+            [call.args[0].get("text") for call in ui.tap.call_args_list],
+        )
+
+    @patch("tools.ci.optimized_runtime.time.sleep")
+    def test_a_prior_modal_result_cannot_mask_a_failed_selected_detail(self, sleep):
+        ui = Mock()
+        ui.layout.side_effect = [
+            self.nodes("Close", ORIGINAL, CONVERTED),
+            self.nodes("History"),
+            self.nodes(ORIGINAL),
+            *[
+                self.nodes("View details", ORIGINAL, CONVERTED + " extra")
+                for _ in range(12)
+            ],
+        ]
+        with self.assertRaisesRegex(RuntimeError, "fixture detail"):
+            verify_result(ui)
+
+    def test_other_history_records_do_not_establish_fixture_capture(self):
+        ui = Mock()
+        ui.layout.side_effect = [
+            self.nodes("History"),
+            *[self.nodes("other") for _ in range(12)],
+        ]
+        with self.assertRaisesRegex(RuntimeError, "unique fixture"):
+            verify_result(ui)
+
     def test_both_verified_apks_supply_pem_before_any_app_fixture_is_changed(self):
         properties = {
             "ro.kernel.qemu": "1",
