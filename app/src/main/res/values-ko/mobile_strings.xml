@@ -66,7 +66,7 @@
     <string name="mobile_tutorial_receive">1. 원본 재난문자 수신</string>
     <string name="mobile_tutorial_read">2. 수집 접근 허용</string>
     <string name="mobile_tutorial_translate">3. 원문과 번역 확인</string>
-    <string name="mobile_tutorial_receive_body">시스템 재난문자 앱이 셀룰러 방송을 수신합니다. 원본 앱의 경고를 켜 두세요. CodeClear는 원본 경고를 보조합니다. Wi-Fi 전용 기기는 셀룰러 재난문자를 수신할 수 없습니다.</string>
+    <string name="mobile_tutorial_receive_body">재난문자는 Android의 긴급 알림 기능으로 수신됩니다. Wi-Fi 전용 기기는 이동통신 수신 기능이 없어 기지국이 보내는 재난문자를 직접 받을 수 없습니다.</string>
     <string name="mobile_tutorial_read_body">설정에서 알림·접근성 안내를 확인한 뒤 Android 설정에서 각각 접근을 켜세요. 알림에 노출된 개별 본문과 시스템 모달의 표시된 본문을 수집합니다. 요약만 노출되면 홈에서 원본 경보를 여세요. 다른 문자를 읽으려고 대기 중 경고를 자동으로 닫지는 않습니다.</string>
     <string name="mobile_tutorial_translate_body">기기 내 번역을 켜고 언어를 선택하세요. 모델이 필요하면 Wi-Fi에서 모델을 내려받으세요. 준비된 모델은 오프라인에서도 동작합니다. 결과 알림을 누르면 원문과 번역이 열리며 기록에서 검색할 수 있습니다. 기록은 언제든 삭제할 수 있습니다.</string>
     <string name="mobile_back">이전</string>
@@ -77,7 +77,7 @@
     <string name="mobile_radio_unknown">셀룰러 하드웨어를 확인하지 못했습니다. Wi-Fi 사용·SIM 유무·모바일 데이터 설정과는 별개입니다.</string>
     <string name="mobile_source_unknown">검토된 시스템 재난문자 수신 앱을 찾지 못했습니다. 이 수신 환경에서는 자동 수집을 사용할 수 없습니다.</string>
     <string name="mobile_setup_needed">설정에서 알림 또는 접근성을 허용하세요. 두 경로를 함께 켜면 더 많은 상황에서 수집할 수 있습니다.</string>
-    <string name="mobile_ready">검토된 시스템 수신 앱이 노출한 본문을 수집할 준비가 됐습니다. 원본 재난문자 앱도 켜 두세요.</string>
+    <string name="mobile_ready">지원되는 시스템 재난문자의 본문을 수집할 준비가 됐습니다.</string>
     <string name="mobile_manage_access">수집 접근 설정</string>
     <string name="mobile_incomplete">최근 관찰에서 확인된 완전한 개별 본문을 얻지 못했습니다. 아래 저장된 문자는 이전 것일 수 있습니다. 원본 시스템 경보를 열어 확인하세요.</string>
     <string name="mobile_pending">원본 앱에 대기 중 경보 %1$d개가 표시됐습니다. 노출된 개별 본문만 수집할 수 있으니 원본에서 다른 문자도 확인하세요.</string>

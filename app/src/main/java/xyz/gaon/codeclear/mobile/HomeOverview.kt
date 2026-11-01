@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.probe.ProbeEnvironment
@@ -92,7 +93,8 @@ private fun OverviewAction(
     Column(
         modifier.clickable(role = Role.Button, onClick = action).heightIn(min = 112.dp)
             .padding(18.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(
             painterResource(icon),
@@ -100,11 +102,18 @@ private fun OverviewAction(
             Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.primary
         )
-        Text(title, style = MaterialTheme.typography.labelLarge)
+        Text(
+            title,
+            Modifier.fillMaxWidth(),
+            style = MaterialTheme.typography.labelLarge,
+            textAlign = TextAlign.Center
+        )
         Text(
             summary,
+            modifier = Modifier.fillMaxWidth(),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
         )
     }
 }

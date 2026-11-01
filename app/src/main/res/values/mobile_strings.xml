@@ -66,7 +66,7 @@
     <string name="mobile_tutorial_receive">1. Receive the original alert</string>
     <string name="mobile_tutorial_read">2. Allow scoped capture</string>
     <string name="mobile_tutorial_translate">3. Read both versions</string>
-    <string name="mobile_tutorial_receive_body">Your system emergency-alert app receives cellular broadcasts. Keep its warnings enabled. CodeClear supplements the original warning. Wi-Fi-only hardware cannot receive cellular emergency broadcasts.</string>
+    <string name="mobile_tutorial_receive_body">Android receives cellular emergency broadcasts through its built-in alert feature. Wi-Fi-only hardware cannot receive those broadcasts directly.</string>
     <string name="mobile_tutorial_read_body">In Settings, review notification and accessibility disclosures, then enable each access in Android Settings. Notifications can expose individual text; accessibility reads the visible system alert dialog. If only a summary is available, open the original alert from Home. Hidden pending messages are not automatically dismissed to read them.</string>
     <string name="mobile_tutorial_translate_body">Enable local translation and choose a target language. Approve model preparation on Wi-Fi when prompted. Ready models work offline. Tap a result notification to open its original and translation; search saved records in History. Delete records whenever you choose.</string>
     <string name="mobile_back">Back</string>
@@ -77,7 +77,7 @@
     <string name="mobile_radio_unknown">Cellular radio capability could not be verified. Current Wi-Fi use, SIM absence, and mobile data settings do not determine hardware capability.</string>
     <string name="mobile_source_unknown">No reviewed system alert receiver was found. Automatic capture is unavailable for this source profile.</string>
     <string name="mobile_setup_needed">Allow notification or accessibility access in Settings to capture alerts. Both routes improve coverage.</string>
-    <string name="mobile_ready">Capture is enabled for exposed messages from reviewed system sources. Keep the original emergency-alert app enabled.</string>
+    <string name="mobile_ready">Ready to collect message bodies exposed by supported system alert sources.</string>
     <string name="mobile_manage_access">Manage capture access</string>
     <string name="mobile_incomplete">The latest source observation did not expose a verified complete individual body. The saved alert below may be older. Open the original system alert to check it.</string>
     <string name="mobile_pending">Pending alerts reported by the source: %1$d. Only exposed individual bodies can be captured; open the original to check the others.</string>

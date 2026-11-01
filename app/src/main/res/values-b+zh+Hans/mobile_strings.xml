@@ -65,7 +65,7 @@
     <string name="mobile_wifi_only">此设备没有接收基站紧急警报所需的蜂窝通信接收功能。仅连接 Wi-Fi 无法直接接收这些广播。您仍可查看已保存的记录和译文。</string>
     <string name="mobile_source_unknown">未找到经过审核的系统警报接收应用，此来源暂不支持自动采集。</string>
     <string name="mobile_setup_needed">请在设置中允许通知访问或无障碍访问。同时启用两种方式可增加可采集的场景。</string>
-    <string name="mobile_ready">已准备采集经审核的系统来源所提供的正文。请保持原始紧急警报应用处于启用状态。</string>
+    <string name="mobile_ready">已准备好采集受支持的系统紧急警报正文。</string>
     <string name="mobile_manage_access">管理采集权限</string>
     <string name="mobile_open_source">打开原始系统警报</string>
     <string name="mobile_last_saved">最近收集的警报</string>
@@ -89,7 +89,7 @@
     <string name="mobile_accessibility_disclosure">CodeClear 使用无障碍功能读取经审核的系统紧急警报对话框中的单条正文、标题和待处理数量，不读取其他页面或历史列表行。不会执行手势或关闭警告。原文保留在私有记录中，用于设备内翻译。本应用并非残障辅助工具。您可以随时在此关闭采集，或在 Android 设置中撤销访问权限。</string>
     <string name="mobile_local_disclosure">启用对已采集警报的设备内自动翻译。语言模型需要另外通过 Wi-Fi 下载。不会向翻译服务器发送警报正文。关闭后将停止新翻译，现有记录仍会保留。</string>
     <string name="mobile_storage_notice">为避免记录丢失，已暂停采集和翻译。请检查可用存储空间后重试，再重新确认采集权限。</string>
-    <string name="mobile_tutorial_receive_body">系统紧急警报应用通过蜂窝广播接收警报，请保持其警告功能开启。CodeClear 是原始警告的补充。仅支持 Wi-Fi 的设备无法接收蜂窝紧急广播。</string>
+    <string name="mobile_tutorial_receive_body">Android 通过内置紧急警报功能接收蜂窝广播。仅支持 Wi-Fi 的设备没有蜂窝接收硬件，无法直接接收这些警报。</string>
     <string name="mobile_tutorial_read_body">在设置中阅读通知与无障碍功能说明，然后在 Android 设置中分别允许访问。通知可能提供单条正文，无障碍功能读取当前显示的系统警报对话框。如果仅显示摘要，请从首页打开原始警报。不会为了读取其他内容而自动关闭待处理警告。</string>
     <string name="mobile_tutorial_translate_body">启用设备内翻译并选择目标语言。需要模型时，请通过 Wi-Fi 下载。准备好的模型可离线使用。点击结果通知可查看原文和译文；您也可在记录中搜索保存的内容，并随时删除。</string>
     <string name="mobile_radio_unknown">无法确认蜂窝通信硬件能力。这与当前使用 Wi-Fi、是否有 SIM 卡或是否启用移动数据无关。</string>

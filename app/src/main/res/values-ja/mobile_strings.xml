@@ -65,7 +65,7 @@
     <string name="mobile_wifi_only">この端末には、基地局からの緊急速報を受信する携帯電話回線の受信機能がありません。Wi-Fi接続だけでは直接受信できません。保存済みの履歴と翻訳は引き続き確認できます。</string>
     <string name="mobile_source_unknown">確認済みのシステム受信アプリが見つかりません。この受信環境では自動取得できません。</string>
     <string name="mobile_setup_needed">設定で通知またはユーザー補助へのアクセスを許可してください。両方を使うと取得できる状況が増えます。</string>
-    <string name="mobile_ready">確認済みのシステム受信元が公開する本文を取得します。元の緊急速報アプリも有効にしてください。</string>
+    <string name="mobile_ready">対応するシステム緊急速報の本文を収集する準備ができました。</string>
     <string name="mobile_manage_access">取得用アクセスを設定</string>
     <string name="mobile_open_source">元のシステム警報を開く</string>
     <string name="mobile_last_saved">最近収集した警報</string>
@@ -89,7 +89,7 @@
     <string name="mobile_accessibility_disclosure">CodeClearはユーザー補助を使い、確認済みのシステム緊急速報ダイアログにある個別の本文、件名、待機件数を読み取ります。他の画面や履歴一覧の行は読みません。ジェスチャーの実行や警告の解除は行いません。原文は端末内の翻訳用に非公開履歴へ保存します。障害者向け支援ツールではありません。取得をオフにするか、Android の設定でアクセス許可をいつでも取り消せます。</string>
     <string name="mobile_local_disclosure">取得した緊急速報を端末内で自動翻訳します。言語モデルは別途 Wi-Fi でダウンロードしてください。警報の本文を翻訳サーバーに送ることはありません。無効にすると新たな翻訳を停止し、履歴は保持します。</string>
     <string name="mobile_storage_notice">記録の消失を防ぐため取得と翻訳を停止しました。空き容量を確認して再試行し、その後、取得の権限を再確認してください。</string>
-    <string name="mobile_tutorial_receive_body">システムの緊急速報アプリが携帯電話回線の放送を受信します。元アプリの警告は有効にしておいてください。CodeClearは元の警告を補助します。Wi-Fi専用端末は携帯電話回線の緊急速報を受信できません。</string>
+    <string name="mobile_tutorial_receive_body">緊急速報はAndroidに組み込まれた機能で受信します。Wi-Fi専用端末には携帯電話網の受信機能がないため、これらの放送を直接受信できません。</string>
     <string name="mobile_tutorial_read_body">設定で通知・ユーザー補助の説明を読み、Androidの設定でそれぞれのアクセスを許可します。通知から個別本文を取得し、ユーザー補助で表示中のシステム警報を読み取ります。概要しかない場合は、ホームから元の警報を開いてください。他の警報を読むために待機中の警告を自動解除することはありません。</string>
     <string name="mobile_tutorial_translate_body">端末内の翻訳を有効にし、翻訳先の言語を選びます。必要に応じて Wi-Fi でモデルをダウンロードしてください。準備済みのモデルはオフラインでも動作します。結果通知をタップすると原文と翻訳が開きます。保存した内容は履歴で検索でき、いつでも削除できます。</string>
     <string name="mobile_radio_unknown">携帯電話回線用ハードウェアを確認できませんでした。Wi-Fiの利用状況、SIMの有無、モバイルデータの設定とは別の判定です。</string>
