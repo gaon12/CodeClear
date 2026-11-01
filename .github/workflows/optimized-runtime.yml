@@ -2,6 +2,12 @@ name: Optimized Android runtime
 
 on:
   workflow_dispatch:
+    inputs:
+      profile:
+        description: Optimized runtime profile
+        type: choice
+        default: '30'
+        options: ['30', '37-16k']
 
 permissions:
   contents: read
@@ -25,7 +31,7 @@ jobs:
       - name: Check validation driver
         run: python3 -m unittest discover -s tools/ci -p 'test_*.py'
       - name: Prepare Android SDK
-        run: python3 tools/ci/run_emulator.py --api 30 --prepare
+        run: python3 tools/ci/run_emulator.py --profile '${{ inputs.profile == '37-16k' && '37-16k' || '30' }}' --prepare
       - name: Check and build optimized candidate
         run: >-
           ./gradlew --no-daemon --max-workers=2 --console=plain
@@ -33,5 +39,5 @@ jobs:
           :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease
       - name: Verify optimized offline runtime and persistence
         run: >-
-          python3 tools/ci/run_emulator.py --api 30
+          python3 tools/ci/run_emulator.py --profile '${{ inputs.profile == '37-16k' && '37-16k' || '30' }}'
           --system-receiver --receiver-mode off --optimized

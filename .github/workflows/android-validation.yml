@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       api:
-        description: Run all reviewed profiles or one focused regression profile
+        description: Source profile or validation group
         type: choice
-        default: all
-        options: [all, '30', '31', '35']
+        default: baseline
+        options: [baseline, extended, all, '30', '31', '32', '33', '34', '35', '36', '37', '37-16k']
       system_receiver:
         description: Validate synthetic system receiver injection through normal consent UI
         type: boolean
@@ -22,14 +22,14 @@ concurrency:
 
 jobs:
   emulator:
-    name: AOSP API ${{ matrix.api }} / mode ${{ matrix.mode }}
+    name: Android ${{ matrix.profile }} / mode ${{ matrix.mode }}
     runs-on: ubuntu-24.04
     timeout-minutes: 40
     strategy:
       fail-fast: false
       max-parallel: 3
       matrix:
-        api: ${{ fromJSON(inputs.api == '30' && '[30]' || inputs.api == '31' && '[31]' || inputs.api == '35' && '[35]' || '[30,31,35]') }}
+        profile: ${{ fromJSON('{"baseline":["30","31","35"],"extended":["32","33","34","36","37","37-16k"],"all":["30","31","32","33","34","35","36","37","37-16k"],"30":["30"],"31":["31"],"32":["32"],"33":["33"],"34":["34"],"35":["35"],"36":["36"],"37":["37"],"37-16k":["37-16k"]}')[inputs.api] }}
         mode: ${{ fromJSON(inputs.system_receiver && '["off","on"]' || '["off"]') }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -42,7 +42,7 @@ jobs:
       - name: Check validation driver
         run: python3 -m unittest discover -s tools/ci -p 'test_*.py'
       - name: Prepare Android SDK
-        run: python3 tools/ci/run_emulator.py --api '${{ matrix.api }}' --prepare
+        run: python3 tools/ci/run_emulator.py --profile '${{ matrix.profile }}' --prepare
       - name: Check clean checkout and build test APKs
         run: >-
           ./gradlew --no-daemon --max-workers=2 --console=plain
@@ -51,6 +51,6 @@ jobs:
           :app:bundleReleaseClassesToCompileJar
       - name: Run isolated software fixtures
         run: >-
-          python3 tools/ci/run_emulator.py --api '${{ matrix.api }}'
+          python3 tools/ci/run_emulator.py --profile '${{ matrix.profile }}'
           --receiver-mode '${{ matrix.mode }}'
           ${{ inputs.system_receiver && '--system-receiver' || '' }}

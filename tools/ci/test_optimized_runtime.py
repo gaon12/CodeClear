@@ -15,6 +15,24 @@ class OptimizedFixtureTest(unittest.TestCase):
             validate(device, Path("/sdk"), "/android", "phone")
         device.assert_called_once_with("shell", "getprop", "ro.kernel.qemu")
 
+    def test_a_16k_label_requires_the_actual_guest_page_size(self):
+        properties = {
+            "ro.kernel.qemu": "1",
+            "ro.debuggable": "1",
+            "ro.hardware": "ranchu",
+            "ro.build.version.sdk": "37",
+            "PAGE_SIZE": "4096",
+        }
+        device = Mock(side_effect=lambda *parts: properties[parts[-1]])
+        with self.assertRaisesRegex(RuntimeError, "actual 16 KiB pages"):
+            validate(device, Path("/sdk"), "/android", "emulator-5554")
+        self.assertFalse(
+            any(
+                "install" in call.args or "am" in call.args
+                for call in device.call_args_list
+            )
+        )
+
     def options(self, remote="false", notification="true"):
         return f'''<map>
         <boolean name="server_allowed" value="{remote}"/>

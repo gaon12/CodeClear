@@ -69,16 +69,21 @@ def wait_for_boot(device, process, timeout=240):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--api", type=int, choices=[30, 31, 35], required=True)
+    profiles = [str(api) for api in range(30, 38)] + ["37-16k"]
+    selection = parser.add_mutually_exclusive_group(required=True)
+    selection.add_argument("--api", type=int, choices=range(30, 38))
+    selection.add_argument("--profile", choices=profiles)
     parser.add_argument("--prepare", action="store_true")
     parser.add_argument("--system-receiver", action="store_true")
     parser.add_argument("--receiver-mode", choices=["off", "on"], default="off")
     parser.add_argument("--optimized", action="store_true")
     args = parser.parse_args()
+    profile = args.profile or str(args.api)
+    args.api = int(profile.split("-", 1)[0])
     if args.optimized and not args.system_receiver:
         parser.error("--optimized requires normal system receiver preparation")
-    if args.optimized and args.api != 30:
-        parser.error("--optimized currently reviews only the API 30 runtime profile")
+    if args.optimized and profile not in {"30", "37-16k"}:
+        parser.error("--optimized reviews API 30 and the API 37 16 KiB profile")
     # SDK tools and the emulator must share the same owned AVD index and data directory.
     android_user = Path(os.environ["RUNNER_TEMP"]) / "codeclear-android"
     avd_root = android_user / "avd"
@@ -88,8 +93,13 @@ def main():
     os.environ["ANDROID_AVD_HOME"] = str(avd_root)
     sdk = Path(os.environ["ANDROID_HOME"])
     cli = sdk / "cmdline-tools/latest/bin"
-    image = f"system-images;android-{args.api};default;x86_64"
-    name = f"codeclear-api-{args.api}"
+    image = (
+        "system-images;android-37.2;google_apis_ps16k;x86_64"
+        if profile == "37-16k"
+        else f"system-images;android-{'37.0' if args.api == 37 else args.api};default;x86_64"
+    )
+    name = "codeclear-" + profile
+    partition_mib = 4096 if profile == "37-16k" else 2048
     if args.prepare:
         command(
             str(cli / "sdkmanager"),
@@ -130,7 +140,7 @@ def main():
         )
         values.update(
             {
-                "disk.dataPartition.size": "2G",
+                "disk.dataPartition.size": "4G" if profile == "37-16k" else "2G",
                 "hw.sdCard": "no",
                 "hw.ramSize": "2048",
                 "hw.lcd.width": "720",
@@ -174,7 +184,7 @@ def main():
                 "-memory",
                 "2048",
                 "-partition-size",
-                "2048",
+                str(partition_mib),
                 "-cores",
                 "2",
                 "-gpu",
@@ -203,10 +213,15 @@ def main():
                 device("shell", "getprop", "ro.build.version.sdk") == str(args.api)
             )
             print(
-                f"Disposable AOSP API {args.api}; page size "
+                f"Disposable profile {profile} (SDK {args.api}); page size "
                 + device("shell", "getconf", "PAGE_SIZE"),
                 flush=True,
             )
+            if profile == "37-16k":
+                _require(
+                    device("shell", "getconf", "PAGE_SIZE") == "16384",
+                    "The requested 16 KiB profile has the wrong actual page size",
+                )
             device("shell", "input", "keyevent", "KEYCODE_WAKEUP")
             device("shell", "input", "keyevent", "KEYCODE_MENU")
             rotation = "set-user-rotation" if args.api == 30 else "user-rotation"

@@ -68,7 +68,11 @@ tests. Building the test APK does not execute those tests.
 The manually dispatched `Android validation` GitHub Actions workflow builds a
 clean checkout on standard Linux runners and runs an explicit software-fixture
 allowlist on disposable AOSP API 30, 31, and 35 emulators. Each emulator uses two
-cores and 2 GiB of guest RAM. The default software-fixture path does not use
+cores and 2 GiB of guest RAM. This is the default `baseline` group; `extended`
+selects AOSP API 32, 33, 34, 36, and 37 plus the Google API 37 16 KiB profile.
+The `all` group or an individual profile can also be selected. The 16 KiB guest
+must report actual 16384-byte pages and uses a bounded 4 GiB data partition.
+The default software-fixture path does not use
 provider keys, download translation models, grant capture access, or test physical reception. Live-provider,
 Bluetooth, installed-voice, prepared-model, and owner-granted capture tests require separate
 environments. No APK or test artifact is published by the workflow.
@@ -87,7 +91,8 @@ bodies, so switching modes within one pending queue does not establish fresh
 automatic capture in the second mode. These debug-emulator injections do not
 establish physical radio reception or other manufacturers' firmware support.
 
-The separate manual `Optimized Android runtime` workflow builds an optimized,
+The separate manual `Optimized Android runtime` workflow selects API 30 or the
+API 37 16 KiB guest and builds an optimized,
 non-debuggable APK and signs it with the disposable runner's Android debug key.
 After normal capture preparation, it seeds local-only translation/view preferences
 in the debug fixture, upgrades to the optimized APK, and checks an exact Chinese

@@ -39,7 +39,7 @@ def validate(device, api, cli, serial, mode):
         raise RuntimeError("Receiver fixtures require a debug system image")
     if device("shell", "getprop", "ro.hardware") not in {"ranchu", "goldfish"}:
         raise RuntimeError("Receiver fixtures require reviewed emulator hardware")
-    if api not in {30, 31, 35}:
+    if api not in range(30, 38):
         raise RuntimeError("Review this source profile before injection")
     _require("Success" in device("shell", "pm", "clear", APP))
     application_label = device(
