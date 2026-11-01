@@ -23,9 +23,26 @@ def tap_testing_code(device, ui, package, digits):
         if delete is None:
             raise RuntimeError("The owned dialpad backspace control is missing")
         ui.tap(delete)
-    cleared = [n for n in ui.layout() if n.get("resource-id") == package + ":id/digits"]
-    if len(cleared) != 1 or cleared[0].get("text", ""):
-        raise RuntimeError("The dialer intent digit was not cleared through its keypad")
+    # Input injection can finish before the next non-idle layout reflects it.
+    for attempt in range(5):
+        cleared = [
+            n for n in ui.layout() if n.get("resource-id") == package + ":id/digits"
+        ]
+        if len(cleared) == 1 and not cleared[0].get("text", ""):
+            break
+        if attempt < 4:
+            time.sleep(0.25)
+    else:
+        raise RuntimeError(
+            "The dialer intent digit was not cleared through its keypad: "
+            + json.dumps(
+                {
+                    "fields": len(cleared),
+                    "still_seed": len(cleared) == 1 and cleared[0].get("text") == "0",
+                    "text_lengths": [len(n.get("text", "")) for n in cleared[:3]],
+                }
+            )
+        )
     # Follow the keypad's normal editing path for intent-filled digits.
     # Use only reviewed digit/symbol controls; never the call button.
     for name in [

@@ -61,6 +61,38 @@ class DialerInputTest(unittest.TestCase):
             any("keyevent" in call.args for call in self.device.call_args_list)
         )
 
+    @patch("tools.ci.dialer_ui.time.sleep")
+    def test_google_clear_waits_for_the_next_layout_without_deleting_twice(self, sleep):
+        self.ui.focused_package.return_value = "com.google.android.dialer"
+        first = self.google_pad("0")
+        empty = self.google_pad("")
+        self.ui.layout.side_effect = [
+            first,
+            first,
+            first,
+            empty,
+            *[empty for _ in range(12)],
+        ]
+        enter_testing_code(self.device, self.ui)
+        sleep.assert_called_once_with(0.25)
+        self.assertEqual(
+            1,
+            sum(
+                call.args[0].get("resource-id").endswith("/deleteButton")
+                for call in self.ui.tap.call_args_list
+            ),
+        )
+
+    @patch("tools.ci.dialer_ui.time.sleep")
+    def test_google_clear_stops_after_five_unchanged_snapshots(self, sleep):
+        self.ui.focused_package.return_value = "com.google.android.dialer"
+        self.ui.layout.return_value = self.google_pad("0")
+        with self.assertRaisesRegex(RuntimeError, '"still_seed": true'):
+            enter_testing_code(self.device, self.ui)
+        self.assertEqual(7, self.ui.layout.call_count)
+        self.assertEqual(4, sleep.call_count)
+        self.assertEqual(2, self.ui.tap.call_count)
+
     def test_a_missing_google_symbol_stops_before_any_testing_code_is_typed(self):
         self.ui.focused_package.return_value = "com.google.android.dialer"
         first = self.google_pad("0")
