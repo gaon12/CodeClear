@@ -241,4 +241,5 @@
     <string name="mobile_model_download_notice">Each language model is about 30 MB. Downloads use Wi-Fi and storage, and may continue after closing this window. Alert text is not uploaded for model preparation.</string>
     <string name="mobile_model_update_pending">Installed · Update check pending</string>
     <string name="mobile_system_preparation_explanation">System translation models belong to the installed system provider. CodeClear can open its public model settings if the provider supplies them; Android does not offer a generic download API for these models. If no public language pairs or settings are available, use ML Kit. Installing an ordinary translation app does not necessarily add a compatible system service.</string>
+    <string name="mobile_accessibility_restart_notice">Force stopping CodeClear in Android App info can turn off its accessibility service. Open accessibility settings and enable it again. After a normal restart, unlock the device and allow the service to reconnect. CodeClear cannot turn on OS access for you.</string>
 </resources>

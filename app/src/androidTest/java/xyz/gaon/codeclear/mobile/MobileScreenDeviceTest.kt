@@ -101,6 +101,7 @@ class MobileScreenDeviceTest {
     private var searched = ""
     private var newestRequests = 0
     private var notificationRequests = 0
+    private var fixtureAccessibilityConnected by mutableStateOf(true)
     private var notificationsAllowed by mutableStateOf(true)
     private var settingsOpened = 0
     private var lastSettingsAction = ""
@@ -211,7 +212,7 @@ class MobileScreenDeviceTest {
                         environment,
                         ProbeSessionState(
                             notificationConnected = true,
-                            accessibilityConnected = true
+                            accessibilityConnected = fixtureAccessibilityConnected
                         ),
                         false,
                         PreparationState(),
@@ -427,6 +428,31 @@ class MobileScreenDeviceTest {
         compose.runOnIdle { environment = environment.copy(accessibilityGranted = true) }
         compose.onNodeWithTag("required-access").assertDoesNotExist()
         compose.onNodeWithTag("alert-modal-card").assertIsDisplayed()
+    }
+
+    @Test
+    fun reconnectingAccessibilityKeepsItsGrantAndOffersUserControlledRecovery() {
+        compose.runOnIdle {
+            state = state.copy(options = state.options.copy(accessibilityConsent = true))
+        }
+        // The synthetic OS grant remains enabled while its service is not connected.
+        compose.runOnIdle { fixtureAccessibilityConnected = false }
+        openSettingsPage(SettingsPage.CAPTURE)
+        compose.onNodeWithText(
+            text(R.string.mobile_accessibility_access)
+        ).performScrollTo().assertIsOn()
+        compose.onNodeWithTag("required-access").assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_open_settings)).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(Settings.ACTION_ACCESSIBILITY_SETTINGS, lastSettingsAction)
+            assertTrue(state.options.accessibilityConsent)
+            environment = environment.copy(accessibilityGranted = false)
+        }
+        compose.onNodeWithTag("required-access").assertIsDisplayed()
+        compose.onNodeWithText(
+            text(R.string.mobile_accessibility_restart_notice)
+        ).performScrollTo().assertIsDisplayed()
+        compose.runOnIdle { assertTrue(state.options.accessibilityConsent) }
     }
 
     @Test

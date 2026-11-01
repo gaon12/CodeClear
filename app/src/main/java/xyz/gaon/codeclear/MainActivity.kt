@@ -3,9 +3,12 @@ package xyz.gaon.codeclear
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.database.ContentObserver
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.provider.Settings
 import android.view.WindowManager
@@ -52,6 +55,11 @@ import xyz.gaon.codeclear.probe.ProbeSourceActions
 private data class PendingDeletion(val id: Long?)
 
 class MainActivity : AppCompatActivity() {
+    private val accessObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+        override fun onChange(selfChange: Boolean) {
+            if (!isFinishing && !isDestroyed) refreshAccess()
+        }
+    }
     private var environment by mutableStateOf<ProbeEnvironment?>(null)
     private var notificationsAllowed by mutableStateOf(false)
     private var notificationRequested = false
@@ -79,6 +87,12 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContent {
             val runtime = mobileRuntime
+            LaunchedEffect(
+                ProbeSession.state.accessibilityConnected,
+                ProbeSession.state.notificationConnected
+            ) {
+                refreshAccess()
+            }
             LaunchedEffect(runtime.speech.state) {
                 if (runtime.speech.state.phase == SpeechPhase.UNAVAILABLE &&
                     runtime.speech.state.key != null
@@ -279,6 +293,15 @@ class MainActivity : AppCompatActivity() {
         super.onSaveInstanceState(outState)
     }
 
+    override fun onStart() {
+        super.onStart()
+        contentResolver.registerContentObserver(
+            Settings.Secure.getUriFor(Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES),
+            false,
+            accessObserver
+        )
+    }
+
     override fun onResume() {
         super.onResume()
         mobileRuntime.resumeProduct()
@@ -307,6 +330,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
+        contentResolver.unregisterContentObserver(accessObserver)
         mobileRuntime.speech.stop()
         mobileRuntime.nearby.foreground(false)
         super.onStop()

@@ -240,4 +240,5 @@
     <string name="mobile_model_download_notice">モデルは言語ごとに約30 MBです。Wi-Fiとストレージを使用し、閉じてもダウンロードが続く場合があります。モデルの準備で警報本文を送信しません。</string>
     <string name="mobile_model_update_pending">インストール済み · 更新確認待ち</string>
     <string name="mobile_system_preparation_explanation">システム翻訳モデルは、端末にインストールされたシステムサービスが管理します。公開されたモデル設定があれば開けますが、Androidにはこれらを直接ダウンロードする共通APIがありません。公開された言語ペアや設定がない場合はML Kitをご利用ください。通常の翻訳アプリを入れても、対応するシステムサービスが追加されるとは限りません。</string>
+    <string name="mobile_accessibility_restart_notice">Androidのアプリ情報でCodeClearを強制停止すると、ユーザー補助サービスが無効になる場合があります。ユーザー補助の設定でもう一度有効にしてください。通常の再起動後はロックを解除し、再接続をお待ちください。アプリがOSの権限を代わりに有効にすることはできません。</string>
 </resources>

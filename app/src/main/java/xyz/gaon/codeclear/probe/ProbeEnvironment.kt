@@ -8,6 +8,7 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.UserManager
+import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 
 data class ProbeEnvironment(
@@ -43,15 +44,30 @@ data class ProbeEnvironment(
             val accessibility = ComponentName(context, ProbeAccessibilityService::class.java)
             val enabledServices = context.getSystemService(AccessibilityManager::class.java)
                 .getEnabledAccessibilityServiceList(AccessibilityServiceInfo.FEEDBACK_ALL_MASK)
+            val bound = enabledServices.any {
+                val info = it.resolveInfo.serviceInfo
+                ComponentName(info.packageName, info.name) == accessibility
+            }
+            // The public enabled-service list contains bound services, so it can be empty during
+            // startup/reconnection while the user's persisted OS grant remains enabled.
+            val accessibilityGranted = try {
+                hasAccessibilityGrant(
+                    Settings.Secure.getString(
+                        context.contentResolver,
+                        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+                    ),
+                    accessibility.packageName,
+                    accessibility.className
+                )
+            } catch (_: RuntimeException) {
+                bound
+            }
             return ProbeEnvironment(
                 radio = radio,
                 systemPackages = systemPackages,
                 notificationGranted = context.getSystemService(NotificationManager::class.java)
                     .isNotificationListenerAccessGranted(listener),
-                accessibilityGranted = enabledServices.any {
-                    val info = it.resolveInfo.serviceInfo
-                    ComponentName(info.packageName, info.name) == accessibility
-                }
+                accessibilityGranted = accessibilityGranted
             )
         }
     }

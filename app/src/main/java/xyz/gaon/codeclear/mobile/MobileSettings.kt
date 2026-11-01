@@ -71,6 +71,17 @@ fun MobileSettings(
                 { disclosure = CaptureAccess.ACCESSIBILITY },
                 { actions.configure(options.copy(accessibilityConsent = false)) }
             )
+            if (captureAvailable && options.accessibilityConsent) {
+                if (!environment.accessibilityGranted) {
+                    SettingNote(stringResource(R.string.mobile_accessibility_restart_notice))
+                } else if (!session.accessibilityConnected) {
+                    SettingRow(
+                        stringResource(R.string.mobile_open_settings),
+                        stringResource(R.string.mobile_reconnect_needed),
+                        onClick = { actions.settings(Settings.ACTION_ACCESSIBILITY_SETTINGS) }
+                    )
+                }
+            }
             if (captureAvailable && Build.VERSION.SDK_INT >= 33) {
                 SettingDivider()
                 SettingRow(stringResource(R.string.mobile_permission_help), onClick = {

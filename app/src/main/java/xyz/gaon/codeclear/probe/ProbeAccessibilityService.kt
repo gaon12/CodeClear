@@ -1,6 +1,7 @@
 package xyz.gaon.codeclear.probe
 
 import android.accessibilityservice.AccessibilityService
+import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
@@ -269,6 +270,14 @@ class ProbeAccessibilityService : AccessibilityService() {
         reads.discardPending()
         windows.clear()
         ProbeSession.clear()
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        reads.discardPending()
+        windows.clear()
+        main.removeCallbacks(pendingRead)
+        ProbeSession.setConnected(ProbeRoute.ACCESSIBILITY, false)
+        return super.onUnbind(intent)
     }
 
     override fun onDestroy() {
