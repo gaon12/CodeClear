@@ -1,0 +1,37 @@
+name: Optimized Android runtime
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: optimized-runtime-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  optimized:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Check validation driver
+        run: python3 -m unittest discover -s tools/ci -p 'test_*.py'
+      - name: Prepare Android SDK
+        run: python3 tools/ci/run_emulator.py --api 30 --prepare
+      - name: Check and build optimized candidate
+        run: >-
+          ./gradlew --no-daemon --max-workers=2 --console=plain
+          :app:lintDebug :app:lintRelease :app:testDebugUnitTest
+          :app:assembleDebug :app:assembleDebugAndroidTest :app:assembleRelease
+      - name: Verify optimized offline runtime and persistence
+        run: >-
+          python3 tools/ci/run_emulator.py --api 30
+          --system-receiver --receiver-mode off --optimized

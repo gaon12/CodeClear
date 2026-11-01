@@ -87,6 +87,14 @@ bodies, so switching modes within one pending queue does not establish fresh
 automatic capture in the second mode. These debug-emulator injections do not
 establish physical radio reception or other manufacturers' firmware support.
 
+The separate manual `Optimized Android runtime` workflow builds an optimized,
+non-debuggable APK and signs it with the disposable runner's Android debug key.
+After normal capture preparation, it seeds local-only translation/view preferences
+in the debug fixture, upgrades to the optimized APK, and checks an exact Chinese
+script conversion offline plus restart persistence through the product UI. This
+runtime fixture does not validate the local-consent UX or production signing. It
+uses no production key and publishes no APK or test artifact.
+
 ## Source map
 
 All handwritten sources are Kotlin and live under each source set's `kotlin/`

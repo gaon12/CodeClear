@@ -73,7 +73,12 @@ def main():
     parser.add_argument("--prepare", action="store_true")
     parser.add_argument("--system-receiver", action="store_true")
     parser.add_argument("--receiver-mode", choices=["off", "on"], default="off")
+    parser.add_argument("--optimized", action="store_true")
     args = parser.parse_args()
+    if args.optimized and not args.system_receiver:
+        parser.error("--optimized requires normal system receiver preparation")
+    if args.optimized and args.api != 30:
+        parser.error("--optimized currently reviews only the API 30 runtime profile")
     # SDK tools and the emulator must share the same owned AVD index and data directory.
     android_user = Path(os.environ["RUNNER_TEMP"]) / "codeclear-android"
     avd_root = android_user / "avd"
@@ -261,6 +266,12 @@ def main():
                     sdk / "cmdline-tools/23.0/bin/android",
                     serial,
                     args.receiver_mode,
+                )
+            if args.optimized:
+                from optimized_runtime import validate as validate_optimized
+
+                validate_optimized(
+                    device, sdk, sdk / "cmdline-tools/23.0/bin/android", serial
                 )
             _require(
                 passed,
