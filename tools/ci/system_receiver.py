@@ -3,7 +3,6 @@
 import json
 import re
 import shlex
-import subprocess
 import time
 import xml.etree.ElementTree as ET
 
@@ -29,7 +28,9 @@ BODIES = (
 )
 
 
-def validate(device, api):
+def validate(device, api, cli, serial):
+    from consent_ui import ConsentUi
+
     # Never clear an app, change grants, or inject a PDU on an owner's physical device.
     if device("shell", "getprop", "ro.kernel.qemu") != "1":
         raise RuntimeError("Receiver fixtures require a disposable emulator")
@@ -56,27 +57,8 @@ def validate(device, api):
         device("shell", "am", "start", "-f", "0x34000000", "-n", APP + "/.MainActivity")
         time.sleep(0.5)
 
-    parents = {}
-
-    def layout():
-        nonlocal parents
-        for _ in range(3):
-            try:
-                device(
-                    "shell",
-                    "uiautomator",
-                    "dump",
-                    "--compressed",
-                    "/sdcard/codeclear-validation.xml",
-                    timeout=20,
-                )
-                data = device("shell", "cat", "/sdcard/codeclear-validation.xml")
-                root = ET.fromstring(data)
-                parents = {child: parent for parent in root.iter() for child in parent}
-                return list(root.iter("node"))
-            except (ET.ParseError, subprocess.SubprocessError):
-                time.sleep(0.5)
-        raise RuntimeError("Could not read the disposable emulator's UI")
+    ui = ConsentUi(device, cli, serial, permitted_ui)
+    layout = ui.layout
 
     def matches(node, labels):
         exposed = set()
@@ -89,13 +71,7 @@ def validate(device, api):
         return any(" ".join(label.split()).casefold() in exposed for label in labels)
 
     def tap(node):
-        _require(
-            node.get("package") in permitted_ui, "Never acknowledge a source warning"
-        )
-        _require(node.get("enabled") == "true")
-        x1, y1, x2, y2 = map(int, re.findall(r"\d+", node.get("bounds", "")))
-        _require(x2 > x1 and y2 > y1)
-        device("shell", "input", "tap", str((x1 + x2) // 2), str((y1 + y2) // 2))
+        ui.tap(node)
         time.sleep(0.4)
 
     def click(*labels, scrolls=12):
@@ -113,7 +89,7 @@ def validate(device, api):
                 tap(nodes[-1])
                 return
             if attempt < scrolls:
-                device("shell", "input", "swipe", "360", "1030", "360", "380", "250")
+                ui.scroll()
         print(
             "Unavailable control screen: "
             + json.dumps(
@@ -215,20 +191,7 @@ def validate(device, api):
                 None,
             )
             if entry is not None:
-                row = entry
-                for _ in range(5):
-                    switches = [
-                        n for n in row.iter("node") if n.get("checkable") == "true"
-                    ]
-                    if len(switches) == 1 and switches[0].get("checked") == "false":
-                        tap(switches[0])
-                        break
-                    row = parents.get(row)
-                    if row is None:
-                        tap(entry)
-                        break
-                else:
-                    tap(entry)
+                tap(entry)
                 continue
             downloaded = next(
                 (n for n in nodes if matches(n, ["Downloaded apps", "Installed apps"])),
@@ -237,7 +200,7 @@ def validate(device, api):
             if downloaded is not None:
                 tap(downloaded)
             else:
-                device("shell", "input", "swipe", "360", "1030", "360", "380", "250")
+                ui.scroll()
         raise RuntimeError(
             "System access was not enabled through the normal confirmation UI"
         )
@@ -284,6 +247,24 @@ def validate(device, api):
         "Both app disclosures and Android capture confirmations completed; remote permission is off.",
         flush=True,
     )
+
+    def resume_capture():
+        ui.stop()
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline:
+            metadata = device(
+                "shell",
+                "dumpsys",
+                "activity",
+                "service",
+                APP + "/.probe.ProbeNotificationListener",
+            )
+            if "accessibilityConnected=true" in metadata:
+                return
+            time.sleep(0.5)
+        raise RuntimeError("The capture service did not reconnect after UI automation")
+
+    resume_capture()
 
     # All sources start with their fresh AVD defaults. No dialer testing mode is enabled.
     installed = set(device("shell", "pm", "list", "packages").splitlines())
@@ -373,6 +354,7 @@ def validate(device, api):
     device("shell", "input", "keyevent", "KEYCODE_HOME")
     start_app()
     click("Open original system alert")
+    resume_capture()
     # The source opens normally. Never press its confirmation or dismiss its warnings.
     wait_for(set(BODIES[:3]))
     print(
@@ -462,6 +444,7 @@ def validate(device, api):
         device("shell", "input", "keyevent", "KEYCODE_HOME")
         start_app()
         click("Open original system alert")
+        resume_capture()
         wait_for(set(BODIES))
         print(
             "Explicit mode ON: automatic capture and the complete seven-original set verified.",

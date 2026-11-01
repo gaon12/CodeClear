@@ -34,7 +34,7 @@ jobs:
           distribution: temurin
           java-version: '25'
       - name: Check validation driver
-        run: python3 -m unittest tools.ci.test_run_emulator
+        run: python3 -m unittest discover -s tools/ci -p 'test_*.py'
       - name: Prepare Android SDK
         run: python3 tools/ci/run_emulator.py --api '${{ matrix.api }}' --prepare
       - name: Check clean checkout and build test APKs

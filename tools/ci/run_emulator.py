@@ -94,6 +94,7 @@ def main():
         )
         command(
             str(cli / "sdkmanager"),
+            "cmdline-tools;23.0",
             "platform-tools",
             "emulator",
             "platforms;android-37.0",
@@ -253,7 +254,9 @@ def main():
             if args.system_receiver:
                 from system_receiver import validate
 
-                validate(device, args.api)
+                validate(
+                    device, args.api, sdk / "cmdline-tools/23.0/bin/android", serial
+                )
             _require(
                 passed,
                 "Software fixture failures remain; receiver results are separate evidence",
