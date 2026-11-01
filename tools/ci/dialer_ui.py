@@ -42,6 +42,13 @@ def tap_testing_code(device, ui, package, digits):
                     "fields": len(cleared),
                     "still_seed": len(cleared) == 1 and cleared[0].get("text") == "0",
                     "text_lengths": [len(n.get("text", "")) for n in cleared[:3]],
+                    "ascii_labels": [
+                        text
+                        for n in cleared[:3]
+                        if (text := n.get("text", ""))
+                        and len(text) <= 32
+                        and all(c.isascii() and (c.isalpha() or c == " ") for c in text)
+                    ],
                 }
             )
         )

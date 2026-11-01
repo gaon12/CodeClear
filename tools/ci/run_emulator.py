@@ -216,9 +216,14 @@ def main():
     parser.add_argument("--system-receiver", action="store_true")
     parser.add_argument("--receiver-mode", choices=["off", "on"], default="off")
     parser.add_argument("--optimized", action="store_true")
+    parser.add_argument("--dialer-only", action="store_true")
     args = parser.parse_args()
     profile = args.profile or str(args.api)
     args.api = int(profile.split("-", 1)[0])
+    if args.dialer_only and (
+        profile != "37-16k" or args.system_receiver or args.optimized
+    ):
+        parser.error("--dialer-only is a separate preparation probe for profile 37-16k")
     if args.optimized and not args.system_receiver:
         parser.error("--optimized requires normal system receiver preparation")
     if args.optimized and profile not in {"30", "35-16k", "37-16k"}:
@@ -393,6 +398,25 @@ def main():
                 "animator_duration_scale",
             ]:
                 device("shell", "settings", "put", "global", key, "0")
+            if args.dialer_only:
+                from consent_ui import ConsentUi
+                from dialer_ui import enter_testing_code
+
+                print(
+                    "Dialer preparation only; no app, capture or RF acceptance.",
+                    flush=True,
+                )
+                enter_testing_code(
+                    device,
+                    ConsentUi(
+                        device,
+                        sdk / "cmdline-tools/23.0/bin/android",
+                        serial,
+                        {"com.android.dialer", "com.google.android.dialer"},
+                    ),
+                    keypad_controls=True,
+                )
+                return
             for apk in [
                 "debug/app-debug.apk",
                 "androidTest/debug/app-debug-androidTest.apk",

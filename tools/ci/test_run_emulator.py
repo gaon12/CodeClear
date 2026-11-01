@@ -8,12 +8,38 @@ from tools.ci.run_emulator import (
     guest_diagnostics,
     image_for_profile,
     install_fixture,
+    main,
     user_zero_unlocked,
     verify_avd_target,
     wait_for_boot,
     wait_for_package_manager,
     wait_for_unlock,
 )
+
+
+class DiagnosticArgumentsTest(unittest.TestCase):
+    def test_dialer_probe_cannot_replace_capture_or_optimized_acceptance(self):
+        for extra in ["--system-receiver", "--optimized"]:
+            with (
+                self.subTest(extra=extra),
+                patch(
+                    "sys.argv",
+                    ["run_emulator", "--profile", "37-16k", "--dialer-only", extra],
+                ),
+                patch("sys.stderr"),
+            ):
+                with self.assertRaises(SystemExit) as error:
+                    main()
+                self.assertEqual(2, error.exception.code)
+
+    def test_dialer_probe_rejects_unreviewed_profiles_before_any_environment_work(self):
+        with (
+            patch("sys.argv", ["run_emulator", "--profile", "30", "--dialer-only"]),
+            patch("sys.stderr"),
+        ):
+            with self.assertRaises(SystemExit) as error:
+                main()
+            self.assertEqual(2, error.exception.code)
 
 
 class SystemImageProfileTest(unittest.TestCase):

@@ -1,0 +1,32 @@
+name: Hosted dialer preparation diagnostic
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dialer-diagnostic-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  dialer:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Check validation driver
+        run: python3 -m unittest discover -s tools/ci -p 'test_*.py'
+      - name: Prepare isolated Android SDK
+        run: python3 tools/ci/run_emulator.py --profile 37-16k --prepare
+      - name: Free disposable runner disk
+        run: python3 tools/ci/free_runner_disk.py
+      - name: Inspect owned dialpad preparation without building the app
+        run: python3 tools/ci/run_emulator.py --profile 37-16k --dialer-only
