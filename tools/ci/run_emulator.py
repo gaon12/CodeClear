@@ -25,7 +25,7 @@ FIXTURES = {
     "capture.SourcePayloadDeviceTest": 10,
     "capture.SourceTitleDeviceTest": 1,
     "capture.SourceActionDeviceTest": 1,
-    "capture.CaptureObserverDeviceTest": 2,
+    "capture.CaptureObserverDeviceTest": 3,
     "capture.CaptureServiceComponentsDeviceTest": 2,
     "mobile.MobileScreenDeviceTest": 57,
     "mobile.UiLocaleResourcesDeviceTest": 1,

@@ -8,6 +8,7 @@ import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import xyz.gaon.codeclear.mobile.mobileRuntime
+import xyz.gaon.codeclear.probe.ProbeAccessibilityService
 
 class CaptureObserverDeviceTest {
     private var diagnosticScope: AutoCloseable? = null
@@ -59,6 +60,29 @@ class CaptureObserverDeviceTest {
         } finally {
             subscription.close()
             ProbeSession.clear()
+        }
+    }
+
+    @Test
+    fun feedbackInterruptPreservesNotificationObservationsAndTheirGeneration() = onMain {
+        val service = ProbeAccessibilityService()
+        var clears = 0
+        val subscription = ProbeSession.observe(object : CaptureObserver {
+            override fun cleared(generation: Long) {
+                clears++
+            }
+        })
+        try {
+            val generation = ProbeSession.currentGeneration()
+            val id = ProbeSession.publish(generation, fixture())!!
+            service.onInterrupt()
+            assertEquals(generation, ProbeSession.currentGeneration())
+            assertEquals(id, ProbeSession.state.records.last().id)
+            assertEquals(0, clears)
+            assertNotNull(ProbeSession.publish(generation, fixture()))
+        } finally {
+            subscription.close()
+            service.onDestroy()
         }
     }
 

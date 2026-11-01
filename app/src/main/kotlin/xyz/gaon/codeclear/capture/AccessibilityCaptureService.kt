@@ -268,9 +268,8 @@ open class AccessibilityCaptureService : AccessibilityService() {
     }
 
     override fun onInterrupt() {
-        reads.discardPending()
-        windows.clear()
-        ProbeSession.clear()
+        // This service produces no spoken or haptic feedback to interrupt.
+        // Feedback interruption does not withdraw consent or invalidate captured alerts.
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
