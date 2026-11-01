@@ -234,4 +234,15 @@
     <string name="mobile_share_body">分享正文</string>
     <string name="mobile_body_copied">已复制正文</string>
     <string name="mobile_text_action_failed">无法复制或分享此正文。</string>
+    <string name="mobile_compat_hardware">设备与警报来源</string>
+    <string name="mobile_compat_android">Android %1$s（API %2$d，最低30）</string>
+    <string name="mobile_compat_form">手机或平板设备</string>
+    <string name="mobile_compat_radio">蜂窝接收硬件</string>
+    <string name="mobile_compat_source">已安装经审核的系统警报应用</string>
+    <string name="mobile_compat_os_grants">已授予系统访问权限</string>
+    <string name="mobile_compat_consent">已允许CodeClear采集</string>
+    <string name="mobile_compat_connections">采集服务已连接</string>
+    <string name="mobile_compat_yes">是</string>
+    <string name="mobile_compat_no">否</string>
+    <string name="mobile_compat_unknown">未知</string>
 </resources>

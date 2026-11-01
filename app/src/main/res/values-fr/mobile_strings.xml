@@ -236,4 +236,15 @@
     <string name="mobile_share_body">Partager le texte</string>
     <string name="mobile_body_copied">Texte copié</string>
     <string name="mobile_text_action_failed">Impossible de copier ou de partager ce texte.</string>
+    <string name="mobile_compat_hardware">Appareil et source des alertes</string>
+    <string name="mobile_compat_android">Android %1$s (API %2$d ; minimum 30)</string>
+    <string name="mobile_compat_form">Téléphone ou tablette</string>
+    <string name="mobile_compat_radio">Matériel de réception cellulaire</string>
+    <string name="mobile_compat_source">Source système vérifiée installée</string>
+    <string name="mobile_compat_os_grants">Accès système autorisé</string>
+    <string name="mobile_compat_consent">Collecte autorisée dans CodeClear</string>
+    <string name="mobile_compat_connections">Services de collecte connectés</string>
+    <string name="mobile_compat_yes">Oui</string>
+    <string name="mobile_compat_no">Non</string>
+    <string name="mobile_compat_unknown">Inconnu</string>
 </resources>

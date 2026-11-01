@@ -1028,7 +1028,10 @@ class MobileScreenDeviceTest {
         ).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_link_unavailable)).assertDoesNotExist()
         compose.onNodeWithText(text(R.string.mobile_compatibility)).performScrollTo().performClick()
-        compose.onNodeWithText(text(R.string.mobile_close)).assertIsDisplayed().performClick()
+        compose.onNodeWithTag("compatibility-page").assertExists()
+        compose.onNodeWithTag("confirmation-actions").assertDoesNotExist()
+        compose.onNodeWithTag("settings-back").performClick()
+        compose.onNodeWithTag("settings-detail-title").assertTextEquals(text(R.string.mobile_about))
         compose.runOnIdle {
             assertEquals(0, prepared)
             assertEquals(0, settingsOpened)
@@ -1340,9 +1343,35 @@ class MobileScreenDeviceTest {
     }
 
     @Test
-    fun singleDialogCloseUsesTheEntireActionWidth() {
+    fun compatibilityPageSeparatesHardwareGrantsConsentAndLiveConnections() {
+        compose.runOnIdle {
+            environment = environment.copy(radio = ProbeRadio.ABSENT, accessibilityGranted = true)
+            fixtureAccessibilityConnected = false
+            state = state.copy(options = state.options.copy(accessibilityConsent = true))
+        }
         openSettingsPage(SettingsPage.ABOUT)
         compose.onNodeWithText(text(R.string.mobile_compatibility)).performScrollTo().performClick()
+        compose.onNodeWithTag("compatibility-radio-status").performScrollTo()
+            .assertTextEquals(text(R.string.mobile_compat_no))
+        compose.onNodeWithText(text(R.string.mobile_wifi_only)).assertExists()
+        compose.onNodeWithTag("compatibility-accessibility-grant-status").performScrollTo()
+            .assertTextEquals(text(R.string.mobile_compat_yes))
+        compose.onNodeWithTag("compatibility-accessibility-consent-status").performScrollTo()
+            .assertTextEquals(text(R.string.mobile_compat_yes))
+        compose.onNodeWithTag("compatibility-accessibility-connected-status").performScrollTo()
+            .assertTextEquals(text(R.string.mobile_compat_no))
+        compose.runOnIdle { environment = environment.copy(radio = ProbeRadio.UNKNOWN) }
+        compose.onNodeWithTag("compatibility-radio-status").performScrollTo()
+            .assertTextEquals(text(R.string.mobile_compat_unknown))
+        compose.onNodeWithTag("confirmation-actions").assertDoesNotExist()
+        compose.onNodeWithTag("settings-back").performClick()
+        compose.onNodeWithTag("settings-detail-title").assertTextEquals(text(R.string.mobile_about))
+    }
+
+    @Test
+    fun singleDialogCloseUsesTheEntireActionWidth() {
+        openSettingsPage(SettingsPage.PRIVACY)
+        compose.onNodeWithText(text(R.string.mobile_data_storage)).performScrollTo().performClick()
         val actionsWidth = compose.onNodeWithTag(
             "confirmation-actions"
         ).fetchSemanticsNode().boundsInRoot.width

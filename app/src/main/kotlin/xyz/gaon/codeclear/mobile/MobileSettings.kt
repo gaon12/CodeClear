@@ -21,7 +21,7 @@ import xyz.gaon.codeclear.capture.ProbeEnvironment
 import xyz.gaon.codeclear.capture.ProbeRadio
 import xyz.gaon.codeclear.capture.ProbeSessionState
 
-private enum class SettingsInfo { RESTRICTED_ACCESS, PRIVACY, COMPATIBILITY }
+private enum class SettingsInfo { RESTRICTED_ACCESS, PRIVACY }
 private enum class CaptureAccess { NOTIFICATION, ACCESSIBILITY }
 
 @Composable
@@ -166,10 +166,13 @@ fun MobileSettings(
             }, destructive = true)
         }
     }
+    if (page == SettingsPage.COMPATIBILITY) {
+        CompatibilityChecklist(state, environment, session, actions)
+    }
     if (page == SettingsPage.ABOUT) {
         AppAboutSettings(
             unlock = { actions.configure(options.copy(labsEnabled = true)) },
-            compatibility = { info = SettingsInfo.COMPATIBILITY }
+            compatibility = { navigate(SettingsPage.COMPATIBILITY) }
         )
     }
     disclosure?.let { route ->
@@ -242,7 +245,6 @@ fun MobileSettings(
         val title = when (page) {
             SettingsInfo.RESTRICTED_ACCESS -> R.string.mobile_permission_help
             SettingsInfo.PRIVACY -> R.string.mobile_data_storage
-            SettingsInfo.COMPATIBILITY -> R.string.mobile_compatibility
         }
         MobileConfirmationDialog(
             onDismissRequest = { info = null },
@@ -256,11 +258,7 @@ fun MobileSettings(
                         stringResource(
                             when (page) {
                                 SettingsInfo.RESTRICTED_ACCESS -> R.string.mobile_restricted
-
                                 SettingsInfo.PRIVACY -> R.string.mobile_privacy_description
-
-                                SettingsInfo.COMPATIBILITY ->
-                                    R.string.mobile_compatibility_description
                             }
                         )
                     )

@@ -58,16 +58,15 @@ enum class SettingsPage(val title: Int) {
     SHARING(R.string.mobile_nearby),
     SERVER(R.string.mobile_server_translation),
     PRIVACY(R.string.mobile_privacy),
-    ABOUT(R.string.mobile_about)
+    ABOUT(R.string.mobile_about),
+    COMPATIBILITY(R.string.mobile_compatibility)
 }
 
 internal val SettingsPage.parent: SettingsPage?
-    get() = if (this == SettingsPage.SHARING ||
-        this == SettingsPage.SERVER
-    ) {
-        SettingsPage.LABS
-    } else {
-        null
+    get() = when (this) {
+        SettingsPage.SHARING, SettingsPage.SERVER -> SettingsPage.LABS
+        SettingsPage.COMPATIBILITY -> SettingsPage.ABOUT
+        else -> null
     }
 
 internal fun settingsMenuPages(options: MobileOptions): List<SettingsPage> =
@@ -311,4 +310,6 @@ private fun settingsSummary(page: SettingsPage, options: MobileOptions): String 
     SettingsPage.PRIVACY -> stringResource(R.string.mobile_data_storage)
 
     SettingsPage.ABOUT -> "CodeClear"
+
+    SettingsPage.COMPATIBILITY -> stringResource(R.string.mobile_compatibility)
 }

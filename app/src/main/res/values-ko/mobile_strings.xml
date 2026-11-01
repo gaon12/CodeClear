@@ -234,4 +234,15 @@
     <string name="mobile_share_body">본문 공유</string>
     <string name="mobile_body_copied">본문을 복사했어요.</string>
     <string name="mobile_text_action_failed">본문을 복사하거나 공유할 수 없어요.</string>
+    <string name="mobile_compat_hardware">기기 및 재난문자 수신 환경</string>
+    <string name="mobile_compat_android">Android %1$s (API %2$d · 최소 30)</string>
+    <string name="mobile_compat_form">스마트폰 또는 태블릿 하드웨어</string>
+    <string name="mobile_compat_radio">셀룰러 수신 하드웨어</string>
+    <string name="mobile_compat_source">검토된 시스템 재난문자 수신 앱 설치</string>
+    <string name="mobile_compat_os_grants">시스템 접근 권한 허용</string>
+    <string name="mobile_compat_consent">CodeClear에서 수집 허용</string>
+    <string name="mobile_compat_connections">수집 서비스 연결</string>
+    <string name="mobile_compat_yes">예</string>
+    <string name="mobile_compat_no">아니요</string>
+    <string name="mobile_compat_unknown">확인 불가</string>
 </resources>

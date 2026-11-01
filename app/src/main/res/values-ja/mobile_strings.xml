@@ -234,4 +234,15 @@
     <string name="mobile_share_body">本文を共有</string>
     <string name="mobile_body_copied">本文をコピーしました。</string>
     <string name="mobile_text_action_failed">本文をコピーまたは共有できません。</string>
+    <string name="mobile_compat_hardware">端末と警報の受信環境</string>
+    <string name="mobile_compat_android">Android %1$s（API %2$d・最小30）</string>
+    <string name="mobile_compat_form">スマートフォンまたはタブレット</string>
+    <string name="mobile_compat_radio">携帯電話網の受信ハードウェア</string>
+    <string name="mobile_compat_source">確認済みのシステム警報アプリをインストール済み</string>
+    <string name="mobile_compat_os_grants">システムアクセスを許可済み</string>
+    <string name="mobile_compat_consent">CodeClearで取得を許可済み</string>
+    <string name="mobile_compat_connections">取得サービスの接続</string>
+    <string name="mobile_compat_yes">はい</string>
+    <string name="mobile_compat_no">いいえ</string>
+    <string name="mobile_compat_unknown">不明</string>
 </resources>
