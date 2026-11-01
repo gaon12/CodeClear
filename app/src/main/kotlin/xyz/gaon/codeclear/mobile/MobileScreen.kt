@@ -3,32 +3,20 @@ package xyz.gaon.codeclear.mobile
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,66 +29,13 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.nearby.NearbyState
-import xyz.gaon.codeclear.probe.ProbeBodyEvidence
 import xyz.gaon.codeclear.probe.ProbeEnvironment
-import xyz.gaon.codeclear.probe.ProbeRadio
 import xyz.gaon.codeclear.probe.ProbeSessionState
-import xyz.gaon.codeclear.translation.SystemEngineAvailability
 import xyz.gaon.codeclear.translation.TranslationEngineKind
-
-class MobileActions(
-    val configure: (MobileOptions) -> Unit,
-    val search: (String) -> Unit,
-    val detail: (Long?) -> Unit,
-    val delete: (Long?) -> Unit,
-    val retry: (Long, String, TranslationEngineKind) -> Unit,
-    val prepare: (SavedAlert, String, TranslationEngineKind) -> Unit,
-    val settings: (String) -> Unit,
-    val openSource: () -> Unit,
-    val notificationPermission: () -> Unit,
-    val notificationsAllowed: Boolean,
-    val older: () -> Unit,
-    val newest: () -> Unit,
-    val retryStorage: () -> Unit,
-    val systemAvailability: SystemEngineAvailability = SystemEngineAvailability(),
-    val refreshSystem: (Boolean) -> Unit = {},
-    val systemSettings: () -> Unit = {},
-    val changeDetailTarget: (Long, String, String) -> Unit = { _, _, _ -> },
-    val identifyOriginal: (String, (String?) -> Unit) -> AutoCloseable = { _, complete ->
-        complete(null)
-        AutoCloseable {}
-    },
-    val nearby: NearbyState = NearbyState(),
-    val nearbyPermission: () -> Unit = {},
-    val refreshNearby: () -> Unit = {},
-    val dismissNearby: (String) -> Unit = {},
-    val saveNearby: (String, (Long?) -> Unit) -> Unit = { _, complete -> complete(null) },
-    val speechState: SpeechState = SpeechState(),
-    val readAloud: (String, String, String) -> Unit = { _, _, _ -> },
-    val stopReading: () -> Unit = {},
-    val modelInventory: ModelInventoryState = ModelInventoryState(),
-    val modelPreparation: PreparationState = PreparationState(),
-    val refreshModels: (Boolean) -> Unit = {},
-    val prepareModel: (String) -> Unit = {},
-    val modelDownload: ModelDownloadRequest? = null,
-    val prepareTargetModels: (
-        xyz.gaon.codeclear.translation.TranslationTarget,
-        SavedAlert?
-    ) -> Unit = { _, _ -> },
-    val startModelDownload: () -> Unit = {},
-    val closeModelDownload: () -> Unit = {},
-    val showModelDownload: () -> Unit = {}
-)
 
 @Composable
 fun MobileScreen(
@@ -297,346 +232,52 @@ fun MobileScreen(
                         }
                         when {
                             showTutorial -> item {
-                                SettingSection(
-                                    stringResource(
-                                        listOf(
-                                            R.string.mobile_tutorial_receive,
-                                            R.string.mobile_tutorial_read,
-                                            R.string.mobile_tutorial_translate
-                                        )[currentStep]
-                                    )
-                                ) {
-                                    if (currentStep ==
-                                        0
-                                    ) {
-                                        Text(stringResource(R.string.mobile_intro_purpose))
-                                    }
-                                    Text(
-                                        stringResource(
-                                            listOf(
-                                                R.string.mobile_tutorial_receive_body,
-                                                R.string.mobile_tutorial_read_body,
-                                                R.string.mobile_tutorial_translate_body
-                                            )[currentStep]
-                                        )
-                                    )
-                                    if (currentStep == 1) {
-                                        NotificationPermissionSetup(actions)
-                                        if (environment.radio == ProbeRadio.PRESENT) {
-                                            MobileSettings(
-                                                SettingsPage.CAPTURE,
-                                                state,
-                                                environment,
-                                                session,
-                                                actions,
-                                                tutorial = {},
-                                                showTutorialLink = false
-                                            )
+                                TutorialStep(
+                                    currentStep,
+                                    state,
+                                    environment,
+                                    session,
+                                    actions,
+                                    back = { step-- },
+                                    next = {
+                                        if (step < 2) {
+                                            step++
                                         } else {
-                                            Text(
-                                                stringResource(
-                                                    if (environment.radio ==
-                                                        ProbeRadio.ABSENT
-                                                    ) {
-                                                        R.string.mobile_wifi_only
-                                                    } else {
-                                                        R.string.mobile_radio_unknown
-                                                    }
-                                                )
+                                            tutorial = false
+                                            actions.configure(
+                                                state.options.copy(setupComplete = true)
                                             )
                                         }
                                     }
-                                    if (currentStep ==
-                                        2
-                                    ) {
-                                        LocalTranslationSettings(state.options, actions)
-                                    }
-                                    Row {
-                                        if (currentStep >
-                                            0
-                                        ) {
-                                            TextButton(onClick = {
-                                                step--
-                                            }) { Text(stringResource(R.string.mobile_back)) }
-                                        }
-                                        Button(onClick = {
-                                            if (step <
-                                                2
-                                            ) {
-                                                step++
-                                            } else {
-                                                tutorial = false
-                                                actions.configure(
-                                                    state.options.copy(setupComplete = true)
-                                                )
-                                            }
-                                        }) {
-                                            Text(
-                                                stringResource(
-                                                    if (currentStep ==
-                                                        2
-                                                    ) {
-                                                        R.string.mobile_done
-                                                    } else {
-                                                        R.string.mobile_next
-                                                    }
-                                                )
-                                            )
-                                        }
-                                    }
-                                }
+                                )
                             }
 
-                            currentTab == 0 -> {
-                                item {
-                                    HomeOverview(state, environment, session, {
-                                        settingsPage = SettingsPage.CAPTURE
-                                        tab = 2
-                                    }, {
-                                        settingsPage = SettingsPage.TRANSLATION
-                                        tab = 2
-                                    })
+                            currentTab == 0 -> homeFeed(
+                                state, environment, session, sourceAvailable, actions,
+                                openSettings = {
+                                    settingsPage = it
+                                    tab = 2
+                                },
+                                openHistory = { tab = 1 },
+                                openNearby = {
+                                    tab = 1
+                                    nearbyPage = true
+                                },
+                                openTutorial = {
+                                    tutorial = true
+                                    step = 0
                                 }
-                                item {
-                                    Row(
-                                        Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Text(
-                                            stringResource(R.string.mobile_last_saved),
-                                            Modifier.weight(1f),
-                                            style = MaterialTheme.typography.titleMedium
-                                        )
-                                        TextButton(onClick = { tab = 1 }) {
-                                            Text(stringResource(R.string.mobile_home_view_history))
-                                        }
-                                    }
-                                }
-                                val latest = state.latest
-                                if (latest == null) {
-                                    item { HomeEmptyState() }
-                                } else {
-                                    item {
-                                        AlertPresentation(
-                                            latest,
-                                            state.options.target.languageTag,
-                                            state.options.translationAllowed,
-                                            {
-                                                actions.retry(
-                                                    latest.id,
-                                                    state.options.target.languageTag,
-                                                    state.options.engine
-                                                )
-                                            },
-                                            {
-                                                actions.prepare(
-                                                    latest,
-                                                    state.options.target.languageTag,
-                                                    state.options.engine
-                                                )
-                                            },
-                                            { actions.detail(latest.id) },
-                                            engine = state.options.engine,
-                                            viewMode = state.options.messageViewMode,
-                                            speechActions = actions
-                                        )
-                                    }
-                                }
-                                item {
-                                    SettingSection(
-                                        stringResource(
-                                            if (environment.radio == ProbeRadio.ABSENT) {
-                                                R.string.mobile_reception_information
-                                            } else {
-                                                R.string.mobile_capture_status
-                                            }
-                                        )
-                                    ) {
-                                        Text(
-                                            stringResource(
-                                                when {
-                                                    environment.radio == ProbeRadio.ABSENT ->
-                                                        R.string.mobile_wifi_only
+                            )
 
-                                                    environment.radio != ProbeRadio.PRESENT ->
-                                                        R.string.mobile_radio_unknown
-
-                                                    environment.systemPackages.isEmpty() ->
-                                                        R.string.mobile_source_unknown
-
-                                                    (
-                                                        !state.options.notificationConsent ||
-                                                            !environment.notificationGranted ||
-                                                            !session.notificationConnected
-                                                        ) &&
-                                                        (
-                                                            !state.options.accessibilityConsent ||
-                                                                !environment.accessibilityGranted ||
-                                                                !session.accessibilityConnected
-                                                            ) -> R.string.mobile_setup_needed
-
-                                                    else -> R.string.mobile_ready
-                                                }
-                                            )
-                                        )
-                                    }
+                            currentTab == 1 -> historyFeed(
+                                state,
+                                actions,
+                                openNearby = { nearbyPage = true },
+                                openDetail = {
+                                    historyDetailId = it
+                                    actions.detail(it)
                                 }
-                                item {
-                                    SettingsGroup {
-                                        TextButton(
-                                            onClick = {
-                                                settingsPage = SettingsPage.CAPTURE
-                                                tab = 2
-                                            },
-                                            modifier = Modifier.fillMaxWidth().heightIn(
-                                                min = 56.dp
-                                            )
-                                        ) {
-                                            Text(stringResource(R.string.mobile_manage_access))
-                                        }
-                                        SettingDivider()
-                                        TextButton(
-                                            onClick = {
-                                                tutorial = true
-                                                step = 0
-                                            },
-                                            modifier = Modifier.fillMaxWidth().heightIn(
-                                                min = 56.dp
-                                            )
-                                        ) {
-                                            Text(stringResource(R.string.mobile_tutorial))
-                                        }
-                                    }
-                                }
-                                if (state.options.nearbyEnabled) {
-                                    item {
-                                        SettingsGroup {
-                                            SettingRow(
-                                                stringResource(R.string.mobile_nearby_inbox),
-                                                pluralStringResource(
-                                                    R.plurals.mobile_nearby_count,
-                                                    actions.nearby.originals.size,
-                                                    actions.nearby.originals.size
-                                                ),
-                                                onClick = {
-                                                    tab = 1
-                                                    nearbyPage = true
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                                val observed = session.records.lastOrNull()?.observation
-                                if (observed != null &&
-                                    (
-                                        observed.bodyEvidence == ProbeBodyEvidence.UNVERIFIED ||
-                                            observed.limited ||
-                                            observed.groupSummary ||
-                                            observed.platformBoundaryPossible
-                                        )
-                                ) {
-                                    item {
-                                        Text(
-                                            stringResource(R.string.mobile_incomplete),
-                                            color = MaterialTheme.colorScheme.error
-                                        )
-                                    }
-                                }
-                                observed?.reportedDialogQueueSize?.takeIf {
-                                    it > 1
-                                }?.let { count ->
-                                    item { Text(stringResource(R.string.mobile_pending, count)) }
-                                }
-                                if (sourceAvailable) {
-                                    item {
-                                        Button(onClick = actions.openSource) {
-                                            Text(stringResource(R.string.mobile_open_source))
-                                        }
-                                    }
-                                }
-                            }
-
-                            currentTab == 1 -> {
-                                if (state.options.nearbyEnabled ||
-                                    actions.nearby.originals.isNotEmpty()
-                                ) {
-                                    item {
-                                        SettingsGroup {
-                                            SettingRow(
-                                                stringResource(R.string.mobile_nearby_inbox),
-                                                pluralStringResource(
-                                                    R.plurals.mobile_nearby_count,
-                                                    actions.nearby.originals.size,
-                                                    actions.nearby.originals.size
-                                                ),
-                                                onClick = {
-                                                    nearbyPage =
-                                                        true
-                                                }
-                                            )
-                                        }
-                                    }
-                                }
-                                item {
-                                    OutlinedTextField(
-                                        value = state.query,
-                                        onValueChange = actions.search,
-                                        label = {
-                                            Text(stringResource(R.string.mobile_search))
-                                        },
-                                        singleLine = true,
-                                        shape = RoundedCornerShape(24.dp),
-                                        leadingIcon = {
-                                            Icon(painterResource(R.drawable.ic_search), null)
-                                        },
-                                        colors = OutlinedTextFieldDefaults.colors(
-                                            focusedContainerColor =
-                                                MaterialTheme.colorScheme.surface,
-                                            unfocusedContainerColor =
-                                                MaterialTheme.colorScheme.surface,
-                                            unfocusedBorderColor = Color.Transparent
-                                        ),
-                                        modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-                                    )
-                                }
-                                if (state.loading || !state.loaded) {
-                                    item { HistoryLoadingPlaceholder() }
-                                } else {
-                                    if (state.records.isEmpty()) {
-                                        item { Text(stringResource(R.string.mobile_no_results)) }
-                                    }
-                                    itemsIndexed(state.records, key = { _, alert ->
-                                        alert.id
-                                    }) { index, alert ->
-                                        AlertHistoryRow(
-                                            alert = alert,
-                                            target = state.options.target.languageTag,
-                                            engine = state.options.engine,
-                                            localEnabled = state.options.translationAllowed,
-                                            first = index == 0,
-                                            last = index == state.records.lastIndex,
-                                            open = {
-                                                historyDetailId = alert.id
-                                                actions.detail(alert.id)
-                                            }
-                                        )
-                                    }
-                                    item {
-                                        Row(Modifier.padding(vertical = 12.dp)) {
-                                            TextButton(onClick = actions.newest) {
-                                                Text(stringResource(R.string.mobile_newest))
-                                            }
-                                            if (state.records.size ==
-                                                50
-                                            ) {
-                                                TextButton(onClick = actions.older) {
-                                                    Text(stringResource(R.string.mobile_older))
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                            )
                         }
                         if (preparation.phase != PreparationPhase.IDLE &&
                             state.options.engine == TranslationEngineKind.ML_KIT
@@ -654,52 +295,9 @@ fun MobileScreen(
             }
         }
         if (state.detailId != null && !isHistoryDetail && !showTutorial && !restoreAccess) {
-            BackHandler { actions.detail(null) }
-            Dialog(onDismissRequest = {
-                actions.detail(null)
-            }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-                BoxWithConstraints(
-                    Modifier.fillMaxSize().safeDrawingPadding().padding(24.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Surface(
-                        shape = RoundedCornerShape(28.dp),
-                        modifier = Modifier.widthIn(max = 600.dp).fillMaxWidth()
-                            .heightIn(
-                                max = maxHeight * if (maxHeight <
-                                    400.dp
-                                ) {
-                                    0.92f
-                                } else {
-                                    0.78f
-                                }
-                            ).testTag("alert-modal-card")
-                    ) {
-                        Column(Modifier.padding(12.dp)) {
-                            Column(
-                                Modifier.weight(
-                                    1f,
-                                    fill = false
-                                ).verticalScroll(rememberScrollState()),
-                                verticalArrangement = Arrangement.spacedBy(18.dp)
-                            ) {
-                                AlertDetailBody(state, actions, compact = true, openDetails = {
-                                    historyDetailId = state.detailId
-                                    tab = 1
-                                })
-                            }
-                            TextButton(
-                                onClick = {
-                                    actions.detail(null)
-                                },
-                                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
-                                    .testTag("alert-modal-close")
-                            ) {
-                                Text(stringResource(R.string.mobile_close))
-                            }
-                        }
-                    }
-                }
+            AlertDetailDialog(state, actions) {
+                historyDetailId = state.detailId
+                tab = 1
             }
         }
         actions.modelDownload?.takeIf { it.visible && (!restoreAccess || showTutorial) }?.let {

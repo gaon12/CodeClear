@@ -87,6 +87,9 @@ Within `mobile`, `MobileController` owns product state and consent decisions.
 `AlertTranslationQueue` selects and completes translation jobs while preserving
 their producing engine and work generation. `HistoryWorker` serializes storage
 operations, bounds pending work, and releases storage after active work completes.
+`MobileScreen` owns navigation and scroll state; tutorial steps, home/history
+feeds, and the detail dialog render through focused components. Alert formatting,
+metadata, message panels, and shared settings controls have separate owners.
 
 ## Contributing
 

@@ -13,7 +13,6 @@ import android.view.Window
 import android.view.WindowManager
 import android.view.inspector.WindowInspector
 import androidx.activity.SystemBarStyle
-import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.CompositionLocalProvider
@@ -74,7 +73,6 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import xyz.gaon.codeclear.BuildConfig
-import xyz.gaon.codeclear.MainActivity
 import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.nearby.NearbyState
 import xyz.gaon.codeclear.nearby.NearbyStatus
@@ -91,7 +89,7 @@ import xyz.gaon.codeclear.translation.TranslationTarget
 
 /** Renders synthetic-only state. The real runtime is paused and its history is never modified. */
 class MobileScreenDeviceTest {
-    @get:Rule val compose = createAndroidComposeRule<MainActivity>()
+    @get:Rule val compose = createAndroidComposeRule<MobileFixtureActivity>()
     private var scope: AutoCloseable? = null
     private var state by mutableStateOf(MobileState())
     private var environment by mutableStateOf(
@@ -152,216 +150,216 @@ class MobileScreenDeviceTest {
                     latest = record,
                     records = listOf(record)
                 )
-            context.setContent {
-                val density = LocalDensity.current
-                val dark = state.options.theme == ThemeChoice.DARK ||
-                    (state.options.theme == ThemeChoice.SYSTEM && isSystemInDarkTheme())
-                LaunchedEffect(dark) {
-                    val transparent = android.graphics.Color.TRANSPARENT
-                    context.enableEdgeToEdge(
-                        statusBarStyle = if (dark) {
-                            SystemBarStyle.dark(
-                                transparent
-                            )
-                        } else {
-                            SystemBarStyle.light(transparent, transparent)
-                        },
-                        navigationBarStyle = if (dark) {
-                            SystemBarStyle.dark(
-                                android.graphics.Color.BLACK
-                            )
-                        } else {
-                            SystemBarStyle.light(
-                                android.graphics.Color.WHITE,
-                                android.graphics.Color.WHITE
-                            )
+        }
+        compose.setContent {
+            val density = LocalDensity.current
+            val dark = state.options.theme == ThemeChoice.DARK ||
+                (state.options.theme == ThemeChoice.SYSTEM && isSystemInDarkTheme())
+            LaunchedEffect(dark) {
+                val transparent = android.graphics.Color.TRANSPARENT
+                context.enableEdgeToEdge(
+                    statusBarStyle = if (dark) {
+                        SystemBarStyle.dark(
+                            transparent
+                        )
+                    } else {
+                        SystemBarStyle.light(transparent, transparent)
+                    },
+                    navigationBarStyle = if (dark) {
+                        SystemBarStyle.dark(
+                            android.graphics.Color.BLACK
+                        )
+                    } else {
+                        SystemBarStyle.light(
+                            android.graphics.Color.WHITE,
+                            android.graphics.Color.WHITE
+                        )
+                    }
+                )
+            }
+            val base = LocalContext.current
+            val configuration = LocalConfiguration.current
+            val localized = remember(base, configuration, previewLanguage) {
+                previewLanguage?.let {
+                    base.createConfigurationContext(
+                        Configuration(configuration).apply {
+                            setLocale(Locale.forLanguageTag(it))
                         }
                     )
-                }
-                val base = LocalContext.current
-                val configuration = LocalConfiguration.current
-                val localized = remember(base, configuration, previewLanguage) {
-                    previewLanguage?.let {
-                        base.createConfigurationContext(
-                            Configuration(configuration).apply {
-                                setLocale(Locale.forLanguageTag(it))
-                            }
-                        )
-                    } ?: base
-                }
-                val uriHandler = remember {
-                    object : UriHandler {
-                        override fun openUri(uri: String) {
-                            projectLinks += uri
-                            if (projectLinkFailure) {
-                                throw IllegalArgumentException(
-                                    "No browser in fixture"
-                                )
-                            }
+                } ?: base
+            }
+            val uriHandler = remember {
+                object : UriHandler {
+                    override fun openUri(uri: String) {
+                        projectLinks += uri
+                        if (projectLinkFailure) {
+                            throw IllegalArgumentException(
+                                "No browser in fixture"
+                            )
                         }
                     }
                 }
-                CompositionLocalProvider(
-                    LocalUriHandler provides uriHandler,
-                    LocalDensity provides Density(density.density * densityScale, fontScale),
-                    LocalContext provides localized,
-                    LocalConfiguration provides localized.resources.configuration
-                ) {
-                    MobileScreen(
-                        state,
-                        environment,
-                        ProbeSessionState(
-                            notificationConnected = true,
-                            accessibilityConnected = fixtureAccessibilityConnected
-                        ),
-                        false,
-                        PreparationState(),
-                        MobileActions(
-                            configure = {
-                                configured = it
-                                state = state.copy(options = it)
-                                if (!it.nearbyEnabled) nearby = NearbyState()
-                            },
-                            search = {
-                                searched = it
-                                state = state.copy(query = it)
-                            },
-                            detail = { id ->
-                                val selected = id?.let { key ->
-                                    state.records.firstOrNull { it.id == key }
-                                        ?: state.latest?.takeIf { it.id == key }
-                                        ?: record(key)
-                                }
-                                state = state.copy(detailId = id, detail = selected)
-                            },
-                            delete = {
-                                deletionRequests++
-                                deletedAlertId = it
-                            }, retry = { _, _, engine ->
-                                retried++
-                                retriedEngine = engine
-                            }, prepare = { _, _, engine ->
-                                prepared++
-                                preparedEngine = engine
-                            }, settings = {
-                                settingsOpened++
-                                lastSettingsAction = it
-                            }, openSource = {
-                            }, notificationPermission = {
-                                notificationRequests++
-                            }, notificationsAllowed = notificationsAllowed, older = {
-                            }, newest = {
-                                newestRequests++
-                                state = state.copy(beforeId = Long.MAX_VALUE)
-                            }, retryStorage = {},
-                            systemAvailability = systemSupport,
-                            refreshSystem = { if (it) manualSupportRefreshes++ },
-                            systemSettings = { providerSettingsOpened++ },
-                            changeDetailTarget = { id, target, source ->
-                                if (id == state.detailId) {
-                                    state =
-                                        state.copy(
-                                            detailTarget = target,
-                                            detailSourceLanguage = source
-                                        )
-                                }
-                            },
-                            identifyOriginal = { _, complete ->
-                                originalLanguageRequests++
-                                originalLanguageReply = complete
-                                AutoCloseable {}
-                            },
-                            nearby = nearby,
-                            nearbyPermission = {
-                                nearbyRequests++
-                                configured = state.options.copy(nearbyEnabled = true)
-                                state = state.copy(options = configured)
-                                nearby = nearby.copy(status = NearbyStatus.LISTENING)
-                            },
-                            dismissNearby = { root ->
-                                nearby =
-                                    nearby.copy(
-                                        originals = nearby.originals.filterNot {
-                                            it.root == root
-                                        }
-                                    )
-                            },
-                            saveNearby = { root, complete ->
-                                val original = nearby.originals.first { it.root == root }
-                                nearbySaves++
-                                val saved = record(999).copy(
-                                    capture = CapturedAlert(
-                                        "xyz.gaon.codeclear.nearby",
-                                        CaptureSource.PEER,
-                                        original.title,
-                                        original.body,
-                                        System.currentTimeMillis(),
-                                        sourceIdentity = root
-                                    ),
-                                    translation = null
-                                )
-                                state = state.copy(records = listOf(saved) + state.records)
-                                nearby = nearby.copy(originals = emptyList())
-                                complete(saved.id)
-                            },
-                            speechState = speechState,
-                            readAloud = { key, body, language ->
-                                spokenMessages.add(body to language)
-                                speechState = SpeechState(SpeechPhase.PLAYING, key)
-                            },
-                            stopReading = { speechState = SpeechState() },
-                            modelInventory = inventory,
-                            modelPreparation = modelPreparation,
-                            prepareModel = {
-                                modelDownload = ModelDownloadRequest(setOf(it), checkUpdates = true)
-                            },
-                            modelDownload = modelDownload,
-                            prepareTargetModels = { target, alert ->
-                                val source =
-                                    state.detailSourceLanguage ?: alert?.translation?.sourceLanguage
-                                modelDownload = ModelDownloadRequest(
-                                    (setOfNotNull(source, target.modelCode) - "en"),
-                                    alert?.capture?.original,
-                                    target.takeIf { alert != null },
-                                    sourceKnown = alert == null || source != null
-                                )
-                            },
-                            startModelDownload = {
-                                val request = modelDownload!!
-                                val completed = if (request.checkUpdates) {
-                                    emptySet()
-                                } else {
-                                    inventory.downloaded.intersect(request.languages)
-                                }
-                                requestedModels.addAll(request.languages - completed)
-                                modelPreparation = PreparationState(
-                                    PreparationPhase.WAITING_FOR_WIFI,
-                                    languages = request.languages,
-                                    completedLanguages = completed,
-                                    activeLanguage = (request.languages - completed).firstOrNull(),
-                                    checkUpdates = request.checkUpdates
-                                )
-                                modelDownload =
-                                    request.copy(started = true, body = null, target = null)
-                            },
-                            closeModelDownload = {
-                                modelDownload =
-                                    if (modelPreparation.phase ==
-                                        PreparationPhase.WAITING_FOR_WIFI
-                                    ) {
-                                        modelDownload?.copy(visible = false)
-                                    } else {
-                                        null
-                                    }
-                            },
-                            showModelDownload = {
-                                modelDownload =
-                                    modelDownload?.copy(visible = true)
+            }
+            CompositionLocalProvider(
+                LocalUriHandler provides uriHandler,
+                LocalDensity provides Density(density.density * densityScale, fontScale),
+                LocalContext provides localized,
+                LocalConfiguration provides localized.resources.configuration
+            ) {
+                MobileScreen(
+                    state,
+                    environment,
+                    ProbeSessionState(
+                        notificationConnected = true,
+                        accessibilityConnected = fixtureAccessibilityConnected
+                    ),
+                    false,
+                    PreparationState(),
+                    MobileActions(
+                        configure = {
+                            configured = it
+                            state = state.copy(options = it)
+                            if (!it.nearbyEnabled) nearby = NearbyState()
+                        },
+                        search = {
+                            searched = it
+                            state = state.copy(query = it)
+                        },
+                        detail = { id ->
+                            val selected = id?.let { key ->
+                                state.records.firstOrNull { it.id == key }
+                                    ?: state.latest?.takeIf { it.id == key }
+                                    ?: record(key)
                             }
+                            state = state.copy(detailId = id, detail = selected)
+                        },
+                        delete = {
+                            deletionRequests++
+                            deletedAlertId = it
+                        }, retry = { _, _, engine ->
+                            retried++
+                            retriedEngine = engine
+                        }, prepare = { _, _, engine ->
+                            prepared++
+                            preparedEngine = engine
+                        }, settings = {
+                            settingsOpened++
+                            lastSettingsAction = it
+                        }, openSource = {
+                        }, notificationPermission = {
+                            notificationRequests++
+                        }, notificationsAllowed = notificationsAllowed, older = {
+                        }, newest = {
+                            newestRequests++
+                            state = state.copy(beforeId = Long.MAX_VALUE)
+                        }, retryStorage = {},
+                        systemAvailability = systemSupport,
+                        refreshSystem = { if (it) manualSupportRefreshes++ },
+                        systemSettings = { providerSettingsOpened++ },
+                        changeDetailTarget = { id, target, source ->
+                            if (id == state.detailId) {
+                                state =
+                                    state.copy(
+                                        detailTarget = target,
+                                        detailSourceLanguage = source
+                                    )
+                            }
+                        },
+                        identifyOriginal = { _, complete ->
+                            originalLanguageRequests++
+                            originalLanguageReply = complete
+                            AutoCloseable {}
+                        },
+                        nearby = nearby,
+                        nearbyPermission = {
+                            nearbyRequests++
+                            configured = state.options.copy(nearbyEnabled = true)
+                            state = state.copy(options = configured)
+                            nearby = nearby.copy(status = NearbyStatus.LISTENING)
+                        },
+                        dismissNearby = { root ->
+                            nearby =
+                                nearby.copy(
+                                    originals = nearby.originals.filterNot {
+                                        it.root == root
+                                    }
+                                )
+                        },
+                        saveNearby = { root, complete ->
+                            val original = nearby.originals.first { it.root == root }
+                            nearbySaves++
+                            val saved = record(999).copy(
+                                capture = CapturedAlert(
+                                    "xyz.gaon.codeclear.nearby",
+                                    CaptureSource.PEER,
+                                    original.title,
+                                    original.body,
+                                    System.currentTimeMillis(),
+                                    sourceIdentity = root
+                                ),
+                                translation = null
+                            )
+                            state = state.copy(records = listOf(saved) + state.records)
+                            nearby = nearby.copy(originals = emptyList())
+                            complete(saved.id)
+                        },
+                        speechState = speechState,
+                        readAloud = { key, body, language ->
+                            spokenMessages.add(body to language)
+                            speechState = SpeechState(SpeechPhase.PLAYING, key)
+                        },
+                        stopReading = { speechState = SpeechState() },
+                        modelInventory = inventory,
+                        modelPreparation = modelPreparation,
+                        prepareModel = {
+                            modelDownload = ModelDownloadRequest(setOf(it), checkUpdates = true)
+                        },
+                        modelDownload = modelDownload,
+                        prepareTargetModels = { target, alert ->
+                            val source =
+                                state.detailSourceLanguage ?: alert?.translation?.sourceLanguage
+                            modelDownload = ModelDownloadRequest(
+                                (setOfNotNull(source, target.modelCode) - "en"),
+                                alert?.capture?.original,
+                                target.takeIf { alert != null },
+                                sourceKnown = alert == null || source != null
+                            )
+                        },
+                        startModelDownload = {
+                            val request = modelDownload!!
+                            val completed = if (request.checkUpdates) {
+                                emptySet()
+                            } else {
+                                inventory.downloaded.intersect(request.languages)
+                            }
+                            requestedModels.addAll(request.languages - completed)
+                            modelPreparation = PreparationState(
+                                PreparationPhase.WAITING_FOR_WIFI,
+                                languages = request.languages,
+                                completedLanguages = completed,
+                                activeLanguage = (request.languages - completed).firstOrNull(),
+                                checkUpdates = request.checkUpdates
+                            )
+                            modelDownload =
+                                request.copy(started = true, body = null, target = null)
+                        },
+                        closeModelDownload = {
+                            modelDownload =
+                                if (modelPreparation.phase ==
+                                    PreparationPhase.WAITING_FOR_WIFI
+                                ) {
+                                    modelDownload?.copy(visible = false)
+                                } else {
+                                    null
+                                }
+                        },
+                        showModelDownload = {
+                            modelDownload =
+                                modelDownload?.copy(visible = true)
+                        }
 
-                        )
                     )
-                }
+                )
             }
         }
     }

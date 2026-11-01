@@ -1,6 +1,5 @@
 package xyz.gaon.codeclear.mobile
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -23,34 +21,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import java.text.DateFormat
-import java.util.Date
-import java.util.TimeZone
 import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.translation.TranslationEngineKind
-import xyz.gaon.codeclear.translation.TranslationTarget
-
-fun languageName(tag: String): String = when (tag) {
-    "ko" -> "한국어"
-    "zh-Hans" -> "简体中文"
-    "zh-Hant" -> "繁體中文"
-    "ja" -> "日本語"
-    "fr" -> "Français"
-    "de" -> "Deutsch"
-    else -> "English"
-}
 
 @Composable
 fun AlertPresentation(
@@ -375,144 +356,6 @@ fun AlertPresentation(
                     Text(stringResource(R.string.mobile_details))
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun MessagePanel(
-    label: String,
-    body: String,
-    translated: Boolean = false,
-    headerActions: @Composable () -> Unit = {}
-) {
-    val modifier = if (translated) {
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp))
-            .background(MaterialTheme.colorScheme.secondaryContainer).padding(16.dp)
-    } else {
-        Modifier.fillMaxWidth()
-    }
-    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                label,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.labelLarge,
-                color = if (translated) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                }
-            )
-            headerActions()
-        }
-        SelectionContainer { Text(body, style = MaterialTheme.typography.bodyLarge) }
-    }
-}
-
-internal fun translationStatusLabel(
-    phase: TranslationPhase?,
-    consent: Boolean,
-    engine: TranslationEngineKind
-): Int = if (!consent) {
-    R.string.mobile_translation_off
-} else {
-    when (phase) {
-        null -> R.string.mobile_not_translated
-
-        TranslationPhase.QUEUED -> R.string.mobile_queued
-
-        TranslationPhase.WORKING -> R.string.mobile_working
-
-        TranslationPhase.NEEDS_MODELS -> if (engine == TranslationEngineKind.SYSTEM) {
-            R.string.mobile_system_models_missing
-        } else {
-            R.string.mobile_models_missing
-        }
-
-        TranslationPhase.UNKNOWN_LANGUAGE -> R.string.mobile_unknown_language
-
-        TranslationPhase.UNAVAILABLE -> if (engine == TranslationEngineKind.MY_MEMORY) {
-            R.string.mobile_remote_unavailable
-        } else {
-            R.string.mobile_system_unavailable
-        }
-
-        TranslationPhase.UNSUPPORTED_PAIR -> R.string.mobile_pair_unsupported
-
-        TranslationPhase.QUOTA -> R.string.mobile_remote_quota
-
-        TranslationPhase.TOO_LONG -> R.string.mobile_remote_too_long
-
-        TranslationPhase.FAILED -> R.string.mobile_failed
-
-        TranslationPhase.READY -> R.string.mobile_failed
-    }
-}
-
-@Composable
-fun dateTime(time: Long): String {
-    val locale = LocalConfiguration.current.locales[0]
-    val zone = TimeZone.getDefault().id
-    return remember(time, locale, zone) {
-        DateFormat.getDateTimeInstance(
-            DateFormat.MEDIUM,
-            DateFormat.SHORT,
-            locale
-        ).format(Date(time))
-    }
-}
-
-@Composable
-fun AlertMetadata(alert: SavedAlert) {
-    SettingsGroup {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(20.dp).testTag("alert-metadata")
-        ) {
-            Text(
-                stringResource(R.string.mobile_capture_information),
-                style = MaterialTheme.typography.titleMedium
-            )
-            Text(
-                if (alert.capture.source == CaptureSource.PEER) {
-                    stringResource(R.string.mobile_nearby_unverified)
-                } else {
-                    stringResource(R.string.mobile_source, alert.capture.sourcePackage)
-                },
-                style = MaterialTheme.typography.bodyMedium
-            )
-            alert.capture.context.country?.let { country ->
-                val locale = LocalConfiguration.current.locales[0].toLanguageTag()
-                Text(
-                    stringResource(
-                        if (country.evidence ==
-                            xyz.gaon.codeclear.reception.CountryEvidence.CBS_PLMN
-                        ) {
-                            R.string.mobile_country_cbs
-                        } else if (country.evidence ==
-                            xyz.gaon.codeclear.reception.CountryEvidence.PEER
-                        ) {
-                            R.string.mobile_country_peer
-                        } else {
-                            R.string.mobile_country_network
-                        },
-                        country.flag + " " + country.displayName(locale)
-                    ),
-                    modifier = Modifier.testTag("reception-country")
-                )
-            }
-            alert.capture.receivedAtMillis?.let {
-                Text(stringResource(R.string.mobile_received, dateTime(it)))
-            }
-            alert.capture.postedAtMillis?.let {
-                Text(stringResource(R.string.mobile_posted, dateTime(it)))
-            }
-            Text(
-                stringResource(R.string.mobile_times_notice),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }
