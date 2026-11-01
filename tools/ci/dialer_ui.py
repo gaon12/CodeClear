@@ -4,6 +4,55 @@ import json
 import time
 
 
+def tap_testing_code(device, ui, package, digits):
+    if digits.get("text", "") not in {"", "0"}:
+        raise RuntimeError("The owned dialer has unexpected existing digits")
+    ui.tap(digits)
+    if ui.focused_package() != package:
+        raise RuntimeError("The dialer lost focus before testing-code input")
+    device("shell", "input", "keyevent", "KEYCODE_MOVE_END")
+    if digits.get("text") == "0":
+        delete = next(
+            (
+                n
+                for n in ui.layout()
+                if n.get("resource-id") == package + ":id/deleteButton"
+            ),
+            None,
+        )
+        if delete is None:
+            raise RuntimeError("The owned dialpad backspace control is missing")
+        ui.tap(delete)
+    cleared = [n for n in ui.layout() if n.get("resource-id") == package + ":id/digits"]
+    if len(cleared) != 1 or cleared[0].get("text", ""):
+        raise RuntimeError("The dialer intent digit was not cleared through its keypad")
+    # Follow the keypad's normal editing path for intent-filled digits.
+    # Use only reviewed digit/symbol controls; never the call button.
+    for name in [
+        "star",
+        "pound",
+        "star",
+        "pound",
+        "two",
+        "six",
+        "two",
+        "seven",
+        "pound",
+        "star",
+        "pound",
+        "star",
+    ]:
+        button = next(
+            (n for n in ui.layout() if n.get("resource-id") == package + ":id/" + name),
+            None,
+        )
+        if button is None:
+            raise RuntimeError(
+                "The reviewed testing-code keypad control is missing: " + name
+            )
+        ui.tap(button)
+
+
 def enter_testing_code(device, ui):
     result = device(
         "shell", "am", "start", "-a", "android.intent.action.DIAL", "-d", "tel:0"
@@ -49,6 +98,9 @@ def enter_testing_code(device, ui):
             raise RuntimeError(
                 "Review the normal dialpad before entering a testing code"
             )
+        if package == "com.google.android.dialer":
+            tap_testing_code(device, ui, package, digits[0])
+            return
         ui.tap(digits[0])
         ui.stop()
         if ui.focused_package() != package:

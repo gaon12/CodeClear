@@ -8,6 +8,70 @@ from tools.ci.dialer_ui import enter_testing_code
 
 
 class DialerInputTest(unittest.TestCase):
+    def google_pad(self, value):
+        package = "com.google.android.dialer"
+        return [
+            ET.Element("node", {"resource-id": package + ":id/digits", "text": value}),
+            *[
+                ET.Element("node", {"resource-id": package + ":id/" + name})
+                for name in ["deleteButton", "star", "pound", "two", "six", "seven"]
+            ],
+        ]
+
+    def test_google_testing_code_uses_real_keypad_controls_and_never_calls(self):
+        self.ui.focused_package.return_value = "com.google.android.dialer"
+        first = self.google_pad("0")
+        empty = self.google_pad("")
+        self.ui.layout.side_effect = [first, first, empty, *[empty for _ in range(12)]]
+        enter_testing_code(self.device, self.ui)
+        names = [
+            call.args[0].get("resource-id").split(":id/")[-1]
+            for call in self.ui.tap.call_args_list
+        ]
+        self.assertEqual(
+            [
+                "digits",
+                "deleteButton",
+                "star",
+                "pound",
+                "star",
+                "pound",
+                "two",
+                "six",
+                "two",
+                "seven",
+                "pound",
+                "star",
+                "pound",
+                "star",
+            ],
+            names,
+        )
+        self.assertFalse(
+            any("KEYCODE_CALL" in call.args for call in self.device.call_args_list)
+        )
+
+    def test_unexpected_google_digits_are_neither_deleted_nor_called(self):
+        self.ui.focused_package.return_value = "com.google.android.dialer"
+        self.ui.layout.return_value = self.google_pad("123")
+        with self.assertRaisesRegex(RuntimeError, "unexpected existing digits"):
+            enter_testing_code(self.device, self.ui)
+        self.ui.tap.assert_not_called()
+        self.assertFalse(
+            any("keyevent" in call.args for call in self.device.call_args_list)
+        )
+
+    def test_a_missing_google_symbol_stops_before_any_testing_code_is_typed(self):
+        self.ui.focused_package.return_value = "com.google.android.dialer"
+        first = self.google_pad("0")
+        empty = [
+            n for n in self.google_pad("") if not n.get("resource-id").endswith("/star")
+        ]
+        self.ui.layout.side_effect = [first, first, empty, empty]
+        with self.assertRaisesRegex(RuntimeError, "keypad control is missing"):
+            enter_testing_code(self.device, self.ui)
+        self.assertEqual(2, self.ui.tap.call_count)
+
     def setUp(self):
         self.device = Mock(return_value="Status: ok")
         self.ui = Mock()
