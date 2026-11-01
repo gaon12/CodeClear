@@ -89,7 +89,6 @@ class BackgroundRelayDeviceTest {
                     factory = NearbyRadioFactory { send, known, received, status ->
                         BleRelay(context, send, known, received, status) { event, code ->
                             if (events.size < 64) events.add("$event:$code")
-                            Unit
                         }
                     },
                     retain = { original, allowed, complete ->

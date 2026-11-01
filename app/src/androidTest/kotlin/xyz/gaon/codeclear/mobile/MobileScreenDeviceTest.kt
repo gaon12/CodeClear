@@ -1,5 +1,6 @@
 package xyz.gaon.codeclear.mobile
 
+import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Build
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.semantics.Role
@@ -46,7 +48,7 @@ import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
@@ -124,14 +126,24 @@ class MobileScreenDeviceTest {
     private var retried = 0
     private var fontScale by mutableStateOf(1f)
     private var densityScale by mutableStateOf(1f)
-    private var previewLanguage by mutableStateOf<String?>(null)
+    private var previewLanguage by mutableStateOf<String?>("en")
     private var systemSupport by mutableStateOf(SystemEngineAvailability(loaded = true))
     private val projectLinks = mutableListOf<String>()
     private var projectLinkFailure = false
     private var manualSupportRefreshes = 0
     private var providerSettingsOpened = 0
     private val context get() = compose.activity
-    private fun text(id: Int) = context.getString(id)
+    private val fixtureResources
+        get() = localizedFixtureContext(context, context.resources.configuration).resources
+    private fun text(id: Int) = fixtureResources.getString(id)
+    private fun text(id: Int, vararg arguments: Any) = fixtureResources.getString(id, *arguments)
+
+    private fun localizedFixtureContext(base: Context, configuration: Configuration): Context =
+        previewLanguage?.let {
+            base.createConfigurationContext(
+                Configuration(configuration).apply { setLocale(Locale.forLanguageTag(it)) }
+            )
+        } ?: base
 
     @Before
     fun renderOnlySyntheticPrivateFixtures() {
@@ -143,6 +155,7 @@ class MobileScreenDeviceTest {
                 MobileState(
                     loaded = true,
                     options = MobileOptions(
+                        target = TranslationTarget.KOREAN,
                         localConsent = true,
                         setupComplete = true,
                         messageViewMode = MessageViewMode.BOTH
@@ -180,13 +193,7 @@ class MobileScreenDeviceTest {
             val base = LocalContext.current
             val configuration = LocalConfiguration.current
             val localized = remember(base, configuration, previewLanguage) {
-                previewLanguage?.let {
-                    base.createConfigurationContext(
-                        Configuration(configuration).apply {
-                            setLocale(Locale.forLanguageTag(it))
-                        }
-                    )
-                } ?: base
+                localizedFixtureContext(base, configuration)
             }
             val uriHandler = remember {
                 object : UriHandler {
@@ -204,6 +211,7 @@ class MobileScreenDeviceTest {
                 LocalUriHandler provides uriHandler,
                 LocalDensity provides Density(density.density * densityScale, fontScale),
                 LocalContext provides localized,
+                LocalResources provides localized.resources,
                 LocalConfiguration provides localized.resources.configuration
             ) {
                 MobileScreen(
@@ -484,7 +492,7 @@ class MobileScreenDeviceTest {
         compose.onNodeWithTag("settings-detail").performScrollToNode(hasTestTag("model-es"))
         val spanish = Locale.forLanguageTag(
             "es"
-        ).getDisplayLanguage(context.resources.configuration.locales[0])
+        ).getDisplayLanguage(fixtureResources.configuration.locales[0])
         compose.onNode(hasText(spanish) and hasAnyAncestor(hasTestTag("model-es"))).performClick()
         compose.onNodeWithTag("model-download-dialog").assertExists()
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
@@ -528,7 +536,7 @@ class MobileScreenDeviceTest {
         savePreview("model-download-review", dialog = true)
         compose.onNodeWithTag("model-download-confirm").performClick()
         compose.onNodeWithTag("model-download-count").assertTextEquals(
-            context.getString(R.string.mobile_model_progress_count, 1, 2)
+            text(R.string.mobile_model_progress_count, 1, 2)
         )
         compose.runOnIdle { assertEquals(listOf("ja"), requestedModels) }
         savePreview("model-download-progress", dialog = true)
@@ -546,7 +554,7 @@ class MobileScreenDeviceTest {
             "model-download-status"
         ).assertTextEquals(text(R.string.mobile_models_ready))
         compose.onNodeWithTag("model-download-count").assertTextEquals(
-            context.getString(R.string.mobile_model_progress_count, 2, 2)
+            text(R.string.mobile_model_progress_count, 2, 2)
         )
         compose.runOnIdle { assertEquals(listOf("ja"), requestedModels) }
     }
@@ -904,7 +912,7 @@ class MobileScreenDeviceTest {
             previewLanguage = "ko"
         }
         openSettingsPage(SettingsPage.ABOUT)
-        val version = context.getString(
+        val version = text(
             R.string.mobile_version_value,
             BuildConfig.VERSION_NAME,
             BuildConfig.VERSION_CODE
@@ -1200,7 +1208,7 @@ class MobileScreenDeviceTest {
         compose.onNodeWithText(
             text(R.string.mobile_target_language)
         ).performScrollTo().performClick()
-        val originalLabel = context.getString(R.string.mobile_original_language_choice, "한국어")
+        val originalLabel = text(R.string.mobile_original_language_choice, "한국어")
         compose.onNode(hasText(originalLabel) and isRadioChoice()).assertIsNotEnabled()
         compose.onNode(hasText("Français") and isRadioChoice()).performScrollTo().performClick()
         compose.runOnIdle {
@@ -1226,7 +1234,7 @@ class MobileScreenDeviceTest {
             assertEquals(1, originalLanguageRequests)
             originalLanguageReply!!.invoke("en")
         }
-        val original = context.getString(R.string.mobile_original_language_choice, "English")
+        val original = text(R.string.mobile_original_language_choice, "English")
         compose.onNode(hasText(original) and isRadioChoice()).performScrollTo().assertIsNotEnabled()
         compose.onNode(hasText("Deutsch") and isRadioChoice()).performScrollTo().performClick()
         compose.runOnIdle { assertEquals("de", state.detailTarget) }
@@ -1239,7 +1247,7 @@ class MobileScreenDeviceTest {
         compose.onNodeWithTag("alert-metadata").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(text(R.string.mobile_official_unknown)).assertDoesNotExist()
         compose.onNodeWithText(
-            context.getString(R.string.mobile_estimate, text(R.string.mobile_unknown))
+            text(R.string.mobile_estimate, text(R.string.mobile_unknown))
         ).assertDoesNotExist()
         val button = compose.onNodeWithTag("delete-alert").performScrollTo()
         val width = compose.onNodeWithTag(
@@ -1631,7 +1639,7 @@ class MobileScreenDeviceTest {
             hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
         ).assertIsNotSelected()
         compose.onNodeWithText(
-            context.getString(R.string.mobile_engine_pair_missing, languageName("ko"))
+            text(R.string.mobile_engine_pair_missing, languageName("ko"))
         ).assertIsDisplayed()
         compose.onNodeWithText(
             text(R.string.mobile_engine_refresh)
@@ -1743,7 +1751,7 @@ class MobileScreenDeviceTest {
         ).performClick()
         compose.onNodeWithText(text(R.string.mobile_change)).performClick()
         compose.onNodeWithText(
-            context.getString(R.string.mobile_engine_pairs, languageName("ko"), 0, 1)
+            text(R.string.mobile_engine_pairs, languageName("ko"), 0, 1)
         )
             .performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(

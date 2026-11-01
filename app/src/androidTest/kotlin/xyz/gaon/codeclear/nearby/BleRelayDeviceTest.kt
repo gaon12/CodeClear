@@ -31,7 +31,6 @@ class BleRelayDeviceTest {
         val events = java.util.concurrent.ConcurrentLinkedQueue<String>()
         val diagnostics: (String, Int) -> Unit = { event, code ->
             if (events.size < 64) events.add("$event:$code")
-            Unit
         }
         val activity = ActivityScenario.launch(MainActivity::class.java)
         activity.onActivity { it.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) }
