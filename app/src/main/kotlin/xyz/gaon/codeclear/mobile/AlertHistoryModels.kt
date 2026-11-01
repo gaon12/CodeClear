@@ -70,8 +70,8 @@ data class SavedTranslation(
     val sameLanguage: Boolean = false
 )
 
-/** Existing observations remain readable but must not become newly shareable events. */
-data class StoredObservation(val id: Long, val created: Boolean)
+/** A display group owns side effects; every raw source observation keeps its own identity. */
+data class StoredObservation(val id: Long, val created: Boolean, val observationId: Long = id)
 
 data class SavedAlert(val id: Long, val capture: CapturedAlert, val translation: SavedTranslation?)
 

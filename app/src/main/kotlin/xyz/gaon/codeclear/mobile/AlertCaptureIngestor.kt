@@ -112,7 +112,7 @@ internal class AlertCaptureIngestor(
             store.insertObservation(enriched)?.also { observation ->
                 val id = observation.id
                 store.queueTranslation(id, options.target.languageTag, options.engine)
-                observationIds[record.id] = id
+                observationIds[record.id] = observation.observationId
                 if (observationIds.size > 128) observationIds.remove(observationIds.keys.first())
             }?.let { it to enriched }
         }) { result ->

@@ -105,8 +105,11 @@ class AlertHistoryStore(
             values,
             SQLiteDatabase.CONFLICT_IGNORE
         )
-        if (inserted > 0) return StoredObservation(inserted, created = true)
-        // Equality of text alone never merges two occurrences. Require the source identity too.
+        if (inserted > 0) {
+            val leader = AlertObservationGroups.assign(db, inserted, capture, hash)
+            return StoredObservation(leader, created = leader == inserted, observationId = inserted)
+        }
+        // An existing source observation requires both its identity and original text.
         require(capture.sourceIdentity != null)
         db.rawQuery(
             "SELECT id, original FROM alerts WHERE source_package=? AND source_identity=? " +
@@ -114,7 +117,11 @@ class AlertHistoryStore(
             arrayOf(capture.sourcePackage, capture.sourceIdentity, hash)
         ).use {
             if (it.moveToFirst() && it.getString(1) == capture.original) {
-                return StoredObservation(it.getLong(0), created = false)
+                return StoredObservation(
+                    resolveId(it.getLong(0))!!,
+                    created = false,
+                    observationId = it.getLong(0)
+                )
             }
         }
         throw SQLiteException("Unable to store captured alert")
@@ -142,7 +149,7 @@ class AlertHistoryStore(
         }
         args += limit.toString()
         return database.rawQuery(
-            SELECT_ALERT + " WHERE a.id<?" +
+            SELECT_ALERT + " WHERE a.display_group_id IS NULL AND a.id<?" +
                 (if (nativeOnly) " AND a.source_kind!='PEER'" else "") + matching +
                 " ORDER BY a.id DESC LIMIT ?",
             args.toTypedArray(),
@@ -157,10 +164,16 @@ class AlertHistoryStore(
     ): SavedAlert? {
         require(target in HistoryText.targets)
         return database.rawQuery(
-            SELECT_ALERT + " WHERE a.id=? LIMIT 1",
+            SELECT_ALERT +
+                " WHERE a.id=(SELECT COALESCE(display_group_id,id) FROM alerts WHERE id=?) LIMIT 1",
             arrayOf(target, engine.key, id.toString())
         ).use { if (it.moveToFirst()) readAlert(it) else null }
     }
+
+    private fun resolveId(id: Long): Long? = database.rawQuery(
+        "SELECT COALESCE(display_group_id,id) FROM alerts WHERE id=? LIMIT 1",
+        arrayOf(id.toString())
+    ).use { if (it.moveToFirst()) it.getLong(0) else null }
 
     fun updateHeading(id: Long, hint: String) {
         require(hint.matches(Regex("[A-Z_]{1,40}")))
@@ -182,6 +195,7 @@ class AlertHistoryStore(
         val db = database
         return db.transaction(exclusive = false) {
             val alert = find(id, target, engine) ?: return@transaction null
+            val canonicalId = alert.id
             val previous = alert.translation
             if (!retry && previous != null &&
                 previous.phase != TranslationPhase.QUEUED
@@ -190,7 +204,7 @@ class AlertHistoryStore(
             }
             val revision = (previous?.revision ?: 0) + 1
             val values = ContentValues().apply {
-                put("alert_id", id)
+                put("alert_id", canonicalId)
                 put("target", target)
                 put("engine", engine.key)
                 put("same_language", 0)
@@ -209,7 +223,7 @@ class AlertHistoryStore(
                 ) !=
                     -1L
             )
-            TranslationTicket(id, target, revision, alert.capture.original, engine)
+            TranslationTicket(canonicalId, target, revision, alert.capture.original, engine)
         }
     }
 
@@ -221,7 +235,7 @@ class AlertHistoryStore(
         require(target in HistoryText.targets)
         database.execSQL(
             "INSERT OR IGNORE INTO translations(alert_id,target,engine,revision,phase) " +
-                "SELECT id,?,?,0,? FROM alerts WHERE id=?",
+                "SELECT COALESCE(display_group_id,id),?,?,0,? FROM alerts WHERE id=?",
             arrayOf<Any>(target, engine.key, TranslationPhase.QUEUED.name, id)
         )
     }
@@ -237,7 +251,7 @@ class AlertHistoryStore(
                 return@transaction false
             }
             if (previous == null) {
-                queueTranslation(id, target, engine)
+                queueTranslation(alert.id, target, engine)
             } else if (previous.phase != TranslationPhase.QUEUED) {
                 val changed = db.update(
                     "translations",
@@ -250,7 +264,7 @@ class AlertHistoryStore(
                         putNull("search_text")
                     },
                     "alert_id=? AND target=? AND engine=?",
-                    arrayOf(id.toString(), target, engine.key)
+                    arrayOf(alert.id.toString(), target, engine.key)
                 )
                 check(changed == 1)
             }
@@ -302,8 +316,9 @@ class AlertHistoryStore(
     ): Long? {
         require(target in HistoryText.targets)
         return database.rawQuery(
-            "SELECT alert_id FROM translations WHERE target=? AND engine=? AND phase=? " +
-                "ORDER BY alert_id DESC LIMIT 1",
+            "SELECT t.alert_id FROM translations t JOIN alerts a ON a.id=t.alert_id " +
+                "WHERE t.target=? AND t.engine=? AND t.phase=? AND a.display_group_id IS NULL " +
+                "ORDER BY t.alert_id DESC LIMIT 1",
             arrayOf(target, engine.key, TranslationPhase.QUEUED.name)
         ).use { if (it.moveToFirst()) it.getLong(0) else null }
     }
@@ -367,7 +382,13 @@ class AlertHistoryStore(
     }
 
     fun delete(id: Long) {
-        deleteMatching("id=?", arrayOf(id.toString()))
+        database.transaction(exclusive = false) {
+            val leader = resolveId(id) ?: return@transaction
+            deleteMatching(
+                "(id=? OR display_group_id=?)",
+                arrayOf(leader.toString(), leader.toString())
+            )
+        }
     }
 
     fun deleteAll() {
@@ -465,7 +486,7 @@ class AlertHistoryStore(
     }
 
     private class HistoryDatabase(context: Context, name: String) :
-        SQLiteOpenHelper(context, name, null, 5) {
+        SQLiteOpenHelper(context, name, null, 6) {
         init {
             setWriteAheadLoggingEnabled(true)
         }
@@ -483,7 +504,7 @@ class AlertHistoryStore(
                     title TEXT NOT NULL, original TEXT NOT NULL, original_hash TEXT NOT NULL,
                     search_original TEXT NOT NULL, captured_ms INTEGER NOT NULL,
                     posted_ms INTEGER, received_ms INTEGER, heading_hint TEXT NOT NULL,
-                    reception_context TEXT,
+                    reception_context TEXT, display_group_id INTEGER,
                     broadcast_format INTEGER, broadcast_serial INTEGER, broadcast_category INTEGER,
                     broadcast_priority INTEGER, cmas_class INTEGER, etws_type INTEGER,
                     UNIQUE(source_package, source_identity, original_hash)
@@ -494,6 +515,7 @@ class AlertHistoryStore(
             createTranslations(db)
             createIgnoredSources(db)
             createQueueIndex(db)
+            createGroupIndexes(db)
         }
 
         override fun onOpen(db: SQLiteDatabase) {
@@ -504,7 +526,7 @@ class AlertHistoryStore(
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            if (oldVersion !in 1..4 || newVersion != 5) {
+            if (oldVersion !in 1..5 || newVersion != 6) {
                 throw SQLiteException("A preserving history migration is required")
             }
             if (oldVersion <= 3) {
@@ -522,7 +544,10 @@ class AlertHistoryStore(
                 db.execSQL("DROP TABLE previous_translations")
                 createQueueIndex(db)
             }
-            db.execSQL("ALTER TABLE alerts ADD COLUMN reception_context TEXT")
+            if (oldVersion < 5) db.execSQL("ALTER TABLE alerts ADD COLUMN reception_context TEXT")
+            db.execSQL("ALTER TABLE alerts ADD COLUMN display_group_id INTEGER")
+            createGroupIndexes(db)
+            AlertObservationGroups.migrate(db)
         }
     }
 
@@ -539,6 +564,14 @@ class AlertHistoryStore(
 
         fun sourceFingerprint(source: String, identity: String, bodyHash: String): String =
             originalHash(source + '\u0000' + identity + '\u0000' + bodyHash)
+
+        fun createGroupIndexes(db: SQLiteDatabase) {
+            db.execSQL("CREATE INDEX alert_display_group ON alerts(display_group_id,id DESC)")
+            db.execSQL(
+                "CREATE INDEX alert_observation_window " +
+                    "ON alerts(source_package,original_hash,captured_ms)"
+            )
+        }
 
         fun createIgnoredSources(db: SQLiteDatabase) {
             db.execSQL(

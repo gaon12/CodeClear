@@ -100,6 +100,11 @@ class AlertHistoryStoreDeviceTest {
     }
 
     @Test
+    fun migrationFromVersionFivePreservesOriginalsAndTranslations() {
+        verifyMigration(5)
+    }
+
+    @Test
     fun migrationFromVersionFourPreservesOriginalsAndTranslations() {
         verifyMigration(4)
     }
@@ -240,13 +245,26 @@ class AlertHistoryStoreDeviceTest {
                 buildList {
                     while (cursor.moveToNext()) {
                         val field = cursor.getString(1)
-                        if (field != "reception_context") add(field)
+                        if (field != "display_group_id" &&
+                            (version >= 5 || field != "reception_context")
+                        ) {
+                            add(field)
+                        }
                     }
                 }.joinToString(",")
             }
             it.execSQL(
                 schema.replace("CREATE TABLE alerts", "CREATE TABLE legacy_alerts")
-                    .replace("reception_context TEXT,", "")
+                    .replace("display_group_id INTEGER,", "")
+                    .let { schema ->
+                        if (version <
+                            5
+                        ) {
+                            schema.replace("reception_context TEXT,", "")
+                        } else {
+                            schema
+                        }
+                    }
             )
             it.execSQL("INSERT INTO legacy_alerts($columns) SELECT $columns FROM alerts")
             it.execSQL("DROP TABLE alerts")
