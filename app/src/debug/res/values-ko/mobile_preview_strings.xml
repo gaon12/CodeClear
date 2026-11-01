@@ -1,0 +1,7 @@
+<resources>
+    <string name="mobile_official_unknown">공식 위험 등급: 확인 불가. 국가와 수신 앱에 따라 분류가 다릅니다.</string>
+    <string name="mobile_unknown">확인 불가</string>
+    <string name="mobile_estimate">원본 제목 기반 추정 분류: %1$s</string>
+    <string name="mobile_numeric_metadata">원본 분류값: 방송 분류 %1$d · 우선순위 %2$d · CMAS %3$s · ETWS %4$s. 공통 위험 등급을 뜻하지 않습니다.</string>
+    <string name="mobile_model_notice">Wi-Fi에서 원문·번역 언어 모델을 준비합니다. 데이터와 저장 공간을 사용하며, 화면을 나가거나 번역을 꺼도 Android에서 다운로드가 계속될 수 있습니다. 재난문자 내용은 업로드하지 않습니다. 기기 내 번역이 켜져 있을 때만 번역을 재개합니다.</string>
+</resources>

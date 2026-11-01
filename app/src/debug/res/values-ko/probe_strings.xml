@@ -22,7 +22,6 @@
     <string name="probe_restricted_settings">Android 13 이상에서 APK 설치 경로에 따라 제한된 설정이 적용될 수 있습니다. 앱 정보 → 더보기 → 제한된 설정 허용 항목이 있으면 직접 허용한 뒤, 알림 접근 또는 접근성을 별도로 켜주세요. 기기마다 메뉴가 다르거나 관리자에 의해 제한될 수 있습니다. 권한을 자동 부여하지 않으며, 설정에서 돌아오면 실제 권한을 다시 확인합니다.</string>
     <string name="probe_app_info">앱 정보 열기</string>
     <string name="probe_settings_missing">Android 설정 → 앱 → CodeClear 수집 검증에서 해당 권한 설정을 찾아주세요. 이 기기에서는 설정 바로가기를 열 수 없었습니다.</string>
-    <string name="probe_observations">임시 관찰 데이터</string>
     <string name="probe_not_history">최근 관찰 데이터 40개만 메모리에 보관합니다. 사용자가 삭제할 때까지 보관할 정식 기록 기능과는 별개입니다. 프로세스가 종료되거나 다시 시작되면 이 데이터는 사라질 수 있습니다.</string>
     <string name="probe_clear">관찰 데이터 삭제</string>
     <string name="probe_empty">관찰 데이터가 없습니다. 재난문자가 발송되거나 기기에 수신되지 않았다는 뜻은 아닙니다.</string>
@@ -35,17 +34,12 @@
     <string name="probe_no">아니요</string>
     <string name="probe_override_disclosure">셀룰러 하드웨어가 없거나 확인되지 않아도, 지원되는 로컬 시험 메시지 주입 경로를 확인하기 위해 진단 수집을 허용합니다. 셀룰러 수신 기능이 생기는 것은 아니며, 일반 펌웨어에서 주입이 가능하다고 보장하지 않습니다. 이 옵션은 진단 빌드에만 있습니다.</string>
     <string name="probe_enable_test">진단 시험 허용</string>
-    <string name="probe_fixture_observation">셸 시험 알림 · 일반 알림 처리만 검증</string>
-    <string name="probe_notification_observation">시스템 수신기 후보 · 알림 경로</string>
-    <string name="probe_accessibility_observation">시스템 수신기 후보 · 접근성 경로</string>
     <string name="probe_captured_at">수집 시각: %1$s</string>
     <string name="probe_posted_at">OS 알림 게시 시각: %1$s (재난 발생 시각 아님)</string>
     <string name="probe_completeness_unknown">전체 본문 여부는 미검증 상태입니다. 알려진 원문과 모든 문자를 비교해야 하며, 일부 텍스트가 보인다는 사실만으로 추출 성공으로 판단하지 않습니다.</string>
     <string name="probe_limited">추출 한도에 도달했거나 본문 필드가 여러 개입니다. 불완전하거나 모호한 결과로 취급해주세요.</string>
     <string name="probe_platform_boundary">Android 알림의 알려진 글자 수 경계와 일치합니다. 앱에 전달되기 전에 원문이 짧아졌을 수 있으니 시스템 경보와 비교해주세요. 이 경고만으로 실제 누락을 단정하지 않습니다.</string>
     <string name="probe_group_summary">묶음 알림의 요약입니다. 개별 재난문자 본문으로 취급하지 마세요.</string>
-    <string name="probe_title">관찰된 제목</string>
-    <string name="probe_body">관찰된 본문 필드</string>
     <string name="probe_body_unavailable">읽을 수 있는 본문 필드가 노출되지 않았습니다. 내용을 임의로 복원하지 않습니다.</string>
     <string name="probe_source_action_notice">진단 기능: 현재 알림을 확인한 뒤 원본 재난문자를 직접 열 수 있습니다. 원본 앱의 경고를 확인 처리하지 않습니다. 검토된 데이터 형식이면 반환된 본문을 각각 가져오며, 지원하지 않는 형식은 기존 수집 내용을 유지합니다.</string>
     <string name="probe_imported_messages">개별 본문 %1$d개 가져옴</string>

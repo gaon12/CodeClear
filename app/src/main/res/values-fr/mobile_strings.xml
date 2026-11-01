@@ -21,16 +21,6 @@
     <string name="mobile_received">Reçu par la source le %1$s</string>
     <string name="mobile_posted">Notification publiée le %1$s</string>
     <string name="mobile_source">Source : %1$s</string>
-    <string name="mobile_official_unknown">Niveau officiel : indisponible. La classification dépend du pays et de la source.</string>
-    <string name="mobile_national">Alerte nationale</string>
-    <string name="mobile_extreme">Menace extrême</string>
-    <string name="mobile_severe">Menace grave</string>
-    <string name="mobile_public_safety">Sécurité publique</string>
-    <string name="mobile_amber">Alerte de disparition</string>
-    <string name="mobile_test">Alerte d’essai</string>
-    <string name="mobile_unknown">Inconnu</string>
-    <string name="mobile_estimate">Catégorie estimée d’après le titre source : %1$s</string>
-    <string name="mobile_numeric_metadata">Codes source : catégorie %1$d · priorité %2$d · CMAS %3$s · ETWS %4$s. Il ne s’agit pas d’une échelle de gravité universelle.</string>
     <string name="mobile_collection">Collecte des alertes</string>
     <string name="mobile_notification_access">Accès aux notifications</string>
     <string name="mobile_accessibility_access">Accès via l’accessibilité</string>
@@ -82,7 +72,6 @@
     <string name="mobile_delete_title">Supprimer l’historique enregistré ?</string>
     <string name="mobile_settings_missing">Ouvrez Paramètres Android → Applications → CodeClear, puis sélectionnez l’accès concerné.</string>
     <string name="mobile_restricted">Android 13 et versions ultérieures peuvent bloquer l’accès après une installation directe par APK. Ouvrez Informations sur l’application → Plus → Autoriser les paramètres restreints, puis activez chaque accès séparément. Si le menu manque, ouvrez la liste des applications Android ci-dessous, sélectionnez CodeClear, puis Plus. Les menus varient et un administrateur peut empêcher les modifications.</string>
-    <string name="mobile_model_notice">Préparez les modèles des langues source et cible via Wi-Fi. Les téléchargements utilisent des données et du stockage. Android peut les poursuivre après la fermeture de cet écran ou la désactivation de la traduction. Le texte des alertes n’est pas envoyé. La traduction reprend uniquement si la traduction sur l’appareil reste activée.</string>
     <string name="mobile_privacy_description">Les originaux et traductions restent dans le stockage privé jusqu’à leur suppression. Aucun compte ni synchronisation ; sauvegarde et transfert désactivés. Le texte est envoyé uniquement si vous autorisez et utilisez séparément MyMemory. Le fournisseur peut conserver les textes transmis.</string>
     <string name="mobile_compatibility_description">CodeClear fonctionne sur les téléphones et tablettes Android 11 et ultérieurs. La réception directe des alertes nécessite du matériel cellulaire. Les appareils Wi-Fi seuls peuvent consulter les éléments et traductions enregistrés. La collecte complète dépend du récepteur et du micrologiciel ; les profils testés ne prouvent pas une prise en charge mondiale. La collecte commence après le premier déverrouillage suivant un redémarrage.</string>
     <string name="mobile_notification_disclosure">L’accès aux notifications Android peut donner accès aux notifications d’autres applications. CodeClear lit uniquement les sources système de réception d’alertes vérifiées et enregistre les textes individuels complets dans un historique privé sur l’appareil pour les traduire localement. Aucun écran ne s’ouvre automatiquement. Vous pouvez arrêter la collecte ici ou révoquer l’accès dans les paramètres Android à tout moment. La traduction serveur nécessite une autorisation MyMemory distincte.</string>
@@ -98,12 +87,6 @@
     <string name="mobile_delete_notice">Les originaux et traductions sélectionnés seront supprimés de cette application. Cela ne supprime ni ne ferme les alertes système. Cette action est irréversible.</string>
     <string name="mobile_notification_service_label">CodeClear · Notifications d’urgence</string>
     <string name="mobile_accessibility_service_label">CodeClear · Dialogues d’alerte</string>
-    <string name="mobile_operator_defined">Alerte définie par l’opérateur</string>
-    <string name="mobile_earthquake">Séisme</string>
-    <string name="mobile_tsunami">Tsunami</string>
-    <string name="mobile_earthquake_tsunami">Séisme et tsunami</string>
-    <string name="mobile_other_emergency">Autre urgence</string>
-    <string name="mobile_other_alert">Autre alerte</string>
     <string name="mobile_system_unavailable">La traduction système est indisponible. Choisissez ML Kit dans les paramètres ou vérifiez le service de traduction système.</string>
     <string name="mobile_pair_unsupported">Le moteur choisi ne prend pas en charge cette paire de langues. Changez de moteur ou de langue cible.</string>
     <string name="mobile_system_models_missing">Préparez les modèles de langue dans les paramètres de traduction système, puis réessayez.</string>
@@ -139,7 +122,6 @@
     <string name="mobile_auto_translation">Traduction automatique</string>
     <string name="mobile_target_language">Langue de traduction</string>
     <string name="mobile_change">Modifier</string>
-    <string name="mobile_download_models">Télécharger en Wi-Fi</string>
     <string name="mobile_reception_information">Comprendre la réception des alertes</string>
     <string name="mobile_version">Version</string>
     <string name="mobile_version_value">%1$s (%2$d)</string>
@@ -164,6 +146,7 @@
     <string name="mobile_nearby_inbox">Boîte de proximité</string>
     <plurals name="mobile_nearby_count">
         <item quantity="one">%1$d message récent</item>
+        <item quantity="many">%1$d messages récents</item>
         <item quantity="other">%1$d messages récents</item>
     </plurals>
     <string name="mobile_nearby_empty">Aucun message récent. Les messages précédemment reçus sont dans l’historique.</string>
@@ -220,7 +203,6 @@
     <string name="mobile_models_not_installed">Non installé · Toucher pour télécharger</string>
     <string name="mobile_models_last_checked">Mise à jour vérifiée : %1$s</string>
     <string name="mobile_models_download">Vérifier et télécharger</string>
-    <string name="mobile_models_update">Vérifier les mises à jour</string>
     <string name="mobile_models_query_failed">Impossible de lire la liste des modèles. Réessayez.</string>
     <string name="mobile_required_access">Autoriser les permissions nécessaires</string>
     <string name="mobile_required_access_notice">Ces permissions permettent de lire les alertes et de signaler les traductions prêtes. Autorisez-les dans les paramètres Android, puis revenez pour continuer.</string>

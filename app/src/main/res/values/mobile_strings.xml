@@ -21,16 +21,6 @@
     <string name="mobile_received">Source received %1$s</string>
     <string name="mobile_posted">Notification posted %1$s</string>
     <string name="mobile_source">Source: %1$s</string>
-    <string name="mobile_official_unknown">Official severity: unavailable. Classification varies by country and source.</string>
-    <string name="mobile_national">National alert</string>
-    <string name="mobile_extreme">Extreme threat</string>
-    <string name="mobile_severe">Severe threat</string>
-    <string name="mobile_public_safety">Public safety</string>
-    <string name="mobile_amber">Missing-person alert</string>
-    <string name="mobile_test">Test alert</string>
-    <string name="mobile_unknown">Unknown</string>
-    <string name="mobile_estimate">Estimated category from source title: %1$s</string>
-    <string name="mobile_numeric_metadata">Source codes: category %1$d · priority %2$d · CMAS %3$s · ETWS %4$s. These are not a universal severity scale.</string>
     <string name="mobile_collection">Alert capture</string>
     <string name="mobile_notification_access">Notification access</string>
     <string name="mobile_accessibility_access">Accessibility access</string>
@@ -40,7 +30,6 @@
     <string name="mobile_tutorial">How capture works</string>
     <string name="mobile_translation_settings">Translation</string>
     <string name="mobile_local_description">Translate on this device with ML Kit. Chinese script conversion supports simplified and traditional output.</string>
-    <string name="mobile_model_notice">Prepare the source and target language models using Wi-Fi. Downloads use data and storage and may continue under Android after leaving this screen or turning translation off. Alert text is not uploaded. Translation resumes only while local translation is enabled.</string>
     <string name="mobile_appearance">Appearance</string>
     <string name="mobile_result_notifications">Result notifications</string>
     <string name="mobile_privacy">Privacy and history</string>
@@ -98,12 +87,6 @@
     <string name="mobile_settings_missing">Open Android Settings → Apps → CodeClear and select the relevant access setting.</string>
     <string name="mobile_notification_service_label">CodeClear · Emergency notifications</string>
     <string name="mobile_accessibility_service_label">CodeClear · Emergency alert dialogs</string>
-    <string name="mobile_operator_defined">Operator-defined alert</string>
-    <string name="mobile_earthquake">Earthquake</string>
-    <string name="mobile_tsunami">Tsunami</string>
-    <string name="mobile_earthquake_tsunami">Earthquake and tsunami</string>
-    <string name="mobile_other_emergency">Other emergency</string>
-    <string name="mobile_other_alert">Other alert</string>
     <string name="mobile_system_unavailable">System translation is unavailable. Choose ML Kit in Settings or check the system translation service.</string>
     <string name="mobile_pair_unsupported">The selected engine does not support this language pair. Choose another engine or target language.</string>
     <string name="mobile_system_models_missing">Prepare language models in the system translation settings, then retry.</string>
@@ -139,7 +122,6 @@
     <string name="mobile_auto_translation">Automatic translation</string>
     <string name="mobile_target_language">Translation language</string>
     <string name="mobile_change">Change</string>
-    <string name="mobile_download_models">Download on Wi-Fi</string>
     <string name="mobile_reception_information">How emergency alerts are received</string>
     <string name="mobile_version">Version</string>
     <string name="mobile_version_value">%1$s (%2$d)</string>
@@ -220,7 +202,6 @@
     <string name="mobile_models_not_installed">Not installed · Tap to download</string>
     <string name="mobile_models_last_checked">Update checked: %1$s</string>
     <string name="mobile_models_download">Check and download</string>
-    <string name="mobile_models_update">Check model updates</string>
     <string name="mobile_models_query_failed">Could not read the model list. Try again.</string>
     <string name="mobile_required_access">Allow required permissions</string>
     <string name="mobile_required_access_notice">These permissions let the app read emergency alerts and notify you when translations are ready. Allow access in Android settings, then return to continue.</string>

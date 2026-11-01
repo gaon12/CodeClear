@@ -23,7 +23,6 @@
     <string name="probe_restricted_settings">On affected Android 13+ APK installs, open App info → More → Allow restricted settings if offered. Then enable notification access or accessibility separately. Menu names may vary or be restricted by an administrator. Nothing is granted automatically; actual access is checked when you return.</string>
     <string name="probe_app_info">Open app info</string>
     <string name="probe_settings_missing">Open Android Settings → Apps → CodeClear capture probe, then find the relevant access setting. This device did not allow the settings shortcut.</string>
-    <string name="probe_observations">Temporary observations</string>
     <string name="probe_not_history">Only the latest 40 observations remain in memory. This diagnostic buffer is separate from future user history, which will remain until deletion. Leaving or restarting the process can lose these observations.</string>
     <string name="probe_clear">Clear observations</string>
     <string name="probe_empty">No observations. This does not prove that no emergency alert was issued or received.</string>
@@ -36,25 +35,20 @@
     <string name="probe_no">No</string>
     <string name="probe_override_disclosure">Enable diagnostic collection for supported local injection experiments even when radio hardware is absent or unknown. This does not enable cellular reception or guarantee that a production firmware accepts injected messages. It is available only in this diagnostic build.</string>
     <string name="probe_enable_test">Enable diagnostic testing</string>
-    <string name="probe_fixture_observation">Shell fixture · Notification plumbing only</string>
-    <string name="probe_notification_observation">System candidate · Notification route</string>
-    <string name="probe_accessibility_observation">System candidate · Accessibility route</string>
     <string name="probe_captured_at">Captured: %1$s</string>
     <string name="probe_posted_at">OS notification post time: %1$s (not disaster occurrence time)</string>
     <string name="probe_completeness_unknown">Completeness unverified. Compare every character with the known original; visible text alone is not proof of full capture.</string>
     <string name="probe_limited">Extraction limit or multiple body fields encountered. Treat this as incomplete or ambiguous.</string>
     <string name="probe_platform_boundary">This body matches a known Android notification text-length boundary. The original may have been shortened before reaching this app. Compare it with the system alert; this warning does not prove that text is missing.</string>
     <string name="probe_group_summary">Group summary: do not treat this as an individual alert body.</string>
-    <string name="probe_title">Observed title</string>
-    <string name="probe_body">Observed body field</string>
     <string name="probe_body_unavailable">No readable body field exposed. No text has been reconstructed.</string>
     <string name="probe_source_action_notice">Diagnostic: inspect current notifications, then explicitly open the original system alert. This opens the source app without dismissing its warning. Reviewed payloads can recover each returned body; unsupported formats preserve existing observations.</string>
-    <string name="probe_imported_messages">Recovered %1$d individual bodies</string>
+    <string name="probe_imported_messages">Recovered individual bodies: %1$d</string>
     <string name="probe_structured_fields">Source metadata · format %1$d · category %2$d · priority %3$d · CMAS class %4$s · ETWS type %5$s</string>
     <string name="probe_source_received">Received by the source: %1$s</string>
     <string name="probe_parcel_profile_notice">Experimental source payload adapter. These are source-provided numeric fields, not a country-specific severity interpretation. This internal data layout is only enabled for reviewed API 30/37 profiles.</string>
     <string name="probe_inspect_current">Inspect current system notifications</string>
     <string name="probe_open_original">Open original alert notification</string>
-    <string name="probe_returned_messages">Original action returned %1$d message objects</string>
+    <string name="probe_returned_messages">Message objects returned by the original action: %1$d</string>
     <string name="probe_source_action_unavailable">The source action was unavailable or returned an unsupported payload. Existing observations are preserved.</string>
 </resources>

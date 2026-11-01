@@ -1,0 +1,7 @@
+<resources>
+    <string name="mobile_official_unknown">Official severity: unavailable. Classification varies by country and source.</string>
+    <string name="mobile_unknown">Unknown</string>
+    <string name="mobile_estimate">Estimated category from source title: %1$s</string>
+    <string name="mobile_numeric_metadata">Source codes: category %1$d · priority %2$d · CMAS %3$s · ETWS %4$s. These are not a universal severity scale.</string>
+    <string name="mobile_model_notice">Prepare the source and target language models using Wi-Fi. Downloads use data and storage and may continue under Android after leaving this screen or turning translation off. Alert text is not uploaded. Translation resumes only while local translation is enabled.</string>
+</resources>

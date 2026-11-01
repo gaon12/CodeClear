@@ -21,16 +21,6 @@
     <string name="mobile_received">来源接收时间：%1$s</string>
     <string name="mobile_posted">通知发布时间：%1$s</string>
     <string name="mobile_source">来源：%1$s</string>
-    <string name="mobile_official_unknown">官方危险等级：无法确认。分类因国家和来源而异。</string>
-    <string name="mobile_national">国家级警报</string>
-    <string name="mobile_extreme">极端威胁</string>
-    <string name="mobile_severe">严重威胁</string>
-    <string name="mobile_public_safety">公共安全</string>
-    <string name="mobile_amber">失踪人员警报</string>
-    <string name="mobile_test">测试警报</string>
-    <string name="mobile_unknown">未知</string>
-    <string name="mobile_estimate">根据来源标题推测的分类：%1$s</string>
-    <string name="mobile_numeric_metadata">来源代码：广播分类 %1$d · 优先级 %2$d · CMAS %3$s · ETWS %4$s。这些数值不代表全球通用的危险等级。</string>
     <string name="mobile_collection">警报采集</string>
     <string name="mobile_notification_access">通知访问权限</string>
     <string name="mobile_accessibility_access">无障碍访问权限</string>
@@ -82,7 +72,6 @@
     <string name="mobile_delete_title">删除已保存的记录？</string>
     <string name="mobile_settings_missing">请打开 Android 设置 → 应用 → CodeClear，然后选择相应的访问设置。</string>
     <string name="mobile_restricted">Android 13 及以上版本可能限制直接通过 APK 安装的应用。请打开应用信息 → 更多 → 允许受限设置，然后分别开启各项访问权限。若菜单中没有该选项，请通过下方按钮打开 Android 应用列表，选择 CodeClear，再打开更多。菜单因设备而异，管理员也可能禁止更改。</string>
-    <string name="mobile_model_notice">通过 Wi-Fi 准备原文语言和目标语言的模型。下载会消耗流量和存储空间。离开此页面或关闭翻译后，Android 仍可能继续下载。警报正文不会上传。仅在设备内翻译保持启用时才会恢复翻译。</string>
     <string name="mobile_privacy_description">原文和译文会保存在设备私有存储中，直到您删除。无需账号，不提供同步；备份和设备间迁移已禁用。仅在您单独允许并使用 MyMemory 服务器翻译时发送正文，提供方可能保留提交的文本。</string>
     <string name="mobile_compatibility_description">CodeClear 可用于 Android 11 及以上的手机和平板电脑。直接接收紧急警报需要蜂窝通信硬件。仅支持 Wi-Fi 的设备仍可查看已保存的记录和译文。能否完整采集取决于警报接收应用和固件；已测试的配置不代表全球支持。重启后首次解锁才开始采集。</string>
     <string name="mobile_notification_disclosure">Android 通知访问权限也可能允许访问其他应用的通知。CodeClear 只读取经审核的系统紧急警报接收来源，将完整的单条警报正文保存到设备内的私有记录中，用于设备内翻译。不会自动打开页面。您可以随时在此关闭采集，或在 Android 设置中撤销访问权限。 服务器翻译需要单独允许 MyMemory。</string>
@@ -98,12 +87,6 @@
     <string name="mobile_delete_notice">这将从本应用删除选中的原文和译文，不会删除或关闭系统紧急警报。此操作无法撤销。</string>
     <string name="mobile_notification_service_label">CodeClear · 紧急警报通知</string>
     <string name="mobile_accessibility_service_label">CodeClear · 紧急警报对话框</string>
-    <string name="mobile_operator_defined">运营商自定义警报</string>
-    <string name="mobile_earthquake">地震</string>
-    <string name="mobile_tsunami">海啸</string>
-    <string name="mobile_earthquake_tsunami">地震与海啸</string>
-    <string name="mobile_other_emergency">其他紧急警报</string>
-    <string name="mobile_other_alert">其他警报</string>
     <string name="mobile_system_unavailable">系统翻译不可用。请在设置中选择 ML Kit，或检查系统翻译服务。</string>
     <string name="mobile_pair_unsupported">所选引擎不支持这组语言。请更换引擎或目标语言。</string>
     <string name="mobile_system_models_missing">请先在系统翻译设置中准备语言模型，然后重试。</string>
@@ -139,7 +122,6 @@
     <string name="mobile_auto_translation">自动翻译</string>
     <string name="mobile_target_language">翻译语言</string>
     <string name="mobile_change">更改</string>
-    <string name="mobile_download_models">通过 Wi-Fi 下载</string>
     <string name="mobile_reception_information">紧急警报接收说明</string>
     <string name="mobile_version">版本</string>
     <string name="mobile_version_value">%1$s (%2$d)</string>
@@ -219,7 +201,6 @@
     <string name="mobile_models_not_installed">未安装 · 点按下载</string>
     <string name="mobile_models_last_checked">更新检查时间：%1$s</string>
     <string name="mobile_models_download">检查并下载</string>
-    <string name="mobile_models_update">检查模型更新</string>
     <string name="mobile_models_query_failed">无法读取模型列表，请重试。</string>
     <string name="mobile_required_access">请授予必要权限</string>
     <string name="mobile_required_access_notice">读取紧急警报和通知翻译结果需要以下权限。请在 Android 设置中允许访问，返回后即可继续使用。</string>

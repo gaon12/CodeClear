@@ -1,0 +1,7 @@
+<resources>
+    <string name="mobile_official_unknown">Niveau officiel : indisponible. La classification dépend du pays et de la source.</string>
+    <string name="mobile_unknown">Inconnu</string>
+    <string name="mobile_estimate">Catégorie estimée d’après le titre source : %1$s</string>
+    <string name="mobile_numeric_metadata">Codes source : catégorie %1$d · priorité %2$d · CMAS %3$s · ETWS %4$s. Il ne s’agit pas d’une échelle de gravité universelle.</string>
+    <string name="mobile_model_notice">Préparez les modèles des langues source et cible via Wi-Fi. Les téléchargements utilisent des données et du stockage. Android peut les poursuivre après la fermeture de cet écran ou la désactivation de la traduction. Le texte des alertes n’est pas envoyé. La traduction reprend uniquement si la traduction sur l’appareil reste activée.</string>
+</resources>

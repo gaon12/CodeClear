@@ -79,7 +79,6 @@ directory in the single `app` module. Main packages under
 | `translation` | Shared translation contracts, on-device engines, MyMemory transport, and future server response contracts |
 | `nearby` | Experimental Bluetooth relay protocol, radio work, and peer inbox |
 | `reception` | Radio/network country context and country-code mappings |
-| `ui/theme` | Shared theme definitions |
 
 `src/debug/kotlin` contains diagnostic entry points. `src/testDebug/kotlin`
 contains JVM tests, and `src/androidTest/kotlin` contains instrumented tests.

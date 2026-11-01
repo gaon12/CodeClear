@@ -21,16 +21,6 @@
     <string name="mobile_received">원본 앱 수신 %1$s</string>
     <string name="mobile_posted">알림 게시 %1$s</string>
     <string name="mobile_source">수집 출처: %1$s</string>
-    <string name="mobile_official_unknown">공식 위험 등급: 확인 불가. 국가와 수신 앱에 따라 분류가 다릅니다.</string>
-    <string name="mobile_national">국가 경보</string>
-    <string name="mobile_extreme">최고 위험 경보</string>
-    <string name="mobile_severe">심각한 위험 경보</string>
-    <string name="mobile_public_safety">안전 안내</string>
-    <string name="mobile_amber">실종 경보</string>
-    <string name="mobile_test">시험 경보</string>
-    <string name="mobile_unknown">확인 불가</string>
-    <string name="mobile_estimate">원본 제목 기반 추정 분류: %1$s</string>
-    <string name="mobile_numeric_metadata">원본 분류값: 방송 분류 %1$d · 우선순위 %2$d · CMAS %3$s · ETWS %4$s. 공통 위험 등급을 뜻하지 않습니다.</string>
     <string name="mobile_collection">재난문자 수집</string>
     <string name="mobile_notification_access">알림 접근</string>
     <string name="mobile_accessibility_access">접근성 접근</string>
@@ -40,7 +30,6 @@
     <string name="mobile_tutorial">수집 방법 안내</string>
     <string name="mobile_translation_settings">번역</string>
     <string name="mobile_local_description">ML Kit로 기기 안에서 번역합니다. 중국어는 간체·번체 변환을 지원합니다.</string>
-    <string name="mobile_model_notice">Wi-Fi에서 원문·번역 언어 모델을 준비합니다. 데이터와 저장 공간을 사용하며, 화면을 나가거나 번역을 꺼도 Android에서 다운로드가 계속될 수 있습니다. 재난문자 내용은 업로드하지 않습니다. 기기 내 번역이 켜져 있을 때만 번역을 재개합니다.</string>
     <string name="mobile_appearance">화면 및 언어</string>
     <string name="mobile_result_notifications">번역 결과 알림</string>
     <string name="mobile_privacy">개인정보 및 기록</string>
@@ -98,12 +87,6 @@
     <string name="mobile_settings_missing">Android 설정 → 앱 → CodeClear에서 해당 접근 설정을 여세요.</string>
     <string name="mobile_notification_service_label">CodeClear · 재난문자 알림</string>
     <string name="mobile_accessibility_service_label">CodeClear · 재난문자 모달</string>
-    <string name="mobile_operator_defined">운영자 지정 경보</string>
-    <string name="mobile_earthquake">지진</string>
-    <string name="mobile_tsunami">쓰나미</string>
-    <string name="mobile_earthquake_tsunami">지진 및 쓰나미</string>
-    <string name="mobile_other_emergency">기타 긴급 상황</string>
-    <string name="mobile_other_alert">기타 경보</string>
     <string name="mobile_system_unavailable">시스템 번역을 사용할 수 없습니다. 설정에서 ML Kit를 선택하거나 시스템 번역 서비스를 확인하세요.</string>
     <string name="mobile_pair_unsupported">선택한 번역 엔진이 이 언어 조합을 지원하지 않습니다. 엔진이나 번역 언어를 바꿔주세요.</string>
     <string name="mobile_system_models_missing">시스템 번역 설정에서 언어 모델을 준비한 뒤 다시 시도하세요.</string>
@@ -139,7 +122,6 @@
     <string name="mobile_auto_translation">자동 번역</string>
     <string name="mobile_target_language">번역 언어</string>
     <string name="mobile_change">변경</string>
-    <string name="mobile_download_models">Wi-Fi로 다운로드</string>
     <string name="mobile_reception_information">재난문자 수신 안내</string>
     <string name="mobile_version">버전</string>
     <string name="mobile_version_value">%1$s (%2$d)</string>
@@ -219,7 +201,6 @@
     <string name="mobile_models_not_installed">미설치 · 눌러서 다운로드</string>
     <string name="mobile_models_last_checked">업데이트 확인: %1$s</string>
     <string name="mobile_models_download">확인 및 다운로드</string>
-    <string name="mobile_models_update">모델 업데이트 확인</string>
     <string name="mobile_models_query_failed">모델 목록을 확인하지 못했습니다. 다시 확인해 주세요.</string>
     <string name="mobile_required_access">필요한 권한을 허용해 주세요</string>
     <string name="mobile_required_access_notice">재난문자를 읽고 번역 결과를 알리려면 아래 권한이 필요합니다. Android 설정에서 허용한 뒤 돌아오면 계속 사용할 수 있습니다.</string>

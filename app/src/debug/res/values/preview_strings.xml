@@ -48,7 +48,7 @@
     <string name="preview_de">Deutsch</string>
     <string name="preview_individual_unknown">An individual alert body was not verified. This may be a combined notification; open the original system alert.</string>
     <string name="preview_heading_hint">Title-based type estimate · %1$s</string>
-    <string name="preview_queued_alerts">This system dialog reported %1$d pending alerts. Hidden bodies are captured when displayed. Review each remaining system alert; CodeClear does not press its confirmation button.</string>
+    <string name="preview_queued_alerts">Pending alerts reported by this system dialog: %1$d. Hidden bodies are captured when displayed. Review each remaining system alert; CodeClear does not press its confirmation button.</string>
     <string name="preview_kind_national">National alert family</string>
     <string name="preview_kind_extreme">Extreme-threat alert family</string>
     <string name="preview_kind_severe">Severe-threat alert family</string>

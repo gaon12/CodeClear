@@ -1,0 +1,7 @@
+<resources>
+    <string name="mobile_official_unknown">公式の危険度は不明です。分類は国や受信元によって異なります。</string>
+    <string name="mobile_unknown">不明</string>
+    <string name="mobile_estimate">元の件名から推定した分類：%1$s</string>
+    <string name="mobile_numeric_metadata">元データの値：放送分類 %1$d · 優先度 %2$d · CMAS %3$s · ETWS %4$s。世界共通の危険度を表すものではありません。</string>
+    <string name="mobile_model_notice">Wi-Fiで原文言語と翻訳先言語のモデルを準備します。データ通信と保存領域を使用します。この画面を閉じたり翻訳を無効にしたりしても、Androidがダウンロードを続ける場合があります。警報の本文はアップロードしません。翻訳を再開するのは、端末内の翻訳が有効な場合だけです。</string>
+</resources>

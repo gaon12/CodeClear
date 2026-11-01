@@ -1,0 +1,7 @@
+<resources>
+    <string name="mobile_official_unknown">官方危險等級：無法確認。分類因國家與來源而異。</string>
+    <string name="mobile_unknown">未知</string>
+    <string name="mobile_estimate">根據來源標題推測的分類：%1$s</string>
+    <string name="mobile_numeric_metadata">來源代碼：廣播分類 %1$d · 優先順序 %2$d · CMAS %3$s · ETWS %4$s。這些數值不代表全球通用的危險等級。</string>
+    <string name="mobile_model_notice">透過 Wi-Fi 準備原文語言與目標語言的模型。下載會消耗流量與儲存空間。離開此頁面或關閉翻譯後，Android 仍可能繼續下載。警報正文不會上傳。僅在裝置內翻譯保持啟用時才會恢復翻譯。</string>
+</resources>

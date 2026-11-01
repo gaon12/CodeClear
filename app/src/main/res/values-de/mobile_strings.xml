@@ -21,16 +21,6 @@
     <string name="mobile_received">Von der Quell-App empfangen: %1$s</string>
     <string name="mobile_posted">Benachrichtigung veröffentlicht: %1$s</string>
     <string name="mobile_source">Quelle: %1$s</string>
-    <string name="mobile_official_unknown">Offizieller Gefährdungsgrad: nicht verfügbar. Die Einstufung hängt von Land und Quelle ab.</string>
-    <string name="mobile_national">Nationale Warnung</string>
-    <string name="mobile_extreme">Extreme Bedrohung</string>
-    <string name="mobile_severe">Schwere Bedrohung</string>
-    <string name="mobile_public_safety">Öffentliche Sicherheit</string>
-    <string name="mobile_amber">Vermisstenwarnung</string>
-    <string name="mobile_test">Testwarnung</string>
-    <string name="mobile_unknown">Unbekannt</string>
-    <string name="mobile_estimate">Aus dem Quelltitel geschätzte Kategorie: %1$s</string>
-    <string name="mobile_numeric_metadata">Quellcodes: Kategorie %1$d · Priorität %2$d · CMAS %3$s · ETWS %4$s. Diese Werte sind keine weltweit einheitlichen Gefährdungsgrade.</string>
     <string name="mobile_collection">Warnungen erfassen</string>
     <string name="mobile_notification_access">Benachrichtigungszugriff</string>
     <string name="mobile_accessibility_access">Zugriff über Bedienungshilfen</string>
@@ -82,7 +72,6 @@
     <string name="mobile_delete_title">Gespeicherten Verlauf löschen?</string>
     <string name="mobile_settings_missing">Öffnen Sie Android-Einstellungen → Apps → CodeClear und wählen Sie die betreffende Zugriffseinstellung.</string>
     <string name="mobile_restricted">Ab Android 13 kann der Zugriff bei direkt installierten APKs eingeschränkt sein. Öffnen Sie App-Info → Mehr → Eingeschränkte Einstellungen zulassen. Aktivieren Sie danach jeden Zugriff einzeln. Fehlt das Menü, öffnen Sie unten die Android-App-Liste, wählen Sie CodeClear und dort Mehr. Menüs können abweichen; Administratoren können Änderungen verhindern.</string>
-    <string name="mobile_model_notice">Bereiten Sie die Modelle für Ausgangs- und Zielsprache über WLAN vor. Downloads benötigen Daten und Speicher. Android kann sie nach Verlassen dieses Bildschirms oder Ausschalten der Übersetzung fortsetzen. Warntexte werden nicht hochgeladen. Die Übersetzung wird nur fortgesetzt, solange die Übersetzung auf dem Gerät aktiviert ist.</string>
     <string name="mobile_privacy_description">Originale und Übersetzungen bleiben bis zum Löschen im privaten Gerätespeicher. Kein Konto, keine Synchronisierung; Sicherung und Übertragung sind deaktiviert. Nur wenn Sie MyMemory separat erlauben und nutzen, wird Warntext gesendet. Der Anbieter kann ihn speichern.</string>
     <string name="mobile_compatibility_description">CodeClear funktioniert auf Smartphones und Tablets ab Android 11. Der direkte Empfang von Notfallwarnungen erfordert Mobilfunkhardware. Reine WLAN-Geräte können gespeicherte Einträge und Übersetzungen anzeigen. Die vollständige Erfassung hängt von Empfangs-App und Firmware ab; getestete Profile belegen keine weltweite Unterstützung. Die Erfassung beginnt nach dem ersten Entsperren nach einem Neustart.</string>
     <string name="mobile_notification_disclosure">Der Android-Benachrichtigungszugriff kann auch Benachrichtigungen anderer Apps zugänglich machen. CodeClear liest nur geprüfte System-Apps zum Empfang von Notfallwarnungen und speichert vollständige einzelne Warntexte im privaten lokalen Verlauf zur Übersetzung auf dem Gerät. Bildschirme werden nicht automatisch geöffnet. Sie können die Erfassung hier ausschalten oder den Zugriff in Android jederzeit entziehen. Serverübersetzung erfordert eine separate MyMemory-Erlaubnis.</string>
@@ -98,12 +87,6 @@
     <string name="mobile_delete_notice">Die ausgewählten Originale und Übersetzungen werden aus dieser App gelöscht. Systemwarnungen werden weder gelöscht noch geschlossen. Dies kann nicht rückgängig gemacht werden.</string>
     <string name="mobile_notification_service_label">CodeClear · Notfallbenachrichtigungen</string>
     <string name="mobile_accessibility_service_label">CodeClear · Notfall-Warndialoge</string>
-    <string name="mobile_operator_defined">Vom Betreiber festgelegte Warnung</string>
-    <string name="mobile_earthquake">Erdbeben</string>
-    <string name="mobile_tsunami">Tsunami</string>
-    <string name="mobile_earthquake_tsunami">Erdbeben und Tsunami</string>
-    <string name="mobile_other_emergency">Anderer Notfall</string>
-    <string name="mobile_other_alert">Andere Warnung</string>
     <string name="mobile_system_unavailable">Die Systemübersetzung ist nicht verfügbar. Wähle ML Kit in den Einstellungen oder prüfe den Systemübersetzungsdienst.</string>
     <string name="mobile_pair_unsupported">Die gewählte Engine unterstützt dieses Sprachpaar nicht. Wähle eine andere Engine oder Zielsprache.</string>
     <string name="mobile_system_models_missing">Bereite die Sprachmodelle in den Einstellungen der Systemübersetzung vor und versuche es erneut.</string>
@@ -139,7 +122,6 @@
     <string name="mobile_auto_translation">Automatisch übersetzen</string>
     <string name="mobile_target_language">Zielsprache</string>
     <string name="mobile_change">Ändern</string>
-    <string name="mobile_download_models">Über WLAN herunterladen</string>
     <string name="mobile_reception_information">So werden Notfallwarnungen empfangen</string>
     <string name="mobile_version">Version</string>
     <string name="mobile_version_value">%1$s (%2$d)</string>
@@ -220,7 +202,6 @@
     <string name="mobile_models_not_installed">Nicht installiert · Zum Herunterladen antippen</string>
     <string name="mobile_models_last_checked">Update geprüft: %1$s</string>
     <string name="mobile_models_download">Prüfen und herunterladen</string>
-    <string name="mobile_models_update">Modellupdates prüfen</string>
     <string name="mobile_models_query_failed">Die Modellliste konnte nicht gelesen werden. Versuchen Sie es erneut.</string>
     <string name="mobile_required_access">Erforderliche Berechtigungen erlauben</string>
     <string name="mobile_required_access_notice">Diese Berechtigungen ermöglichen das Lesen von Warnmeldungen und Benachrichtigungen über fertige Übersetzungen. Erlauben Sie den Zugriff in den Android-Einstellungen und kehren Sie zurück.</string>

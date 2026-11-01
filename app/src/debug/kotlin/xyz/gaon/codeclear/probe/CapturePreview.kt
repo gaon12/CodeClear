@@ -40,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -73,7 +74,7 @@ internal fun CapturePreview(
     openSettings: (String) -> Unit,
     openSource: () -> Unit = {}
 ) {
-    var destination by rememberSaveable { mutableStateOf(0) }
+    var destination by rememberSaveable { mutableIntStateOf(0) }
     var detailId by rememberSaveable { mutableStateOf<Long?>(null) }
     var showConsent by remember { mutableStateOf(false) }
     var downloadInput by remember { mutableStateOf<TranslationInput?>(null) }

@@ -1,0 +1,7 @@
+<resources>
+    <string name="mobile_official_unknown">Offizieller Gefährdungsgrad: nicht verfügbar. Die Einstufung hängt von Land und Quelle ab.</string>
+    <string name="mobile_unknown">Unbekannt</string>
+    <string name="mobile_estimate">Aus dem Quelltitel geschätzte Kategorie: %1$s</string>
+    <string name="mobile_numeric_metadata">Quellcodes: Kategorie %1$d · Priorität %2$d · CMAS %3$s · ETWS %4$s. Diese Werte sind keine weltweit einheitlichen Gefährdungsgrade.</string>
+    <string name="mobile_model_notice">Bereiten Sie die Modelle für Ausgangs- und Zielsprache über WLAN vor. Downloads benötigen Daten und Speicher. Android kann sie nach Verlassen dieses Bildschirms oder Ausschalten der Übersetzung fortsetzen. Warntexte werden nicht hochgeladen. Die Übersetzung wird nur fortgesetzt, solange die Übersetzung auf dem Gerät aktiviert ist.</string>
+</resources>
