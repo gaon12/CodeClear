@@ -53,6 +53,26 @@ class ProbeDiagnosticsTest {
     }
 
     @Test
+    fun diagnosticsKeepObservationPostingAndSourceReceiptTimesDistinct() {
+        val observed = record(1).let {
+            it.copy(
+                observation = it.observation.copy(
+                    capturedAtMillis = 3000,
+                    postedAtMillis = 2000,
+                    broadcastFields = ProbeBroadcastFields(1, 1, 4370, 3, null, null, 1000)
+                )
+            )
+        }
+        val output = render(ProbeSessionState(records = listOf(observed)))
+        assertTrue(
+            output.contains("capturedAtMillis=3000 postedAtMillis=2000 receivedAtMillis=1000")
+        )
+        val unknown = render(ProbeSessionState(records = listOf(record(2))))
+        assertTrue(unknown.contains("capturedAtMillis=1 postedAtMillis=-1 receivedAtMillis=-1"))
+        assertFalse(output.contains("private-body-fixture"))
+    }
+
+    @Test
     fun diagnosticsKeepOutputBoundedWhenTheObservationBufferIsFull() {
         val output = render(ProbeSessionState(records = (1L..40L).map(::record)))
         assertTrue(output.contains("recordCount=40"))

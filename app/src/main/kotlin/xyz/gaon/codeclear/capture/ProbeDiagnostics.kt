@@ -30,6 +30,9 @@ object ProbeDiagnostics {
             writer.println(
                 "id=${record.id} route=${observation.route} origin=${observation.origin} " +
                     "package=${observation.packageName} " +
+                    "capturedAtMillis=${observation.capturedAtMillis} " +
+                    "postedAtMillis=${observation.postedAtMillis ?: -1} " +
+                    "receivedAtMillis=${observation.broadcastFields?.receivedAtMillis ?: -1} " +
                     "bodyLength=${observation.body.length} " +
                     "titleLength=${observation.title.length} " +
                     "limited=${observation.limited} groupSummary=${observation.groupSummary} " +
