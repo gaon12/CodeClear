@@ -20,8 +20,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import java.util.concurrent.atomic.AtomicBoolean
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 @Composable
 internal fun DetailTargetPicker(alert: SavedAlert, state: MobileState, actions: MobileActions) {
@@ -66,7 +66,7 @@ internal fun DetailTargetPicker(alert: SavedAlert, state: MobileState, actions: 
     if (open) {
         LaunchedEffect(Unit) {
             if (state.options.engine ==
-                LocalEngineKind.ML_KIT
+                TranslationEngineKind.ML_KIT
             ) {
                 actions.refreshModels(true)
             }
@@ -114,7 +114,7 @@ internal fun DetailTargetPicker(alert: SavedAlert, state: MobileState, actions: 
                                         original
                                     )
                                     val required = setOf(original, choice.modelCode) - "en"
-                                    if (state.options.engine == LocalEngineKind.ML_KIT &&
+                                    if (state.options.engine == TranslationEngineKind.ML_KIT &&
                                         !(
                                             target == choice.languageTag &&
                                                 alert.translation?.phase == TranslationPhase.READY

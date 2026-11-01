@@ -40,13 +40,13 @@ import java.text.DateFormat
 import java.util.Date
 import java.util.TimeZone
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.LocalEngineKind
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 @Composable
 fun AlertHistoryRow(
     alert: SavedAlert,
     target: String,
-    engine: LocalEngineKind,
+    engine: TranslationEngineKind,
     localEnabled: Boolean,
     first: Boolean,
     last: Boolean,

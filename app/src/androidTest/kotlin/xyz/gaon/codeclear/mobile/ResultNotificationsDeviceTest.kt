@@ -14,7 +14,7 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.LocalEngineKind
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 class ResultNotificationsDeviceTest {
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
@@ -35,9 +35,9 @@ class ResultNotificationsDeviceTest {
             ResultNotifications.destination(Uri.parse("codeclear://record/42/en"))
         )
         assertEquals(
-            RecordDestination(42, "en", LocalEngineKind.SYSTEM),
+            RecordDestination(42, "en", TranslationEngineKind.SYSTEM),
             ResultNotifications.destination(
-                ResultNotifications.destinationUri(42, "en", LocalEngineKind.SYSTEM)
+                ResultNotifications.destinationUri(42, "en", TranslationEngineKind.SYSTEM)
             )
         )
         listOf(
@@ -61,12 +61,12 @@ class ResultNotificationsDeviceTest {
         val manager = context.getSystemService(NotificationManager::class.java)
         owner.cancel(null)
         try {
-            owner.post(88, "en", engine = LocalEngineKind.SYSTEM)
+            owner.post(88, "en", engine = TranslationEngineKind.SYSTEM)
             await { manager.activeNotifications.any { it.tag == "result-88" } }
             val previous = manager.activeNotifications.first {
                 it.tag == "result-88"
             }.notification.contentIntent
-            owner.post(88, "en", engine = LocalEngineKind.ML_KIT)
+            owner.post(88, "en", engine = TranslationEngineKind.ML_KIT)
             await {
                 manager.activeNotifications.firstOrNull { it.tag == "result-88" }
                     ?.notification?.contentIntent != previous
@@ -84,12 +84,12 @@ class ResultNotificationsDeviceTest {
         val manager = context.getSystemService(NotificationManager::class.java)
         owner.cancel(null)
         try {
-            owner.post(89, "en", engine = LocalEngineKind.SYSTEM)
+            owner.post(89, "en", engine = TranslationEngineKind.SYSTEM)
             await { manager.activeNotifications.any { it.tag == "result-89" } }
             val previous = manager.activeNotifications.first { it.tag == "result-89" }
                 .notification.contentIntent
             owner.cancel(89)
-            owner.post(89, "de", engine = LocalEngineKind.ML_KIT)
+            owner.post(89, "de", engine = TranslationEngineKind.ML_KIT)
             await {
                 val notice = manager.activeNotifications.firstOrNull { it.tag == "result-89" }
                 notice != null && notice.notification.contentIntent != previous

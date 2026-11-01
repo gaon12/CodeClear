@@ -45,9 +45,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeSessionState
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 enum class SettingsPage(val title: Int) {
     CAPTURE(R.string.mobile_collection),
@@ -268,7 +268,7 @@ private fun SettingsDetail(
                 }
                 if (page == SettingsPage.TRANSLATION &&
                     preparation.phase != PreparationPhase.IDLE &&
-                    state.options.engine == LocalEngineKind.ML_KIT
+                    state.options.engine == TranslationEngineKind.ML_KIT
                 ) {
                     item { Text(stringResource(preparationMessage(preparation.phase))) }
                 }

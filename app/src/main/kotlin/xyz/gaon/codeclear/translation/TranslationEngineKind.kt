@@ -1,7 +1,7 @@
-package xyz.gaon.codeclear.probe
+package xyz.gaon.codeclear.translation
 
 /** Stable identifiers are persisted with results so changing engines never relabels old output. */
-enum class LocalEngineKind(val key: String) {
+enum class TranslationEngineKind(val key: String) {
     ML_KIT("mlkit"),
     SYSTEM("system"),
     MY_MEMORY("mymemory")

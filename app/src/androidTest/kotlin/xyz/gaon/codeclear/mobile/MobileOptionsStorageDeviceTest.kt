@@ -10,8 +10,8 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 class MobileOptionsStorageDeviceTest {
     @Test
@@ -108,7 +108,7 @@ class MobileOptionsStorageDeviceTest {
                 MobileOptions(
                     localConsent = true,
                     labsEnabled = true,
-                    engine = LocalEngineKind.MY_MEMORY
+                    engine = TranslationEngineKind.MY_MEMORY
                 )
             )
             assertFalse(storage.load().serverAllowed)
@@ -119,7 +119,7 @@ class MobileOptionsStorageDeviceTest {
             assertFalse(storage.load().serverAllowed)
             storage.save(storage.load().copy(serverAllowed = true, labsEnabled = false))
             assertFalse(storage.load().serverAllowed)
-            assertEquals(LocalEngineKind.ML_KIT, storage.load().engine)
+            assertEquals(TranslationEngineKind.ML_KIT, storage.load().engine)
         } finally {
             context.deleteSharedPreferences(name)
         }
@@ -136,14 +136,14 @@ class MobileOptionsStorageDeviceTest {
                 preferences.edit().putInt("disclosure_version", 1)
                     .putBoolean("local_consent", true).commit()
             )
-            assertEquals(LocalEngineKind.ML_KIT, storage.load().engine)
+            assertEquals(TranslationEngineKind.ML_KIT, storage.load().engine)
             assertTrue(storage.load().localConsent)
-            storage.save(storage.load().copy(engine = LocalEngineKind.SYSTEM))
-            assertEquals(LocalEngineKind.SYSTEM, storage.load().engine)
+            storage.save(storage.load().copy(engine = TranslationEngineKind.SYSTEM))
+            assertEquals(TranslationEngineKind.SYSTEM, storage.load().engine)
             assertTrue(storage.load().localConsent)
             assertTrue(preferences.edit().putString("local_engine", "unrecognized").commit())
             assertFalse(storage.load().localConsent)
-            assertEquals(LocalEngineKind.ML_KIT, storage.load().engine)
+            assertEquals(TranslationEngineKind.ML_KIT, storage.load().engine)
         } finally {
             context.deleteSharedPreferences(name)
         }

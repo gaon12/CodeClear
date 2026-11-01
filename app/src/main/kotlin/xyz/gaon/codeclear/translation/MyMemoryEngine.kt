@@ -12,7 +12,6 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import xyz.gaon.codeclear.probe.ChineseScriptConverter
 import xyz.gaon.codeclear.probe.LocalEngine
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalInput
 import xyz.gaon.codeclear.probe.LocalResult
 
@@ -48,7 +47,7 @@ class MyMemoryEngine(
     ) {
         checkMain()
         check(!closed && active == null)
-        if (!authorized || input.engine != LocalEngineKind.MY_MEMORY) {
+        if (!authorized || input.engine != TranslationEngineKind.MY_MEMORY) {
             complete(LocalResult.Unavailable)
             return
         }

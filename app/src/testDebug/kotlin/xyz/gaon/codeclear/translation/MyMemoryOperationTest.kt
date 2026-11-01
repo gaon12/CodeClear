@@ -9,7 +9,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalInput
 import xyz.gaon.codeclear.probe.LocalResult
 import xyz.gaon.codeclear.probe.LocalTarget
@@ -188,5 +187,5 @@ class MyMemoryOperationTest {
     }
 
     private fun input(body: String, target: LocalTarget = LocalTarget.ENGLISH) =
-        LocalInput(1, body, target, LocalEngineKind.MY_MEMORY)
+        LocalInput(1, body, target, TranslationEngineKind.MY_MEMORY)
 }

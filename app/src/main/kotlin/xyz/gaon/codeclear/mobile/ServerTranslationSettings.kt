@@ -18,14 +18,14 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 @Composable
 internal fun ServerTranslationSettings(options: MobileOptions, actions: MobileActions) {
     var disclosure by remember { mutableStateOf(false) }
     var targetPicker by remember { mutableStateOf(false) }
-    val active = options.engine == LocalEngineKind.MY_MEMORY && options.translationAllowed
+    val active = options.engine == TranslationEngineKind.MY_MEMORY && options.translationAllowed
     SettingsGroup {
         SettingNote(stringResource(R.string.mobile_server_description))
         SettingSwitchRow(
@@ -91,7 +91,10 @@ internal fun ServerTranslationSettings(options: MobileOptions, actions: MobileAc
                     disclosure = false
                     if (options.labsEnabled) {
                         actions.configure(
-                            options.copy(engine = LocalEngineKind.MY_MEMORY, serverAllowed = true)
+                            options.copy(
+                                engine = TranslationEngineKind.MY_MEMORY,
+                                serverAllowed = true
+                            )
                         )
                     }
                 }, enabled = options.labsEnabled) { Text(stringResource(R.string.mobile_allow)) }

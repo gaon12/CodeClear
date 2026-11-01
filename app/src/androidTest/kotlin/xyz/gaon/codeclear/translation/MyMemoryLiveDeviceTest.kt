@@ -7,7 +7,6 @@ import java.util.concurrent.atomic.AtomicReference
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalInput
 import xyz.gaon.codeclear.probe.LocalResult
 import xyz.gaon.codeclear.probe.LocalTarget
@@ -42,7 +41,7 @@ class MyMemoryLiveDeviceTest {
                     1,
                     "This is a synthetic translation connection test.",
                     LocalTarget.JAPANESE,
-                    LocalEngineKind.MY_MEMORY
+                    TranslationEngineKind.MY_MEMORY
                 ),
                 false
             ) {

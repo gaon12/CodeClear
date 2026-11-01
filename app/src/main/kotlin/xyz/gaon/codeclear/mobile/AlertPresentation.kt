@@ -39,8 +39,8 @@ import java.text.DateFormat
 import java.util.Date
 import java.util.TimeZone
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 fun languageName(tag: String): String = when (tag) {
     "ko" -> "한국어"
@@ -60,7 +60,7 @@ fun AlertPresentation(
     retry: () -> Unit,
     prepare: () -> Unit,
     details: (() -> Unit)? = null,
-    engine: LocalEngineKind = alert.translation?.engine ?: LocalEngineKind.ML_KIT,
+    engine: TranslationEngineKind = alert.translation?.engine ?: TranslationEngineKind.ML_KIT,
     viewMode: MessageViewMode = MessageViewMode.BOTH,
     compact: Boolean = false,
     speechActions: MobileActions? = null
@@ -245,9 +245,9 @@ fun AlertPresentation(
                         }?.let { result ->
                             Text(
                                 stringResource(
-                                    if (result.engine == LocalEngineKind.MY_MEMORY) {
+                                    if (result.engine == TranslationEngineKind.MY_MEMORY) {
                                         R.string.mobile_result_mymemory
-                                    } else if (result.engine == LocalEngineKind.SYSTEM) {
+                                    } else if (result.engine == TranslationEngineKind.SYSTEM) {
                                         R.string.mobile_result_system
                                     } else {
                                         R.string.mobile_result_mlkit
@@ -280,7 +280,7 @@ fun AlertPresentation(
                                         if (alert.translation?.phase ==
                                             TranslationPhase.NEEDS_MODELS
                                         ) {
-                                            if (engine == LocalEngineKind.SYSTEM) {
+                                            if (engine == TranslationEngineKind.SYSTEM) {
                                                 R.string.mobile_system_models_action
                                             } else {
                                                 R.string.mobile_prepare
@@ -291,7 +291,7 @@ fun AlertPresentation(
                                     )
                                 )
                             }
-                            if (engine == LocalEngineKind.SYSTEM &&
+                            if (engine == TranslationEngineKind.SYSTEM &&
                                 alert.translation?.phase == TranslationPhase.NEEDS_MODELS
                             ) {
                                 TextButton(onClick = retry) {
@@ -359,7 +359,7 @@ fun AlertPresentation(
             }
             Text(
                 stringResource(
-                    if (engine == LocalEngineKind.MY_MEMORY) {
+                    if (engine == TranslationEngineKind.MY_MEMORY) {
                         R.string.mobile_server_translation_notice
                     } else if (viewMode == MessageViewMode.SWITCH || compact) {
                         R.string.mobile_translation_short_notice
@@ -413,7 +413,7 @@ private fun MessagePanel(
 internal fun translationStatusLabel(
     phase: TranslationPhase?,
     consent: Boolean,
-    engine: LocalEngineKind
+    engine: TranslationEngineKind
 ): Int = if (!consent) {
     R.string.mobile_translation_off
 } else {
@@ -424,7 +424,7 @@ internal fun translationStatusLabel(
 
         TranslationPhase.WORKING -> R.string.mobile_working
 
-        TranslationPhase.NEEDS_MODELS -> if (engine == LocalEngineKind.SYSTEM) {
+        TranslationPhase.NEEDS_MODELS -> if (engine == TranslationEngineKind.SYSTEM) {
             R.string.mobile_system_models_missing
         } else {
             R.string.mobile_models_missing
@@ -432,7 +432,7 @@ internal fun translationStatusLabel(
 
         TranslationPhase.UNKNOWN_LANGUAGE -> R.string.mobile_unknown_language
 
-        TranslationPhase.UNAVAILABLE -> if (engine == LocalEngineKind.MY_MEMORY) {
+        TranslationPhase.UNAVAILABLE -> if (engine == TranslationEngineKind.MY_MEMORY) {
             R.string.mobile_remote_unavailable
         } else {
             R.string.mobile_system_unavailable

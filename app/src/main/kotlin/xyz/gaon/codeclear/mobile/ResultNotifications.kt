@@ -15,12 +15,12 @@ import android.os.Looper
 import android.os.SystemClock
 import xyz.gaon.codeclear.MainActivity
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.LocalEngineKind
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 data class RecordDestination(
     val id: Long,
     val target: String,
-    val engine: LocalEngineKind = LocalEngineKind.ML_KIT
+    val engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
 )
 
 /** No raw alert, translated text, or source heading enters the notification payload. */
@@ -44,7 +44,7 @@ class ResultNotifications(private val context: Context) {
         id: Long,
         target: String,
         strings: Context = context,
-        engine: LocalEngineKind = LocalEngineKind.ML_KIT
+        engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
     ) {
         require(id > 0 && target in HistoryText.targets)
         if (!allowed()) return
@@ -258,7 +258,7 @@ class ResultNotifications(private val context: Context) {
         fun destinationUri(
             id: Long,
             target: String,
-            engine: LocalEngineKind = LocalEngineKind.ML_KIT
+            engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
         ): Uri {
             require(id > 0 && target in HistoryText.targets)
             return Uri.Builder().scheme(
@@ -281,9 +281,9 @@ class ResultNotifications(private val context: Context) {
             if (parts.size !in 2..3 || parts[1] !in HistoryText.targets) return null
             val id = parts[0].toLongOrNull()?.takeIf { it > 0 } ?: return null
             val engine = if (parts.size == 2) {
-                LocalEngineKind.ML_KIT
+                TranslationEngineKind.ML_KIT
             } else {
-                LocalEngineKind.entries.firstOrNull { it.key == parts[2] } ?: return null
+                TranslationEngineKind.entries.firstOrNull { it.key == parts[2] } ?: return null
             }
             return RecordDestination(id, parts[1], engine)
         }

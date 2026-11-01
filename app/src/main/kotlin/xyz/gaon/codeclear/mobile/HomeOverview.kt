@@ -71,7 +71,7 @@ internal fun HomeOverview(
                 R.drawable.ic_category_translation,
                 stringResource(
                     if (state.options.engine ==
-                        xyz.gaon.codeclear.probe.LocalEngineKind.MY_MEMORY
+                        xyz.gaon.codeclear.translation.TranslationEngineKind.MY_MEMORY
                     ) {
                         R.string.mobile_server_translation
                     } else {

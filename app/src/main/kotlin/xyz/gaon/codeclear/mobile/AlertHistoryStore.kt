@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.os.CancellationSignal
 import android.os.Looper
 import java.security.MessageDigest
-import xyz.gaon.codeclear.probe.LocalEngineKind
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 /** App-private, credential-encrypted SQLite history. Call every operation from a worker thread. */
 class AlertHistoryStore(
@@ -135,7 +135,7 @@ class AlertHistoryStore(
         beforeId: Long = Long.MAX_VALUE,
         limit: Int = 50,
         cancellation: CancellationSignal? = null,
-        engine: LocalEngineKind = LocalEngineKind.ML_KIT,
+        engine: TranslationEngineKind = TranslationEngineKind.ML_KIT,
         nativeOnly: Boolean = false
     ): List<SavedAlert> {
         require(target in HistoryText.targets && query.length <= 256 && limit in 1..50)
@@ -162,7 +162,7 @@ class AlertHistoryStore(
     fun find(
         id: Long,
         target: String,
-        engine: LocalEngineKind = LocalEngineKind.ML_KIT
+        engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
     ): SavedAlert? {
         require(target in HistoryText.targets)
         return database.rawQuery(
@@ -185,7 +185,7 @@ class AlertHistoryStore(
         id: Long,
         target: String,
         retry: Boolean = false,
-        engine: LocalEngineKind = LocalEngineKind.ML_KIT
+        engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
     ): TranslationTicket? {
         require(target in HistoryText.targets)
         val db = database
@@ -225,7 +225,7 @@ class AlertHistoryStore(
     fun queueTranslation(
         id: Long,
         target: String,
-        engine: LocalEngineKind = LocalEngineKind.ML_KIT
+        engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
     ) {
         require(target in HistoryText.targets)
         database.execSQL(
@@ -236,7 +236,7 @@ class AlertHistoryStore(
     }
 
     /** Persist a failed record's retry without replacing a live ticket or an existing result. */
-    fun queueRetry(id: Long, target: String, engine: LocalEngineKind): Boolean {
+    fun queueRetry(id: Long, target: String, engine: TranslationEngineKind): Boolean {
         require(target in HistoryText.targets)
         val db = database
         db.beginTransactionNonExclusive()
@@ -309,7 +309,10 @@ class AlertHistoryStore(
         ) == 1
     }
 
-    fun nextQueued(target: String, engine: LocalEngineKind = LocalEngineKind.ML_KIT): Long? {
+    fun nextQueued(
+        target: String,
+        engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
+    ): Long? {
         require(target in HistoryText.targets)
         return database.rawQuery(
             "SELECT alert_id FROM translations WHERE target=? AND engine=? AND phase=? " +
@@ -321,7 +324,7 @@ class AlertHistoryStore(
     fun cachedTranslation(
         original: String,
         target: String,
-        engine: LocalEngineKind = LocalEngineKind.ML_KIT
+        engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
     ): SavedTranslation? {
         require(original.length <= 8192 && target in HistoryText.targets)
         return database.rawQuery(
@@ -360,7 +363,7 @@ class AlertHistoryStore(
 
     fun requeueMissingModels(
         target: String? = null,
-        engine: LocalEngineKind = LocalEngineKind.ML_KIT
+        engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
     ) {
         require(target == null || target in HistoryText.targets)
         val arguments = mutableListOf<Any>(
@@ -452,7 +455,10 @@ class AlertHistoryStore(
                 text("translation_text"),
                 text("source_language"),
                 number("translation_revision"),
-                LocalEngineKind.entries.single { kind -> kind.key == text("translation_engine") },
+                TranslationEngineKind.entries.single { kind ->
+                    kind.key ==
+                        text("translation_engine")
+                },
                 number("same_language") != 0L
             )
         }

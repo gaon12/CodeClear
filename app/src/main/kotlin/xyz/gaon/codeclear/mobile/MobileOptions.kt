@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.res.Resources
 import android.os.Looper
 import androidx.core.app.LocaleManagerCompat
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 enum class ThemeChoice { SYSTEM, LIGHT, DARK }
 enum class MessageViewMode { BOTH, SWITCH }
@@ -18,13 +18,13 @@ data class MobileOptions(
     val theme: ThemeChoice = ThemeChoice.SYSTEM,
     val uiLanguage: String = "",
     val setupComplete: Boolean = false,
-    val engine: LocalEngineKind = LocalEngineKind.ML_KIT,
+    val engine: TranslationEngineKind = TranslationEngineKind.ML_KIT,
     val nearbyEnabled: Boolean = false,
     val labsEnabled: Boolean = false,
     val messageViewMode: MessageViewMode = MessageViewMode.SWITCH,
     val serverAllowed: Boolean = false
 ) {
-    val translationAllowed: Boolean get() = if (engine == LocalEngineKind.MY_MEMORY) {
+    val translationAllowed: Boolean get() = if (engine == TranslationEngineKind.MY_MEMORY) {
         labsEnabled && serverAllowed
     } else {
         localConsent
@@ -57,9 +57,9 @@ class MobileOptionsStorage(
         val saved = context.getSharedPreferences(name, Context.MODE_PRIVATE)
         val currentDisclosure = saved.getInt("disclosure_version", 0) == 1
         val labsEnabled = saved.getBoolean("labs_enabled", false)
-        val engineKey = saved.getString("local_engine", LocalEngineKind.ML_KIT.key)
-        val engine = LocalEngineKind.entries.firstOrNull { it.key == engineKey }
-            ?.takeIf { it != LocalEngineKind.MY_MEMORY || labsEnabled }
+        val engineKey = saved.getString("local_engine", TranslationEngineKind.ML_KIT.key)
+        val engine = TranslationEngineKind.entries.firstOrNull { it.key == engineKey }
+            ?.takeIf { it != TranslationEngineKind.MY_MEMORY || labsEnabled }
         val target =
             LocalTarget.entries.firstOrNull { it.name == saved.getString("target", null) }
                 ?: defaultTarget(LocaleManagerCompat.getSystemLocales(context).toLanguageTags())
@@ -81,12 +81,12 @@ class MobileOptionsStorage(
             theme = theme,
             uiLanguage = language,
             setupComplete = currentDisclosure && saved.getBoolean("setup_complete", false),
-            engine = engine ?: LocalEngineKind.ML_KIT,
+            engine = engine ?: TranslationEngineKind.ML_KIT,
             nearbyEnabled =
                 currentDisclosure && labsEnabled && saved.getBoolean("nearby_enabled", false),
             labsEnabled = labsEnabled,
             serverAllowed =
-                currentDisclosure && labsEnabled && engine == LocalEngineKind.MY_MEMORY &&
+                currentDisclosure && labsEnabled && engine == TranslationEngineKind.MY_MEMORY &&
                     saved.getInt("remote_disclosure_version", 0) == 1 &&
                     saved.getBoolean("server_allowed", false),
             messageViewMode = MessageViewMode.entries.firstOrNull {

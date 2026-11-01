@@ -8,7 +8,6 @@ import java.util.concurrent.atomic.AtomicReference
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalInput
 import xyz.gaon.codeclear.probe.LocalResult
 import xyz.gaon.codeclear.probe.LocalTarget
@@ -32,7 +31,7 @@ class MyMemoryEngineDeviceTest {
                     1,
                     "This is a synthetic English language test.",
                     LocalTarget.ENGLISH,
-                    LocalEngineKind.MY_MEMORY
+                    TranslationEngineKind.MY_MEMORY
                 ),
                 false
             ) {
@@ -45,7 +44,7 @@ class MyMemoryEngineDeviceTest {
                     1,
                     "This is a synthetic English language test.",
                     LocalTarget.ENGLISH,
-                    LocalEngineKind.MY_MEMORY
+                    TranslationEngineKind.MY_MEMORY
                 ),
                 false
             ) {

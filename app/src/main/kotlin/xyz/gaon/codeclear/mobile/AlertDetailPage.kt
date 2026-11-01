@@ -18,7 +18,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
-import xyz.gaon.codeclear.probe.LocalEngineKind
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 @Composable
 internal fun AlertDetailPage(
@@ -43,7 +43,7 @@ internal fun AlertDetailPage(
         ) {
             AlertDetailBody(state, actions)
             if (preparation.phase != PreparationPhase.IDLE &&
-                state.options.engine == LocalEngineKind.ML_KIT
+                state.options.engine == TranslationEngineKind.ML_KIT
             ) {
                 Text(stringResource(preparationMessage(preparation.phase)))
             }

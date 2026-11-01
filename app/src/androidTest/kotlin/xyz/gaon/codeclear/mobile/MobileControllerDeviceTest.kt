@@ -16,10 +16,10 @@ import org.junit.Before
 import org.junit.Test
 import xyz.gaon.codeclear.nearby.RelayProtocol
 import xyz.gaon.codeclear.probe.LocalEngine
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalInput
 import xyz.gaon.codeclear.probe.LocalResult
 import xyz.gaon.codeclear.probe.LocalTarget
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 class MobileControllerDeviceTest {
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()
@@ -30,7 +30,7 @@ class MobileControllerDeviceTest {
     private val latest = AtomicReference(MobileState())
     private val engine = ControlledEngine()
     private val notices = mutableListOf<Long>()
-    private val noticeEngines = mutableListOf<LocalEngineKind>()
+    private val noticeEngines = mutableListOf<TranslationEngineKind>()
     private val savedOptions = mutableListOf<MobileOptions>()
     private var diagnosticScope: AutoCloseable? = null
 
@@ -64,7 +64,7 @@ class MobileControllerDeviceTest {
         val release = CountDownLatch(1)
         try {
             start(
-                selectedEngine = LocalEngineKind.MY_MEMORY,
+                selectedEngine = TranslationEngineKind.MY_MEMORY,
                 saveEntered = entered,
                 saveRelease = release
             )
@@ -76,7 +76,7 @@ class MobileControllerDeviceTest {
             }
             assertTrue(entered.await(5, TimeUnit.SECONDS))
             onMain {
-                controller!!.retry(id, "en", LocalEngineKind.MY_MEMORY)
+                controller!!.retry(id, "en", TranslationEngineKind.MY_MEMORY)
                 controller!!.changeOptions(latest.get().options.copy(serverAllowed = false))
             }
             assertEquals(0, engine.calls)
@@ -92,7 +92,7 @@ class MobileControllerDeviceTest {
     @Test
     fun localPermissionNeverAuthorizesRemoteWorkAndWithdrawalDiscardsLateOutput() {
         val id = store.insert(capture("[DRILL] Synthetic remote permission scope"))!!
-        start(selectedEngine = LocalEngineKind.MY_MEMORY)
+        start(selectedEngine = TranslationEngineKind.MY_MEMORY)
         await { it.loaded && !it.loading }
         assertEquals(0, engine.calls)
         onMain {
@@ -101,14 +101,14 @@ class MobileControllerDeviceTest {
             )
         }
         await { engine.calls == 1 }
-        assertEquals(LocalEngineKind.MY_MEMORY, onMain { engine.inputs.single().engine })
+        assertEquals(TranslationEngineKind.MY_MEMORY, onMain { engine.inputs.single().engine })
         onMain {
             controller!!.changeOptions(latest.get().options.copy(serverAllowed = false))
             engine.complete("[DRILL] Late provider response")
         }
         await { !it.loading && !it.options.translationAllowed }
         assertTrue(latest.get().options.localConsent)
-        assertEquals(null, store.find(id, "en", LocalEngineKind.MY_MEMORY)?.translation?.text)
+        assertEquals(null, store.find(id, "en", TranslationEngineKind.MY_MEMORY)?.translation?.text)
         assertTrue(notices.isEmpty())
         assertEquals(1, engine.calls)
         onMain { controller!!.changeOptions(latest.get().options.copy(serverAllowed = true)) }
@@ -118,7 +118,7 @@ class MobileControllerDeviceTest {
             engine.complete("[DRILL] Deleted provider response")
         }
         await { !it.loading && it.latest == null }
-        assertEquals(null, store.find(id, "en", LocalEngineKind.MY_MEMORY))
+        assertEquals(null, store.find(id, "en", TranslationEngineKind.MY_MEMORY))
         assertTrue(notices.isEmpty())
     }
 
@@ -152,14 +152,14 @@ class MobileControllerDeviceTest {
         )
         val missing = store.beginTranslation(id, "ja")!!
         store.finishTranslation(missing, SavedTranslation(TranslationPhase.NEEDS_MODELS))
-        val other = store.beginTranslation(id, "de", engine = LocalEngineKind.SYSTEM)!!
+        val other = store.beginTranslation(id, "de", engine = TranslationEngineKind.SYSTEM)!!
         store.finishTranslation(
             other,
-            SavedTranslation(TranslationPhase.NEEDS_MODELS, engine = LocalEngineKind.SYSTEM)
+            SavedTranslation(TranslationPhase.NEEDS_MODELS, engine = TranslationEngineKind.SYSTEM)
         )
         start()
         await { it.latest?.translation?.text == "Saved English" }
-        onMain { controller!!.openDetail(id, "ja", LocalEngineKind.ML_KIT) }
+        onMain { controller!!.openDetail(id, "ja", TranslationEngineKind.ML_KIT) }
         await { it.detail?.translation?.phase == TranslationPhase.NEEDS_MODELS }
         onMain { controller!!.modelsPrepared() }
         await { engine.calls == 1 }
@@ -170,7 +170,7 @@ class MobileControllerDeviceTest {
         assertEquals("Saved English", latest.get().latest?.translation?.text)
         assertEquals(
             TranslationPhase.NEEDS_MODELS,
-            store.find(id, "de", LocalEngineKind.SYSTEM)!!.translation!!.phase
+            store.find(id, "de", TranslationEngineKind.SYSTEM)!!.translation!!.phase
         )
         assertEquals(1, engine.calls)
     }
@@ -186,7 +186,7 @@ class MobileControllerDeviceTest {
         await { it.loaded && !it.loading }
         onMain { controller!!.modelsPrepared() }
         await { !it.loading }
-        onMain { controller!!.openDetail(id, "ja", LocalEngineKind.ML_KIT) }
+        onMain { controller!!.openDetail(id, "ja", TranslationEngineKind.ML_KIT) }
         await { it.detail?.translation?.phase == TranslationPhase.QUEUED }
         assertEquals(0, engine.calls)
         assertEquals(TranslationPhase.QUEUED, store.find(id, "fr")!!.translation!!.phase)
@@ -353,35 +353,35 @@ class MobileControllerDeviceTest {
         await { engine.calls == 1 }
         onMain {
             controller!!.changeOptions(
-                controller!!.state.options.copy(engine = LocalEngineKind.SYSTEM)
+                controller!!.state.options.copy(engine = TranslationEngineKind.SYSTEM)
             )
             engine.complete("Stale default result")
         }
         await { engine.calls == 2 }
-        assertEquals(LocalEngineKind.SYSTEM, onMain { engine.inputs.last().engine })
+        assertEquals(TranslationEngineKind.SYSTEM, onMain { engine.inputs.last().engine })
         onMain { engine.complete(original, sameLanguage = true) }
         await { it.latest?.translation?.text == original }
-        assertEquals(LocalEngineKind.SYSTEM, latest.get().latest?.translation?.engine)
+        assertEquals(TranslationEngineKind.SYSTEM, latest.get().latest?.translation?.engine)
         assertTrue(latest.get().latest!!.translation!!.sameLanguage)
-        assertEquals(listOf(LocalEngineKind.SYSTEM), onMain { noticeEngines.toList() })
+        assertEquals(listOf(TranslationEngineKind.SYSTEM), onMain { noticeEngines.toList() })
         onMain {
-            controller!!.openDetail(id, "en", LocalEngineKind.SYSTEM)
+            controller!!.openDetail(id, "en", TranslationEngineKind.SYSTEM)
             controller!!.changeOptions(
-                controller!!.state.options.copy(engine = LocalEngineKind.ML_KIT)
+                controller!!.state.options.copy(engine = TranslationEngineKind.ML_KIT)
             )
         }
         await { engine.calls == 3 && it.detail?.translation?.text == original }
-        assertEquals(LocalEngineKind.ML_KIT, onMain { engine.inputs.last().engine })
-        onMain { controller!!.retry(id, "en", LocalEngineKind.SYSTEM) }
+        assertEquals(TranslationEngineKind.ML_KIT, onMain { engine.inputs.last().engine })
+        onMain { controller!!.retry(id, "en", TranslationEngineKind.SYSTEM) }
         assertEquals(3, onMain { engine.calls })
         onMain { engine.complete("Default result") }
         await {
             it.latest?.translation?.text == "Default result" &&
                 it.detail?.translation?.text == original &&
-                it.detailEngine == LocalEngineKind.SYSTEM
+                it.detailEngine == TranslationEngineKind.SYSTEM
         }
         assertEquals(
-            listOf(LocalEngineKind.SYSTEM, LocalEngineKind.ML_KIT),
+            listOf(TranslationEngineKind.SYSTEM, TranslationEngineKind.ML_KIT),
             onMain {
                 noticeEngines.toList()
             }
@@ -391,36 +391,36 @@ class MobileControllerDeviceTest {
     @Test
     fun systemFailuresStayActionableAndRetryRequiresItsActiveConsent() {
         val id = store.insert(capture("[DRILL] System retry"))!!
-        start(selectedEngine = LocalEngineKind.SYSTEM)
+        start(selectedEngine = TranslationEngineKind.SYSTEM)
         await { engine.calls == 1 }
         onMain { engine.completeWith(LocalResult.Unavailable) }
         await { it.latest?.translation?.phase == TranslationPhase.UNAVAILABLE }
-        assertEquals(LocalEngineKind.SYSTEM, latest.get().latest?.translation?.engine)
+        assertEquals(TranslationEngineKind.SYSTEM, latest.get().latest?.translation?.engine)
         onMain {
             controller!!.changeOptions(controller!!.state.options.copy(localConsent = false))
-            controller!!.retry(id, "en", LocalEngineKind.SYSTEM)
+            controller!!.retry(id, "en", TranslationEngineKind.SYSTEM)
         }
         assertEquals(1, onMain { engine.calls })
         onMain {
             controller!!.changeOptions(controller!!.state.options.copy(localConsent = true))
-            controller!!.retry(id, "en", LocalEngineKind.SYSTEM)
+            controller!!.retry(id, "en", TranslationEngineKind.SYSTEM)
         }
         await { engine.calls == 2 }
         onMain { engine.completeWith(LocalResult.UnsupportedPair) }
         await { it.latest?.translation?.phase == TranslationPhase.UNSUPPORTED_PAIR }
-        onMain { controller!!.retry(id, "en", LocalEngineKind.SYSTEM) }
+        onMain { controller!!.retry(id, "en", TranslationEngineKind.SYSTEM) }
         await { engine.calls == 3 }
         onMain {
             engine.completeWith(LocalResult.Ready("Regional language result", "es-419", false))
         }
         await { it.latest?.translation?.sourceLanguage == "es-419" }
-        assertEquals(listOf(LocalEngineKind.SYSTEM), onMain { noticeEngines.toList() })
+        assertEquals(listOf(TranslationEngineKind.SYSTEM), onMain { noticeEngines.toList() })
     }
 
     @Test
     fun lateSystemResultsCannotRestoreWithdrawnWorkOrDeletedHistory() {
         val id = store.insert(capture("[DRILL] Withdraw and delete system work"))!!
-        start(selectedEngine = LocalEngineKind.SYSTEM)
+        start(selectedEngine = TranslationEngineKind.SYSTEM)
         await { engine.calls == 1 }
         onMain {
             controller!!.changeOptions(controller!!.state.options.copy(localConsent = false))
@@ -436,7 +436,7 @@ class MobileControllerDeviceTest {
         SystemClock.sleep(200)
         assertTrue(onMain { notices.isEmpty() })
         assertTrue(latest.get().records.isEmpty())
-        assertEquals(null, store.find(id, "en", LocalEngineKind.SYSTEM))
+        assertEquals(null, store.find(id, "en", TranslationEngineKind.SYSTEM))
     }
 
     @Test
@@ -558,7 +558,7 @@ class MobileControllerDeviceTest {
     private fun start(
         local: Boolean = true,
         failSave: Boolean = false,
-        selectedEngine: LocalEngineKind = LocalEngineKind.ML_KIT,
+        selectedEngine: TranslationEngineKind = TranslationEngineKind.ML_KIT,
         saveEntered: CountDownLatch? = null,
         saveRelease: CountDownLatch? = null
     ) {

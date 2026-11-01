@@ -51,20 +51,20 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.nearby.NearbyState
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.ProbeBodyEvidence
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeRadio
 import xyz.gaon.codeclear.probe.ProbeSessionState
 import xyz.gaon.codeclear.probe.SystemEngineAvailability
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 class MobileActions(
     val configure: (MobileOptions) -> Unit,
     val search: (String) -> Unit,
     val detail: (Long?) -> Unit,
     val delete: (Long?) -> Unit,
-    val retry: (Long, String, LocalEngineKind) -> Unit,
-    val prepare: (SavedAlert, String, LocalEngineKind) -> Unit,
+    val retry: (Long, String, TranslationEngineKind) -> Unit,
+    val prepare: (SavedAlert, String, TranslationEngineKind) -> Unit,
     val settings: (String) -> Unit,
     val openSource: () -> Unit,
     val notificationPermission: () -> Unit,
@@ -639,7 +639,7 @@ fun MobileScreen(
                             }
                         }
                         if (preparation.phase != PreparationPhase.IDLE &&
-                            state.options.engine == LocalEngineKind.ML_KIT
+                            state.options.engine == TranslationEngineKind.ML_KIT
                         ) {
                             item {
                                 Text(

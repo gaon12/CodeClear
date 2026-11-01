@@ -19,9 +19,9 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.reception.CountryEvidence
 import xyz.gaon.codeclear.reception.ReceptionCountry
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 class AlertHistoryStoreDeviceTest {
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
@@ -260,9 +260,9 @@ class AlertHistoryStoreDeviceTest {
         store = AlertHistoryStore(context, name)
         assertEquals("[DRILL] Migration original.", store.find(id, "en")?.capture?.original)
         assertEquals("Saved translation", store.find(id, "en")?.translation?.text)
-        assertEquals(LocalEngineKind.ML_KIT, store.find(id, "en")?.translation?.engine)
-        assertNull(store.find(id, "en", LocalEngineKind.SYSTEM)?.translation)
-        val system = store.beginTranslation(id, "en", engine = LocalEngineKind.SYSTEM)!!
+        assertEquals(TranslationEngineKind.ML_KIT, store.find(id, "en")?.translation?.engine)
+        assertNull(store.find(id, "en", TranslationEngineKind.SYSTEM)?.translation)
+        val system = store.beginTranslation(id, "en", engine = TranslationEngineKind.SYSTEM)!!
         assertTrue(
             store.finishTranslation(system, ready("System result").copy(engine = system.engine))
         )
@@ -271,7 +271,7 @@ class AlertHistoryStoreDeviceTest {
 
     @Test
     fun enginesKeepIndependentQueuesRevisionsAndExactCaches() {
-        val system = LocalEngineKind.SYSTEM
+        val system = TranslationEngineKind.SYSTEM
         val original = capture("[DRILL] Independent engine results")
         val id = store.insert(original)!!
         store.queueTranslation(id, "en", system)
@@ -307,15 +307,15 @@ class AlertHistoryStoreDeviceTest {
     @Test
     fun modelPreparationRequeuesOnlyTheSelectedEngine() {
         val id = store.insert(capture("[DRILL] Missing models"))!!
-        LocalEngineKind.entries.forEach { engine ->
+        TranslationEngineKind.entries.forEach { engine ->
             val ticket = store.beginTranslation(id, "en", engine = engine)!!
             store.finishTranslation(
                 ticket,
                 SavedTranslation(TranslationPhase.NEEDS_MODELS, engine = engine)
             )
         }
-        store.requeueMissingModels("en", LocalEngineKind.SYSTEM)
-        assertEquals(id, store.nextQueued("en", LocalEngineKind.SYSTEM))
+        store.requeueMissingModels("en", TranslationEngineKind.SYSTEM)
+        assertEquals(id, store.nextQueued("en", TranslationEngineKind.SYSTEM))
         assertNull(store.nextQueued("en"))
     }
 

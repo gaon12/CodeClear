@@ -1,6 +1,6 @@
 package xyz.gaon.codeclear.mobile
 
-import xyz.gaon.codeclear.probe.LocalEngineKind
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 enum class CaptureSource { NOTIFICATION, DIALOG, ORIGINAL_NOTIFICATION, PEER }
 
@@ -66,7 +66,7 @@ data class SavedTranslation(
     val text: String? = null,
     val sourceLanguage: String? = null,
     val revision: Long = 0,
-    val engine: LocalEngineKind = LocalEngineKind.ML_KIT,
+    val engine: TranslationEngineKind = TranslationEngineKind.ML_KIT,
     val sameLanguage: Boolean = false
 )
 
@@ -80,7 +80,7 @@ data class TranslationTicket(
     val target: String,
     val revision: Long,
     val original: String,
-    val engine: LocalEngineKind = LocalEngineKind.ML_KIT
+    val engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
 )
 
 object HistoryText {

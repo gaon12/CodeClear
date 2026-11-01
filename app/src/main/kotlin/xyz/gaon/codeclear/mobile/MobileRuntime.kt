@@ -15,12 +15,12 @@ import xyz.gaon.codeclear.BuildConfig
 import xyz.gaon.codeclear.nearby.NearbyBackgroundService
 import xyz.gaon.codeclear.nearby.NearbySharing
 import xyz.gaon.codeclear.probe.LocalEngine
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.MlKitLocalEngine
 import xyz.gaon.codeclear.probe.ProbeSession
 import xyz.gaon.codeclear.probe.SystemEngineAvailability
 import xyz.gaon.codeclear.probe.SystemLocalEngine
 import xyz.gaon.codeclear.translation.MyMemoryEngine
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 class MobileApplication : Application() {
     lateinit var runtime: MobileRuntime
@@ -56,9 +56,9 @@ class MobileRuntime(context: Context) {
     val systemEngine = SystemLocalEngine(context) { systemAvailability = it }
     private val engine = LocalEngine { input, download, complete ->
         when (input.engine) {
-            LocalEngineKind.ML_KIT -> mlKit.run(input, download, complete)
-            LocalEngineKind.SYSTEM -> systemEngine.run(input, download, complete)
-            LocalEngineKind.MY_MEMORY -> myMemory.run(input, false, complete)
+            TranslationEngineKind.ML_KIT -> mlKit.run(input, download, complete)
+            TranslationEngineKind.SYSTEM -> systemEngine.run(input, download, complete)
+            TranslationEngineKind.MY_MEMORY -> myMemory.run(input, false, complete)
         }
     }
     private var diagnosticOwners = 0
@@ -72,7 +72,7 @@ class MobileRuntime(context: Context) {
         changed = {
             state = it
             if (it.storageError || !it.options.translationAllowed ||
-                it.options.engine != LocalEngineKind.MY_MEMORY
+                it.options.engine != TranslationEngineKind.MY_MEMORY
             ) {
                 myMemory.authorize(false)
             }
@@ -115,7 +115,9 @@ class MobileRuntime(context: Context) {
         },
         captured = nearby::offer,
         optionsReady = {
-            myMemory.authorize(it.engine == LocalEngineKind.MY_MEMORY && it.translationAllowed)
+            myMemory.authorize(
+                it.engine == TranslationEngineKind.MY_MEMORY && it.translationAllowed
+            )
         }
     )
     val models =

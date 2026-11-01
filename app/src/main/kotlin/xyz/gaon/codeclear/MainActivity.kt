@@ -46,11 +46,11 @@ import xyz.gaon.codeclear.mobile.UiLanguages
 import xyz.gaon.codeclear.mobile.mobileRuntime
 import xyz.gaon.codeclear.nearby.NearbyAccess
 import xyz.gaon.codeclear.nearby.NearbyBackgroundService
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeSession
 import xyz.gaon.codeclear.probe.ProbeSourceActions
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 private data class PendingDeletion(val id: Long?)
 
@@ -185,10 +185,10 @@ class MainActivity : AppCompatActivity() {
                                     engine == runtime.state.options.engine
                                 ) {
                                     if (engine ==
-                                        LocalEngineKind.SYSTEM
+                                        TranslationEngineKind.SYSTEM
                                     ) {
                                         openSystemTranslationSettings()
-                                    } else if (engine == LocalEngineKind.ML_KIT) {
+                                    } else if (engine == TranslationEngineKind.ML_KIT) {
                                         runtime.requestTargetModels(
                                             LocalTarget.entries.first {
                                                 it.languageTag ==
@@ -312,7 +312,7 @@ class MainActivity : AppCompatActivity() {
         mobileRuntime.controller.start()
         mobileRuntime.controller.refresh()
         if (systemSettingsOpened || mobileRuntime.systemAvailability.loaded ||
-            mobileRuntime.state.options.engine == LocalEngineKind.SYSTEM
+            mobileRuntime.state.options.engine == TranslationEngineKind.SYSTEM
         ) {
             mobileRuntime.systemEngine.refreshCapabilities(force = systemSettingsOpened)
         }

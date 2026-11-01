@@ -79,7 +79,6 @@ import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.nearby.NearbyState
 import xyz.gaon.codeclear.nearby.NearbyStatus
 import xyz.gaon.codeclear.nearby.RelayProtocol
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalTarget
 import xyz.gaon.codeclear.probe.ProbeEnvironment
 import xyz.gaon.codeclear.probe.ProbeRadio
@@ -88,6 +87,7 @@ import xyz.gaon.codeclear.probe.SystemEngineAvailability
 import xyz.gaon.codeclear.probe.SystemLanguagePair
 import xyz.gaon.codeclear.reception.CountryEvidence
 import xyz.gaon.codeclear.reception.ReceptionCountry
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 /** Renders synthetic-only state. The real runtime is paused and its history is never modified. */
 class MobileScreenDeviceTest {
@@ -121,8 +121,8 @@ class MobileScreenDeviceTest {
     private var deletionRequests = 0
     private var deletedAlertId: Long? = null
     private var prepared = 0
-    private var preparedEngine: LocalEngineKind? = null
-    private var retriedEngine: LocalEngineKind? = null
+    private var preparedEngine: TranslationEngineKind? = null
+    private var retriedEngine: TranslationEngineKind? = null
     private var retried = 0
     private var fontScale by mutableStateOf(1f)
     private var densityScale by mutableStateOf(1f)
@@ -1450,11 +1450,11 @@ class MobileScreenDeviceTest {
     fun systemModelsUseTheirSettingsActionAndResultsNameTheActualProducer() {
         compose.runOnIdle {
             state = state.copy(
-                options = state.options.copy(engine = LocalEngineKind.SYSTEM),
+                options = state.options.copy(engine = TranslationEngineKind.SYSTEM),
                 latest = record(1).copy(
                     translation = SavedTranslation(
                         TranslationPhase.NEEDS_MODELS,
-                        engine = LocalEngineKind.SYSTEM
+                        engine = TranslationEngineKind.SYSTEM
                     )
                 )
             )
@@ -1465,16 +1465,16 @@ class MobileScreenDeviceTest {
         compose.onNodeWithText(text(R.string.mobile_retry)).performScrollTo().performClick()
         compose.runOnIdle {
             assertEquals(1, prepared)
-            assertEquals(LocalEngineKind.SYSTEM, preparedEngine)
+            assertEquals(TranslationEngineKind.SYSTEM, preparedEngine)
             assertEquals(1, retried)
-            assertEquals(LocalEngineKind.SYSTEM, retriedEngine)
+            assertEquals(TranslationEngineKind.SYSTEM, retriedEngine)
             state = state.copy(
                 latest = record(1).copy(
                     translation = SavedTranslation(
                         TranslationPhase.READY,
                         "[DRILL] System result",
                         "en",
-                        engine = LocalEngineKind.SYSTEM,
+                        engine = TranslationEngineKind.SYSTEM,
                         sameLanguage = true
                     )
                 )
@@ -1502,7 +1502,7 @@ class MobileScreenDeviceTest {
         compose.onNodeWithText(text(R.string.mobile_server_disclosure)).assertIsDisplayed()
         compose.runOnIdle {
             assertFalse(state.options.serverAllowed)
-            assertEquals(LocalEngineKind.ML_KIT, state.options.engine)
+            assertEquals(TranslationEngineKind.ML_KIT, state.options.engine)
         }
         savePreview("remote-permission", dialog = true)
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
@@ -1511,7 +1511,7 @@ class MobileScreenDeviceTest {
         compose.runOnIdle {
             assertTrue(state.options.serverAllowed)
             assertTrue(state.options.localConsent)
-            assertEquals(LocalEngineKind.MY_MEMORY, state.options.engine)
+            assertEquals(TranslationEngineKind.MY_MEMORY, state.options.engine)
             assertTrue(state.options.translationAllowed)
             assertTrue(requestedModels.isEmpty())
         }
@@ -1538,7 +1538,7 @@ class MobileScreenDeviceTest {
             state =
                 state.copy(
                     options = state.options.copy(
-                        engine = LocalEngineKind.MY_MEMORY,
+                        engine = TranslationEngineKind.MY_MEMORY,
                         serverAllowed = true,
                         labsEnabled = true
                     ),
@@ -1549,7 +1549,7 @@ class MobileScreenDeviceTest {
                             TranslationPhase.READY,
                             "[DRILL] Remote translation",
                             "ko",
-                            engine = LocalEngineKind.MY_MEMORY
+                            engine = TranslationEngineKind.MY_MEMORY
                         )
                     )
                 )
@@ -1564,7 +1564,7 @@ class MobileScreenDeviceTest {
                     latest = state.latest!!.copy(
                         translation = SavedTranslation(
                             TranslationPhase.QUOTA,
-                            engine = LocalEngineKind.MY_MEMORY
+                            engine = TranslationEngineKind.MY_MEMORY
                         )
                     )
                 )
@@ -1594,7 +1594,7 @@ class MobileScreenDeviceTest {
             hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
         ).performClick()
         compose.onNodeWithText(text(R.string.mobile_system_disclosure)).assertIsDisplayed()
-        compose.runOnIdle { assertEquals(LocalEngineKind.ML_KIT, state.options.engine) }
+        compose.runOnIdle { assertEquals(TranslationEngineKind.ML_KIT, state.options.engine) }
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
         openEnginePicker()
         compose.onNode(
@@ -1602,7 +1602,7 @@ class MobileScreenDeviceTest {
         ).performClick()
         compose.onNodeWithText(text(R.string.mobile_change)).performClick()
         compose.runOnIdle {
-            assertEquals(LocalEngineKind.SYSTEM, state.options.engine)
+            assertEquals(TranslationEngineKind.SYSTEM, state.options.engine)
             assertEquals(false, state.options.localConsent)
         }
         compose.onNodeWithText(
@@ -1641,7 +1641,7 @@ class MobileScreenDeviceTest {
         compose.runOnIdle {
             assertEquals(1, manualSupportRefreshes)
             assertEquals(1, providerSettingsOpened)
-            assertEquals(LocalEngineKind.ML_KIT, state.options.engine)
+            assertEquals(TranslationEngineKind.ML_KIT, state.options.engine)
             assertEquals(true, state.options.localConsent)
             assertEquals(0, prepared)
         }
@@ -1689,7 +1689,7 @@ class MobileScreenDeviceTest {
             text(R.string.mobile_system_models_action)
         ).performScrollTo().performClick()
         compose.runOnIdle {
-            assertEquals(LocalEngineKind.ML_KIT, state.options.engine)
+            assertEquals(TranslationEngineKind.ML_KIT, state.options.engine)
             assertEquals(1, providerSettingsOpened)
             assertEquals(0, prepared)
         }
@@ -1719,7 +1719,7 @@ class MobileScreenDeviceTest {
         compose.onNodeWithText(text(R.string.mobile_change)).assertIsNotEnabled()
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
         compose.runOnIdle {
-            assertEquals(LocalEngineKind.ML_KIT, state.options.engine)
+            assertEquals(TranslationEngineKind.ML_KIT, state.options.engine)
             assertEquals(true, state.options.localConsent)
         }
     }
@@ -1766,7 +1766,7 @@ class MobileScreenDeviceTest {
         ).performClick()
         compose.onNodeWithText(text(R.string.mobile_change)).performClick()
         compose.runOnIdle {
-            assertEquals(LocalEngineKind.ML_KIT, state.options.engine)
+            assertEquals(TranslationEngineKind.ML_KIT, state.options.engine)
             assertEquals(false, state.options.localConsent)
         }
     }

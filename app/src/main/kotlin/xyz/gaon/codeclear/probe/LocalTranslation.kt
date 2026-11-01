@@ -1,5 +1,7 @@
 package xyz.gaon.codeclear.probe
 
+import xyz.gaon.codeclear.translation.TranslationEngineKind
+
 enum class LocalTarget(val languageTag: String, val modelCode: String) {
     KOREAN("ko", "ko"),
     SIMPLIFIED_CHINESE("zh-Hans", "zh"),
@@ -14,7 +16,7 @@ data class LocalInput(
     val recordId: Long,
     val body: String,
     val target: LocalTarget,
-    val engine: LocalEngineKind = LocalEngineKind.ML_KIT
+    val engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
 ) {
     init {
         require(body.isNotBlank() && body.length <= 8192)

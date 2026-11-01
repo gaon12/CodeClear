@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicLong
 import xyz.gaon.codeclear.nearby.NearbyOriginal
 import xyz.gaon.codeclear.probe.CaptureObserver
 import xyz.gaon.codeclear.probe.LocalEngine
-import xyz.gaon.codeclear.probe.LocalEngineKind
 import xyz.gaon.codeclear.probe.LocalInput
 import xyz.gaon.codeclear.probe.LocalResult
 import xyz.gaon.codeclear.probe.LocalTarget
@@ -26,6 +25,7 @@ import xyz.gaon.codeclear.probe.ProbeSession
 import xyz.gaon.codeclear.probe.isUnlocked
 import xyz.gaon.codeclear.reception.NetworkCountry
 import xyz.gaon.codeclear.reception.ReceptionCountry
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 data class MobileState(
     val loaded: Boolean = false,
@@ -34,7 +34,7 @@ data class MobileState(
     val latest: SavedAlert? = null,
     val detailId: Long? = null,
     val detailTarget: String? = null,
-    val detailEngine: LocalEngineKind? = null,
+    val detailEngine: TranslationEngineKind? = null,
     val detailSourceLanguage: String? = null,
     val detail: SavedAlert? = null,
     val query: String = "",
@@ -43,14 +43,14 @@ data class MobileState(
     val storageError: Boolean = false
 )
 
-/** Owns database work and one local translation. Activities only render state and submit actions. */
+/** Owns database work and one translation at a time. Activities render state and submit actions. */
 class MobileController(
     private val context: Context,
     private val store: AlertHistoryStore,
     private val preferences: OptionsStorage,
     private val engine: LocalEngine,
     private val changed: (MobileState) -> Unit,
-    private val translated: (Long, String, LocalEngineKind) -> Unit = { _, _, _ -> },
+    private val translated: (Long, String, TranslationEngineKind) -> Unit = { _, _, _ -> },
     private val deleted: (Long?) -> Unit = {},
     private val releaseEngine: () -> Unit = {},
     private val cancelEngine: () -> Unit = {},
@@ -347,7 +347,7 @@ class MobileController(
         refresh()
     }
 
-    fun openDetail(id: Long?, target: String? = null, engine: LocalEngineKind? = null) {
+    fun openDetail(id: Long?, target: String? = null, engine: TranslationEngineKind? = null) {
         requireMain()
         require(target == null || target in HistoryText.targets)
         val validId = id?.takeIf { it > 0 }
@@ -365,7 +365,7 @@ class MobileController(
                 ) {
                     null
                 } else {
-                    engine ?: target?.let { LocalEngineKind.ML_KIT }
+                    engine ?: target?.let { TranslationEngineKind.ML_KIT }
                 },
                 detail = null
             )
@@ -497,7 +497,7 @@ class MobileController(
     fun retry(
         id: Long,
         target: String = state.options.target.languageTag,
-        selectedEngine: LocalEngineKind = state.options.engine
+        selectedEngine: TranslationEngineKind = state.options.engine
     ) {
         requireMain()
         require(target in HistoryText.targets)
@@ -519,7 +519,7 @@ class MobileController(
 
     fun modelsPrepared(
         target: String? = null,
-        selectedEngine: LocalEngineKind = LocalEngineKind.ML_KIT
+        selectedEngine: TranslationEngineKind = TranslationEngineKind.ML_KIT
     ) {
         requireMain()
         modelEpoch.incrementAndGet()
