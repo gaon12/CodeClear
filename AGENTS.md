@@ -5,6 +5,7 @@ These rules apply to all work in this repository.
 ## Language and code structure
 
 - Write project documentation, commit messages, and code comments in English.
+- Keep production, debug, and test Kotlin sources in each source set's `kotlin/` directory. Do not add handwritten Java sources.
 - Describe visual behavior with neutral names. Do not name the external reference vendor or design system in project code, comments, documentation, or commit messages.
 - Use clear, specific language. Explain the purpose and relevant behavior of a change so a new contributor can understand it.
 - Keep code intuitive: use descriptive names, small focused components, explicit dependencies, and a straightforward flow of data and state.
