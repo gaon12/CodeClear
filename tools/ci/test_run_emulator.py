@@ -4,7 +4,11 @@ import subprocess
 import unittest
 from unittest.mock import Mock, patch
 
-from tools.ci.run_emulator import wait_for_boot
+from tools.ci.run_emulator import (
+    install_fixture,
+    wait_for_boot,
+    wait_for_package_manager,
+)
 
 
 class EmulatorBootTest(unittest.TestCase):
@@ -39,3 +43,38 @@ class EmulatorBootTest(unittest.TestCase):
         with self.assertRaises(TimeoutError):
             wait_for_boot(device, self.process)
         device.assert_called_once()
+
+
+class PackageReadinessTest(unittest.TestCase):
+    @patch("tools.ci.run_emulator.time.sleep")
+    def test_package_manager_can_finish_starting_after_boot_completed(self, sleep):
+        process = Mock()
+        process.poll.return_value = None
+        device = Mock(
+            side_effect=[
+                RuntimeError("Broken pipe (32)"),
+                "package:android\npackage:com.android.settings",
+            ]
+        )
+        wait_for_package_manager(device, process)
+        self.assertEqual(2, device.call_count)
+        sleep.assert_called_once_with(1)
+
+    @patch("tools.ci.run_emulator.time.sleep")
+    def test_a_transient_install_transport_failure_can_recover(self, sleep):
+        device = Mock(side_effect=[RuntimeError("Broken pipe (32)"), "Success"])
+        install_fixture(device, "fixture.apk")
+        self.assertEqual(2, device.call_count)
+
+    @patch("tools.ci.run_emulator.time.sleep")
+    def test_install_retries_are_bounded(self, sleep):
+        device = Mock(side_effect=RuntimeError("Broken pipe (32)"))
+        with self.assertRaises(RuntimeError):
+            install_fixture(device, "fixture.apk")
+        self.assertEqual(3, device.call_count)
+
+    def test_a_permanent_package_rejection_is_not_retried(self):
+        device = Mock(side_effect=RuntimeError("INSTALL_FAILED_INVALID_APK"))
+        with self.assertRaises(RuntimeError):
+            install_fixture(device, "fixture.apk")
+        self.assertEqual(1, device.call_count)

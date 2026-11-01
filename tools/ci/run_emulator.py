@@ -67,6 +67,48 @@ def wait_for_boot(device, process, timeout=240):
     raise TimeoutError("Emulator did not finish booting within the allowed time")
 
 
+def wait_for_package_manager(device, process, timeout=60):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if process.poll() is not None:
+            raise RuntimeError("Emulator exited before PackageManager was ready")
+        try:
+            packages = device(
+                "shell", "cmd", "package", "list", "packages", "android", timeout=10
+            )
+            if "package:android" in packages.splitlines():
+                return
+        except (subprocess.SubprocessError, OSError, RuntimeError):
+            pass
+        time.sleep(1)
+    raise TimeoutError("PackageManager did not become ready before APK installation")
+
+
+def install_fixture(device, apk):
+    for attempt in range(3):
+        try:
+            result = device("install", "--no-streaming", "-r", "-t", apk, timeout=120)
+            _require("Success" in result, "The fixture APK did not install")
+            return
+        except RuntimeError as error:
+            transient = any(
+                marker in str(error).casefold()
+                for marker in [
+                    "broken pipe",
+                    "device offline",
+                    "dead object",
+                    "binder has died",
+                ]
+            )
+            if not transient or attempt == 2:
+                raise
+            print(
+                f"Retrying transient APK transport failure ({attempt + 1}/3).",
+                flush=True,
+            )
+            time.sleep(2)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     profiles = [str(api) for api in range(30, 38)] + ["37-16k"]
@@ -204,6 +246,7 @@ def main():
         )
         try:
             wait_for_boot(device, process)
+            wait_for_package_manager(device, process)
             _require(device("shell", "getprop", "ro.kernel.qemu") == "1")
             _require(device("shell", "getprop", "ro.debuggable") == "1")
             _require(
@@ -236,9 +279,7 @@ def main():
                 "debug/app-debug.apk",
                 "androidTest/debug/app-debug-androidTest.apk",
             ]:
-                _require(
-                    "Success" in device("install", "-t", "app/build/outputs/apk/" + apk)
-                )
+                install_fixture(device, "app/build/outputs/apk/" + apk)
 
             selected = ",".join("xyz.gaon.codeclear." + name for name in FIXTURES)
             output = device(

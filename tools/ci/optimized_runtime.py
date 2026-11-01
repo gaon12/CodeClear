@@ -62,7 +62,7 @@ def certificate(output):
 
 def replace_process(device, signed, start):
     previous_pid = device("shell", "pidof", APP)
-    if "Success" not in device("install", "-r", str(signed)):
+    if "Success" not in device("install", "--no-streaming", "-r", str(signed)):
         raise RuntimeError("The optimized package replacement failed")
     start()
     current_pid = device("shell", "pidof", APP)
