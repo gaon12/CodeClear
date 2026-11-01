@@ -20,10 +20,14 @@ BODIES = (
 
 def validate(device, api):
     # Never clear an app, change grants, or inject a PDU on an owner's physical device.
-    assert device("shell", "getprop", "ro.kernel.qemu") == "1"
-    assert device("shell", "getprop", "ro.debuggable") == "1"
-    assert device("shell", "getprop", "ro.hardware") in {"ranchu", "goldfish"}
-    assert api in {30, 31, 35}
+    if device("shell", "getprop", "ro.kernel.qemu") != "1":
+        raise RuntimeError("Receiver fixtures require a disposable emulator")
+    if device("shell", "getprop", "ro.debuggable") != "1":
+        raise RuntimeError("Receiver fixtures require a debug system image")
+    if device("shell", "getprop", "ro.hardware") not in {"ranchu", "goldfish"}:
+        raise RuntimeError("Receiver fixtures require reviewed emulator hardware")
+    if api not in {30, 31, 35}:
+        raise RuntimeError("Review this source profile before injection")
     assert "Success" in device("shell", "pm", "clear", APP)
     permitted_ui = {
         APP,

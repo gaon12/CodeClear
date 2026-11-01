@@ -115,9 +115,14 @@ def main():
     serial = "emulator-5554"
 
     def device(*parts, **kwargs):
-        return command(
-            adb, "-s", serial, *parts, capture_output=True, **kwargs
-        ).stdout.strip()
+        try:
+            return command(
+                adb, "-s", serial, *parts, capture_output=True, **kwargs
+            ).stdout.strip()
+        except subprocess.CalledProcessError as error:
+            raise RuntimeError(
+                f"Device command {parts[:3]} failed: {error.stderr[:1000]}"
+            ) from error
 
     report = Path("app/build/reports/remote-validation")
     report.mkdir(parents=True, exist_ok=True)
@@ -182,7 +187,8 @@ def main():
             )
             device("shell", "input", "keyevent", "KEYCODE_WAKEUP")
             device("shell", "input", "keyevent", "KEYCODE_MENU")
-            device("shell", "wm", "user-rotation", "lock", "0")
+            rotation = "set-user-rotation" if args.api == 30 else "user-rotation"
+            device("shell", "wm", rotation, "lock", "0")
             for key in [
                 "window_animation_scale",
                 "transition_animation_scale",
@@ -211,21 +217,31 @@ def main():
                 timeout=900,
             )
             (report / "fixtures.txt").write_text(output, encoding="utf-8")
+            status = []
             for line in output.splitlines():
+                status.append(line)
+                if line.startswith("INSTRUMENTATION_STATUS_CODE:"):
+                    if line.rsplit(":", 1)[-1].strip() in {"-1", "-2", "-3", "-4"}:
+                        print("\n".join(status)[:10000], flush=True)
+                    status = []
                 if re.search(
-                    r"Time: |OK \(|FAILURES!!!|stack=|INSTRUMENTATION_FAILED", line
+                    r"Time: |OK \(|FAILURES!!!|Tests run:|INSTRUMENTATION_FAILED", line
                 ):
                     print(line, flush=True)
             expected = sum(FIXTURES.values())
-            assert f"OK ({expected} tests)" in output and "FAILURES!!!" not in output
-            print(
-                f"Passed {expected} software fixtures. This is not CellBroadcast or RF acceptance.",
-                flush=True,
-            )
+            passed = f"OK ({expected} tests)" in output and "FAILURES!!!" not in output
+            if passed:
+                print(
+                    f"Passed {expected} software fixtures. This is not CellBroadcast or RF acceptance.",
+                    flush=True,
+                )
             if args.system_receiver:
                 from system_receiver import validate
 
                 validate(device, args.api)
+            assert passed, (
+                "Software fixture failures remain; receiver results are separate evidence"
+            )
         except BaseException:
             log.flush()
             print("Emulator diagnostic tail:", flush=True)
