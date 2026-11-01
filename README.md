@@ -68,8 +68,8 @@ tests. Building the test APK does not execute those tests.
 The manually dispatched `Android validation` GitHub Actions workflow builds a
 clean checkout on standard Linux runners and runs an explicit software-fixture
 allowlist on disposable AOSP API 30, 31, and 35 emulators. Each emulator uses two
-cores and 2 GiB of guest RAM. It does not use provider keys, download translation
-models, grant capture access, or test physical reception. Live-provider,
+cores and 2 GiB of guest RAM. The default software-fixture path does not use
+provider keys, download translation models, grant capture access, or test physical reception. Live-provider,
 Bluetooth, prepared-model, and owner-granted capture tests require separate
 environments. No APK or test artifact is published by the workflow.
 
@@ -78,8 +78,11 @@ data, enables capture through the app disclosures and ordinary Android Settings
 confirmations, and injects known drill messages into the genuine system receiver.
 It compares the complete expected original set after automatic capture and an
 explicit original-source action. It never acknowledges system alert warnings.
-Fresh-default receiver behavior, dialer testing mode, and physical radio reception
-remain separate evidence; the option does not establish either of the latter.
+It also changes testing mode through the ordinary dialer and verifies the source's
+own state report against its installed public resources. Automatic capture is
+checked with testing mode OFF and ON separately, including the complete known
+seven-original set. These debug-emulator injections do not establish physical
+radio reception or other manufacturers' firmware support.
 
 ## Source map
 

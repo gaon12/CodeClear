@@ -8,6 +8,12 @@ import subprocess
 import time
 from pathlib import Path
 
+
+def _require(condition, message="Emulator validation condition failed"):
+    if not condition:
+        raise RuntimeError(message)
+
+
 # Exclude live providers, model downloads, radio/Bluetooth tests, and owner-granted access tests.
 FIXTURES = {
     "mobile.MobileControllerDeviceTest": 20,
@@ -176,10 +182,14 @@ def main():
                 time.sleep(2)
             else:
                 raise TimeoutError("Emulator did not finish booting within 240 seconds")
-            assert device("shell", "getprop", "ro.kernel.qemu") == "1"
-            assert device("shell", "getprop", "ro.debuggable") == "1"
-            assert device("shell", "getprop", "ro.hardware") in {"ranchu", "goldfish"}
-            assert device("shell", "getprop", "ro.build.version.sdk") == str(args.api)
+            _require(device("shell", "getprop", "ro.kernel.qemu") == "1")
+            _require(device("shell", "getprop", "ro.debuggable") == "1")
+            _require(
+                device("shell", "getprop", "ro.hardware") in {"ranchu", "goldfish"}
+            )
+            _require(
+                device("shell", "getprop", "ro.build.version.sdk") == str(args.api)
+            )
             print(
                 f"Disposable AOSP API {args.api}; page size "
                 + device("shell", "getconf", "PAGE_SIZE"),
@@ -199,8 +209,8 @@ def main():
                 "debug/app-debug.apk",
                 "androidTest/debug/app-debug-androidTest.apk",
             ]:
-                assert "Success" in device(
-                    "install", "-t", "app/build/outputs/apk/" + apk
+                _require(
+                    "Success" in device("install", "-t", "app/build/outputs/apk/" + apk)
                 )
 
             selected = ",".join("xyz.gaon.codeclear." + name for name in FIXTURES)
@@ -239,8 +249,9 @@ def main():
                 from system_receiver import validate
 
                 validate(device, args.api)
-            assert passed, (
-                "Software fixture failures remain; receiver results are separate evidence"
+            _require(
+                passed,
+                "Software fixture failures remain; receiver results are separate evidence",
             )
         except BaseException:
             log.flush()

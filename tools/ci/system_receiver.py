@@ -6,6 +6,12 @@ import subprocess
 import time
 import xml.etree.ElementTree as ET
 
+
+def _require(condition, message="Emulator validation condition failed"):
+    if not condition:
+        raise RuntimeError(message)
+
+
 APP = "xyz.gaon.codeclear"
 COMPONENTS = {
     "enabled_notification_listeners": "ProbeNotificationListener",
@@ -15,6 +21,10 @@ BODIES = (
     "[DRILL] A: Stay indoors. Call 112.",
     "[DRILL] B: Avoid Gate 2. Call 112.",
     "[DRILL] C: Avoid Gate 3. Call 112.",
+    "[DRILL] D: Stay clear. Call 112.",
+    "[DRILL] E: Stay inside. Call 112.",
+    "[DRILL] F: Avoid Gate 4. Call 112.",
+    "[DRILL] G: Avoid Gate 5. Call 112.",
 )
 
 
@@ -28,7 +38,7 @@ def validate(device, api):
         raise RuntimeError("Receiver fixtures require reviewed emulator hardware")
     if api not in {30, 31, 35}:
         raise RuntimeError("Review this source profile before injection")
-    assert "Success" in device("shell", "pm", "clear", APP)
+    _require("Success" in device("shell", "pm", "clear", APP))
     permitted_ui = {
         APP,
         "android",
@@ -71,10 +81,12 @@ def validate(device, api):
         )
 
     def tap(node):
-        assert node.get("package") in permitted_ui, "Never acknowledge a source warning"
-        assert node.get("enabled") == "true"
+        _require(
+            node.get("package") in permitted_ui, "Never acknowledge a source warning"
+        )
+        _require(node.get("enabled") == "true")
         x1, y1, x2, y2 = map(int, re.findall(r"\d+", node.get("bounds", "")))
-        assert x2 > x1 and y2 > y1
+        _require(x2 > x1 and y2 > y1)
         device("shell", "input", "tap", str((x1 + x2) // 2), str((y1 + y2) // 2))
         time.sleep(0.4)
 
@@ -119,6 +131,27 @@ def validate(device, api):
             )
             if confirm is not None:
                 tap(confirm)
+                continue
+            own_header = any(matches(n, [service_label, "CodeClear"]) for n in nodes)
+            enable_row = next(
+                (
+                    n
+                    for n in nodes
+                    if own_header
+                    and matches(
+                        n,
+                        [
+                            "Allow notification access",
+                            "Use CodeClear",
+                            "Use " + service_label,
+                        ],
+                    )
+                    and n.get("enabled") == "true"
+                ),
+                None,
+            )
+            if enable_row is not None:
+                tap(enable_row)
                 continue
             entry = next(
                 (
@@ -179,14 +212,14 @@ def validate(device, api):
         device("shell", "run-as", APP, "cat", "shared_prefs/mobile_options.xml")
     )
     values = {n.get("name"): n.get("value", n.text) for n in preferences}
-    assert (
+    _require(
         values.get("notification_consent")
         == values.get("accessibility_consent")
         == "true"
     )
-    assert values.get("server_allowed", "false") == "false"
-    assert values.get("local_consent", "false") == "false"
-    assert all(grant_present(key) for key in COMPONENTS)
+    _require(values.get("server_allowed", "false") == "false")
+    _require(values.get("local_consent", "false") == "false")
+    _require(all(grant_present(key) for key in COMPONENTS))
     print(
         "Both app disclosures and Android capture confirmations completed; remote permission is off.",
         flush=True,
@@ -201,12 +234,14 @@ def validate(device, api):
     ]:
         if "package:" + package in installed:
             path = device("shell", "pm", "path", package)
-            assert path.startswith(
-                ("package:/system/", "package:/product/", "package:/apex/")
+            _require(
+                path.startswith(
+                    ("package:/system/", "package:/product/", "package:/apex/")
+                )
             )
             candidates.append(package)
-    assert len(candidates) == 1, (
-        "Review an ambiguous or missing receiver before injection"
+    _require(
+        len(candidates) == 1, "Review an ambiguous or missing receiver before injection"
     )
     source = candidates[0]
     device(
@@ -247,7 +282,7 @@ def validate(device, api):
             + bytes.fromhex("11124811")
             + body.encode("utf-16-be")
         )
-        assert len(payload) <= 88 and len(payload) % 2 == 0
+        _require(len(payload) <= 88 and len(payload) % 2 == 0)
         payload += bytes.fromhex("000d") * ((88 - len(payload)) // 2)
         device(
             "shell",
@@ -279,12 +314,102 @@ def validate(device, api):
     start_app()
     click("Open original system alert")
     # The source opens normally. Never press its confirmation or dismiss its warnings.
-    wait_for(set(BODIES))
+    wait_for(set(BODIES[:3]))
     print(
         "Stacked receiver injection: all three exact originals recovered, including the earlier original.",
         flush=True,
     )
+
+    def source_label(name):
+        for namespace in [source, "com.android.cellbroadcastreceiver"]:
+            try:
+                value = device(
+                    "shell",
+                    "cmd",
+                    "overlay",
+                    "lookup",
+                    source,
+                    namespace + ":string/" + name,
+                )
+                if value and len(value) <= 256 and "Error" not in value:
+                    return value
+            except RuntimeError:
+                pass
+        raise RuntimeError(
+            "The installed source did not expose a reviewed testing-mode label"
+        )
+
+    enabled = source_label("testing_mode_enabled")
+    disabled = source_label("testing_mode_disabled")
+    _require(enabled != disabled)
+
+    def mode_entries():
+        raw = device(
+            "shell",
+            "logcat",
+            "-d",
+            "-t",
+            "200",
+            "-v",
+            "epoch",
+            "-s",
+            "CellBroadcastReceiver:D",
+        )
+        return [line for line in raw.splitlines() if line.endswith((enabled, disabled))]
+
+    def toggle_mode():
+        before = set(mode_entries())
+        device("shell", "input", "keyevent", "KEYCODE_HOME")
+        device("shell", "am", "start", "-a", "android.intent.action.DIAL", "-d", "tel:")
+        time.sleep(1)
+        # Type through the ordinary dialer; never broadcast a privileged secret-code action.
+        device("shell", shlex.join(["input", "text", "*#*#2627#*#*"]))
+        deadline = time.monotonic() + 15
+        while time.monotonic() < deadline:
+            changed = [line for line in mode_entries() if line not in before]
+            if changed:
+                return changed[-1].endswith(enabled)
+            time.sleep(0.5)
+        raise RuntimeError(
+            "The dialer did not produce a verified source testing-mode change"
+        )
+
+    # Observe the source's own state message, rather than assuming which state a toggle selected.
+    if toggle_mode():
+        _require(toggle_mode() is False)
     print(
-        "Default source mode only; dialer testing-mode ON and physical RF are not validated.",
+        "Testing mode OFF confirmed by the installed source's own state message.",
+        flush=True,
+    )
+    inject(BODIES[3], 0x5131)
+    wait_for({BODIES[3]})
+    print(
+        "Explicit mode OFF: a fresh exact original was captured without a source action.",
+        flush=True,
+    )
+    _require(toggle_mode() is True)
+    try:
+        print(
+            "Testing mode ON confirmed by the installed source's own state message.",
+            flush=True,
+        )
+        inject(BODIES[4], 0x5141)
+        wait_for({BODIES[4]})
+        device("shell", "input", "keyevent", "KEYCODE_HOME")
+        inject(BODIES[5], 0x5151)
+        inject(BODIES[6], 0x5161)
+        time.sleep(2)
+        device("shell", "input", "keyevent", "KEYCODE_HOME")
+        start_app()
+        click("Open original system alert")
+        wait_for(set(BODIES))
+        print(
+            "Explicit mode ON: automatic capture and the complete seven-original set verified.",
+            flush=True,
+        )
+    finally:
+        _require(toggle_mode() is False)
+    print(
+        "Testing mode restored OFF. These receiver injections do not establish physical RF.",
         flush=True,
     )
