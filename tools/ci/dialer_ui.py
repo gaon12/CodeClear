@@ -70,7 +70,7 @@ def tap_testing_code(device, ui, package, digits):
         ui.tap(button)
 
 
-def enter_testing_code(device, ui):
+def enter_testing_code(device, ui, *, keypad_controls=False):
     result = device(
         "shell", "am", "start", "-a", "android.intent.action.DIAL", "-d", "tel:0"
     )
@@ -115,7 +115,7 @@ def enter_testing_code(device, ui):
             raise RuntimeError(
                 "Review the normal dialpad before entering a testing code"
             )
-        if package == "com.google.android.dialer":
+        if keypad_controls and package == "com.google.android.dialer":
             tap_testing_code(device, ui, package, digits[0])
             return
         ui.tap(digits[0])

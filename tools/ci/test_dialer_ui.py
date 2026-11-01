@@ -23,7 +23,7 @@ class DialerInputTest(unittest.TestCase):
         first = self.google_pad("0")
         empty = self.google_pad("")
         self.ui.layout.side_effect = [first, first, empty, *[empty for _ in range(12)]]
-        enter_testing_code(self.device, self.ui)
+        enter_testing_code(self.device, self.ui, keypad_controls=True)
         names = [
             call.args[0].get("resource-id").split(":id/")[-1]
             for call in self.ui.tap.call_args_list
@@ -55,7 +55,7 @@ class DialerInputTest(unittest.TestCase):
         self.ui.focused_package.return_value = "com.google.android.dialer"
         self.ui.layout.return_value = self.google_pad("123")
         with self.assertRaisesRegex(RuntimeError, "unexpected existing digits"):
-            enter_testing_code(self.device, self.ui)
+            enter_testing_code(self.device, self.ui, keypad_controls=True)
         self.ui.tap.assert_not_called()
         self.assertFalse(
             any("keyevent" in call.args for call in self.device.call_args_list)
@@ -73,7 +73,7 @@ class DialerInputTest(unittest.TestCase):
             empty,
             *[empty for _ in range(12)],
         ]
-        enter_testing_code(self.device, self.ui)
+        enter_testing_code(self.device, self.ui, keypad_controls=True)
         sleep.assert_called_once_with(0.25)
         self.assertEqual(
             1,
@@ -88,7 +88,7 @@ class DialerInputTest(unittest.TestCase):
         self.ui.focused_package.return_value = "com.google.android.dialer"
         self.ui.layout.return_value = self.google_pad("0")
         with self.assertRaisesRegex(RuntimeError, '"still_seed": true'):
-            enter_testing_code(self.device, self.ui)
+            enter_testing_code(self.device, self.ui, keypad_controls=True)
         self.assertEqual(7, self.ui.layout.call_count)
         self.assertEqual(4, sleep.call_count)
         self.assertEqual(2, self.ui.tap.call_count)
@@ -101,13 +101,24 @@ class DialerInputTest(unittest.TestCase):
         ]
         self.ui.layout.side_effect = [first, first, empty, empty]
         with self.assertRaisesRegex(RuntimeError, "keypad control is missing"):
-            enter_testing_code(self.device, self.ui)
+            enter_testing_code(self.device, self.ui, keypad_controls=True)
         self.assertEqual(2, self.ui.tap.call_count)
 
     def setUp(self):
         self.device = Mock(return_value="Status: ok")
         self.ui = Mock()
         self.ui.focused_package.return_value = "com.android.dialer"
+
+    def test_google_defaults_preserve_the_previously_verified_key_event_path(self):
+        self.ui.focused_package.return_value = "com.google.android.dialer"
+        self.ui.layout.return_value = self.google_pad("0")
+        enter_testing_code(self.device, self.ui)
+        keys = self.device.call_args.args
+        self.assertEqual(
+            ("shell", "input", "keyevent", "KEYCODE_MOVE_END", "KEYCODE_DEL"), keys[:5]
+        )
+        self.assertNotIn("KEYCODE_CALL", keys)
+        self.assertEqual(1, self.ui.tap.call_count)
 
     def test_a_missing_dialpad_does_not_receive_code_keys(self):
         self.ui.layout.return_value = []

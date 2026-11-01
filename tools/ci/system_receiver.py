@@ -462,7 +462,9 @@ def validate(device, api, cli, serial, mode):
         dialer = ConsentUi(
             device, cli, serial, {"com.android.dialer", "com.google.android.dialer"}
         )
-        enter_testing_code(device, dialer)
+        # Retain the verified API 35 image's key-event path; the newer Google
+        # dialer profile is being checked through its reviewed keypad controls.
+        enter_testing_code(device, dialer, keypad_controls=api == 37)
         resume_capture()
         deadline = time.monotonic() + 15
         while time.monotonic() < deadline:
