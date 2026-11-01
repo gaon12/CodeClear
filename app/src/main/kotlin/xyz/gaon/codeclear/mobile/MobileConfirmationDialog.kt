@@ -41,7 +41,7 @@ fun MobileConfirmationDialog(
             val window = (view.parent as? DialogWindowProvider)?.window
             val previousGravity = window?.attributes?.gravity
             window?.setGravity(Gravity.BOTTOM)
-            onDispose { previousGravity?.let { window?.setGravity(it) } }
+            onDispose { previousGravity?.let { window.setGravity(it) } }
         }
         BoxWithConstraints(Modifier.widthIn(max = 480.dp).fillMaxWidth().padding(16.dp)) {
             Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surface) {

@@ -447,6 +447,8 @@ class BleRelay(
         request = null
     }
 
+    // This transport-selecting overload remains available across the Android 11+ baseline.
+    @Suppress("DEPRECATION")
     private fun connect(device: BluetoothDevice) {
         discovering = false
         clientMtu = 23
@@ -513,7 +515,7 @@ class BleRelay(
             code: Int
         ) = read(gatt, characteristic.uuid, value, code)
 
-        @Suppress("DEPRECATION")
+        @Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
         override fun onCharacteristicRead(
             gatt: BluetoothGatt,
             characteristic: BluetoothGattCharacteristic,

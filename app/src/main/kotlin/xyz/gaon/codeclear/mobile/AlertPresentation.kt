@@ -211,7 +211,7 @@ fun AlertPresentation(
                                     speechActions?.let {
                                         SpeechAction(
                                             "${alert.id}:$target:translation",
-                                            alert.translation!!.text!!,
+                                            alert.translation.text,
                                             target,
                                             "speech-translation",
                                             it
