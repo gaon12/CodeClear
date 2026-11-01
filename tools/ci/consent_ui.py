@@ -83,7 +83,9 @@ class ConsentUi:
             )
             windows = json.loads(output.read_text(encoding="utf-8"))
         if self.focused_package() != package:
-            raise RuntimeError("The focused window changed while reading its layout")
+            # Both owners passed the live allowlist, but this snapshot belongs
+            # to an activity transition. Read again before selecting any input.
+            return None
         applications = [
             w
             for w in windows

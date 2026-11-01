@@ -11,6 +11,46 @@ from tools.ci.consent_ui import ConsentUi
 
 class ConsentUiTest(unittest.TestCase):
     @patch("tools.ci.consent_ui.time.sleep")
+    def test_an_allowed_owner_transition_discards_the_old_window_before_input(
+        self, sleep
+    ):
+        next_owner = "com.google.android.permissioncontroller"
+        self.ui.permitted.add(next_owner)
+        reads = iter(["old", "new"])
+
+        def dump(args, **kwargs):
+            path = Path(
+                next(a.split("=", 1)[1] for a in args if a.startswith("--output="))
+            )
+            path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "type": "APPLICATION",
+                            "layer": 1,
+                            "content": [{"text": next(reads)}],
+                        }
+                    ]
+                )
+            )
+
+        with (
+            patch.object(
+                self.ui,
+                "focused_package",
+                side_effect=[
+                    "com.android.settings",
+                    next_owner,
+                    next_owner,
+                    next_owner,
+                ],
+            ),
+            patch("tools.ci.consent_ui.subprocess.run", side_effect=dump),
+        ):
+            self.assertEqual(["new"], [n.get("text") for n in self.ui.layout()])
+        self.device.assert_not_called()
+
+    @patch("tools.ci.consent_ui.time.sleep")
     def test_empty_cold_start_snapshots_can_settle_without_issuing_input(self, sleep):
         ready = [ET.Element("node", text="Allow")]
         with patch.object(self.ui, "_layout_once", side_effect=[None, [], ready]):
