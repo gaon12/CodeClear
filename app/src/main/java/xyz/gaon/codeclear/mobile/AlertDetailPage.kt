@@ -68,7 +68,7 @@ internal fun AlertDetailBody(
     } else {
         val target = state.detailTarget ?: state.options.target.languageTag
         val engine = state.detailEngine ?: state.options.engine
-        val active = state.options.localConsent && engine == state.options.engine
+        val active = state.options.translationAllowed && engine == state.options.engine
         if (!compact) DetailTargetPicker(alert, state, actions)
         AlertPresentation(
             alert,

@@ -2,7 +2,7 @@
     <string name="mobile_ui_language_title">App language</string>
     <string name="result_channel">Translation results</string>
     <string name="result_title">Emergency alert translation ready</string>
-    <string name="result_body">Tap to view the original and on-device translation.</string>
+    <string name="result_body">Tap to view the original and translation.</string>
     <string name="mobile_alert">Emergency alert</string>
     <string name="mobile_captured">Captured %1$s</string>
     <string name="mobile_original">Original</string>
@@ -11,7 +11,7 @@
     <string name="mobile_retry">Retry</string>
     <string name="mobile_translation_notice">On-device translation may be inaccurate. Follow the original alert and official guidance.</string>
     <string name="mobile_details">View details</string>
-    <string name="mobile_translation_off">Enable local translation in Settings.</string>
+    <string name="mobile_translation_off">Enable translation in Settings.</string>
     <string name="mobile_queued">Waiting to translate</string>
     <string name="mobile_working">Processing…</string>
     <string name="mobile_models_missing">A translation model is not ready. Prepare it on Wi-Fi.</string>
@@ -38,18 +38,18 @@
     <string name="mobile_app_info">Open app info</string>
     <string name="mobile_app_list">Open Android app list</string>
     <string name="mobile_tutorial">How capture works</string>
-    <string name="mobile_translation_settings">Local translation</string>
+    <string name="mobile_translation_settings">Translation</string>
     <string name="mobile_local_description">Translate on this device with ML Kit. Chinese script conversion supports simplified and traditional output.</string>
     <string name="mobile_model_notice">Prepare the source and target language models using Wi-Fi. Downloads use data and storage and may continue under Android after leaving this screen or turning translation off. Alert text is not uploaded. Translation resumes only while local translation is enabled.</string>
     <string name="mobile_appearance">Appearance</string>
     <string name="mobile_result_notifications">Result notifications</string>
     <string name="mobile_privacy">Privacy and history</string>
-    <string name="mobile_privacy_description">Originals and translations stay in private device storage until you delete them. No account, synchronization, server translation, or alert uploads. App backup and transfer are disabled.</string>
+    <string name="mobile_privacy_description">Originals and translations stay in private device storage until you delete them. No account or synchronization. App backup and transfer are disabled. Alert text leaves the device only when you separately allow and use MyMemory server translation; the provider may retain submitted text.</string>
     <string name="mobile_delete_all">Delete all history</string>
     <string name="mobile_compatibility">Device compatibility</string>
     <string name="mobile_compatibility_description">CodeClear works on Android 11+ phones and tablets. Direct emergency-alert reception requires cellular hardware. Wi-Fi-only devices can still show saved records and translations. Complete capture depends on the installed alert receiver and firmware; tested profiles do not establish worldwide support. Capture starts after the first unlock following reboot.</string>
-    <string name="mobile_notification_disclosure">Android notification access can expose notifications from other apps. CodeClear reads only reviewed installed system emergency-receiver sources and saves individual complete alert text in private local history for on-device translation. It does not upload alert text or open screens automatically. Turn capture off here or revoke access in Android Settings at any time.</string>
-    <string name="mobile_accessibility_disclosure">CodeClear uses accessibility to read the single message field, title, and pending count in reviewed system emergency-alert dialogs. Other screens and history rows are excluded. It does not perform gestures or dismiss warnings. Originals stay in private history for local translation. This is not a disability assistance tool. Turn capture off here or revoke access in Android Settings at any time.</string>
+    <string name="mobile_notification_disclosure">Android notification access can expose notifications from other apps. CodeClear reads only reviewed installed system emergency-receiver sources and saves individual complete alert text in private local history for on-device translation. It does not open screens automatically. Turn capture off here or revoke access in Android Settings at any time. Remote translation requires separate MyMemory permission.</string>
+    <string name="mobile_accessibility_disclosure">CodeClear uses accessibility to read the single message field, title, and pending count in reviewed system emergency-alert dialogs. Other screens and history rows are excluded. It does not perform gestures or dismiss warnings. Originals stay in private history for local translation. This is not a disability assistance tool. Turn capture off here or revoke access in Android Settings at any time. Remote translation requires separate MyMemory permission.</string>
     <string name="mobile_local_disclosure">Enable automatic on-device translation of captured alerts. Language models require a separate Wi-Fi download approval. No alert text is sent to a translation server. Turning this off stops new translations while preserving your history.</string>
     <string name="mobile_cancel">Cancel</string>
     <string name="mobile_access_needed">Enable access in Android Settings</string>
@@ -196,8 +196,6 @@
     <string name="mobile_labs_notice">Experimental features may change. Nearby sharing stays off until you allow it.</string>
     <string name="mobile_labs_unlocked">Labs is unlocked. Open it from Settings.</string>
     <string name="mobile_server_translation">Server translation</string>
-    <string name="mobile_server_preparing">In preparation</string>
-    <string name="mobile_server_preview">Server translation is not connected. Translation still runs on this device. The planned response includes the issuing authority and how it was identified. No alert text is sent to a server.</string>
     <string name="mobile_nearby_retention_problem">Could not save a received message. Nearby history is limited to 1,000 records. Check storage or delete unwanted nearby records, then try saving again. Existing history is preserved.</string>
     <string name="mobile_nearby_background_title">Nearby sharing is on</string>
     <string name="mobile_nearby_background_notice">Receiving with Bluetooth in the background. Tap to open the app or stop sharing.</string>
@@ -242,4 +240,14 @@
     <string name="mobile_model_update_pending">Installed · Update check pending</string>
     <string name="mobile_system_preparation_explanation">System translation models belong to the installed system provider. CodeClear can open its public model settings if the provider supplies them; Android does not offer a generic download API for these models. If no public language pairs or settings are available, use ML Kit. Installing an ordinary translation app does not necessarily add a compatible system service.</string>
     <string name="mobile_accessibility_restart_notice">Force stopping CodeClear in Android App info can turn off its accessibility service. Open accessibility settings and enable it again. After a normal restart, unlock the device and allow the service to reconnect. CodeClear cannot turn on OS access for you.</string>
+    <string name="mobile_engine_mymemory">MyMemory</string>
+    <string name="mobile_server_permission">Allow MyMemory translation</string>
+    <string name="mobile_server_disclosure">Allow automatic server translation of collected alerts and requested history translations. Original alert text and language pairs are sent over the internet to MyMemory (Translated), including unverified nearby messages when you open their details or request a translation. The provider states that submitted segments are stored long term and may be processed by translation partners. Anonymous use is limited to 5,000 characters per day and a shared network may reach the limit sooner. No account or key is requested. Turning this off stops new requests; it cannot recall data already sent. ML Kit remains available for on-device translation.</string>
+    <string name="mobile_result_mymemory">Server result · MyMemory</string>
+    <string name="mobile_remote_unavailable">Allow server translation in Settings before using MyMemory.</string>
+    <string name="mobile_remote_quota">The MyMemory daily limit has been reached. A shared network may exhaust it sooner. Try again on another day.</string>
+    <string name="mobile_remote_too_long">This message exceeds the bounded MyMemory request size. The original was not truncated. Use on-device translation.</string>
+    <string name="mobile_server_terms">Provider terms and privacy</string>
+    <string name="mobile_server_description">MyMemory · Internet · Separate permission required</string>
+    <string name="mobile_server_translation_notice">Automatic translation may be inaccurate. Follow the original alert and official guidance.</string>
 </resources>

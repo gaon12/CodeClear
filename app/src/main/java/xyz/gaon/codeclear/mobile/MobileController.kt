@@ -55,7 +55,8 @@ class MobileController(
     private val releaseEngine: () -> Unit = {},
     private val cancelEngine: () -> Unit = {},
     private val captured: (Long, CapturedAlert) -> Unit = { _, _ -> },
-    private val networkCountry: () -> ReceptionCountry? = NetworkCountry(context)::read
+    private val networkCountry: () -> ReceptionCountry? = NetworkCountry(context)::read,
+    private val optionsReady: (MobileOptions) -> Unit = {}
 ) : CaptureObserver,
     AutoCloseable {
     private data class Work(val ticket: TranslationTicket, val epoch: Long, val modelEpoch: Long)
@@ -85,6 +86,8 @@ class MobileController(
     private var queryCancellation: CancellationSignal? = null
     private var searchDelay: Runnable? = null
     private var initializing = false
+    private var optionsRevision = 0L
+    private var optionsSaving = false
     private var stopNearbyOnLoad = false
     private var selecting = false
     private var active: Work? = null
@@ -108,6 +111,7 @@ class MobileController(
             val stopRequested = stopNearbyOnLoad
             stopNearbyOnLoad = false
             val resolved = if (stopRequested) options.copy(nearbyEnabled = false) else options
+            optionsReady(resolved)
             update(state.copy(loaded = true, options = resolved, storageError = false))
             if (stopRequested) io({ preferences.save(resolved) }) {}
             syncCaptureConsent(refreshSources = true)
@@ -128,6 +132,8 @@ class MobileController(
     fun changeOptions(options: MobileOptions) {
         requireMain()
         if (!state.loaded || closed) return
+        val revision = ++optionsRevision
+        optionsSaving = true
         val changedTarget = options.target != state.options.target
         val changedEngine = options.engine != state.options.engine
         val changedOutput = changedTarget || changedEngine
@@ -135,7 +141,10 @@ class MobileController(
             queryRevision++
             queryCancellation?.cancel()
         }
-        val changedWork = changedOutput || options.localConsent != state.options.localConsent
+        val changedWork =
+            changedOutput || options.translationAllowed != state.options.translationAllowed ||
+                options.serverAllowed != state.options.serverAllowed ||
+                options.labsEnabled != state.options.labsEnabled
         if (changedWork) {
             workEpoch.incrementAndGet()
             cancelEngine()
@@ -165,8 +174,12 @@ class MobileController(
             preferences.save(options)
             if (changedWork) store.recoverInterruptedWork()
         }) {
-            refresh()
-            kick()
+            if (revision == optionsRevision) {
+                optionsSaving = false
+                optionsReady(options)
+                refresh()
+                kick()
+            }
         }
     }
 
@@ -291,7 +304,7 @@ class MobileController(
                     sourceIdentity = original.root
                 )
             )?.also {
-                if (translate && options.localConsent) {
+                if (translate && options.translationAllowed) {
                     store.queueTranslation(
                         it,
                         options.target.languageTag,
@@ -371,7 +384,7 @@ class MobileController(
         val engine = state.options.engine
         openDetail(id, target, engine)
         update(state.copy(detailSourceLanguage = originalLanguageCode(originalLanguage)))
-        if (!state.options.localConsent) return
+        if (!state.options.translationAllowed) return
         val epoch = workEpoch.get()
         io({
             if (epoch == workEpoch.get()) store.queueRetry(id, target, engine)
@@ -435,7 +448,7 @@ class MobileController(
     }
 
     private fun prepareVisibleRecords() {
-        if (!state.options.localConsent || state.storageError) return
+        if (!state.options.translationAllowed || state.storageError) return
         val ids = listOfNotNull(
             state.latest,
             state.detail.takeIf {
@@ -488,7 +501,7 @@ class MobileController(
     ) {
         requireMain()
         require(target in HistoryText.targets)
-        if (!state.loaded || state.storageError || !state.options.localConsent ||
+        if (!state.loaded || state.storageError || !state.options.translationAllowed ||
             selectedEngine != state.options.engine || closed
         ) {
             return
@@ -526,8 +539,8 @@ class MobileController(
     }
 
     private fun kick() {
-        if (closed || !state.loaded || state.storageError || !state.options.localConsent ||
-            active != null ||
+        if (closed || !state.loaded || state.storageError || !state.options.translationAllowed ||
+            active != null || optionsSaving ||
             selecting
         ) {
             return
@@ -602,6 +615,10 @@ class MobileController(
                     sameLanguage = result.sameLanguage
                 )
 
+                LocalResult.Quota -> SavedTranslation(TranslationPhase.QUOTA)
+
+                LocalResult.TooLong -> SavedTranslation(TranslationPhase.TOO_LONG)
+
                 LocalResult.NeedsModels -> SavedTranslation(TranslationPhase.NEEDS_MODELS)
 
                 LocalResult.UnknownLanguage -> SavedTranslation(TranslationPhase.UNKNOWN_LANGUAGE)
@@ -669,6 +686,8 @@ class MobileController(
         if (closed || handlingFailure) return
         handlingFailure = true
         initializing = false
+        optionsSaving = false
+        optionsRevision++
         selecting = false
         workEpoch.incrementAndGet()
         cancelEngine()
@@ -683,6 +702,7 @@ class MobileController(
                     notificationConsent = false,
                     accessibilityConsent = false,
                     localConsent = false,
+                    serverAllowed = false,
                     nearbyEnabled = false
                 )
             )

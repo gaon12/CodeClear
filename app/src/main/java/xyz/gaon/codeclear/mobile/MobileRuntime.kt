@@ -20,6 +20,7 @@ import xyz.gaon.codeclear.probe.MlKitLocalEngine
 import xyz.gaon.codeclear.probe.ProbeSession
 import xyz.gaon.codeclear.probe.SystemEngineAvailability
 import xyz.gaon.codeclear.probe.SystemLocalEngine
+import xyz.gaon.codeclear.translation.MyMemoryEngine
 
 class MobileApplication : Application() {
     lateinit var runtime: MobileRuntime
@@ -49,6 +50,7 @@ class MobileRuntime(context: Context) {
     val nearby: NearbySharing = NearbySharing(context, retain = ::retainNearby)
     private val notifications = ResultNotifications(context)
     private val mlKit = MlKitLocalEngine()
+    private val myMemory = MyMemoryEngine(context)
     var systemAvailability by mutableStateOf(SystemEngineAvailability())
         private set
     val systemEngine = SystemLocalEngine(context) { systemAvailability = it }
@@ -56,6 +58,7 @@ class MobileRuntime(context: Context) {
         when (input.engine) {
             LocalEngineKind.ML_KIT -> mlKit.run(input, download, complete)
             LocalEngineKind.SYSTEM -> systemEngine.run(input, download, complete)
+            LocalEngineKind.MY_MEMORY -> myMemory.run(input, false, complete)
         }
     }
     private var diagnosticOwners = 0
@@ -68,6 +71,11 @@ class MobileRuntime(context: Context) {
         engine,
         changed = {
             state = it
+            if (it.storageError || !it.options.translationAllowed ||
+                it.options.engine != LocalEngineKind.MY_MEMORY
+            ) {
+                myMemory.authorize(false)
+            }
             if (it.loaded) {
                 val enabled = it.options.labsEnabled && it.options.nearbyEnabled && !it.storageError
                 nearby.configure(enabled)
@@ -99,9 +107,16 @@ class MobileRuntime(context: Context) {
         releaseEngine = {
             mlKit.close()
             systemEngine.close()
+            myMemory.close()
         },
-        cancelEngine = systemEngine::cancel,
-        captured = nearby::offer
+        cancelEngine = {
+            systemEngine.cancel()
+            myMemory.cancel()
+        },
+        captured = nearby::offer,
+        optionsReady = {
+            myMemory.authorize(it.engine == LocalEngineKind.MY_MEMORY && it.translationAllowed)
+        }
     )
     val models =
         ModelPreparation(MlKitModelPreparationBackend(), {
@@ -193,6 +208,12 @@ class MobileRuntime(context: Context) {
     }
 
     fun configure(options: MobileOptions) {
+        if (options.serverAllowed != state.options.serverAllowed ||
+            options.engine != state.options.engine ||
+            options.labsEnabled != state.options.labsEnabled
+        ) {
+            myMemory.authorize(false)
+        }
         val withdrawn = !options.localConsent && state.options.localConsent
         if (withdrawn || options.engine != state.options.engine) models.withdraw()
         if (withdrawn) notifications.cancel(null)

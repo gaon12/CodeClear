@@ -245,7 +245,9 @@ fun AlertPresentation(
                         }?.let { result ->
                             Text(
                                 stringResource(
-                                    if (result.engine == LocalEngineKind.SYSTEM) {
+                                    if (result.engine == LocalEngineKind.MY_MEMORY) {
+                                        R.string.mobile_result_mymemory
+                                    } else if (result.engine == LocalEngineKind.SYSTEM) {
                                         R.string.mobile_result_system
                                     } else {
                                         R.string.mobile_result_mlkit
@@ -357,7 +359,9 @@ fun AlertPresentation(
             }
             Text(
                 stringResource(
-                    if (viewMode == MessageViewMode.SWITCH || compact) {
+                    if (engine == LocalEngineKind.MY_MEMORY) {
+                        R.string.mobile_server_translation_notice
+                    } else if (viewMode == MessageViewMode.SWITCH || compact) {
                         R.string.mobile_translation_short_notice
                     } else {
                         R.string.mobile_translation_notice
@@ -428,9 +432,17 @@ internal fun translationStatusLabel(
 
         TranslationPhase.UNKNOWN_LANGUAGE -> R.string.mobile_unknown_language
 
-        TranslationPhase.UNAVAILABLE -> R.string.mobile_system_unavailable
+        TranslationPhase.UNAVAILABLE -> if (engine == LocalEngineKind.MY_MEMORY) {
+            R.string.mobile_remote_unavailable
+        } else {
+            R.string.mobile_system_unavailable
+        }
 
         TranslationPhase.UNSUPPORTED_PAIR -> R.string.mobile_pair_unsupported
+
+        TranslationPhase.QUOTA -> R.string.mobile_remote_quota
+
+        TranslationPhase.TOO_LONG -> R.string.mobile_remote_too_long
 
         TranslationPhase.FAILED -> R.string.mobile_failed
 

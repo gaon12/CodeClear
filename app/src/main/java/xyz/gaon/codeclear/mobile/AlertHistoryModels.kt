@@ -56,6 +56,8 @@ enum class TranslationPhase {
     UNKNOWN_LANGUAGE,
     UNAVAILABLE,
     UNSUPPORTED_PAIR,
+    QUOTA,
+    TOO_LONG,
     FAILED
 }
 

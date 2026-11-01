@@ -3,7 +3,9 @@ package xyz.gaon.codeclear.mobile
 import android.os.SystemClock
 import androidx.test.platform.app.InstrumentationRegistry
 import java.util.UUID
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.FutureTask
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -29,6 +31,7 @@ class MobileControllerDeviceTest {
     private val engine = ControlledEngine()
     private val notices = mutableListOf<Long>()
     private val noticeEngines = mutableListOf<LocalEngineKind>()
+    private val savedOptions = mutableListOf<MobileOptions>()
     private var diagnosticScope: AutoCloseable? = null
 
     @Before
@@ -52,6 +55,71 @@ class MobileControllerDeviceTest {
         } finally {
             onMain { diagnosticScope?.close() }
         }
+    }
+
+    @Test
+    fun remoteWorkWaitsForPersistenceAndOlderSavesCannotRestoreWithdrawnPermission() {
+        val id = store.insert(capture("[DRILL] Synthetic persistence boundary"))!!
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        try {
+            start(
+                selectedEngine = LocalEngineKind.MY_MEMORY,
+                saveEntered = entered,
+                saveRelease = release
+            )
+            await { it.loaded && !it.loading }
+            onMain {
+                controller!!.changeOptions(
+                    latest.get().options.copy(serverAllowed = true, labsEnabled = true)
+                )
+            }
+            assertTrue(entered.await(5, TimeUnit.SECONDS))
+            onMain {
+                controller!!.retry(id, "en", LocalEngineKind.MY_MEMORY)
+                controller!!.changeOptions(latest.get().options.copy(serverAllowed = false))
+            }
+            assertEquals(0, engine.calls)
+            release.countDown()
+            await { onMain { savedOptions.size == 2 } && !it.loading }
+            assertFalse(onMain { savedOptions.last().serverAllowed })
+            assertEquals(0, engine.calls)
+        } finally {
+            release.countDown()
+        }
+    }
+
+    @Test
+    fun localPermissionNeverAuthorizesRemoteWorkAndWithdrawalDiscardsLateOutput() {
+        val id = store.insert(capture("[DRILL] Synthetic remote permission scope"))!!
+        start(selectedEngine = LocalEngineKind.MY_MEMORY)
+        await { it.loaded && !it.loading }
+        assertEquals(0, engine.calls)
+        onMain {
+            controller!!.changeOptions(
+                latest.get().options.copy(serverAllowed = true, labsEnabled = true)
+            )
+        }
+        await { engine.calls == 1 }
+        assertEquals(LocalEngineKind.MY_MEMORY, onMain { engine.inputs.single().engine })
+        onMain {
+            controller!!.changeOptions(latest.get().options.copy(serverAllowed = false))
+            engine.complete("[DRILL] Late provider response")
+        }
+        await { !it.loading && !it.options.translationAllowed }
+        assertTrue(latest.get().options.localConsent)
+        assertEquals(null, store.find(id, "en", LocalEngineKind.MY_MEMORY)?.translation?.text)
+        assertTrue(notices.isEmpty())
+        assertEquals(1, engine.calls)
+        onMain { controller!!.changeOptions(latest.get().options.copy(serverAllowed = true)) }
+        await { engine.calls == 2 }
+        onMain {
+            controller!!.delete(id)
+            engine.complete("[DRILL] Deleted provider response")
+        }
+        await { !it.loading && it.latest == null }
+        assertEquals(null, store.find(id, "en", LocalEngineKind.MY_MEMORY))
+        assertTrue(notices.isEmpty())
     }
 
     @Test
@@ -490,7 +558,9 @@ class MobileControllerDeviceTest {
     private fun start(
         local: Boolean = true,
         failSave: Boolean = false,
-        selectedEngine: LocalEngineKind = LocalEngineKind.ML_KIT
+        selectedEngine: LocalEngineKind = LocalEngineKind.ML_KIT,
+        saveEntered: CountDownLatch? = null,
+        saveRelease: CountDownLatch? = null
     ) {
         if (local) {
             store.page("", "en").forEach {
@@ -507,6 +577,8 @@ class MobileControllerDeviceTest {
                     )
                 override fun load() = options
                 override fun save(options: MobileOptions) {
+                    saveEntered?.countDown()
+                    check(saveRelease?.await(5, TimeUnit.SECONDS) != false)
                     if (failSave) error("Synthetic storage failure")
                     this.options = options
                 }
@@ -520,7 +592,8 @@ class MobileControllerDeviceTest {
                 translated = { id, _, producer ->
                     notices += id
                     noticeEngines += producer
-                }
+                },
+                optionsReady = savedOptions::add
             ).also { it.start() }
         }
     }

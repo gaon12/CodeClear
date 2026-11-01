@@ -1091,7 +1091,7 @@ class MobileScreenDeviceTest {
         compose.onNodeWithTag("signal-egg-close").performClick()
         openSettingsPage(SettingsPage.LABS)
         compose.onNodeWithText(text(R.string.mobile_server_translation)).performClick()
-        compose.onNodeWithText(text(R.string.mobile_server_preview)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_server_permission)).assertIsOff()
         compose.onNodeWithTag("settings-back").performClick()
         compose.onNodeWithText(text(R.string.mobile_nearby)).performClick()
         compose.onNodeWithTag(
@@ -1485,6 +1485,92 @@ class MobileScreenDeviceTest {
         ).performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(
             text(R.string.mobile_result_same_language)
+        ).performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun serverTranslationNeedsSeparatePermissionAndCanBeWithdrawnWithoutChangingLocalPermission() {
+        compose.runOnIdle {
+            state =
+                state.copy(options = state.options.copy(labsEnabled = true, localConsent = true))
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+        openSettingsPage(SettingsPage.SERVER)
+        compose.onNodeWithText(
+            text(R.string.mobile_server_permission)
+        ).performScrollTo().assertIsOff().performClick()
+        compose.onNodeWithText(text(R.string.mobile_server_disclosure)).assertIsDisplayed()
+        compose.runOnIdle {
+            assertFalse(state.options.serverAllowed)
+            assertEquals(LocalEngineKind.ML_KIT, state.options.engine)
+        }
+        savePreview("remote-permission", dialog = true)
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_server_permission)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_allow)).performClick()
+        compose.runOnIdle {
+            assertTrue(state.options.serverAllowed)
+            assertTrue(state.options.localConsent)
+            assertEquals(LocalEngineKind.MY_MEMORY, state.options.engine)
+            assertTrue(state.options.translationAllowed)
+            assertTrue(requestedModels.isEmpty())
+        }
+        compose.onNodeWithText(
+            text(R.string.mobile_server_permission)
+        ).assertIsOn().performClick().assertIsOff()
+        compose.runOnIdle {
+            assertFalse(state.options.serverAllowed)
+            assertFalse(state.options.translationAllowed)
+            assertTrue(state.options.localConsent)
+        }
+        compose.onNodeWithText(text(R.string.mobile_server_terms)).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(
+                listOf("https://mymemory.translated.net/terms-and-conditions"),
+                projectLinks
+            )
+        }
+    }
+
+    @Test
+    fun remoteResultsRetainTheirProviderAndShowQuotaFailures() {
+        compose.runOnIdle {
+            state =
+                state.copy(
+                    options = state.options.copy(
+                        engine = LocalEngineKind.MY_MEMORY,
+                        serverAllowed = true,
+                        labsEnabled = true
+                    ),
+                    latest = record(
+                        1
+                    ).copy(
+                        translation = SavedTranslation(
+                            TranslationPhase.READY,
+                            "[DRILL] Remote translation",
+                            "ko",
+                            engine = LocalEngineKind.MY_MEMORY
+                        )
+                    )
+                )
+        }
+        compose.onNodeWithText(
+            text(R.string.mobile_result_mymemory)
+        ).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_result_mlkit)).assertDoesNotExist()
+        compose.runOnIdle {
+            state =
+                state.copy(
+                    latest = state.latest!!.copy(
+                        translation = SavedTranslation(
+                            TranslationPhase.QUOTA,
+                            engine = LocalEngineKind.MY_MEMORY
+                        )
+                    )
+                )
+        }
+        compose.onNodeWithText(
+            text(R.string.mobile_remote_quota)
         ).performScrollTo().assertIsDisplayed()
     }
 

@@ -74,4 +74,5 @@ dependencies {
     implementation(libs.mlkit.translate)
     implementation(libs.mlkit.language.id)
     implementation(libs.icu4j)
+    implementation(libs.okhttp)
 }

@@ -188,7 +188,7 @@ class MainActivity : AppCompatActivity() {
                                         LocalEngineKind.SYSTEM
                                     ) {
                                         openSystemTranslationSettings()
-                                    } else {
+                                    } else if (engine == LocalEngineKind.ML_KIT) {
                                         runtime.requestTargetModels(
                                             LocalTarget.entries.first {
                                                 it.languageTag ==

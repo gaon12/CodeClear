@@ -104,13 +104,13 @@ fun MobileSettings(
             SettingDivider()
             SettingRow(
                 stringResource(R.string.mobile_server_translation),
-                stringResource(R.string.mobile_server_preparing),
+                "MyMemory",
                 onClick = { navigate(SettingsPage.SERVER) }
             )
         }
     }
     if (page == SettingsPage.SERVER) {
-        SettingsGroup { SettingNote(stringResource(R.string.mobile_server_preview)) }
+        ServerTranslationSettings(options, actions)
     }
     if (page == SettingsPage.TRANSLATION) {
         LocalTranslationSettings(options, actions)

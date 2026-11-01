@@ -69,8 +69,16 @@ internal fun HomeOverview(
             )
             OverviewAction(
                 R.drawable.ic_category_translation,
-                stringResource(R.string.mobile_translation_settings),
-                if (state.options.localConsent) {
+                stringResource(
+                    if (state.options.engine ==
+                        xyz.gaon.codeclear.probe.LocalEngineKind.MY_MEMORY
+                    ) {
+                        R.string.mobile_server_translation
+                    } else {
+                        R.string.mobile_translation_settings
+                    }
+                ),
+                if (state.options.translationAllowed) {
                     languageName(state.options.target.languageTag)
                 } else {
                     stringResource(R.string.mobile_off)

@@ -27,6 +27,8 @@ sealed interface LocalResult {
     data object UnknownLanguage : LocalResult
     data object Unavailable : LocalResult
     data object UnsupportedPair : LocalResult
+    data object Quota : LocalResult
+    data object TooLong : LocalResult
     data object Failed : LocalResult
 }
 

@@ -306,7 +306,7 @@ private fun settingsSummary(page: SettingsPage, options: MobileOptions): String 
 
     SettingsPage.LABS -> stringResource(R.string.mobile_labs_summary)
 
-    SettingsPage.SERVER -> stringResource(R.string.mobile_server_preparing)
+    SettingsPage.SERVER -> "MyMemory"
 
     SettingsPage.PRIVACY -> stringResource(R.string.mobile_data_storage)
 

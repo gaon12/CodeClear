@@ -42,15 +42,24 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
             SettingSwitchRow(
                 stringResource(R.string.mobile_auto_translation),
                 stringResource(
-                    if (options.localConsent) R.string.mobile_on else R.string.mobile_off
+                    if (options.translationAllowed) R.string.mobile_on else R.string.mobile_off
                 ),
-                checked = options.localConsent,
+                checked = options.translationAllowed,
                 enabled =
-                    options.localConsent || options.engine == LocalEngineKind.ML_KIT ||
+                    options.translationAllowed || options.engine == LocalEngineKind.ML_KIT ||
+                        (options.engine == LocalEngineKind.MY_MEMORY && options.labsEnabled) ||
                         systemSelectable,
                 onCheckedChange = { enabled ->
                     if (!enabled) {
-                        actions.configure(options.copy(localConsent = false))
+                        actions.configure(
+                            if (options.engine ==
+                                LocalEngineKind.MY_MEMORY
+                            ) {
+                                options.copy(serverAllowed = false)
+                            } else {
+                                options.copy(localConsent = false)
+                            }
+                        )
                     } else {
                         proposal = TranslationChange(options.engine, enable = true)
                     }
@@ -70,9 +79,9 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
             )
             SettingNote(
                 stringResource(
-                    if (options.engine ==
-                        LocalEngineKind.ML_KIT
-                    ) {
+                    if (options.engine == LocalEngineKind.MY_MEMORY) {
+                        R.string.mobile_server_description
+                    } else if (options.engine == LocalEngineKind.ML_KIT) {
                         R.string.mobile_local_description
                     } else {
                         R.string.mobile_system_description
@@ -104,18 +113,26 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Column(Modifier.selectableGroup()) {
-                        LocalEngineKind.entries.forEach { engine ->
+                        LocalEngineKind.entries.filter {
+                            it != LocalEngineKind.MY_MEMORY ||
+                                options.labsEnabled
+                        }.forEach { engine ->
                             RadioChoiceRow(
                                 stringResource(engineLabel(engine)),
                                 selected = engine == options.engine,
-                                enabled = !availability.loading || engine == LocalEngineKind.ML_KIT,
+                                enabled = engine != LocalEngineKind.SYSTEM || !availability.loading,
                                 onClick = {
                                     enginePicker = false
                                     if (engine == LocalEngineKind.SYSTEM && !systemSelectable) {
                                         systemPreparation = true
                                     } else if (engine != options.engine) {
                                         proposal =
-                                            TranslationChange(engine, enable = false)
+                                            TranslationChange(
+                                                engine,
+                                                enable =
+                                                    engine == LocalEngineKind.MY_MEMORY &&
+                                                        options.translationAllowed
+                                            )
                                     }
                                 }
                             )
@@ -190,15 +207,16 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                 ) {
                     Text(
                         stringResource(
-                            if (request.engine ==
-                                LocalEngineKind.SYSTEM
-                            ) {
+                            if (request.engine == LocalEngineKind.MY_MEMORY) {
+                                R.string.mobile_server_disclosure
+                            } else if (request.engine == LocalEngineKind.SYSTEM) {
                                 R.string.mobile_system_disclosure
                             } else {
                                 R.string.mobile_local_disclosure
                             }
                         )
                     )
+                    if (request.engine == LocalEngineKind.MY_MEMORY) ProviderTermsLink()
                     if (!request.enable) Text(stringResource(R.string.mobile_engine_switch_notice))
                     if (request.engine ==
                         LocalEngineKind.SYSTEM
@@ -211,20 +229,44 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                 TextButton(
                     onClick = {
                         proposal = null
-                        if (request.engine == LocalEngineKind.ML_KIT || systemSelectable) {
+                        if ((request.engine != LocalEngineKind.SYSTEM || systemSelectable) &&
+                            (request.engine != LocalEngineKind.MY_MEMORY || options.labsEnabled)
+                        ) {
                             actions.configure(
                                 options.copy(
                                     engine = request.engine,
-                                    localConsent = request.enable || options.localConsent
+                                    localConsent = if (request.engine ==
+                                        LocalEngineKind.MY_MEMORY
+                                    ) {
+                                        options.localConsent
+                                    } else {
+                                        request.enable ||
+                                            options.localConsent
+                                    },
+                                    serverAllowed = if (request.engine ==
+                                        LocalEngineKind.MY_MEMORY
+                                    ) {
+                                        request.enable ||
+                                            options.serverAllowed
+                                    } else {
+                                        options.serverAllowed
+                                    }
                                 )
                             )
                         }
                     },
-                    enabled = request.engine == LocalEngineKind.ML_KIT || systemSelectable
+                    enabled = (request.engine != LocalEngineKind.SYSTEM || systemSelectable) &&
+                        (request.engine != LocalEngineKind.MY_MEMORY || options.labsEnabled)
                 ) {
                     Text(
                         stringResource(
-                            if (request.enable) R.string.mobile_enable else R.string.mobile_change
+                            if (request.enable && request.engine == LocalEngineKind.MY_MEMORY) {
+                                R.string.mobile_allow
+                            } else if (request.enable) {
+                                R.string.mobile_enable
+                            } else {
+                                R.string.mobile_change
+                            }
                         )
                     )
                 }
@@ -300,4 +342,5 @@ private fun SystemSupportStatus(availability: SystemEngineAvailability, target: 
 fun engineLabel(engine: LocalEngineKind): Int = when (engine) {
     LocalEngineKind.ML_KIT -> R.string.mobile_engine_mlkit
     LocalEngineKind.SYSTEM -> R.string.mobile_engine_system
+    LocalEngineKind.MY_MEMORY -> R.string.mobile_engine_mymemory
 }

@@ -420,7 +420,7 @@ fun MobileScreen(
                                         AlertPresentation(
                                             latest,
                                             state.options.target.languageTag,
-                                            state.options.localConsent,
+                                            state.options.translationAllowed,
                                             {
                                                 actions.retry(
                                                     latest.id,
@@ -612,7 +612,7 @@ fun MobileScreen(
                                             alert = alert,
                                             target = state.options.target.languageTag,
                                             engine = state.options.engine,
-                                            localEnabled = state.options.localConsent,
+                                            localEnabled = state.options.translationAllowed,
                                             first = index == 0,
                                             last = index == state.records.lastIndex,
                                             open = {

@@ -2,7 +2,7 @@
     <string name="mobile_ui_language_title">Langue de l’application</string>
     <string name="result_channel">Résultats de traduction</string>
     <string name="result_title">La traduction de l’alerte est prête</string>
-    <string name="result_body">Touchez pour afficher l’original et la traduction sur l’appareil.</string>
+    <string name="result_body">Touchez pour voir l’original et la traduction.</string>
     <string name="mobile_alert">Alerte d’urgence</string>
     <string name="mobile_captured">Recueilli le %1$s</string>
     <string name="mobile_original">Original</string>
@@ -11,7 +11,7 @@
     <string name="mobile_retry">Réessayer</string>
     <string name="mobile_translation_notice">La traduction sur l’appareil peut être inexacte. Consultez l’alerte originale et les consignes officielles.</string>
     <string name="mobile_details">Voir les détails</string>
-    <string name="mobile_translation_off">Activez la traduction sur l’appareil dans les paramètres.</string>
+    <string name="mobile_translation_off">Autorisez la traduction dans les réglages.</string>
     <string name="mobile_queued">En attente de traduction</string>
     <string name="mobile_working">Traitement en cours…</string>
     <string name="mobile_models_missing">Un modèle de traduction manque. Préparez-le via Wi-Fi.</string>
@@ -37,7 +37,7 @@
     <string name="mobile_app_info">Ouvrir les informations de l’application</string>
     <string name="mobile_app_list">Liste des applications Android</string>
     <string name="mobile_tutorial">Guide de collecte</string>
-    <string name="mobile_translation_settings">Traduction sur l’appareil</string>
+    <string name="mobile_translation_settings">Traduction</string>
     <string name="mobile_local_description">Traduisez sur cet appareil avec ML Kit. La conversion chinoise propose les écritures simplifiée et traditionnelle.</string>
     <string name="mobile_appearance">Apparence</string>
     <string name="mobile_result_notifications">Notifications de traduction</string>
@@ -83,10 +83,10 @@
     <string name="mobile_settings_missing">Ouvrez Paramètres Android → Applications → CodeClear, puis sélectionnez l’accès concerné.</string>
     <string name="mobile_restricted">Android 13 et versions ultérieures peuvent bloquer l’accès après une installation directe par APK. Ouvrez Informations sur l’application → Plus → Autoriser les paramètres restreints, puis activez chaque accès séparément. Si le menu manque, ouvrez la liste des applications Android ci-dessous, sélectionnez CodeClear, puis Plus. Les menus varient et un administrateur peut empêcher les modifications.</string>
     <string name="mobile_model_notice">Préparez les modèles des langues source et cible via Wi-Fi. Les téléchargements utilisent des données et du stockage. Android peut les poursuivre après la fermeture de cet écran ou la désactivation de la traduction. Le texte des alertes n’est pas envoyé. La traduction reprend uniquement si la traduction sur l’appareil reste activée.</string>
-    <string name="mobile_privacy_description">Les originaux et traductions restent dans le stockage privé de l’appareil jusqu’à leur suppression. Aucun compte, aucune synchronisation, traduction serveur ou transmission du texte des alertes. La sauvegarde et le transfert des données de l’application sont désactivés.</string>
+    <string name="mobile_privacy_description">Les originaux et traductions restent dans le stockage privé jusqu’à leur suppression. Aucun compte ni synchronisation ; sauvegarde et transfert désactivés. Le texte est envoyé uniquement si vous autorisez et utilisez séparément MyMemory. Le fournisseur peut conserver les textes transmis.</string>
     <string name="mobile_compatibility_description">CodeClear fonctionne sur les téléphones et tablettes Android 11 et ultérieurs. La réception directe des alertes nécessite du matériel cellulaire. Les appareils Wi-Fi seuls peuvent consulter les éléments et traductions enregistrés. La collecte complète dépend du récepteur et du micrologiciel ; les profils testés ne prouvent pas une prise en charge mondiale. La collecte commence après le premier déverrouillage suivant un redémarrage.</string>
-    <string name="mobile_notification_disclosure">L’accès aux notifications Android peut donner accès aux notifications d’autres applications. CodeClear lit uniquement les sources système de réception d’alertes vérifiées et enregistre les textes individuels complets dans un historique privé sur l’appareil pour les traduire localement. Le texte n’est pas envoyé et aucun écran ne s’ouvre automatiquement. Vous pouvez arrêter la collecte ici ou révoquer l’accès dans les paramètres Android à tout moment.</string>
-    <string name="mobile_accessibility_disclosure">CodeClear utilise l’accessibilité pour lire le champ d’un seul message, son titre et le nombre d’alertes en attente dans les boîtes de dialogue système vérifiées. Les autres écrans et lignes d’historique sont exclus. L’application n’effectue pas de gestes et ne ferme pas les avertissements. Les originaux restent dans l’historique privé pour la traduction locale. Ce n’est pas un outil d’assistance au handicap. Vous pouvez arrêter la collecte ici ou révoquer l’accès dans les paramètres Android à tout moment.</string>
+    <string name="mobile_notification_disclosure">L’accès aux notifications Android peut donner accès aux notifications d’autres applications. CodeClear lit uniquement les sources système de réception d’alertes vérifiées et enregistre les textes individuels complets dans un historique privé sur l’appareil pour les traduire localement. Aucun écran ne s’ouvre automatiquement. Vous pouvez arrêter la collecte ici ou révoquer l’accès dans les paramètres Android à tout moment. La traduction serveur nécessite une autorisation MyMemory distincte.</string>
+    <string name="mobile_accessibility_disclosure">CodeClear utilise l’accessibilité pour lire le champ d’un seul message, son titre et le nombre d’alertes en attente dans les boîtes de dialogue système vérifiées. Les autres écrans et lignes d’historique sont exclus. L’application n’effectue pas de gestes et ne ferme pas les avertissements. Les originaux restent dans l’historique privé pour la traduction locale. Ce n’est pas un outil d’assistance au handicap. Vous pouvez arrêter la collecte ici ou révoquer l’accès dans les paramètres Android à tout moment. La traduction serveur nécessite une autorisation MyMemory distincte.</string>
     <string name="mobile_local_disclosure">Activez la traduction automatique des alertes recueillies sur cet appareil. Lancez séparément le téléchargement des modèles via Wi-Fi. Aucun texte d’alerte n’est envoyé à un serveur de traduction. La désactivation arrête les nouvelles traductions et conserve l’historique.</string>
     <string name="mobile_storage_notice">La collecte et la traduction sont suspendues pour éviter de perdre des données. Vérifiez l’espace libre, puis réessayez. Vérifiez ensuite les autorisations de collecte.</string>
     <string name="mobile_tutorial_receive_body">Android reçoit les alertes cellulaires grâce à sa fonction intégrée. Les appareils Wi-Fi uniquement ne disposent pas du récepteur cellulaire nécessaire pour les recevoir directement.</string>
@@ -196,8 +196,6 @@
     <string name="mobile_labs_notice">Les fonctions expérimentales peuvent changer. Le partage à proximité reste désactivé sans votre autorisation.</string>
     <string name="mobile_labs_unlocked">Le laboratoire est accessible dans les paramètres.</string>
     <string name="mobile_server_translation">Traduction sur serveur</string>
-    <string name="mobile_server_preparing">En préparation</string>
-    <string name="mobile_server_preview">La traduction sur serveur est déconnectée. Les traductions restent traitées sur cet appareil. Le résultat prévu indiquera l’organisme émetteur et la manière dont il a été identifié. Aucun texte d’alerte n’est envoyé à un serveur.</string>
     <string name="mobile_nearby_retention_problem">Impossible d’enregistrer un message reçu. L’historique de proximité est limité à 1 000 entrées. Vérifiez l’espace ou supprimez les entrées reçues inutiles, puis réessayez. Les entrées existantes sont conservées.</string>
     <string name="mobile_nearby_background_title">Partage à proximité actif</string>
     <string name="mobile_nearby_background_notice">Réception Bluetooth en arrière-plan. Ouvrez l’application ou arrêtez le partage.</string>
@@ -242,4 +240,14 @@
     <string name="mobile_model_update_pending">Installé · Vérification des mises à jour en attente</string>
     <string name="mobile_system_preparation_explanation">Les modèles système sont gérés par le fournisseur installé. CodeClear peut ouvrir ses réglages publics, si disponibles. Android ne propose pas d’API générale pour télécharger ces modèles. Sans paires de langues ni réglages publics, utilisez ML Kit. Une application de traduction ordinaire ne fournit pas forcément un service système compatible.</string>
     <string name="mobile_accessibility_restart_notice">Un arrêt forcé dans les informations de l’application Android peut désactiver le service d’accessibilité. Réactivez-le dans les réglages d’accessibilité. Après un redémarrage normal, déverrouillez l’appareil et attendez la reconnexion. CodeClear ne peut pas activer cet accès à votre place.</string>
+    <string name="mobile_engine_mymemory">MyMemory</string>
+    <string name="mobile_server_permission">Autoriser la traduction MyMemory</string>
+    <string name="mobile_server_disclosure">Autorisez la traduction serveur automatique des alertes collectées et des entrées demandées dans l’historique. Le texte original et les langues sont envoyés par Internet à MyMemory (Translated), y compris les messages de proximité non vérifiés dont vous ouvrez les détails ou demandez la traduction. Le fournisseur conserve les segments à long terme et peut faire appel à des partenaires de traduction. L’usage anonyme est limité à 5 000 caractères par jour ; un réseau partagé peut épuiser ce quota plus tôt. Aucun compte ni clé nécessaire. La désactivation arrête les nouveaux envois sans rappeler les données déjà transmises. ML Kit reste disponible pour traduire sur l’appareil.</string>
+    <string name="mobile_result_mymemory">Résultat serveur · MyMemory</string>
+    <string name="mobile_remote_unavailable">Autorisez la traduction serveur dans les réglages.</string>
+    <string name="mobile_remote_quota">La limite quotidienne de MyMemory est atteinte. Un réseau partagé peut l’épuiser plus tôt. Réessayez un autre jour.</string>
+    <string name="mobile_remote_too_long">Ce message dépasse la limite de traitement MyMemory. L’original n’a pas été tronqué. Utilisez la traduction sur l’appareil.</string>
+    <string name="mobile_server_terms">Conditions et confidentialité du fournisseur</string>
+    <string name="mobile_server_description">MyMemory · Internet · Autorisation distincte requise</string>
+    <string name="mobile_server_translation_notice">La traduction automatique peut être inexacte. Consultez l’alerte originale et les consignes officielles.</string>
 </resources>

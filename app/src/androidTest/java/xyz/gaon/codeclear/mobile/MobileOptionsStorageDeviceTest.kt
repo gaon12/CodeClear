@@ -98,6 +98,34 @@ class MobileOptionsStorageDeviceTest {
     }
 
     @Test
+    fun remotePermissionIsVersionedAndNeverInheritedFromLocalPermission() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val name = "options-test-${UUID.randomUUID()}"
+        val preferences = context.getSharedPreferences(name, Context.MODE_PRIVATE)
+        val storage = MobileOptionsStorage(context, name)
+        try {
+            storage.save(
+                MobileOptions(
+                    localConsent = true,
+                    labsEnabled = true,
+                    engine = LocalEngineKind.MY_MEMORY
+                )
+            )
+            assertFalse(storage.load().serverAllowed)
+            assertFalse(storage.load().translationAllowed)
+            storage.save(storage.load().copy(serverAllowed = true))
+            assertTrue(storage.load().translationAllowed)
+            preferences.edit().remove("remote_disclosure_version").commit()
+            assertFalse(storage.load().serverAllowed)
+            storage.save(storage.load().copy(serverAllowed = true, labsEnabled = false))
+            assertFalse(storage.load().serverAllowed)
+            assertEquals(LocalEngineKind.ML_KIT, storage.load().engine)
+        } finally {
+            context.deleteSharedPreferences(name)
+        }
+    }
+
+    @Test
     fun legacyConsentStaysWithItsEngineAndUnknownIdentifiersDisableTranslation() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val name = "options-test-${UUID.randomUUID()}"

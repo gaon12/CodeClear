@@ -21,8 +21,15 @@ data class MobileOptions(
     val engine: LocalEngineKind = LocalEngineKind.ML_KIT,
     val nearbyEnabled: Boolean = false,
     val labsEnabled: Boolean = false,
-    val messageViewMode: MessageViewMode = MessageViewMode.SWITCH
-)
+    val messageViewMode: MessageViewMode = MessageViewMode.SWITCH,
+    val serverAllowed: Boolean = false
+) {
+    val translationAllowed: Boolean get() = if (engine == LocalEngineKind.MY_MEMORY) {
+        labsEnabled && serverAllowed
+    } else {
+        localConsent
+    }
+}
 
 fun defaultTarget(
     systemLanguages: String = Resources.getSystem().configuration.locales.toLanguageTags()
@@ -52,6 +59,7 @@ class MobileOptionsStorage(
         val labsEnabled = saved.getBoolean("labs_enabled", false)
         val engineKey = saved.getString("local_engine", LocalEngineKind.ML_KIT.key)
         val engine = LocalEngineKind.entries.firstOrNull { it.key == engineKey }
+            ?.takeIf { it != LocalEngineKind.MY_MEMORY || labsEnabled }
         val target =
             LocalTarget.entries.firstOrNull { it.name == saved.getString("target", null) }
                 ?: defaultTarget(LocaleManagerCompat.getSystemLocales(context).toLanguageTags())
@@ -77,6 +85,10 @@ class MobileOptionsStorage(
             nearbyEnabled =
                 currentDisclosure && labsEnabled && saved.getBoolean("nearby_enabled", false),
             labsEnabled = labsEnabled,
+            serverAllowed =
+                currentDisclosure && labsEnabled && engine == LocalEngineKind.MY_MEMORY &&
+                    saved.getInt("remote_disclosure_version", 0) == 1 &&
+                    saved.getBoolean("server_allowed", false),
             messageViewMode = MessageViewMode.entries.firstOrNull {
                 it.name == saved.getString("message_view_mode", null)
             } ?: MessageViewMode.SWITCH
@@ -91,6 +103,8 @@ class MobileOptionsStorage(
             .putBoolean("notification_consent", options.notificationConsent)
             .putBoolean("accessibility_consent", options.accessibilityConsent)
             .putBoolean("local_consent", options.localConsent)
+            .putInt("remote_disclosure_version", 1)
+            .putBoolean("server_allowed", options.serverAllowed && options.labsEnabled)
             .putString("local_engine", options.engine.key)
             .putBoolean("nearby_enabled", options.nearbyEnabled)
             .putBoolean("labs_enabled", options.labsEnabled)

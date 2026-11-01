@@ -2,7 +2,7 @@
     <string name="mobile_ui_language_title">アプリの言語</string>
     <string name="result_channel">翻訳結果</string>
     <string name="result_title">緊急速報の翻訳が完了しました</string>
-    <string name="result_body">タップすると原文と端末内の翻訳を表示します。</string>
+    <string name="result_body">タップして原文と翻訳を表示します。</string>
     <string name="mobile_alert">緊急速報</string>
     <string name="mobile_captured">取得：%1$s</string>
     <string name="mobile_original">原文</string>
@@ -11,7 +11,7 @@
     <string name="mobile_retry">再試行</string>
     <string name="mobile_translation_notice">端末内の翻訳は不正確な場合があります。原文と公式の指示を確認してください。</string>
     <string name="mobile_details">詳細を見る</string>
-    <string name="mobile_translation_off">設定で端末内の翻訳を有効にしてください。</string>
+    <string name="mobile_translation_off">設定で翻訳を許可してください。</string>
     <string name="mobile_queued">翻訳待ち</string>
     <string name="mobile_working">処理中…</string>
     <string name="mobile_models_missing">翻訳モデルが未準備です。Wi-Fiで準備してください。</string>
@@ -37,7 +37,7 @@
     <string name="mobile_app_info">アプリ情報を開く</string>
     <string name="mobile_app_list">Android のアプリ一覧を開く</string>
     <string name="mobile_tutorial">取得方法の案内</string>
-    <string name="mobile_translation_settings">端末内の翻訳</string>
+    <string name="mobile_translation_settings">翻訳</string>
     <string name="mobile_local_description">ML Kitを使い、端末内で翻訳します。中国語は簡体字と繁体字の変換に対応しています。</string>
     <string name="mobile_appearance">表示設定</string>
     <string name="mobile_result_notifications">翻訳結果の通知</string>
@@ -83,10 +83,10 @@
     <string name="mobile_settings_missing">Androidの設定 → アプリ → CodeClearから該当するアクセス設定を開いてください。</string>
     <string name="mobile_restricted">Android 13以降では、APKから直接インストールしたアプリのアクセスが制限される場合があります。アプリ情報 → その他 → 制限付き設定を許可を選び、その後それぞれのアクセスを有効にしてください。メニューがない場合は、下のボタンからAndroidのアプリ一覧を開き、CodeClearを選んでその他を確認してください。端末や管理者によって変更が制限される場合があります。</string>
     <string name="mobile_model_notice">Wi-Fiで原文言語と翻訳先言語のモデルを準備します。データ通信と保存領域を使用します。この画面を閉じたり翻訳を無効にしたりしても、Androidがダウンロードを続ける場合があります。警報の本文はアップロードしません。翻訳を再開するのは、端末内の翻訳が有効な場合だけです。</string>
-    <string name="mobile_privacy_description">原文と翻訳は、削除するまで端末内の非公開領域に保存します。アカウント、同期、サーバー翻訳、警報本文のアップロードはありません。アプリのバックアップと端末間転送は無効です。</string>
+    <string name="mobile_privacy_description">原文と翻訳は削除するまで端末内の非公開領域に保存します。アカウントと同期はなく、バックアップと端末間転送は無効です。MyMemoryのサーバー翻訳を別途許可して利用した場合のみ本文を送信し、提供元が送信内容を保存する場合があります。</string>
     <string name="mobile_compatibility_description">CodeClearはAndroid 11以降のスマートフォンとタブレットで利用できます。緊急速報の直接受信には携帯電話回線の受信機能が必要です。Wi-Fi専用端末でも保存済みの履歴と翻訳は確認できます。全文の取得可否は受信アプリとファームウェアに依存し、検証済みの環境だけで世界中の対応を保証するものではありません。再起動後、最初のロック解除から取得を開始します。</string>
-    <string name="mobile_notification_disclosure">Androidの通知アクセス権では、他のアプリの通知にもアクセスできます。CodeClearは確認済みのシステム緊急速報受信元だけを読み取り、完全な個別本文を端末内の非公開履歴に保存して翻訳します。本文のアップロードや画面の自動表示は行いません。取得をオフにするか、Android の設定でアクセス許可をいつでも取り消せます。</string>
-    <string name="mobile_accessibility_disclosure">CodeClearはユーザー補助を使い、確認済みのシステム緊急速報ダイアログにある個別の本文、件名、待機件数を読み取ります。他の画面や履歴一覧の行は読みません。ジェスチャーの実行や警告の解除は行いません。原文は端末内の翻訳用に非公開履歴へ保存します。障害者向け支援ツールではありません。取得をオフにするか、Android の設定でアクセス許可をいつでも取り消せます。</string>
+    <string name="mobile_notification_disclosure">Androidの通知アクセス権では、他のアプリの通知にもアクセスできます。CodeClearは確認済みのシステム緊急速報受信元だけを読み取り、完全な個別本文を端末内の非公開履歴に保存して翻訳します。画面の自動表示は行いません。取得をオフにするか、Android の設定でアクセス許可をいつでも取り消せます。 サーバー翻訳にはMyMemoryへの個別の許可が必要です。</string>
+    <string name="mobile_accessibility_disclosure">CodeClearはユーザー補助を使い、確認済みのシステム緊急速報ダイアログにある個別の本文、件名、待機件数を読み取ります。他の画面や履歴一覧の行は読みません。ジェスチャーの実行や警告の解除は行いません。原文は端末内の翻訳用に非公開履歴へ保存します。障害者向け支援ツールではありません。取得をオフにするか、Android の設定でアクセス許可をいつでも取り消せます。 サーバー翻訳にはMyMemoryへの個別の許可が必要です。</string>
     <string name="mobile_local_disclosure">取得した緊急速報を端末内で自動翻訳します。言語モデルは別途 Wi-Fi でダウンロードしてください。警報の本文を翻訳サーバーに送ることはありません。無効にすると新たな翻訳を停止し、履歴は保持します。</string>
     <string name="mobile_storage_notice">記録の消失を防ぐため取得と翻訳を停止しました。空き容量を確認して再試行し、その後、取得の権限を再確認してください。</string>
     <string name="mobile_tutorial_receive_body">緊急速報はAndroidに組み込まれた機能で受信します。Wi-Fi専用端末には携帯電話網の受信機能がないため、これらの放送を直接受信できません。</string>
@@ -195,8 +195,6 @@
     <string name="mobile_labs_notice">実験的な機能は変更される場合があります。周辺共有は許可するまでオフです。</string>
     <string name="mobile_labs_unlocked">ラボが開きました。設定から確認できます。</string>
     <string name="mobile_server_translation">サーバー翻訳</string>
-    <string name="mobile_server_preparing">準備中</string>
-    <string name="mobile_server_preview">サーバー翻訳は未接続です。翻訳は引き続き端末内で処理します。今後は発信機関とその判断根拠を結果に含める予定です。警報本文はサーバーに送信しません。</string>
     <string name="mobile_nearby_retention_problem">受信文を保存できませんでした。周辺受信の履歴は1,000件までです。空き容量を確認するか不要な周辺受信の履歴を削除して再保存してください。既存の履歴は保持されます。</string>
     <string name="mobile_nearby_background_title">周辺共有を実行中</string>
     <string name="mobile_nearby_background_notice">バックグラウンドでBluetooth受信中です。アプリを開くか共有を停止できます。</string>
@@ -241,4 +239,14 @@
     <string name="mobile_model_update_pending">インストール済み · 更新確認待ち</string>
     <string name="mobile_system_preparation_explanation">システム翻訳モデルは、端末にインストールされたシステムサービスが管理します。公開されたモデル設定があれば開けますが、Androidにはこれらを直接ダウンロードする共通APIがありません。公開された言語ペアや設定がない場合はML Kitをご利用ください。通常の翻訳アプリを入れても、対応するシステムサービスが追加されるとは限りません。</string>
     <string name="mobile_accessibility_restart_notice">Androidのアプリ情報でCodeClearを強制停止すると、ユーザー補助サービスが無効になる場合があります。ユーザー補助の設定でもう一度有効にしてください。通常の再起動後はロックを解除し、再接続をお待ちください。アプリがOSの権限を代わりに有効にすることはできません。</string>
+    <string name="mobile_engine_mymemory">MyMemory</string>
+    <string name="mobile_server_permission">MyMemory翻訳を許可</string>
+    <string name="mobile_server_disclosure">取得した緊急速報とリクエストした履歴のサーバー翻訳を許可します。原文と言語ペアをインターネットでMyMemory（Translated）に送信します。詳細を開いたり翻訳をリクエストした、未検証の周辺メッセージも含まれます。提供元は送信文を長期保存し、翻訳パートナーが処理する場合があるとしています。匿名利用は1日5,000文字までで、同じネットワークの利用により早く上限に達する場合があります。アカウントやキーは不要です。オフにすると新規送信を停止しますが、送信済みの内容は取り消せません。端末内翻訳にはML Kitを利用できます。</string>
+    <string name="mobile_result_mymemory">サーバー結果 · MyMemory</string>
+    <string name="mobile_remote_unavailable">設定でサーバー翻訳を許可してください。</string>
+    <string name="mobile_remote_quota">MyMemoryの1日の上限に達しました。同じネットワークの利用で早く上限に達する場合があります。翌日以降にお試しください。</string>
+    <string name="mobile_remote_too_long">このメッセージはMyMemoryの処理上限を超えています。原文は省略していません。端末内翻訳をご利用ください。</string>
+    <string name="mobile_server_terms">提供元の利用規約とプライバシー</string>
+    <string name="mobile_server_description">MyMemory · インターネット · 個別の許可が必要</string>
+    <string name="mobile_server_translation_notice">自動翻訳は不正確な場合があります。原文と公式の指示を確認してください。</string>
 </resources>
