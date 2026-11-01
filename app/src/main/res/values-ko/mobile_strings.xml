@@ -212,4 +212,6 @@
     <string name="mobile_read_aloud">읽어주기</string>
     <string name="mobile_stop_reading">읽기 중지</string>
     <string name="mobile_speech_unavailable">이 언어로 읽을 수 있는 오프라인 음성이 없습니다. 기기의 글자 읽어주기 설정에서 음성을 추가해 주세요.</string>
+    <string name="mobile_engine_no_pairs">Android에서 앱에 공개하는 번역 언어 쌍이 없습니다. 번역 앱이 설치되어 있어도 외부 앱에는 기능을 제공하지 않을 수 있습니다. 서비스 설정을 확인하거나 ML Kit을 사용해 주세요.</string>
+    <string name="mobile_engine_query_failed">시스템 번역 서비스의 지원 언어를 확인하지 못했습니다. 다시 확인해 주세요. 아직 사용 가능 여부가 확인되지 않았습니다.</string>
 </resources>

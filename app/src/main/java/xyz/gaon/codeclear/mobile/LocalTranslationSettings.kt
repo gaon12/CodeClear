@@ -34,7 +34,7 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
     val availability = actions.systemAvailability
     val support = availability.targets[options.target] ?: SystemTargetSupport()
     val systemSelectable = availability.loaded && !availability.loading &&
-        availability.platformSupported && support.available
+        availability.platformSupported && !availability.queryFailed && support.available
     LaunchedEffect(Unit) { actions.refreshSystem(false) }
     SettingsGroup {
         SettingSwitchRow(
@@ -213,8 +213,14 @@ private fun SystemSupportStatus(availability: SystemEngineAvailability, target: 
             R.string.mobile_engine_checking
         )
 
-        !availability.platformSupported || availability.targets.values.none { it.available } ->
+        !availability.platformSupported ->
             stringResource(R.string.mobile_engine_unavailable)
+
+        availability.queryFailed -> stringResource(R.string.mobile_engine_query_failed)
+
+        availability.targets.values.none {
+            it.available
+        } -> stringResource(R.string.mobile_engine_no_pairs)
 
         !support.available -> stringResource(
             R.string.mobile_engine_pair_missing,

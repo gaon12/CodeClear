@@ -81,9 +81,17 @@ class SystemLocalEngine(
                         emptyList()
                     }
                 } catch (_: Exception) {
-                    emptyList()
+                    null
                 }
-                val snapshot = SystemEngineAvailability(true, false, backend.supported, pairs)
+                val snapshot =
+                    SystemEngineAvailability(
+                        true,
+                        false,
+                        backend.supported,
+                        pairs.orEmpty(),
+                        queryFailed =
+                            pairs == null
+                    )
                 main.post {
                     inspecting = false
                     inspectedAt = SystemClock.uptimeMillis()
@@ -94,7 +102,7 @@ class SystemLocalEngine(
             }
         } catch (_: RejectedExecutionException) {
             inspecting = false
-            publish(availability.copy(loading = false))
+            publish(availability.copy(loaded = true, loading = false, queryFailed = true))
         }
     }
 

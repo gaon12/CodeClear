@@ -213,4 +213,6 @@
     <string name="mobile_read_aloud">Lire à voix haute</string>
     <string name="mobile_stop_reading">Arrêter la lecture</string>
     <string name="mobile_speech_unavailable">Aucune voix hors ligne installée pour cette langue. Ajoutez une voix dans les paramètres de synthèse vocale de l’appareil.</string>
+    <string name="mobile_engine_no_pairs">Android ne fournit aucune paire de langues publique compatible. Une application de traduction installée peut réserver son service à son propre usage. Vérifiez ses paramètres ou utilisez ML Kit.</string>
+    <string name="mobile_engine_query_failed">Impossible de consulter les langues prises en charge par le service système. Réessayez ; la compatibilité reste à confirmer.</string>
 </resources>

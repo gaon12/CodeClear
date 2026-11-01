@@ -119,6 +119,33 @@ class SystemEngineDeviceTest {
     }
 
     @Test
+    fun queryFailureIsDistinctFromAnEmptyCapabilityListAndCanRecover() {
+        val backend = Backend().apply {
+            capabilityAction =
+                { throw IllegalStateException("Synthetic failure") }
+        }
+        val failed = CountDownLatch(1)
+        val recovered = CountDownLatch(1)
+        val engine = owner(backend) {
+            if (it.loaded && it.queryFailed) failed.countDown()
+            if (it.loaded && !it.queryFailed) recovered.countDown()
+        }
+        onMain { engine.refreshCapabilities() }
+        assertTrue(failed.await(5, TimeUnit.SECONDS))
+        onMain {
+            assertTrue(engine.availability.queryFailed)
+            assertTrue(engine.availability.pairs.isEmpty())
+            backend.capabilityAction = { emptyList() }
+            engine.refreshCapabilities(force = true)
+        }
+        assertTrue(recovered.await(5, TimeUnit.SECONDS))
+        onMain {
+            assertFalse(engine.availability.queryFailed)
+            assertTrue(engine.availability.pairs.isEmpty())
+        }
+    }
+
+    @Test
     fun repeatedInspectionSharesOneBoundedQueryAndUsesTheRecentSnapshot() {
         val backend = Backend()
         val entered = CountDownLatch(1)

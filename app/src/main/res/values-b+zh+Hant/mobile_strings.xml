@@ -212,4 +212,6 @@
     <string name="mobile_read_aloud">朗讀</string>
     <string name="mobile_stop_reading">停止朗讀</string>
     <string name="mobile_speech_unavailable">此語言沒有已安裝的離線語音。請在裝置的文字轉語音設定中新增語音。</string>
+    <string name="mobile_engine_no_pairs">Android 未向其他應用程式公開相容的翻譯語言組合。即使已安裝翻譯應用程式，其服務也可能僅供自身使用。請檢查服務設定或使用 ML Kit。</string>
+    <string name="mobile_engine_query_failed">無法查詢系統翻譯服務支援的語言。請重試；目前尚未確認是否可用。</string>
 </resources>

@@ -213,4 +213,6 @@
     <string name="mobile_read_aloud">Read aloud</string>
     <string name="mobile_stop_reading">Stop reading</string>
     <string name="mobile_speech_unavailable">No installed offline voice is available for this language. Add an offline voice in the device text-to-speech settings.</string>
+    <string name="mobile_engine_no_pairs">Android exposes no compatible public translation language pairs. An installed translation app may keep its service private. Check provider settings or use ML Kit.</string>
+    <string name="mobile_engine_query_failed">Could not query the system translation service. Try again; support has not been confirmed.</string>
 </resources>

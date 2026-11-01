@@ -1290,6 +1290,31 @@ class MobileScreenDeviceTest {
     }
 
     @Test
+    fun systemEngineExplainsNoPublicPairsAndQueryFailuresWithoutEnablingStaleSupport() {
+        compose.runOnIdle {
+            systemSupport =
+                SystemEngineAvailability(loaded = true, platformSupported = true)
+        }
+        openEnginePicker()
+        compose.onNodeWithText(text(R.string.mobile_engine_no_pairs)).assertIsDisplayed()
+        compose.runOnIdle {
+            systemSupport = SystemEngineAvailability(
+                true,
+                false,
+                true,
+                listOf(SystemLanguagePair("en", state.options.target.languageTag, true)),
+                queryFailed = true
+            )
+        }
+        compose.onNodeWithText(text(R.string.mobile_engine_query_failed)).assertIsDisplayed()
+        compose.onNode(
+            hasText(text(R.string.mobile_engine_system)) and isRadioChoice()
+        ).assertIsNotEnabled()
+        compose.runOnIdle { systemSupport = SystemEngineAvailability(loaded = true) }
+        compose.onNodeWithText(text(R.string.mobile_engine_unavailable)).assertIsDisplayed()
+    }
+
+    @Test
     fun aDisappearingProviderCannotBeConfirmedThroughAnOlderDisclosure() {
         compose.runOnIdle {
             state = state.copy(options = state.options.copy(target = LocalTarget.KOREAN))

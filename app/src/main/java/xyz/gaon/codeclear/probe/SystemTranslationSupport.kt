@@ -11,7 +11,8 @@ data class SystemEngineAvailability(
     val loading: Boolean = false,
     val platformSupported: Boolean = false,
     val pairs: List<SystemLanguagePair> = emptyList(),
-    val targets: Map<LocalTarget, SystemTargetSupport> = summarizeSystemTargets(pairs)
+    val targets: Map<LocalTarget, SystemTargetSupport> = summarizeSystemTargets(pairs),
+    val queryFailed: Boolean = false
 )
 
 /** Build presentation counts on the query worker, never by parsing provider lists during a frame. */

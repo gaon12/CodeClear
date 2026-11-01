@@ -213,4 +213,6 @@
     <string name="mobile_read_aloud">Vorlesen</string>
     <string name="mobile_stop_reading">Vorlesen beenden</string>
     <string name="mobile_speech_unavailable">Für diese Sprache ist keine Offline-Stimme installiert. Fügen Sie eine Stimme in den Sprachausgabe-Einstellungen des Geräts hinzu.</string>
+    <string name="mobile_engine_no_pairs">Android stellt keine kompatiblen öffentlichen Sprachpaare bereit. Auch eine installierte Übersetzungs-App kann ihren Dienst privat halten. Prüfen Sie die Diensteinstellungen oder verwenden Sie ML Kit.</string>
+    <string name="mobile_engine_query_failed">Die unterstützten Sprachen des Systemdienstes konnten nicht abgefragt werden. Versuchen Sie es erneut. Die Unterstützung ist noch nicht bestätigt.</string>
 </resources>
