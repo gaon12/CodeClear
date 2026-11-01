@@ -10,6 +10,58 @@ from tools.ci.consent_ui import ConsentUi
 
 
 class ConsentUiTest(unittest.TestCase):
+    @patch("tools.ci.consent_ui.time.sleep")
+    def test_empty_cold_start_snapshots_can_settle_without_issuing_input(self, sleep):
+        ready = [ET.Element("node", text="Allow")]
+        with patch.object(self.ui, "_layout_once", side_effect=[None, [], ready]):
+            self.assertEqual(ready, self.ui.layout())
+        self.assertEqual(2, sleep.call_count)
+        self.device.assert_not_called()
+
+    @patch("tools.ci.consent_ui.time.sleep")
+    def test_an_empty_ui_stops_after_five_reads(self, sleep):
+        with (
+            patch.object(self.ui, "_layout_once", return_value=[]) as read,
+            self.assertRaisesRegex(RuntimeError, "five snapshots"),
+        ):
+            self.ui.layout()
+        self.assertEqual(5, read.call_count)
+
+    def test_google_permission_windows_can_use_platform_permission_resources(self):
+        package = "com.google.android.permissioncontroller"
+        self.ui.permitted.add(package)
+        self.device.return_value = self.focus.replace(
+            "package=com.android.settings", "package=" + package
+        )
+
+        def dump(args, **kwargs):
+            path = Path(
+                next(a.split("=", 1)[1] for a in args if a.startswith("--output="))
+            )
+            path.write_text(
+                json.dumps(
+                    [
+                        {
+                            "type": "SYSTEM",
+                            "layer": 8,
+                            "content": [
+                                {
+                                    "text": "Allow",
+                                    "resource-id": "com.android.permissioncontroller:id/permission_allow_button",
+                                },
+                                {
+                                    "text": "foreign",
+                                    "resource-id": "other.package:id/allow",
+                                },
+                            ],
+                        }
+                    ]
+                )
+            )
+
+        with patch("tools.ci.consent_ui.subprocess.run", side_effect=dump):
+            self.assertEqual(["Allow"], [n.get("text") for n in self.ui.layout()])
+
     def setUp(self):
         self.focus = (
             "mCurrentFocus=Window{abc u0 Friendly confirmation title}\n"
@@ -160,10 +212,12 @@ class ConsentUiTest(unittest.TestCase):
         with (
             patch("tools.ci.consent_ui.subprocess.run", side_effect=dump),
             patch.object(
-                self.ui, "settings_confirmation", return_value=["confirmation"]
+                self.ui,
+                "settings_confirmation",
+                return_value=[ET.Element("node", text="Allow")],
             ) as fallback,
         ):
-            self.assertEqual(["confirmation"], self.ui.layout())
+            self.assertEqual(["Allow"], [n.get("text") for n in self.ui.layout()])
             fallback.assert_called_once()
 
     def test_the_product_never_uses_the_transient_confirmation_reader(self):

@@ -48,7 +48,23 @@ class ConsentUi:
         return matches[0]
 
     def layout(self):
+        for attempt in range(5):
+            nodes = self._layout_once()
+            if nodes and any(n.get("text") or n.get("content-desc") for n in nodes):
+                return nodes
+            if attempt < 4:
+                time.sleep(0.25)
+        raise RuntimeError(
+            "No application window or visible controls were exposed after five snapshots"
+        )
+
+    def _layout_once(self):
         package = self.focused_package()
+        resource_owners = {package}
+        if package == "com.google.android.permissioncontroller":
+            # The Google module retains the platform resource namespace.
+            # WindowManager ownership, rather than a resource prefix, authorizes input.
+            resource_owners.add("com.android.permissioncontroller")
         with tempfile.TemporaryDirectory(prefix="codeclear-consent-") as temporary:
             output = Path(temporary) / "layout.json"
             subprocess.run(
@@ -73,7 +89,7 @@ class ConsentUi:
             for w in windows
             if w.get("type") == "APPLICATION"
             or any(
-                n.get("resource-id", "").startswith(package + ":")
+                n.get("resource-id", "").split(":", 1)[0] in resource_owners
                 for n in w.get("content", [])
             )
         ]
@@ -94,16 +110,15 @@ class ConsentUi:
                     flush=True,
                 )
                 return self.settings_confirmation()
-            raise RuntimeError("No application window was exposed")
+            return None
         window = max(applications, key=lambda w: w.get("layer", -1))
         nodes = []
         for raw in window.get("content", []):
             if raw.get("hidden") or raw.get("off-screen"):
                 continue
             resource = raw.get("resource-id", "")
-            if ":" in resource and resource.split(":", 1)[0] not in {
-                package,
-                "android",
+            if ":" in resource and resource.split(":", 1)[0] not in resource_owners | {
+                "android"
             }:
                 continue
             attributes = {
