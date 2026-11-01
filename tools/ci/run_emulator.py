@@ -45,7 +45,15 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--api", type=int, choices=[30, 31, 35], required=True)
     parser.add_argument("--prepare", action="store_true")
+    parser.add_argument("--system-receiver", action="store_true")
     args = parser.parse_args()
+    # SDK tools and the emulator must share the same owned AVD index and data directory.
+    android_user = Path(os.environ["RUNNER_TEMP"]) / "codeclear-android"
+    avd_root = android_user / "avd"
+    avd_root.mkdir(parents=True, exist_ok=True)
+    os.environ["ANDROID_USER_HOME"] = str(android_user)
+    os.environ["ANDROID_EMULATOR_HOME"] = str(android_user)
+    os.environ["ANDROID_AVD_HOME"] = str(avd_root)
     sdk = Path(os.environ["ANDROID_HOME"])
     cli = sdk / "cmdline-tools/latest/bin"
     image = f"system-images;android-{args.api};default;x86_64"
@@ -77,10 +85,9 @@ def main():
             image,
             "--device",
             "pixel_2",
+            "--path",
+            str(avd_root / (name + ".avd")),
             input="no\n",
-        )
-        avd_root = Path(
-            os.environ.get("ANDROID_AVD_HOME", Path.home() / ".android/avd")
         )
         config = avd_root / (name + ".avd/config.ini")
         values = dict(
@@ -215,6 +222,10 @@ def main():
                 f"Passed {expected} software fixtures. This is not CellBroadcast or RF acceptance.",
                 flush=True,
             )
+            if args.system_receiver:
+                from system_receiver import validate
+
+                validate(device, args.api)
         except BaseException:
             log.flush()
             print("Emulator diagnostic tail:", flush=True)

@@ -73,6 +73,14 @@ models, grant capture access, or test physical reception. Live-provider,
 Bluetooth, prepared-model, and owner-granted capture tests require separate
 environments. No APK or test artifact is published by the workflow.
 
+Its separate `system_receiver` option resets only the disposable emulator's app
+data, enables capture through the app disclosures and ordinary Android Settings
+confirmations, and injects known drill messages into the genuine system receiver.
+It compares the complete expected original set after automatic capture and an
+explicit original-source action. It never acknowledges system alert warnings.
+Fresh-default receiver behavior, dialer testing mode, and physical radio reception
+remain separate evidence; the option does not establish either of the latter.
+
 ## Source map
 
 All handwritten sources are Kotlin and live under each source set's `kotlin/`

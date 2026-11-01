@@ -2,6 +2,11 @@ name: Android validation
 
 on:
   workflow_dispatch:
+    inputs:
+      system_receiver:
+        description: Validate synthetic system receiver injection through normal consent UI
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -37,4 +42,6 @@ jobs:
           :app:assembleDebug :app:assembleDebugAndroidTest
           :app:bundleReleaseClassesToCompileJar
       - name: Run isolated software fixtures
-        run: python3 tools/ci/run_emulator.py --api '${{ matrix.api }}'
+        run: >-
+          python3 tools/ci/run_emulator.py --api '${{ matrix.api }}'
+          ${{ inputs.system_receiver && '--system-receiver' || '' }}
