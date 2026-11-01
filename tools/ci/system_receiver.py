@@ -453,12 +453,14 @@ def validate(device, api, cli, serial, mode):
     _require(enabled != disabled)
 
     def mode_entries():
+        # Newer Google images can log past a short global tail during UI/service reconnection.
+        # Keep a bounded wider read while requiring a new exact installed-source state message.
         raw = device(
             "shell",
             "logcat",
             "-d",
             "-t",
-            "3000",
+            "20000",
             "-v",
             "epoch",
             "-s",
