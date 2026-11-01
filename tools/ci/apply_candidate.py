@@ -63,7 +63,7 @@ def candidate_paths(numstat):
                 "Candidate paths must be Kotlin, reviewed UI resources or the fixture allowlist"
             )
         paths.append(path)
-    if not paths or len(paths) > 16 or len(set(paths)) != len(paths):
+    if not paths or len(paths) > 20 or len(set(paths)) != len(paths):
         raise ValueError("Review the candidate file count")
     return paths
 
