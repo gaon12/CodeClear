@@ -16,6 +16,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -38,6 +39,23 @@ class AlertHistoryStoreDeviceTest {
     fun removeOnlyThisTestsDatabase() {
         store.close()
         context.deleteDatabase(name)
+    }
+
+    @Test
+    fun aRejectedBatchRollsBackEarlierRowsAndReleasesTheTransaction() {
+        val first = capture("[DRILL] First batch item.")
+        val invalidPeer = capture("[DRILL] Invalid peer item.").copy(
+            source = CaptureSource.PEER,
+            sourceIdentity = "invalid"
+        )
+        assertThrows(IllegalArgumentException::class.java) {
+            store.insertBatch(listOf(first, invalidPeer))
+        }
+        store.close()
+        store = AlertHistoryStore(context, name)
+        assertTrue(store.page("", "en").isEmpty())
+        assertNotNull(store.insert(first))
+        assertEquals(1, store.page("", "en").size)
     }
 
     @Test

@@ -115,8 +115,11 @@ internal class PreferenceRemoteBudget(context: Context) : RemoteBudgetStorage {
             preferences.getInt("used", MyMemoryPlan.DAILY_LIMIT)
         )
     }
+
+    @android.annotation.SuppressLint("UseKtx")
     override fun write(value: RemoteBudgetSnapshot): Boolean {
         check(Looper.myLooper() != Looper.getMainLooper())
+        // Sending is denied when synchronous persistence fails; the KTX editor returns no status.
         return preferences.edit().putLong("day", value.day).putInt("used", value.used).commit()
     }
 }

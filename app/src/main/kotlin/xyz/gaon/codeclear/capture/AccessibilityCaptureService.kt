@@ -7,6 +7,7 @@ import android.os.Looper
 import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import androidx.core.util.size
 import java.io.FileDescriptor
 import java.io.PrintWriter
 import java.nio.ByteBuffer
@@ -224,7 +225,7 @@ open class AccessibilityCaptureService : AccessibilityService() {
         val displays = windowsOnAllDisplays
         try {
             var inspected = 0
-            for (display in 0 until minOf(displays.size(), 8)) {
+            for (display in 0 until minOf(displays.size, 8)) {
                 for (candidate in displays.valueAt(display)) {
                     if (++inspected > 64) return rootInActiveWindow
                     if (candidate.id == window.windowId) return candidate.root
@@ -233,7 +234,7 @@ open class AccessibilityCaptureService : AccessibilityService() {
             // Some receivers expose only the active window; the caller still checks its exact ID.
             return rootInActiveWindow
         } finally {
-            for (display in 0 until displays.size()) {
+            for (display in 0 until displays.size) {
                 displays.valueAt(display).forEach { it.recycle() }
             }
         }

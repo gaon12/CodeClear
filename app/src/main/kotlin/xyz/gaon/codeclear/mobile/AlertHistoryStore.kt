@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import android.os.CancellationSignal
 import android.os.Looper
+import androidx.core.database.sqlite.transaction
 import java.security.MessageDigest
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 
@@ -33,13 +34,8 @@ class AlertHistoryStore(
     fun insertBatch(captures: List<CapturedAlert>): List<Long?> {
         require(captures.size in 1..40)
         val db = database
-        db.beginTransactionNonExclusive()
-        try {
-            val ids = captures.map { insertLocked(it)?.id }
-            db.setTransactionSuccessful()
-            return ids
-        } finally {
-            db.endTransaction()
+        return db.transaction(exclusive = false) {
+            captures.map { insertLocked(it)?.id }
         }
     }
 
@@ -48,13 +44,8 @@ class AlertHistoryStore(
 
     fun insertObservation(capture: CapturedAlert): StoredObservation? {
         val db = database
-        db.beginTransactionNonExclusive()
-        try {
-            val id = insertLocked(capture)
-            db.setTransactionSuccessful()
-            return id
-        } finally {
-            db.endTransaction()
+        return db.transaction(exclusive = false) {
+            insertLocked(capture)
         }
     }
 
@@ -189,11 +180,14 @@ class AlertHistoryStore(
     ): TranslationTicket? {
         require(target in HistoryText.targets)
         val db = database
-        db.beginTransactionNonExclusive()
-        try {
-            val alert = find(id, target, engine) ?: return null
+        return db.transaction(exclusive = false) {
+            val alert = find(id, target, engine) ?: return@transaction null
             val previous = alert.translation
-            if (!retry && previous != null && previous.phase != TranslationPhase.QUEUED) return null
+            if (!retry && previous != null &&
+                previous.phase != TranslationPhase.QUEUED
+            ) {
+                return@transaction null
+            }
             val revision = (previous?.revision ?: 0) + 1
             val values = ContentValues().apply {
                 put("alert_id", id)
@@ -215,10 +209,7 @@ class AlertHistoryStore(
                 ) !=
                     -1L
             )
-            db.setTransactionSuccessful()
-            return TranslationTicket(id, target, revision, alert.capture.original, engine)
-        } finally {
-            db.endTransaction()
+            TranslationTicket(id, target, revision, alert.capture.original, engine)
         }
     }
 
@@ -239,12 +230,11 @@ class AlertHistoryStore(
     fun queueRetry(id: Long, target: String, engine: TranslationEngineKind): Boolean {
         require(target in HistoryText.targets)
         val db = database
-        db.beginTransactionNonExclusive()
-        try {
-            val alert = find(id, target, engine) ?: return false
+        return db.transaction(exclusive = false) {
+            val alert = find(id, target, engine) ?: return@transaction false
             val previous = alert.translation
             if (previous?.phase in setOf(TranslationPhase.READY, TranslationPhase.WORKING)) {
-                return false
+                return@transaction false
             }
             if (previous == null) {
                 queueTranslation(id, target, engine)
@@ -264,10 +254,7 @@ class AlertHistoryStore(
                 )
                 check(changed == 1)
             }
-            db.setTransactionSuccessful()
-            return true
-        } finally {
-            db.endTransaction()
+            true
         }
     }
 
@@ -389,8 +376,7 @@ class AlertHistoryStore(
 
     private fun deleteMatching(where: String?, args: Array<String>?) {
         val db = database
-        db.beginTransactionNonExclusive()
-        try {
+        db.transaction(exclusive = false) {
             val matching = where?.let { " AND $it" }.orEmpty()
             val deletedAt = System.currentTimeMillis()
             // Keep no deleted title/body. Bound source fingerprints by age and count.
@@ -422,9 +408,6 @@ class AlertHistoryStore(
             }
             db.delete("alerts", where, args)
             pruneIgnored(db)
-            db.setTransactionSuccessful()
-        } finally {
-            db.endTransaction()
         }
     }
 

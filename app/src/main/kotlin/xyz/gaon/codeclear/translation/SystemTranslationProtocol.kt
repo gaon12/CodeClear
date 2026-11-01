@@ -5,6 +5,7 @@ import android.view.translation.TranslationRequestValue
 import android.view.translation.TranslationResponse
 import android.view.translation.TranslationResponseValue
 import androidx.annotation.RequiresApi
+import androidx.core.util.size
 
 @RequiresApi(31)
 internal object SystemTranslationProtocol {
@@ -21,7 +22,7 @@ internal object SystemTranslationProtocol {
             return null
         }
         val values = response.translationResponseValues
-        if (values.size() != 1 || values.keyAt(0) != 0) return null
+        if (values.size != 1 || values.keyAt(0) != 0) return null
         val value = values.valueAt(0)
         if (value.statusCode != TranslationResponseValue.STATUS_SUCCESS) return null
         val text = value.text ?: return null
