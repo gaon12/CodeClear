@@ -1,3 +1,5 @@
+import java.net.URI
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -5,6 +7,25 @@ plugins {
 
 val validationBuild = providers.gradleProperty("codeclear.validationBuild")
     .map(String::toBooleanStrict).getOrElse(false)
+
+val ownedTranslationUrl = providers.environmentVariable("CODECLEAR_TRANSLATION_URL")
+    .orElse("").map { value ->
+        if (value.isNotEmpty()) {
+            val route = runCatching { URI(value) }.getOrNull()
+            val publicHost = route?.host?.matches(
+                Regex("(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,63}")
+            ) == true
+            require(
+                value.length <= 2048 && value.all { it.code in 33..126 } &&
+                    route?.scheme == "https" && publicHost &&
+                    route.port in listOf(-1, 443) && route.rawUserInfo == null &&
+                    route.rawQuery == null && route.rawFragment == null
+            ) {
+                "Invalid private translation route; use an HTTPS endpoint without credentials or query"
+            }
+        }
+        "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
+    }
 
 android {
     namespace = "xyz.gaon.codeclear"
@@ -22,6 +43,7 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0.0"
+        buildConfigField("String", "OWNED_TRANSLATION_URL", ownedTranslationUrl.get())
 
         testInstrumentationRunner = if (validationBuild) {
             "xyz.gaon.codeclear.CollectionPreservingTestRunner"
