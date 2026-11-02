@@ -24,6 +24,7 @@ internal fun ModelManagement(actions: MobileActions) {
                 stringResource(R.string.mobile_models_title),
                 stringResource(
                     when {
+                        busy && preparation.checkUpdates -> R.string.mobile_model_checking_updates
                         busy -> R.string.mobile_downloading
                         inventory.checking || !inventory.loaded -> R.string.mobile_engine_checking
                         inventory.failed -> R.string.mobile_models_query_failed
@@ -41,11 +42,19 @@ internal fun ModelManagement(actions: MobileActions) {
                 val label =
                     remember(language, displayLocale) { modelLanguageName(language, displayLocale) }
                 val status = when {
+                    busy && preparation.modelLanguage == language && preparation.checkUpdates ->
+                        R.string.mobile_model_checking_updates
+
                     busy && preparation.modelLanguage == language -> R.string.mobile_downloading
+
                     !inventory.loaded || inventory.checking -> R.string.mobile_engine_checking
+
                     inventory.failed -> R.string.mobile_models_query_failed
+
                     language in inventory.failedUpdates -> R.string.mobile_failed
+
                     language in inventory.downloaded -> R.string.mobile_models_installed
+
                     else -> R.string.mobile_models_not_installed
                 }
                 Column(Modifier.testTag("model-$language")) {

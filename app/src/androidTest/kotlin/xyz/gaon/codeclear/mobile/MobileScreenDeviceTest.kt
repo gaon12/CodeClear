@@ -329,7 +329,10 @@ class MobileScreenDeviceTest {
                         modelInventory = inventory,
                         modelPreparation = modelPreparation,
                         prepareModel = {
-                            modelDownload = ModelDownloadRequest(setOf(it), checkUpdates = true)
+                            modelDownload = ModelDownloadRequest(
+                                setOf(it),
+                                checkUpdates = it in inventory.downloaded
+                            )
                         },
                         modelDownload = modelDownload,
                         prepareTargetModels = { target, alert ->
@@ -509,10 +512,13 @@ class MobileScreenDeviceTest {
         savePreview("model-management")
         compose.onNode(hasText("한국어") and hasAnyAncestor(hasTestTag("model-ko"))).performClick()
         compose.onNodeWithTag("model-download-dialog").assertExists()
+        compose.onNodeWithText(text(R.string.mobile_model_update_review)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_model_size_estimate, 30)).assertDoesNotExist()
+        savePreview("model-update-review", dialog = true)
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
         compose.runOnIdle { assertTrue(requestedModels.isEmpty()) }
         compose.onNode(hasText("한국어") and hasAnyAncestor(hasTestTag("model-ko"))).performClick()
-        compose.onNodeWithText(text(R.string.mobile_models_download)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_models_check_updates)).performClick()
         compose.runOnIdle { assertEquals(listOf("ko"), requestedModels) }
         compose.onNodeWithTag("model-download-close").performClick()
         compose.onNodeWithTag("settings-detail").performScrollToNode(hasTestTag("model-ja"))
@@ -525,6 +531,7 @@ class MobileScreenDeviceTest {
         }
         compose.onNode(hasText("日本語") and hasAnyAncestor(hasTestTag("model-ja"))).performClick()
         compose.onNodeWithText(text(R.string.mobile_prepare)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_models_download)).assertIsDisplayed()
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
     }
 

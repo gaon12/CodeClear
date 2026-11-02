@@ -153,7 +153,10 @@ class MobileRuntime(context: Context) {
         check(Looper.myLooper() == Looper.getMainLooper())
         require(language in managedModelLanguages)
         if (models.busy) return showModelDownload()
-        modelDownload = ModelDownloadRequest(setOf(language), checkUpdates = true)
+        modelDownload = ModelDownloadRequest(
+            setOf(language),
+            checkUpdates = language in modelInventory.downloaded
+        )
         inventory.refresh(force = true)
     }
 

@@ -195,11 +195,11 @@
     <string name="mobile_engine_query_failed">无法查询系统翻译服务支持的语言。请重试；目前尚未确认是否可用。</string>
     <string name="mobile_models_title">语言模型</string>
     <string name="mobile_models_refresh">刷新下载状态</string>
-    <string name="mobile_models_update_notice">ML Kit 不公开模型版本，也不预先提供更新可用性。点击“检查并下载”后，如有更新将通过 Wi-Fi 安装。英语为基础语言；两种中文字体共用同一模型。</string>
+    <string name="mobile_models_update_notice">ML Kit 不提供模型版本或单独的更新列表。可以检查已安装模型的更新，并在需要时通过 Wi-Fi 下载。英语是基准语言，两种中文文字共用一个模型。</string>
     <string name="mobile_models_installed">已安装 · 点按检查更新</string>
     <string name="mobile_models_not_installed">未安装 · 点按下载</string>
     <string name="mobile_models_last_checked">更新检查时间：%1$s</string>
-    <string name="mobile_models_download">检查并下载</string>
+    <string name="mobile_models_download">下载</string>
     <string name="mobile_models_query_failed">无法读取模型列表，请重试。</string>
     <string name="mobile_required_access">请授予必要权限</string>
     <string name="mobile_required_access_notice">读取紧急警报和通知翻译结果需要以下权限。请在 Android 设置中允许访问，返回后即可继续使用。</string>
@@ -244,4 +244,11 @@
     <string name="mobile_compat_yes">是</string>
     <string name="mobile_compat_no">否</string>
     <string name="mobile_compat_unknown">未知</string>
+    <string name="mobile_models_check_updates">检查更新</string>
+    <string name="mobile_model_update_title">检查模型更新</string>
+    <string name="mobile_model_update_review">这些模型已安装。可以检查 ML Kit 是否提供更新。</string>
+    <string name="mobile_model_checking_updates">正在检查模型更新…</string>
+    <string name="mobile_model_update_checked">已完成更新检查，模型可以使用。</string>
+    <string name="mobile_model_update_count">已检查模型：%1$d/%2$d</string>
+    <string name="mobile_model_update_notice">如有更新，将通过 Wi-Fi 下载。无需更新时不会重新下载模型。ML Kit 不提供版本号或文件是否变化的信息。不会发送警报正文。</string>
 </resources>

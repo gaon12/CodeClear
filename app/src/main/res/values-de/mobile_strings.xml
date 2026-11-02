@@ -196,11 +196,11 @@
     <string name="mobile_engine_query_failed">Die unterstützten Sprachen des Systemdienstes konnten nicht abgefragt werden. Versuchen Sie es erneut. Die Unterstützung ist noch nicht bestätigt.</string>
     <string name="mobile_models_title">Sprachmodelle</string>
     <string name="mobile_models_refresh">Downloadstatus aktualisieren</string>
-    <string name="mobile_models_update_notice">ML Kit zeigt Modellversionen und verfügbare Updates nicht vorab an. Prüfen und herunterladen installiert ein vorhandenes Update über WLAN. Englisch ist die Basissprache; beide chinesischen Schriften verwenden dasselbe Modell.</string>
+    <string name="mobile_models_update_notice">ML Kit stellt weder Modellversionen noch eine separate Updateliste bereit. Installierte Modelle können geprüft werden; Updates nutzen WLAN. Englisch ist die Basissprache, beide chinesischen Schriftvarianten nutzen dasselbe Modell.</string>
     <string name="mobile_models_installed">Installiert · Zum Prüfen auf Updates antippen</string>
     <string name="mobile_models_not_installed">Nicht installiert · Zum Herunterladen antippen</string>
     <string name="mobile_models_last_checked">Update geprüft: %1$s</string>
-    <string name="mobile_models_download">Prüfen und herunterladen</string>
+    <string name="mobile_models_download">Herunterladen</string>
     <string name="mobile_models_query_failed">Die Modellliste konnte nicht gelesen werden. Versuchen Sie es erneut.</string>
     <string name="mobile_required_access">Erforderliche Berechtigungen erlauben</string>
     <string name="mobile_required_access_notice">Diese Berechtigungen ermöglichen das Lesen von Warnmeldungen und Benachrichtigungen über fertige Übersetzungen. Erlauben Sie den Zugriff in den Android-Einstellungen und kehren Sie zurück.</string>
@@ -245,4 +245,11 @@
     <string name="mobile_compat_yes">Ja</string>
     <string name="mobile_compat_no">Nein</string>
     <string name="mobile_compat_unknown">Unbekannt</string>
+    <string name="mobile_models_check_updates">Nach Updates suchen</string>
+    <string name="mobile_model_update_title">Modellupdates prüfen</string>
+    <string name="mobile_model_update_review">Diese Modelle sind installiert. Sie können nach einem ML Kit-Update suchen.</string>
+    <string name="mobile_model_checking_updates">Modellupdates werden geprüft…</string>
+    <string name="mobile_model_update_checked">Prüfung abgeschlossen. Die Modelle sind bereit.</string>
+    <string name="mobile_model_update_count">Geprüfte Modelle: %1$d/%2$d</string>
+    <string name="mobile_model_update_notice">Verfügbare Updates können über WLAN geladen werden. Ohne erforderliches Update wird das Modell nicht erneut geladen. ML Kit meldet weder Versionsnummern noch Dateiänderungen. Es wird kein Warntext gesendet.</string>
 </resources>

@@ -196,11 +196,11 @@
     <string name="mobile_engine_query_failed">Could not query the system translation service. Try again; support has not been confirmed.</string>
     <string name="mobile_models_title">Language models</string>
     <string name="mobile_models_refresh">Refresh download status</string>
-    <string name="mobile_models_update_notice">ML Kit does not expose model versions or advance update availability. Check and download installs an update over Wi-Fi when one exists. English is the base language; both Chinese script choices share one model.</string>
+    <string name="mobile_models_update_notice">ML Kit does not expose model versions or a separate update list. Installed models can be checked; an available update uses Wi-Fi. English is the base language; both Chinese scripts share one model.</string>
     <string name="mobile_models_installed">Installed · Tap to check for updates</string>
     <string name="mobile_models_not_installed">Not installed · Tap to download</string>
     <string name="mobile_models_last_checked">Update checked: %1$s</string>
-    <string name="mobile_models_download">Check and download</string>
+    <string name="mobile_models_download">Download</string>
     <string name="mobile_models_query_failed">Could not read the model list. Try again.</string>
     <string name="mobile_required_access">Allow required permissions</string>
     <string name="mobile_required_access_notice">These permissions let the app read emergency alerts and notify you when translations are ready. Allow access in Android settings, then return to continue.</string>
@@ -245,4 +245,11 @@
     <string name="mobile_compat_yes">Yes</string>
     <string name="mobile_compat_no">No</string>
     <string name="mobile_compat_unknown">Unknown</string>
+    <string name="mobile_models_check_updates">Check for updates</string>
+    <string name="mobile_model_update_title">Check model updates</string>
+    <string name="mobile_model_update_review">These models are installed. Check whether ML Kit has an update.</string>
+    <string name="mobile_model_checking_updates">Checking for model updates…</string>
+    <string name="mobile_model_update_checked">Update check completed. Models are ready.</string>
+    <string name="mobile_model_update_count">Models checked: %1$d/%2$d</string>
+    <string name="mobile_model_update_notice">Available updates may download over Wi-Fi. No model is downloaded when no update is needed. ML Kit does not report version numbers or whether files changed. No alert text is sent.</string>
 </resources>

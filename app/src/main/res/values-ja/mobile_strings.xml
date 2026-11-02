@@ -195,11 +195,11 @@
     <string name="mobile_engine_query_failed">システム翻訳サービスの対応言語を確認できませんでした。再確認してください。利用可能かどうかは未確認です。</string>
     <string name="mobile_models_title">言語モデル</string>
     <string name="mobile_models_refresh">ダウンロード状態を更新</string>
-    <string name="mobile_models_update_notice">ML Kitはモデルのバージョンや更新の有無を事前に公開していません。「確認してダウンロード」で更新があればWi-Fiで取得します。英語は基準言語で、中国語の両表記は同じモデルを使用します。</string>
+    <string name="mobile_models_update_notice">ML Kit はモデルのバージョンや更新一覧を提供しません。インストール済みモデルの更新を確認し、必要な場合に Wi-Fi で取得します。英語は基準言語で、中国語の二つの表記は同じモデルを使用します。</string>
     <string name="mobile_models_installed">インストール済み · タップして更新を確認</string>
     <string name="mobile_models_not_installed">未インストール · タップしてダウンロード</string>
     <string name="mobile_models_last_checked">更新の確認: %1$s</string>
-    <string name="mobile_models_download">確認してダウンロード</string>
+    <string name="mobile_models_download">ダウンロード</string>
     <string name="mobile_models_query_failed">モデル一覧を取得できませんでした。再試行してください。</string>
     <string name="mobile_required_access">必要な権限を許可してください</string>
     <string name="mobile_required_access_notice">緊急速報の読み取りと翻訳完了の通知には、以下の権限が必要です。Androidの設定で許可してから戻ると、利用を続けられます。</string>
@@ -244,4 +244,11 @@
     <string name="mobile_compat_yes">はい</string>
     <string name="mobile_compat_no">いいえ</string>
     <string name="mobile_compat_unknown">不明</string>
+    <string name="mobile_models_check_updates">更新を確認</string>
+    <string name="mobile_model_update_title">モデルの更新を確認</string>
+    <string name="mobile_model_update_review">インストール済みのモデルです。ML Kit の更新を確認できます。</string>
+    <string name="mobile_model_checking_updates">モデルの更新を確認中…</string>
+    <string name="mobile_model_update_checked">更新の確認が完了しました。モデルを利用できます。</string>
+    <string name="mobile_model_update_count">確認済みモデル：%1$d/%2$d</string>
+    <string name="mobile_model_update_notice">更新がある場合は Wi-Fi で取得します。更新が不要ならモデルは再ダウンロードしません。ML Kit はバージョン番号やファイルの変更有無を提供しません。緊急速報の本文は送信しません。</string>
 </resources>

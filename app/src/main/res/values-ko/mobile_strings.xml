@@ -195,11 +195,11 @@
     <string name="mobile_engine_query_failed">시스템 번역 서비스의 지원 언어를 확인하지 못했습니다. 다시 확인해 주세요. 아직 사용 가능 여부가 확인되지 않았습니다.</string>
     <string name="mobile_models_title">언어 모델</string>
     <string name="mobile_models_refresh">다운로드 상태 새로고침</string>
-    <string name="mobile_models_update_notice">ML Kit은 모델 버전이나 업데이트 가능 여부를 미리 제공하지 않습니다. 확인 및 다운로드를 누르면 새 모델이 있을 때 Wi-Fi에서 갱신합니다. 영어는 기준 언어이며, 중국어 두 표기는 같은 모델을 사용합니다.</string>
+    <string name="mobile_models_update_notice">ML Kit은 모델 버전이나 별도의 업데이트 목록을 제공하지 않습니다. 설치된 모델은 업데이트를 확인할 수 있으며 필요한 경우 Wi-Fi에서 받습니다. 영어는 기준 언어이며, 중국어 두 표기는 같은 모델을 사용합니다.</string>
     <string name="mobile_models_installed">설치됨 · 눌러서 업데이트 확인</string>
     <string name="mobile_models_not_installed">미설치 · 눌러서 다운로드</string>
     <string name="mobile_models_last_checked">업데이트 확인: %1$s</string>
-    <string name="mobile_models_download">확인 및 다운로드</string>
+    <string name="mobile_models_download">다운로드</string>
     <string name="mobile_models_query_failed">모델 목록을 확인하지 못했습니다. 다시 확인해 주세요.</string>
     <string name="mobile_required_access">필요한 권한을 허용해 주세요</string>
     <string name="mobile_required_access_notice">재난문자를 읽고 번역 결과를 알리려면 아래 권한이 필요합니다. Android 설정에서 허용한 뒤 돌아오면 계속 사용할 수 있습니다.</string>
@@ -244,4 +244,11 @@
     <string name="mobile_compat_yes">예</string>
     <string name="mobile_compat_no">아니요</string>
     <string name="mobile_compat_unknown">확인 불가</string>
+    <string name="mobile_models_check_updates">업데이트 확인</string>
+    <string name="mobile_model_update_title">모델 업데이트 확인</string>
+    <string name="mobile_model_update_review">이미 설치된 모델입니다. 업데이트가 있는지 확인할 수 있습니다.</string>
+    <string name="mobile_model_checking_updates">모델 업데이트를 확인하고 있습니다.</string>
+    <string name="mobile_model_update_checked">업데이트 확인을 마쳤습니다. 모델을 사용할 수 있습니다.</string>
+    <string name="mobile_model_update_count">모델 확인: %1$d/%2$d 완료</string>
+    <string name="mobile_model_update_notice">업데이트가 있으면 Wi-Fi에서 받습니다. 업데이트가 필요 없으면 모델을 다시 받지 않습니다. ML Kit은 버전 번호나 파일 변경 여부를 제공하지 않습니다. 재난문자 본문은 전송하지 않습니다.</string>
 </resources>

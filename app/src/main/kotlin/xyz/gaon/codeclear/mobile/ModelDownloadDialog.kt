@@ -34,7 +34,11 @@ internal fun ModelDownloadDialog(request: ModelDownloadRequest, actions: MobileA
     } else {
         inventory.downloaded.intersect(languages)
     }
-    val remaining = (languages - completed).size
+    val remaining = if (request.checkUpdates) {
+        (languages - inventory.downloaded - completed).size
+    } else {
+        (languages - completed).size
+    }
     val estimatedPacks = if (!request.started && !request.sourceKnown) {
         remaining + 1
     } else {
@@ -48,18 +52,26 @@ internal fun ModelDownloadDialog(request: ModelDownloadRequest, actions: MobileA
     val status = when {
         !request.started -> if (checking) {
             R.string.mobile_engine_checking
+        } else if (request.checkUpdates) {
+            R.string.mobile_model_update_review
         } else {
             R.string.mobile_model_review
         }
 
         preparation.phase == PreparationPhase.IDENTIFYING -> R.string.mobile_identifying_original
 
+        busy && request.checkUpdates -> R.string.mobile_model_checking_updates
+
         busy -> R.string.mobile_model_preparing
 
         preparation.phase == PreparationPhase.READY && checking -> R.string.mobile_model_verifying
 
         preparation.phase == PreparationPhase.READY && !inventory.failed &&
-            inventory.downloaded.containsAll(languages) -> R.string.mobile_models_ready
+            inventory.downloaded.containsAll(languages) -> if (request.checkUpdates) {
+            R.string.mobile_model_update_checked
+        } else {
+            R.string.mobile_models_ready
+        }
 
         preparation.phase == PreparationPhase.IDLE -> R.string.mobile_model_stopped
 
@@ -69,7 +81,17 @@ internal fun ModelDownloadDialog(request: ModelDownloadRequest, actions: MobileA
     }
     MobileConfirmationDialog(
         onDismissRequest = actions.closeModelDownload,
-        title = { Text(stringResource(R.string.mobile_prepare)) },
+        title = {
+            Text(
+                stringResource(
+                    if (request.checkUpdates) {
+                        R.string.mobile_model_update_title
+                    } else {
+                        R.string.mobile_prepare
+                    }
+                )
+            )
+        },
         text = {
             Column(
                 Modifier.verticalScroll(rememberScrollState()).testTag("model-download-dialog"),
@@ -100,7 +122,11 @@ internal fun ModelDownloadDialog(request: ModelDownloadRequest, actions: MobileA
                 if (request.started && preparation.phase != PreparationPhase.IDENTIFYING) {
                     Text(
                         stringResource(
-                            R.string.mobile_model_progress_count,
+                            if (request.checkUpdates) {
+                                R.string.mobile_model_update_count
+                            } else {
+                                R.string.mobile_model_progress_count
+                            },
                             completed.size,
                             languages.size
                         ),
@@ -108,7 +134,11 @@ internal fun ModelDownloadDialog(request: ModelDownloadRequest, actions: MobileA
                     )
                 }
                 if (!request.started || busy) {
-                    Text(stringResource(R.string.mobile_model_size_estimate, estimatedPacks * 30))
+                    if (estimatedPacks > 0) {
+                        Text(
+                            stringResource(R.string.mobile_model_size_estimate, estimatedPacks * 30)
+                        )
+                    }
                     if (!request.sourceKnown &&
                         (!request.started || preparation.phase == PreparationPhase.IDENTIFYING)
                     ) {
@@ -117,7 +147,9 @@ internal fun ModelDownloadDialog(request: ModelDownloadRequest, actions: MobileA
                 }
                 Text(
                     stringResource(
-                        if (request.started) {
+                        if (request.checkUpdates) {
+                            R.string.mobile_model_update_notice
+                        } else if (request.started) {
                             R.string.mobile_model_progress_notice
                         } else {
                             R.string.mobile_model_download_notice
@@ -154,6 +186,8 @@ internal fun ModelDownloadDialog(request: ModelDownloadRequest, actions: MobileA
                     stringResource(
                         if (request.started) {
                             R.string.mobile_close
+                        } else if (request.checkUpdates) {
+                            R.string.mobile_models_check_updates
                         } else {
                             R.string.mobile_models_download
                         }
