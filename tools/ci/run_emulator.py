@@ -35,6 +35,8 @@ FIXTURES = {
     "mobile.MobileScreenDeviceTest": 69,
     "mobile.NotificationContentDeviceTest": 1,
     "mobile.TextTransferDeviceTest": 3,
+    "translation.OwnedServerTransportDeviceTest": 5,
+    "translation.ServerCredentialStoreDeviceTest": 3,
     "mobile.UiLocaleResourcesDeviceTest": 1,
     "probe.PreviewDeviceTest": 3,
     "mobile.ModelInventoryDeviceTest": 4,
