@@ -25,7 +25,12 @@ import xyz.gaon.codeclear.translation.SystemTargetSupport
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 import xyz.gaon.codeclear.translation.TranslationTarget
 
-private data class TranslationChange(val engine: TranslationEngineKind, val enable: Boolean)
+private data class TranslationChange(
+    val engine: TranslationEngineKind,
+    val enable: Boolean,
+    val serverRevision: Long? = null,
+    val serverCredentialId: String? = null
+)
 
 @Composable
 fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
@@ -37,6 +42,10 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
     val systemSelectable = availability.loaded && !availability.loading &&
         availability.platformSupported && !availability.queryFailed && support.available
     val remoteSelectable = options.labsEnabled && options.serverAllowed
+    val access = actions.serverAccess
+    val ownedSelectable = options.labsEnabled && options.ownedServerAllowed &&
+        access.configured && access.loaded && access.ready && !access.busy &&
+        access.credentialId == options.ownedServerCredentialId
     LaunchedEffect(Unit) { actions.refreshSystem(false) }
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         SettingsGroup {
@@ -50,20 +59,29 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                     TranslationEngineKind.ML_KIT -> true
                     TranslationEngineKind.SYSTEM -> systemSelectable
                     TranslationEngineKind.MY_MEMORY -> remoteSelectable
+                    TranslationEngineKind.OWNED_SERVER -> ownedSelectable
                 },
                 onCheckedChange = { enabled ->
                     if (!enabled) {
                         actions.configure(
-                            if (options.engine ==
-                                TranslationEngineKind.MY_MEMORY
-                            ) {
+                            if (options.engine == TranslationEngineKind.OWNED_SERVER) {
+                                options.copy(
+                                    ownedServerAllowed = false,
+                                    ownedServerCredentialId = ""
+                                )
+                            } else if (options.engine == TranslationEngineKind.MY_MEMORY) {
                                 options.copy(serverAllowed = false)
                             } else {
                                 options.copy(localConsent = false)
                             }
                         )
                     } else {
-                        proposal = TranslationChange(options.engine, enable = true)
+                        proposal = TranslationChange(
+                            options.engine,
+                            enable = true,
+                            serverRevision = access.revision,
+                            serverCredentialId = access.credentialId
+                        )
                     }
                 }
             )
@@ -81,7 +99,9 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
             )
             SettingNote(
                 stringResource(
-                    if (options.engine == TranslationEngineKind.MY_MEMORY) {
+                    if (options.engine == TranslationEngineKind.OWNED_SERVER) {
+                        R.string.mobile_owned_description
+                    } else if (options.engine == TranslationEngineKind.MY_MEMORY) {
                         R.string.mobile_server_description
                     } else if (options.engine == TranslationEngineKind.ML_KIT) {
                         R.string.mobile_local_description
@@ -119,13 +139,14 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                 ) {
                     Column(Modifier.selectableGroup()) {
                         TranslationEngineKind.entries.filter {
-                            it != TranslationEngineKind.MY_MEMORY ||
-                                remoteSelectable
+                            (it != TranslationEngineKind.MY_MEMORY || remoteSelectable) &&
+                                (it != TranslationEngineKind.OWNED_SERVER || ownedSelectable)
                         }.forEach { engine ->
                             val selectable = when (engine) {
                                 TranslationEngineKind.ML_KIT -> true
                                 TranslationEngineKind.SYSTEM -> systemSelectable
                                 TranslationEngineKind.MY_MEMORY -> remoteSelectable
+                                TranslationEngineKind.OWNED_SERVER -> ownedSelectable
                             }
                             RadioChoiceRow(
                                 stringResource(engineLabel(engine)),
@@ -138,8 +159,14 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                                             TranslationChange(
                                                 engine,
                                                 enable =
-                                                    engine == TranslationEngineKind.MY_MEMORY &&
-                                                        options.translationAllowed
+                                                    (
+                                                        engine == TranslationEngineKind.MY_MEMORY ||
+                                                            engine ==
+                                                            TranslationEngineKind.OWNED_SERVER
+                                                        ) &&
+                                                        options.translationAllowed,
+                                                serverRevision = access.revision,
+                                                serverCredentialId = access.credentialId
                                             )
                                     }
                                 }
@@ -168,6 +195,20 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
         )
     }
     proposal?.let { request ->
+        val remoteApproval = request.engine == TranslationEngineKind.OWNED_SERVER ||
+            (request.enable && request.engine == TranslationEngineKind.MY_MEMORY)
+        val selectable = when (request.engine) {
+            TranslationEngineKind.ML_KIT -> true
+
+            TranslationEngineKind.SYSTEM -> systemSelectable
+
+            TranslationEngineKind.MY_MEMORY -> remoteSelectable
+
+            TranslationEngineKind.OWNED_SERVER ->
+                ownedSelectable &&
+                    request.serverRevision == access.revision &&
+                    request.serverCredentialId == access.credentialId
+        }
         MobileConfirmationDialog(
             onDismissRequest = { proposal = null },
             title = { Text(stringResource(engineLabel(request.engine))) },
@@ -178,34 +219,41 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                 ) {
                     Text(
                         stringResource(
-                            if (request.engine == TranslationEngineKind.MY_MEMORY) {
-                                R.string.mobile_server_disclosure
-                            } else if (request.engine == TranslationEngineKind.SYSTEM) {
-                                R.string.mobile_system_disclosure
-                            } else {
-                                R.string.mobile_local_disclosure
+                            when (request.engine) {
+                                TranslationEngineKind.ML_KIT -> R.string.mobile_local_disclosure
+
+                                TranslationEngineKind.SYSTEM -> R.string.mobile_system_disclosure
+
+                                TranslationEngineKind.MY_MEMORY -> R.string.mobile_server_disclosure
+
+                                TranslationEngineKind.OWNED_SERVER -> {
+                                    R.string.mobile_owned_disclosure
+                                }
                             }
                         )
                     )
                     if (request.engine == TranslationEngineKind.MY_MEMORY) ProviderTermsLink()
-                    if (!request.enable) Text(stringResource(R.string.mobile_engine_switch_notice))
                     if (request.engine ==
-                        TranslationEngineKind.SYSTEM
+                        TranslationEngineKind.OWNED_SERVER
                     ) {
+                        OwnedProviderTermsLink()
+                    }
+                    if (!request.enable) Text(stringResource(R.string.mobile_engine_switch_notice))
+                    if (request.engine == TranslationEngineKind.SYSTEM) {
                         SystemSupportStatus(availability, options.target)
                     }
                 }
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        proposal = null
-                        if ((request.engine != TranslationEngineKind.SYSTEM || systemSelectable) &&
-                            (
-                                request.engine != TranslationEngineKind.MY_MEMORY ||
-                                    remoteSelectable
-                                )
-                        ) {
+                TextButton(enabled = selectable, onClick = {
+                    proposal = null
+                    if (selectable) {
+                        if (request.engine == TranslationEngineKind.OWNED_SERVER) {
+                            actions.allowServer(
+                                requireNotNull(request.serverRevision),
+                                requireNotNull(request.serverCredentialId)
+                            )
+                        } else {
                             actions.configure(
                                 options.copy(
                                     engine = request.engine,
@@ -214,33 +262,23 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                                     ) {
                                         options.localConsent
                                     } else {
-                                        request.enable ||
-                                            options.localConsent
+                                        request.enable || options.localConsent
                                     },
                                     serverAllowed = if (request.engine ==
                                         TranslationEngineKind.MY_MEMORY
                                     ) {
-                                        request.enable ||
-                                            options.serverAllowed
+                                        request.enable || options.serverAllowed
                                     } else {
                                         options.serverAllowed
                                     }
                                 )
                             )
                         }
-                    },
-                    enabled =
-                        (request.engine != TranslationEngineKind.SYSTEM || systemSelectable) &&
-                            (
-                                request.engine != TranslationEngineKind.MY_MEMORY ||
-                                    remoteSelectable
-                                )
-                ) {
+                    }
+                }) {
                     Text(
                         stringResource(
-                            if (request.enable &&
-                                request.engine == TranslationEngineKind.MY_MEMORY
-                            ) {
+                            if (remoteApproval) {
                                 R.string.mobile_allow
                             } else if (request.enable) {
                                 R.string.mobile_enable
@@ -327,4 +365,5 @@ fun engineLabel(engine: TranslationEngineKind): Int = when (engine) {
     TranslationEngineKind.ML_KIT -> R.string.mobile_engine_mlkit
     TranslationEngineKind.SYSTEM -> R.string.mobile_engine_system
     TranslationEngineKind.MY_MEMORY -> R.string.mobile_engine_mymemory
+    TranslationEngineKind.OWNED_SERVER -> R.string.mobile_owned_server
 }

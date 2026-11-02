@@ -253,6 +253,11 @@ class MainActivity : AppCompatActivity() {
                             presentationAccess = presentationAccess,
                             olderObservations = controller::olderObservations,
                             newestObservations = controller::newestObservations,
+                            serverAccess = runtime.serverAccess,
+                            allowServer = runtime::allowServer,
+                            saveServerAccess = runtime::saveServerAccess,
+                            removeServerAccess = runtime::removeServerAccess,
+                            clearServerCache = runtime::clearServerCache,
                             overlaySettings = {
                                 openSettings(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
                             },

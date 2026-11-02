@@ -35,7 +35,9 @@ internal fun translationStatusLabel(
 
         TranslationPhase.UNKNOWN_LANGUAGE -> R.string.mobile_unknown_language
 
-        TranslationPhase.UNAVAILABLE -> if (engine == TranslationEngineKind.MY_MEMORY) {
+        TranslationPhase.UNAVAILABLE -> if (engine == TranslationEngineKind.OWNED_SERVER) {
+            R.string.mobile_owned_unavailable
+        } else if (engine == TranslationEngineKind.MY_MEMORY) {
             R.string.mobile_remote_unavailable
         } else {
             R.string.mobile_system_unavailable
@@ -43,9 +45,17 @@ internal fun translationStatusLabel(
 
         TranslationPhase.UNSUPPORTED_PAIR -> R.string.mobile_pair_unsupported
 
-        TranslationPhase.QUOTA -> R.string.mobile_remote_quota
+        TranslationPhase.QUOTA -> if (engine == TranslationEngineKind.OWNED_SERVER) {
+            R.string.mobile_owned_quota
+        } else {
+            R.string.mobile_remote_quota
+        }
 
-        TranslationPhase.TOO_LONG -> R.string.mobile_remote_too_long
+        TranslationPhase.TOO_LONG -> if (engine == TranslationEngineKind.OWNED_SERVER) {
+            R.string.mobile_owned_too_long
+        } else {
+            R.string.mobile_remote_too_long
+        }
 
         TranslationPhase.FAILED -> R.string.mobile_failed
 

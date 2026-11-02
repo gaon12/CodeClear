@@ -24,6 +24,16 @@ class OwnedServerEngineDeviceTest {
             assertEquals(TranslationResult.Unavailable, f.run())
             assertEquals(0, f.client.calls.get())
             main { f.engine.authorize(true, serverDigest(token)) }
+            val local = AtomicReference<TranslationResult?>()
+            main {
+                f.engine.run(
+                    TranslationInput(1, "[DRILL] Gate 3.", TranslationTarget.KOREAN),
+                    false,
+                    local::set
+                )
+            }
+            assertEquals(TranslationResult.Unavailable, awaitResult(local))
+            assertEquals(0, f.client.calls.get())
             assertEquals(TranslationResult.Ready("[DRILL] Result 3, 112.", "en", false), f.run())
             assertEquals(1, f.client.calls.get())
         }
@@ -195,7 +205,12 @@ class OwnedServerEngineDeviceTest {
             val result = AtomicReference<TranslationResult?>()
             main {
                 engine.run(
-                    TranslationInput(1, "[DRILL] Gate 3, 112.", TranslationTarget.KOREAN),
+                    TranslationInput(
+                        1,
+                        "[DRILL] Gate 3, 112.",
+                        TranslationTarget.KOREAN,
+                        TranslationEngineKind.OWNED_SERVER
+                    ),
                     false,
                     result::set
                 )
@@ -230,6 +245,7 @@ class OwnedServerEngineDeviceTest {
         val lastCredential = AtomicReference<String>()
 
         @Volatile var block: () -> Unit = {}
+
         @Volatile var onClose: () -> Unit = {}
         override fun translate(
             original: String,

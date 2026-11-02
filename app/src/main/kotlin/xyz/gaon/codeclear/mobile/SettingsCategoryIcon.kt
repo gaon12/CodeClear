@@ -29,7 +29,8 @@ internal fun SettingsCategoryIcon(page: SettingsPage) {
 
         SettingsPage.LABS -> R.drawable.ic_category_labs to Color(0xFF6A59B5)
 
-        SettingsPage.SERVER -> R.drawable.ic_category_translation to Color(0xFF008A78)
+        SettingsPage.SERVER, SettingsPage.OWNED_SERVER ->
+            R.drawable.ic_category_translation to Color(0xFF008A78)
 
         SettingsPage.PRIVACY -> R.drawable.ic_category_privacy to Color(0xFF438047)
 

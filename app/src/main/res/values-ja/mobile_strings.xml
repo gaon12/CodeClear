@@ -276,4 +276,24 @@
     <string name="mobile_hint_safety">安全情報</string>
     <string name="mobile_hint_missing">行方不明者の警報</string>
     <string name="mobile_hint_test">試験警報</string>
+    <string name="mobile_owned_server">CodeClear サーバー</string>
+    <string name="mobile_owned_description">CodeClear サービス · インターネット · 個別の許可が必要</string>
+    <string name="mobile_owned_permission">CodeClear サーバー翻訳を許可</string>
+    <string name="mobile_owned_disclosure">警報の原文と翻訳先言語を CodeClear サービスに送信し、サービスが Groq に翻訳を依頼します。原文と翻訳は接続トークンごとの非公開キャッシュに最大30日間保存されます。Groq はデータ設定に従い、障害対応や不正利用の調査でデータを保存する場合があります。利用上限で翻訳が停止する場合があります。送信停止やトークン削除では既存のサーバーデータは消えません。削除する場合はトークンを消す前にサーバーキャッシュを消去してください。他の翻訳エンジンには自動で切り替わりません。</string>
+    <string name="mobile_owned_access">接続トークン</string>
+    <string name="mobile_owned_access_saved">安全に保存済み</string>
+    <string name="mobile_owned_access_missing">接続トークンが必要</string>
+    <string name="mobile_owned_access_hint">32～256文字。Groq API キーではなく、サービスの接続トークンを入力してください。</string>
+    <string name="mobile_owned_access_save">接続トークンを保存</string>
+    <string name="mobile_owned_access_remove">接続トークンを削除</string>
+    <string name="mobile_owned_access_remove_review">保存した接続トークンを削除し、サーバー翻訳を停止しますか？既存のサーバーキャッシュは削除されません。</string>
+    <string name="mobile_owned_access_failed">接続トークンを更新できませんでした。もう一度お試しください。</string>
+    <string name="mobile_owned_cache_clear">サーバーキャッシュを消去</string>
+    <string name="mobile_owned_cache_review">この接続トークンのキャッシュを消去し、サーバー翻訳を停止しますか？端末の履歴は残ります。翻訳を再び許可すると、新しい要求がキャッシュに保存される場合があります。</string>
+    <string name="mobile_owned_cache_cleared">サーバーキャッシュを消去しました。サーバー翻訳は停止中です。</string>
+    <string name="mobile_owned_cache_failed">キャッシュを消去できませんでした。接続トークンと通信を確認してください。</string>
+    <string name="mobile_owned_terms">Groq のデータ取り扱い</string>
+    <string name="mobile_owned_unavailable">サーバー翻訳を利用できません。許可、接続トークン、通信を確認してください。</string>
+    <string name="mobile_owned_quota">CodeClear サービスの利用上限に達しました。時間をおいて再度お試しください。</string>
+    <string name="mobile_owned_too_long">CodeClear サービスに送信するには長すぎるメッセージです。原文はそのまま保存されています。</string>
 </resources>

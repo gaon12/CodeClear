@@ -119,6 +119,8 @@ class MobileController(
         val changedWork =
             changedOutput || options.translationAllowed != state.options.translationAllowed ||
                 options.serverAllowed != state.options.serverAllowed ||
+                options.ownedServerAllowed != state.options.ownedServerAllowed ||
+                options.ownedServerCredentialId != state.options.ownedServerCredentialId ||
                 options.labsEnabled != state.options.labsEnabled
         if (changedWork) {
             translations.invalidate()

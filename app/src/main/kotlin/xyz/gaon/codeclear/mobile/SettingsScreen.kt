@@ -57,6 +57,7 @@ enum class SettingsPage(val title: Int) {
     LABS(R.string.mobile_labs),
     SHARING(R.string.mobile_nearby),
     SERVER(R.string.mobile_server_translation),
+    OWNED_SERVER(R.string.mobile_owned_server),
     PRIVACY(R.string.mobile_privacy),
     ABOUT(R.string.mobile_about),
     COMPATIBILITY(R.string.mobile_compatibility)
@@ -64,7 +65,7 @@ enum class SettingsPage(val title: Int) {
 
 internal val SettingsPage.parent: SettingsPage?
     get() = when (this) {
-        SettingsPage.SHARING, SettingsPage.SERVER -> SettingsPage.LABS
+        SettingsPage.SHARING, SettingsPage.SERVER, SettingsPage.OWNED_SERVER -> SettingsPage.LABS
         SettingsPage.COMPATIBILITY -> SettingsPage.ABOUT
         else -> null
     }
@@ -90,8 +91,11 @@ fun SettingsScreen(
     BoxWithConstraints(Modifier.fillMaxSize().testTag("settings-screen")) {
         val expanded = maxWidth >= 840.dp
         val selection = selectedPage?.takeUnless {
-            !state.options.labsEnabled &&
-                (it == SettingsPage.LABS || it.parent == SettingsPage.LABS)
+            (
+                !state.options.labsEnabled &&
+                    (it == SettingsPage.LABS || it.parent == SettingsPage.LABS)
+                ) ||
+                (it == SettingsPage.OWNED_SERVER && !actions.serverAccess.configured)
         }
         val page = selection ?: SettingsPage.CAPTURE
         val menuWidth = (maxWidth * 0.42f).coerceIn(320.dp, 640.dp)
@@ -306,6 +310,8 @@ private fun settingsSummary(page: SettingsPage, options: MobileOptions): String 
     SettingsPage.LABS -> stringResource(R.string.mobile_labs_summary)
 
     SettingsPage.SERVER -> "MyMemory"
+
+    SettingsPage.OWNED_SERVER -> stringResource(R.string.mobile_owned_server)
 
     SettingsPage.PRIVACY -> stringResource(R.string.mobile_data_storage)
 

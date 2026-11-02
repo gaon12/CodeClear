@@ -276,4 +276,24 @@
     <string name="mobile_hint_safety">安全提示</string>
     <string name="mobile_hint_missing">失踪人员警报</string>
     <string name="mobile_hint_test">测试警报</string>
+    <string name="mobile_owned_server">CodeClear 服务器</string>
+    <string name="mobile_owned_description">CodeClear 服务 · 互联网 · 需单独授权</string>
+    <string name="mobile_owned_permission">允许 CodeClear 服务器翻译</string>
+    <string name="mobile_owned_disclosure">警报原文和目标语言会发送给 CodeClear 服务，再由服务请求 Groq 翻译。服务按访问令牌分别保留私有原文和译文缓存，最长30天。Groq 可能根据数据设置，为排查故障或调查滥用而保留数据。服务配额可能中断翻译。暂停发送或删除令牌不会删除已有服务器数据；如需删除，请先清空服务器缓存，再删除令牌。不会自动改用其他翻译引擎。</string>
+    <string name="mobile_owned_access">访问令牌</string>
+    <string name="mobile_owned_access_saved">已安全保存</string>
+    <string name="mobile_owned_access_missing">需要访问令牌</string>
+    <string name="mobile_owned_access_hint">32～256个字符。请输入服务访问令牌，而非 Groq API 密钥。</string>
+    <string name="mobile_owned_access_save">保存访问令牌</string>
+    <string name="mobile_owned_access_remove">删除访问令牌</string>
+    <string name="mobile_owned_access_remove_review">删除已保存的令牌并暂停服务器翻译？已有服务器缓存不会被删除。</string>
+    <string name="mobile_owned_access_failed">无法更新访问令牌，请重试。</string>
+    <string name="mobile_owned_cache_clear">清空服务器缓存</string>
+    <string name="mobile_owned_cache_review">清空此令牌的服务器缓存并暂停服务器翻译？手机上的记录会保留。重新允许翻译后，新请求可能再次写入缓存。</string>
+    <string name="mobile_owned_cache_cleared">服务器缓存已清空。服务器翻译已暂停。</string>
+    <string name="mobile_owned_cache_failed">无法清空服务器缓存。请检查访问令牌和网络。</string>
+    <string name="mobile_owned_terms">Groq 数据处理说明</string>
+    <string name="mobile_owned_unavailable">服务器翻译不可用。请检查授权、访问令牌和网络。</string>
+    <string name="mobile_owned_quota">已达到 CodeClear 服务使用上限，请稍后重试。</string>
+    <string name="mobile_owned_too_long">此消息过长，无法发送给 CodeClear 服务。原文保持不变。</string>
 </resources>

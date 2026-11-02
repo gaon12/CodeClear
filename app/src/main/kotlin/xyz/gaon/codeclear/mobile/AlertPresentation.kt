@@ -212,7 +212,9 @@ fun AlertPresentation(
                         }?.let { result ->
                             Text(
                                 stringResource(
-                                    if (result.engine == TranslationEngineKind.MY_MEMORY) {
+                                    if (result.engine == TranslationEngineKind.OWNED_SERVER) {
+                                        R.string.mobile_owned_server
+                                    } else if (result.engine == TranslationEngineKind.MY_MEMORY) {
                                         R.string.mobile_result_mymemory
                                     } else if (result.engine == TranslationEngineKind.SYSTEM) {
                                         R.string.mobile_result_system
@@ -326,7 +328,9 @@ fun AlertPresentation(
             }
             Text(
                 stringResource(
-                    if (engine == TranslationEngineKind.MY_MEMORY) {
+                    if (engine == TranslationEngineKind.MY_MEMORY ||
+                        engine == TranslationEngineKind.OWNED_SERVER
+                    ) {
                         R.string.mobile_server_translation_notice
                     } else if (viewMode == MessageViewMode.SWITCH || compact) {
                         R.string.mobile_translation_short_notice

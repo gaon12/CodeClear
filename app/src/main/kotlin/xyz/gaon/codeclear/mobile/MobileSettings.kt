@@ -100,11 +100,18 @@ fun MobileSettings(
                 "MyMemory",
                 onClick = { navigate(SettingsPage.SERVER) }
             )
+            if (actions.serverAccess.configured) {
+                SettingDivider()
+                SettingRow(stringResource(R.string.mobile_owned_server), onClick = {
+                    navigate(SettingsPage.OWNED_SERVER)
+                })
+            }
         }
     }
     if (page == SettingsPage.SERVER) {
         ServerTranslationSettings(options, actions)
     }
+    if (page == SettingsPage.OWNED_SERVER) OwnedServerSettings(options, actions)
     if (page == SettingsPage.TRANSLATION) {
         LocalTranslationSettings(options, actions)
     }

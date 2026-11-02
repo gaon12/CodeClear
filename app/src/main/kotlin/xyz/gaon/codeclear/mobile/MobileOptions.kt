@@ -4,8 +4,11 @@ import android.content.Context
 import android.content.res.Resources
 import android.os.Looper
 import androidx.core.app.LocaleManagerCompat
+import xyz.gaon.codeclear.translation.OwnedServerEndpoint
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 import xyz.gaon.codeclear.translation.TranslationTarget
+
+private val serverCredentialPattern = Regex("[0-9a-f]{64}")
 
 enum class ThemeChoice { SYSTEM, LIGHT, DARK }
 enum class MessageViewMode { BOTH, SWITCH }
@@ -23,12 +26,18 @@ data class MobileOptions(
     val labsEnabled: Boolean = false,
     val messageViewMode: MessageViewMode = MessageViewMode.SWITCH,
     val serverAllowed: Boolean = false,
-    val deferredOverlayEnabled: Boolean = false
+    val deferredOverlayEnabled: Boolean = false,
+    val ownedServerAllowed: Boolean = false,
+    val ownedServerCredentialId: String = ""
 ) {
-    val translationAllowed: Boolean get() = if (engine == TranslationEngineKind.MY_MEMORY) {
-        labsEnabled && serverAllowed
-    } else {
-        localConsent
+    val translationAllowed: Boolean get() = when (engine) {
+        TranslationEngineKind.MY_MEMORY -> labsEnabled && serverAllowed
+
+        TranslationEngineKind.OWNED_SERVER ->
+            labsEnabled && ownedServerAllowed &&
+                ownedServerCredentialId.matches(serverCredentialPattern)
+
+        else -> localConsent
     }
 }
 
@@ -49,7 +58,8 @@ interface OptionsStorage {
 /** Private preferences contain choices and disclosure versions, never alert text or credentials. */
 class MobileOptionsStorage(
     private val context: Context,
-    private val name: String = "mobile_options"
+    private val name: String = "mobile_options",
+    private val ownedConfigured: Boolean = OwnedServerEndpoint.configured() != null
 ) : OptionsStorage {
     init {
         require(name.matches(Regex("[A-Za-z][A-Za-z0-9_-]{0,79}")))
@@ -59,9 +69,14 @@ class MobileOptionsStorage(
         val saved = context.getSharedPreferences(name, Context.MODE_PRIVATE)
         val currentDisclosure = saved.getInt("disclosure_version", 0) == 1
         val labsEnabled = saved.getBoolean("labs_enabled", false)
+        val ownedId = saved.getString("owned_server_credential_id", "").orEmpty()
+            .takeIf { it.matches(serverCredentialPattern) }.orEmpty()
         val engineKey = saved.getString("local_engine", TranslationEngineKind.ML_KIT.key)
         val engine = TranslationEngineKind.entries.firstOrNull { it.key == engineKey }
-            ?.takeIf { it != TranslationEngineKind.MY_MEMORY || labsEnabled }
+            ?.takeIf {
+                (it != TranslationEngineKind.MY_MEMORY || labsEnabled) &&
+                    (it != TranslationEngineKind.OWNED_SERVER || (labsEnabled && ownedConfigured))
+            }
         val target =
             TranslationTarget.entries.firstOrNull { it.name == saved.getString("target", null) }
                 ?: defaultTarget(LocaleManagerCompat.getSystemLocales(context).toLanguageTags())
@@ -94,6 +109,10 @@ class MobileOptionsStorage(
                 currentDisclosure && labsEnabled && engine == TranslationEngineKind.MY_MEMORY &&
                     saved.getInt("remote_disclosure_version", 0) == 1 &&
                     saved.getBoolean("server_allowed", false),
+            ownedServerAllowed = currentDisclosure && labsEnabled && ownedConfigured &&
+                ownedId.isNotEmpty() && saved.getInt("owned_disclosure_version", 0) == 1 &&
+                saved.getBoolean("owned_server_allowed", false),
+            ownedServerCredentialId = ownedId,
             messageViewMode = MessageViewMode.entries.firstOrNull {
                 it.name == saved.getString("message_view_mode", null)
             } ?: MessageViewMode.SWITCH
@@ -112,6 +131,19 @@ class MobileOptionsStorage(
             .putInt("overlay_disclosure_version", 1)
             .putBoolean("deferred_overlay_enabled", options.deferredOverlayEnabled)
             .putBoolean("server_allowed", options.serverAllowed && options.labsEnabled)
+            .putInt("owned_disclosure_version", 1)
+            .putBoolean(
+                "owned_server_allowed",
+                options.ownedServerAllowed && options.labsEnabled &&
+                    options.ownedServerCredentialId.matches(serverCredentialPattern)
+            )
+            .putString(
+                "owned_server_credential_id",
+                options.ownedServerCredentialId.takeIf {
+                    options.ownedServerAllowed && options.labsEnabled &&
+                        it.matches(serverCredentialPattern)
+                }.orEmpty()
+            )
             .putString("local_engine", options.engine.key)
             .putBoolean("nearby_enabled", options.nearbyEnabled)
             .putBoolean("labs_enabled", options.labsEnabled)

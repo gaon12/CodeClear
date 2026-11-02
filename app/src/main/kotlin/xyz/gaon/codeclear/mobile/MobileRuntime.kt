@@ -17,6 +17,9 @@ import xyz.gaon.codeclear.nearby.NearbyBackgroundService
 import xyz.gaon.codeclear.nearby.NearbySharing
 import xyz.gaon.codeclear.translation.MlKitLocalEngine
 import xyz.gaon.codeclear.translation.MyMemoryEngine
+import xyz.gaon.codeclear.translation.OwnedServerEngine
+import xyz.gaon.codeclear.translation.ServerAccessState
+import xyz.gaon.codeclear.translation.ServerAccessToken
 import xyz.gaon.codeclear.translation.SystemEngineAvailability
 import xyz.gaon.codeclear.translation.SystemLocalEngine
 import xyz.gaon.codeclear.translation.TranslationEngine
@@ -54,6 +57,13 @@ class MobileRuntime(context: Context) {
     private var presentationOptions: MobileOptions? = null
     private val mlKit = MlKitLocalEngine()
     private val myMemory = MyMemoryEngine(context)
+    private var ownedGrant: String? = null
+    var serverAccess by mutableStateOf(ServerAccessState())
+        private set
+    private val ownedServer = OwnedServerEngine(context, changed = {
+        serverAccess = it
+        syncServerAuthorization()
+    })
     var systemAvailability by mutableStateOf(SystemEngineAvailability())
         private set
     val systemEngine = SystemLocalEngine(context) { systemAvailability = it }
@@ -62,6 +72,7 @@ class MobileRuntime(context: Context) {
             TranslationEngineKind.ML_KIT -> mlKit.run(input, download, complete)
             TranslationEngineKind.SYSTEM -> systemEngine.run(input, download, complete)
             TranslationEngineKind.MY_MEMORY -> myMemory.run(input, false, complete)
+            TranslationEngineKind.OWNED_SERVER -> ownedServer.run(input, false, complete)
         }
     }
     private var diagnosticOwners = 0
@@ -70,7 +81,7 @@ class MobileRuntime(context: Context) {
     val controller: MobileController = MobileController(
         context,
         AlertHistoryStore(context),
-        MobileOptionsStorage(context),
+        MobileOptionsStorage(context, ownedConfigured = ownedServer.access.configured),
         engine,
         changed = {
             state = it
@@ -86,6 +97,7 @@ class MobileRuntime(context: Context) {
             ) {
                 myMemory.authorize(false)
             }
+            syncServerAuthorization()
             if (it.loaded) {
                 val enabled = it.options.labsEnabled && it.options.nearbyEnabled && !it.storageError
                 nearby.configure(enabled)
@@ -111,10 +123,12 @@ class MobileRuntime(context: Context) {
             mlKit.close()
             systemEngine.close()
             myMemory.close()
+            ownedServer.close()
         },
         cancelEngine = {
             systemEngine.cancel()
             myMemory.cancel()
+            ownedServer.cancel()
         },
         captured = { id, capture ->
             nearby.offer(id, capture)
@@ -132,6 +146,10 @@ class MobileRuntime(context: Context) {
             myMemory.authorize(
                 it.engine == TranslationEngineKind.MY_MEMORY && it.translationAllowed
             )
+            ownedGrant = it.ownedServerCredentialId.takeIf { _ ->
+                it.engine == TranslationEngineKind.OWNED_SERVER && it.translationAllowed
+            }
+            syncServerAuthorization()
         },
         observed = alertPresenter::observed,
         deletionCandidates = notifications::knownIds,
@@ -250,6 +268,29 @@ class MobileRuntime(context: Context) {
     }
 
     fun configure(options: MobileOptions) {
+        val access = ownedServer.access
+        val preserveGrant = options.ownedServerAllowed && state.options.ownedServerAllowed &&
+            options.labsEnabled && access.configured &&
+            options.ownedServerCredentialId == state.options.ownedServerCredentialId &&
+            !(access.ready && access.credentialId != options.ownedServerCredentialId)
+        configureVerified(
+            if (options.ownedServerAllowed && !preserveGrant) {
+                options.copy(ownedServerAllowed = false, ownedServerCredentialId = "")
+            } else {
+                options
+            }
+        )
+    }
+
+    private fun configureVerified(options: MobileOptions) {
+        if (options.ownedServerAllowed != state.options.ownedServerAllowed ||
+            options.ownedServerCredentialId != state.options.ownedServerCredentialId ||
+            options.engine != state.options.engine ||
+            options.labsEnabled != state.options.labsEnabled
+        ) {
+            ownedGrant = null
+            ownedServer.authorize(false, "")
+        }
         presentationOptions = null
         alertPresenter.authorize(null)
         if (options.serverAllowed != state.options.serverAllowed ||
@@ -264,6 +305,63 @@ class MobileRuntime(context: Context) {
         controller.changeOptions(options)
     }
 
+    fun allowServer(revision: Long, credentialId: String) {
+        if (!serverActionMatches(revision, true) || !state.options.labsEnabled ||
+            ownedServer.access.credentialId != credentialId
+        ) {
+            return
+        }
+        configureVerified(
+            state.options.copy(
+                engine = TranslationEngineKind.OWNED_SERVER,
+                ownedServerAllowed = true,
+                ownedServerCredentialId = credentialId
+            )
+        )
+    }
+
+    fun saveServerAccess(value: String, revision: Long) {
+        if (serverActionMatches(revision, false) && ServerAccessToken.parse(value) != null &&
+            ownedServer.saveAccess(value)
+        ) {
+            pauseServerTranslation()
+        }
+    }
+
+    fun removeServerAccess(revision: Long) {
+        if (serverActionMatches(revision, true) &&
+            ownedServer.removeAccess()
+        ) {
+            pauseServerTranslation()
+        }
+    }
+
+    fun clearServerCache(revision: Long) {
+        if (serverActionMatches(revision, true) &&
+            ownedServer.clearCache()
+        ) {
+            pauseServerTranslation()
+        }
+    }
+
+    private fun pauseServerTranslation() = configureVerified(
+        state.options.copy(ownedServerAllowed = false, ownedServerCredentialId = "")
+    )
+
+    private fun serverActionMatches(revision: Long, requireReady: Boolean): Boolean {
+        val access = ownedServer.access
+        return state.loaded && !state.storageError && access.configured && access.loaded &&
+            !access.busy && access.revision == revision && (!requireReady || access.ready)
+    }
+
+    private fun syncServerAuthorization() {
+        val options = state.options
+        val allowed = state.loaded && !state.storageError && diagnosticOwners == 0 &&
+            options.engine == TranslationEngineKind.OWNED_SERVER && options.translationAllowed &&
+            ownedGrant == options.ownedServerCredentialId
+        ownedServer.authorize(allowed, options.ownedServerCredentialId)
+    }
+
     fun stopNearbySharing() {
         nearby.configure(false)
         controller.stopNearbySharing()
@@ -274,6 +372,7 @@ class MobileRuntime(context: Context) {
         val generation = diagnosticGeneration
         if (diagnosticOwners++ == 0) {
             alertPresenter.authorize(null)
+            ownedServer.authorize(false, "")
             controller.pauseCapture(true)
             nearby.suspendForDiagnostics(true)
         }
@@ -310,6 +409,7 @@ class MobileRuntime(context: Context) {
     }
 
     private fun restorePresentation() {
+        syncServerAuthorization()
         alertPresenter.authorize(
             presentationOptions?.takeIf {
                 state.loaded && !state.storageError && state.options == it && diagnosticOwners == 0

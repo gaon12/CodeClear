@@ -278,4 +278,24 @@
     <string name="mobile_hint_safety">Information de sécurité</string>
     <string name="mobile_hint_missing">Alerte disparition</string>
     <string name="mobile_hint_test">Alerte de test</string>
+    <string name="mobile_owned_server">Serveur CodeClear</string>
+    <string name="mobile_owned_description">Service CodeClear · Internet · Autorisation distincte requise</string>
+    <string name="mobile_owned_permission">Autoriser la traduction CodeClear</string>
+    <string name="mobile_owned_disclosure">Les alertes originales et la langue cible sont envoyées au service CodeClear, qui transmet les demandes à Groq. Les originaux et traductions sont conservés dans un cache privé par jeton pendant 30 jours au maximum. Selon ses paramètres, Groq peut conserver des données pour résoudre des incidents ou enquêter sur des abus. Les limites du service peuvent interrompre la traduction. La pause ou la suppression du jeton ne supprime pas les données existantes ; videz le cache avant de retirer le jeton. Aucun autre moteur ne sera choisi automatiquement.</string>
+    <string name="mobile_owned_access">Jeton d’accès</string>
+    <string name="mobile_owned_access_saved">Enregistré de façon sécurisée</string>
+    <string name="mobile_owned_access_missing">Jeton d’accès requis</string>
+    <string name="mobile_owned_access_hint">32 à 256 caractères. Utilisez le jeton du service, pas une clé API Groq.</string>
+    <string name="mobile_owned_access_save">Enregistrer le jeton</string>
+    <string name="mobile_owned_access_remove">Supprimer le jeton</string>
+    <string name="mobile_owned_access_remove_review">Supprimer le jeton et suspendre la traduction serveur ? Le cache existant ne sera pas supprimé.</string>
+    <string name="mobile_owned_access_failed">Impossible de modifier le jeton. Réessayez.</string>
+    <string name="mobile_owned_cache_clear">Vider le cache serveur</string>
+    <string name="mobile_owned_cache_review">Vider le cache de ce jeton et suspendre la traduction serveur ? L’historique local est conservé. De nouvelles demandes pourront remplir le cache après réactivation.</string>
+    <string name="mobile_owned_cache_cleared">Cache serveur vidé. Traduction serveur suspendue.</string>
+    <string name="mobile_owned_cache_failed">Impossible de vider le cache. Vérifiez le jeton et la connexion.</string>
+    <string name="mobile_owned_terms">Traitement des données par Groq</string>
+    <string name="mobile_owned_unavailable">Traduction serveur indisponible. Vérifiez l’autorisation, le jeton et la connexion.</string>
+    <string name="mobile_owned_quota">La limite du service CodeClear est atteinte. Réessayez plus tard.</string>
+    <string name="mobile_owned_too_long">Ce message est trop long pour le service CodeClear. L’original est conservé sans modification.</string>
 </resources>

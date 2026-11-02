@@ -4,5 +4,6 @@ package xyz.gaon.codeclear.translation
 enum class TranslationEngineKind(val key: String) {
     ML_KIT("mlkit"),
     SYSTEM("system"),
-    MY_MEMORY("mymemory")
+    MY_MEMORY("mymemory"),
+    OWNED_SERVER("owned_server")
 }

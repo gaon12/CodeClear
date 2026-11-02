@@ -1,6 +1,7 @@
 package xyz.gaon.codeclear.mobile
 
 import xyz.gaon.codeclear.nearby.NearbyState
+import xyz.gaon.codeclear.translation.ServerAccessState
 import xyz.gaon.codeclear.translation.SystemEngineAvailability
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 
@@ -52,5 +53,10 @@ class MobileActions(
     val overlaySettings: () -> Unit = {},
     val batterySettings: () -> Unit = {},
     val olderObservations: () -> Unit = {},
-    val newestObservations: () -> Unit = {}
+    val newestObservations: () -> Unit = {},
+    val serverAccess: ServerAccessState = ServerAccessState(),
+    val allowServer: (Long, String) -> Unit = { _, _ -> },
+    val saveServerAccess: (String, Long) -> Unit = { _, _ -> },
+    val removeServerAccess: (Long) -> Unit = {},
+    val clearServerCache: (Long) -> Unit = {}
 )

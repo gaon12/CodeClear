@@ -93,10 +93,13 @@ import xyz.gaon.codeclear.nearby.NearbyStatus
 import xyz.gaon.codeclear.nearby.RelayProtocol
 import xyz.gaon.codeclear.reception.CountryEvidence
 import xyz.gaon.codeclear.reception.ReceptionCountry
+import xyz.gaon.codeclear.translation.ServerAccessState
+import xyz.gaon.codeclear.translation.ServerCacheClearResult
 import xyz.gaon.codeclear.translation.SystemEngineAvailability
 import xyz.gaon.codeclear.translation.SystemLanguagePair
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 import xyz.gaon.codeclear.translation.TranslationTarget
+import xyz.gaon.codeclear.translation.serverDigest
 
 /** Renders synthetic-only state. The real runtime is paused and its history is never modified. */
 class MobileScreenDeviceTest {
@@ -148,6 +151,12 @@ class MobileScreenDeviceTest {
     private var olderObservationRequests = 0
     private var newestObservationRequests = 0
     private var presentationAccess by mutableStateOf(PresentationAccess())
+    private var serverAccess by mutableStateOf(ServerAccessState())
+    private var serverAllows = 0
+    private var serverRemovals = 0
+    private var serverCacheClears = 0
+    private var globalPreparation by mutableStateOf(PreparationState())
+    private val serverTokens = mutableListOf<String>()
     private val context get() = compose.activity
     private val fixtureResources
         get() = localizedFixtureContext(context, context.resources.configuration).resources
@@ -238,13 +247,83 @@ class MobileScreenDeviceTest {
                         accessibilityConnected = fixtureAccessibilityConnected
                     ),
                     false,
-                    PreparationState(),
+                    globalPreparation,
                     MobileActions(
                         olderObservations = { olderObservationRequests++ },
                         newestObservations = { newestObservationRequests++ },
                         presentationAccess = presentationAccess,
                         overlaySettings = { overlaySettingsOpened++ },
                         batterySettings = { batterySettingsOpened++ },
+                        serverAccess = serverAccess,
+                        allowServer = { revision, id ->
+                            if (state.options.labsEnabled && serverAccess.ready &&
+                                !serverAccess.busy &&
+                                serverAccess.revision == revision &&
+                                serverAccess.credentialId == id
+                            ) {
+                                serverAllows++
+                                configured =
+                                    state.options.copy(
+                                        engine = TranslationEngineKind.OWNED_SERVER,
+                                        ownedServerAllowed = true,
+                                        ownedServerCredentialId = id
+                                    )
+                                state = state.copy(options = configured!!)
+                            }
+                        },
+                        saveServerAccess = { value, revision ->
+                            if (serverAccess.revision == revision) {
+                                serverTokens += value
+                                serverAccess =
+                                    serverAccess.copy(
+                                        ready = true,
+                                        credentialId = serverDigest(value),
+                                        revision = revision + 1
+                                    )
+                                state =
+                                    state.copy(
+                                        options = state.options.copy(
+                                            ownedServerAllowed = false,
+                                            ownedServerCredentialId = ""
+                                        )
+                                    )
+                            }
+                        },
+                        removeServerAccess = { revision ->
+                            if (serverAccess.revision == revision) {
+                                serverRemovals++
+                                serverAccess =
+                                    serverAccess.copy(
+                                        ready = false,
+                                        credentialId = "",
+                                        revision =
+                                            revision + 1
+                                    )
+                                state =
+                                    state.copy(
+                                        options = state.options.copy(
+                                            ownedServerAllowed = false,
+                                            ownedServerCredentialId = ""
+                                        )
+                                    )
+                            }
+                        },
+                        clearServerCache = { revision ->
+                            if (serverAccess.revision == revision) {
+                                serverCacheClears++
+                                serverAccess = serverAccess.copy(
+                                    revision = revision + 1,
+                                    cacheResult = ServerCacheClearResult.CLEARED
+                                )
+                                state =
+                                    state.copy(
+                                        options = state.options.copy(
+                                            ownedServerAllowed = false,
+                                            ownedServerCredentialId = ""
+                                        )
+                                    )
+                            }
+                        },
                         configure = {
                             configured = it
                             state = state.copy(options = it)
@@ -1182,7 +1261,7 @@ class MobileScreenDeviceTest {
     @Test
     fun completedRecordDoesNotShowAnUnrelatedGlobalModelPreparationStatus() {
         compose.runOnIdle {
-            modelPreparation = PreparationState(
+            globalPreparation = PreparationState(
                 PreparationPhase.READY,
                 target = "de",
                 modelLanguage = "de"
@@ -1199,10 +1278,178 @@ class MobileScreenDeviceTest {
             PreparationPhase.UNKNOWN_LANGUAGE,
             PreparationPhase.FAILED
         )) {
-            compose.runOnIdle { modelPreparation = modelPreparation.copy(phase = phase) }
+            compose.runOnIdle { globalPreparation = globalPreparation.copy(phase = phase) }
             compose.onNodeWithText(text(preparationMessage(phase))).assertDoesNotExist()
         }
         compose.runOnIdle { assertTrue(requestedModels.isEmpty()) }
+    }
+
+    @Test
+    fun ownedServiceStaysHiddenWithoutBuildConfigurationAndMyMemoryCannotAuthorizeIt() {
+        openSettingsPage(SettingsPage.LABS)
+        compose.onNodeWithText(text(R.string.mobile_owned_server)).assertDoesNotExist()
+        compose.runOnIdle {
+            serverAccess = ServerAccessState(configured = true, loaded = true)
+            state = state.copy(options = state.options.copy(serverAllowed = true))
+        }
+        compose.onNodeWithText(text(R.string.mobile_owned_server)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_owned_access_missing)).assertIsDisplayed()
+        switchControl(text(R.string.mobile_owned_permission)).assertIsNotEnabled()
+        compose.runOnIdle {
+            assertFalse(state.options.ownedServerAllowed)
+            assertEquals(0, serverAllows)
+        }
+    }
+
+    @Test
+    fun accessTokenDialogMasksValidatesAndForgetsInputWithoutEnablingTranslation() {
+        compose.runOnIdle { serverAccess = ServerAccessState(configured = true, loaded = true) }
+        openSettingsPage(SettingsPage.OWNED_SERVER)
+        compose.onNodeWithText(text(R.string.mobile_owned_access)).performClick()
+        compose.onNodeWithTag("owned-server-token-save").assertIsNotEnabled()
+        val synthetic = "synthetic-client-token-aaaaaaaaaaaaaaaa"
+        compose.onNodeWithTag("owned-server-token").performTextInput(synthetic)
+        assertTrue(
+            compose.onNodeWithTag("owned-server-token").fetchSemanticsNode()
+                .config.contains(SemanticsProperties.Password)
+        )
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_owned_access)).performClick()
+        assertEquals(
+            "",
+            compose.onNodeWithTag("owned-server-token").fetchSemanticsNode()
+                .config[SemanticsProperties.EditableText].text
+        )
+        compose.onNodeWithTag("owned-server-token").performTextInput(synthetic)
+        compose.onNodeWithTag("owned-server-token-save").performClick()
+        compose.onNodeWithText(text(R.string.mobile_owned_access_saved)).assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(listOf(synthetic), serverTokens)
+            assertFalse(state.options.ownedServerAllowed)
+            assertEquals(TranslationEngineKind.ML_KIT, state.options.engine)
+        }
+    }
+
+    @Test
+    fun ownedPermissionReviewRejectsChangedCredentialsAndRequiresFreshConfirmation() {
+        compose.runOnIdle {
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            serverAccess = ServerAccessState(
+                configured = true,
+                loaded = true,
+                ready = true,
+                credentialId = "a".repeat(64)
+            )
+        }
+        openSettingsPage(SettingsPage.OWNED_SERVER)
+        switchControl(text(R.string.mobile_owned_permission)).performClick()
+        compose.onNodeWithTag("owned-server-confirm").assertIsEnabled()
+        savePreview("owned-server-review", dialog = true)
+        compose.runOnIdle {
+            serverAccess = serverAccess.copy(revision = 1, credentialId = "b".repeat(64))
+        }
+        compose.onNodeWithTag("owned-server-confirm").assertIsNotEnabled()
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+        switchControl(text(R.string.mobile_owned_permission)).performClick()
+        compose.runOnIdle { state = state.copy(options = state.options.copy(labsEnabled = false)) }
+        compose.onNodeWithTag("owned-server-review").assertDoesNotExist()
+        compose.runOnIdle { assertEquals(0, serverAllows) }
+        openSettingsPage(SettingsPage.OWNED_SERVER)
+        switchControl(text(R.string.mobile_owned_permission)).performClick()
+        compose.onNodeWithTag("owned-server-confirm").performClick()
+        compose.runOnIdle {
+            assertEquals(1, serverAllows)
+            assertEquals(TranslationEngineKind.OWNED_SERVER, state.options.engine)
+            assertEquals("b".repeat(64), state.options.ownedServerCredentialId)
+            assertTrue(state.options.translationAllowed)
+        }
+    }
+
+    @Test
+    fun ownedEngineChoiceNeedsItsPermissionAndMatchingReadyCredential() {
+        compose.runOnIdle {
+            serverAccess = ServerAccessState(
+                configured = true,
+                loaded = true,
+                ready = true,
+                credentialId = "a".repeat(64)
+            )
+            state =
+                state.copy(options = state.options.copy(labsEnabled = true, serverAllowed = true))
+        }
+        openSettingsPage(SettingsPage.TRANSLATION)
+        compose.onNodeWithText(text(R.string.mobile_engine_title)).performClick()
+        val choice = hasText(text(R.string.mobile_owned_server)) and isRadioChoice()
+        compose.onNode(choice).assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_close)).performClick()
+        compose.runOnIdle {
+            state = state.copy(
+                options = state.options.copy(
+                    ownedServerAllowed = true,
+                    ownedServerCredentialId = "a".repeat(64)
+                )
+            )
+        }
+        compose.onNodeWithText(text(R.string.mobile_engine_title)).performClick()
+        compose.onNode(choice).assertIsEnabled()
+        compose.runOnIdle { serverAccess = serverAccess.copy(ready = false) }
+        compose.onNode(choice).assertDoesNotExist()
+        compose.runOnIdle {
+            serverAccess =
+                serverAccess.copy(ready = true, credentialId = "b".repeat(64))
+        }
+        compose.onNode(choice).assertDoesNotExist()
+        compose.runOnIdle { serverAccess = serverAccess.copy(credentialId = "a".repeat(64)) }
+        compose.onNode(choice).assertIsEnabled()
+        compose.runOnIdle { state = state.copy(options = state.options.copy(labsEnabled = false)) }
+        compose.onNode(choice).assertDoesNotExist()
+    }
+
+    @Test
+    fun serverCacheAndAccessRemovalRequireConfirmationAndKeepLocalHistory() {
+        compose.runOnIdle {
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            serverAccess = ServerAccessState(
+                configured = true,
+                loaded = true,
+                ready = true,
+                credentialId = "a".repeat(64)
+            )
+            state =
+                state.copy(
+                    options = state.options.copy(
+                        engine = TranslationEngineKind.OWNED_SERVER,
+                        labsEnabled = true,
+                        ownedServerAllowed = true,
+                        ownedServerCredentialId = "a".repeat(64)
+                    )
+                )
+        }
+        openSettingsPage(SettingsPage.OWNED_SERVER)
+        for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
+            compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            savePreview("owned-server-settings-${theme.name.lowercase()}")
+        }
+        compose.onNodeWithText(text(R.string.mobile_owned_cache_clear)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+        compose.runOnIdle { assertEquals(0, serverCacheClears) }
+        compose.onNodeWithText(text(R.string.mobile_owned_cache_clear)).performClick()
+        compose.onNodeWithTag("owned-server-confirm").performClick()
+        compose.onNodeWithText(text(R.string.mobile_owned_cache_cleared))
+            .performScrollTo().assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(1, serverCacheClears)
+            assertFalse(state.options.ownedServerAllowed)
+            assertTrue(serverAccess.ready)
+        }
+        compose.onNodeWithText(text(R.string.mobile_owned_access_remove)).performClick()
+        compose.onNodeWithTag("owned-server-confirm").performClick()
+        compose.runOnIdle {
+            assertEquals(1, serverRemovals)
+            assertFalse(serverAccess.ready)
+            assertEquals(1, state.records.size)
+            assertEquals(0, deletionRequests)
+        }
     }
 
     @Test

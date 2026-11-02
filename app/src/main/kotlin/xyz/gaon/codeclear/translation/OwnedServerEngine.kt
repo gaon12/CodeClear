@@ -85,6 +85,10 @@ internal class OwnedServerEngine(
     ) {
         checkMain()
         check(!closed && active == null)
+        if (input.engine != TranslationEngineKind.OWNED_SERVER) {
+            complete(TranslationResult.Unavailable)
+            return
+        }
         if (!authorized || endpoint == null || (access.loaded && access.busy)) {
             complete(TranslationResult.Unavailable)
             return
