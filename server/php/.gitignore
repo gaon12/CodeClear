@@ -1,0 +1,8 @@
+.env
+.env.*
+!.env.example
+/data/
+/vendor/
+*.sqlite*
+*.db*
+.php-cs-fixer.cache
