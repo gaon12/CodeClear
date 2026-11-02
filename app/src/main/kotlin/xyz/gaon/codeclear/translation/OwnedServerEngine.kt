@@ -249,8 +249,9 @@ internal class OwnedServerEngine(
         activeTimeout = null
         maintenance?.cancel()
         worker.queue.clear()
+        // TLS socket shutdown can perform I/O; also wait for any in-flight client creation.
+        worker.execute { if (client.isInitialized()) client.value.close() }
         worker.shutdown()
-        if (client.isInitialized()) client.value.close()
     }
 
     private fun invalidateCredential() {

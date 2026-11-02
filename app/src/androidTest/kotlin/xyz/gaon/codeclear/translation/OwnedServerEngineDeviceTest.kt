@@ -1,5 +1,6 @@
 package xyz.gaon.codeclear.translation
 
+import android.os.Looper
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.IOException
 import java.util.concurrent.CountDownLatch
@@ -138,6 +139,34 @@ class OwnedServerEngineDeviceTest {
         }
     }
 
+    @Test
+    fun closingAnActiveClientReturnsBeforeItsOffMainCleanupFinishes() {
+        Fixture().use { f ->
+            main { f.engine.authorize(true, serverDigest(token)) }
+            assertTrue(f.run() is TranslationResult.Ready)
+            val started = CountDownLatch(1)
+            val release = CountDownLatch(1)
+            val finished = CountDownLatch(1)
+            f.client.onClose = {
+                assertFalse(Looper.myLooper() == Looper.getMainLooper())
+                started.countDown()
+                try {
+                    assertTrue(release.await(5, TimeUnit.SECONDS))
+                } finally {
+                    finished.countDown()
+                }
+            }
+            try {
+                main { f.engine.close() }
+                assertTrue(started.await(5, TimeUnit.SECONDS))
+                assertEquals(1L, finished.count)
+            } finally {
+                release.countDown()
+            }
+            assertTrue(finished.await(5, TimeUnit.SECONDS))
+        }
+    }
+
     private inner class Fixture(
         source: String = "en",
         waitForLoad: Boolean = true,
@@ -201,6 +230,7 @@ class OwnedServerEngineDeviceTest {
         val lastCredential = AtomicReference<String>()
 
         @Volatile var block: () -> Unit = {}
+        @Volatile var onClose: () -> Unit = {}
         override fun translate(
             original: String,
             target: TranslationTarget,
@@ -222,7 +252,7 @@ class OwnedServerEngineDeviceTest {
             deletions.incrementAndGet()
             return ServerCacheClearResult.CLEARED
         }
-        override fun close() = Unit
+        override fun close() = onClose()
     }
 
     private fun main(action: () -> Unit) =
