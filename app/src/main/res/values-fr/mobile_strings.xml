@@ -253,4 +253,13 @@
     <string name="mobile_model_update_checked">Vérification terminée. Les modèles sont prêts.</string>
     <string name="mobile_model_update_count">Modèles vérifiés : %1$d/%2$d</string>
     <string name="mobile_model_update_notice">Les mises à jour disponibles peuvent être téléchargées en Wi-Fi. Sans mise à jour nécessaire, le modèle n\'est pas retéléchargé. ML Kit ne fournit ni numéro de version ni indication de changement des fichiers. Aucun texte d\'alerte n\'est envoyé.</string>
+    <string name="mobile_deferred_popup">Fenêtre après l’alerte système</string>
+    <string name="mobile_deferred_popup_summary">Affichée uniquement après la disparition de la fenêtre système vérifiée. Si cela ne peut pas être confirmé, utilisez la notification ou l’historique. Les deux services de collecte sont requis. Aucun affichage sur l’écran verrouillé.</string>
+    <string name="mobile_overlay_access">Afficher par-dessus les autres applis</string>
+    <string name="mobile_overlay_disclosure">Autorisez CodeClear à afficher le texte original et la traduction disponible après la disparition de la fenêtre d’alerte système. Pour l’afficher par-dessus une autre appli, accordez séparément cette autorisation dans les paramètres Android. Cela ne ferme pas les alertes système, n’allume pas l’écran et ne déverrouille pas l’appareil. La fenêtre peut ne pas apparaître ; les notifications et l’historique restent disponibles. Désactivé par défaut.</string>
+    <string name="mobile_battery_settings">Paramètres de batterie</string>
+    <string name="mobile_battery_exempt">Exempté de l’optimisation</string>
+    <string name="mobile_battery_optimized">Optimisation de batterie active</string>
+    <string name="mobile_battery_guidance">L’exemption est facultative. Si la collecte est retardée en arrière-plan, vérifiez les restrictions de batterie et d’arrière-plan. L’exemption ne restaure ni les accès révoqués, ni une appli arrêtée de force, ni le texte source indisponible.</string>
+    <string name="mobile_background_restricted">Android limite actuellement l’utilisation en arrière-plan. Vérifiez cette appli dans les paramètres système de batterie.</string>
 </resources>

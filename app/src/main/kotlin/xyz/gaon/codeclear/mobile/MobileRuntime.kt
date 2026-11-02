@@ -49,6 +49,9 @@ class MobileRuntime(context: Context) {
     val speech = SpeechPlayback(context)
     val nearby: NearbySharing = NearbySharing(context, retain = ::retainNearby)
     private val notifications = ResultNotifications(context)
+    internal val alertWindow = DeferredAlertWindow(::notificationStrings)
+    internal val alertPresenter = DeferredAlertPresenter(application, alertWindow)
+    private var presentationOptions: MobileOptions? = null
     private val mlKit = MlKitLocalEngine()
     private val myMemory = MyMemoryEngine(context)
     var systemAvailability by mutableStateOf(SystemEngineAvailability())
@@ -71,6 +74,13 @@ class MobileRuntime(context: Context) {
         engine,
         changed = {
             state = it
+            if (!it.loaded || it.storageError || it.options != presentationOptions ||
+                diagnosticOwners > 0
+            ) {
+                alertPresenter.authorize(null)
+            } else {
+                alertPresenter.authorize(presentationOptions)
+            }
             if (it.storageError || !it.options.translationAllowed ||
                 it.options.engine != TranslationEngineKind.MY_MEMORY
             ) {
@@ -89,12 +99,15 @@ class MobileRuntime(context: Context) {
         },
         translated = { id, target, producer, body ->
             notifications.post(id, target, notificationStrings(), producer, body)
+            alertPresenter.translated(id, target, producer, body)
         },
         deleted = {
+            alertPresenter.clear()
             notifications.cancel(it)
             nearby.deleted(it)
         },
         releaseEngine = {
+            alertPresenter.authorize(null)
             mlKit.close()
             systemEngine.close()
             myMemory.close()
@@ -114,10 +127,13 @@ class MobileRuntime(context: Context) {
             )
         },
         optionsReady = {
+            presentationOptions = it
+            if (diagnosticOwners == 0) alertPresenter.authorize(it)
             myMemory.authorize(
                 it.engine == TranslationEngineKind.MY_MEMORY && it.translationAllowed
             )
-        }
+        },
+        observed = alertPresenter::observed
     )
 
     private fun notificationStrings(): Context {
@@ -228,6 +244,8 @@ class MobileRuntime(context: Context) {
     }
 
     fun configure(options: MobileOptions) {
+        presentationOptions = null
+        alertPresenter.authorize(null)
         if (options.serverAllowed != state.options.serverAllowed ||
             options.engine != state.options.engine ||
             options.labsEnabled != state.options.labsEnabled
@@ -249,6 +267,7 @@ class MobileRuntime(context: Context) {
         check(BuildConfig.DEBUG && Looper.myLooper() == Looper.getMainLooper())
         val generation = diagnosticGeneration
         if (diagnosticOwners++ == 0) {
+            alertPresenter.authorize(null)
             controller.pauseCapture(true)
             nearby.suspendForDiagnostics(true)
         }
@@ -258,6 +277,7 @@ class MobileRuntime(context: Context) {
             if (!closed && generation == diagnosticGeneration) {
                 closed = true
                 if (--diagnosticOwners == 0) {
+                    restorePresentation()
                     ProbeSession.setDiagnostics(false, false)
                     controller.pauseCapture(false)
                     nearby.suspendForDiagnostics(false)
@@ -280,6 +300,15 @@ class MobileRuntime(context: Context) {
         ProbeSession.setDiagnostics(false, false)
         controller.pauseCapture(false)
         nearby.suspendForDiagnostics(false)
+        restorePresentation()
+    }
+
+    private fun restorePresentation() {
+        alertPresenter.authorize(
+            presentationOptions?.takeIf {
+                state.loaded && !state.storageError && state.options == it && diagnosticOwners == 0
+            }
+        )
     }
 }
 

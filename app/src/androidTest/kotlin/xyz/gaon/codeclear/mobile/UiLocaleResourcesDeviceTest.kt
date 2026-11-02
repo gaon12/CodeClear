@@ -67,6 +67,8 @@ class UiLocaleResourcesDeviceTest {
                 R.string.mobile_model_notice,
                 R.string.mobile_system_disclosure,
                 R.string.mobile_nearby_disclosure,
+                R.string.mobile_overlay_disclosure,
+                R.string.mobile_battery_guidance,
                 R.string.mobile_nearby_foreground
             )) {
                 assertTrue(localized.getString(id).length > 40)

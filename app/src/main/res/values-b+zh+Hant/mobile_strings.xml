@@ -251,4 +251,13 @@
     <string name="mobile_model_update_checked">已完成更新檢查，模型可以使用。</string>
     <string name="mobile_model_update_count">已檢查模型：%1$d/%2$d</string>
     <string name="mobile_model_update_notice">如有更新，將透過 Wi-Fi 下載。無需更新時不會重新下載模型。ML Kit 不提供版本號碼或檔案是否變更的資訊。不會傳送警報內文。</string>
+    <string name="mobile_deferred_popup">系統警報關閉後彈出視窗</string>
+    <string name="mobile_deferred_popup_summary">僅在已確認的系統警報視窗消失後顯示。無法確認時，請查看通知或歷史記錄。需要兩個收集服務均運作，不在鎖定畫面上顯示。</string>
+    <string name="mobile_overlay_access">顯示在其他應用程式上層</string>
+    <string name="mobile_overlay_disclosure">允許 CodeClear 在系統警報視窗消失後顯示原文和可用譯文。如需在使用其他應用程式時顯示，請在 Android 設定中另行授予懸浮視窗權限。此功能不會關閉系統警報、喚醒螢幕或解鎖裝置。彈出視窗不保證送達，通知和歷史記錄仍可使用。預設關閉。</string>
+    <string name="mobile_battery_settings">電池設定</string>
+    <string name="mobile_battery_exempt">已豁免電池最佳化</string>
+    <string name="mobile_battery_optimized">電池最佳化已啟用</string>
+    <string name="mobile_battery_guidance">電池最佳化豁免為選用項目。若背景收集延遲，請檢查電池及背景限制。豁免無法恢復已撤銷的權限、遭強制停止的應用程式或無法取得的原文。</string>
+    <string name="mobile_background_restricted">Android 目前限制背景使用。請在系統電池設定中查看此應用程式。</string>
 </resources>

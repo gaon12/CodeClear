@@ -252,4 +252,13 @@
     <string name="mobile_model_update_checked">Prüfung abgeschlossen. Die Modelle sind bereit.</string>
     <string name="mobile_model_update_count">Geprüfte Modelle: %1$d/%2$d</string>
     <string name="mobile_model_update_notice">Verfügbare Updates können über WLAN geladen werden. Ohne erforderliches Update wird das Modell nicht erneut geladen. ML Kit meldet weder Versionsnummern noch Dateiänderungen. Es wird kein Warntext gesendet.</string>
+    <string name="mobile_deferred_popup">Popup nach Systemwarnung</string>
+    <string name="mobile_deferred_popup_summary">Wird erst angezeigt, wenn das geprüfte Systemwarnfenster verschwunden ist. Ist dies nicht feststellbar, nutzen Sie die Benachrichtigung oder den Verlauf. Beide Erfassungsdienste sind nötig. Keine Anzeige auf dem Sperrbildschirm.</string>
+    <string name="mobile_overlay_access">Über anderen Apps anzeigen</string>
+    <string name="mobile_overlay_disclosure">Erlauben Sie CodeClear, den Originaltext und die verfügbare Übersetzung nach dem Schließen des Systemwarnfensters anzuzeigen. Für die Anzeige über anderen Apps ist eine separate Android-Berechtigung nötig. Systemwarnungen werden nicht geschlossen, der Bildschirm wird nicht eingeschaltet und das Gerät nicht entsperrt. Ein Popup ist nicht garantiert; Benachrichtigungen und Verlauf bleiben verfügbar. Standardmäßig deaktiviert.</string>
+    <string name="mobile_battery_settings">Akkueinstellungen</string>
+    <string name="mobile_battery_exempt">Von Optimierung ausgenommen</string>
+    <string name="mobile_battery_optimized">Akkuoptimierung aktiv</string>
+    <string name="mobile_battery_guidance">Die Ausnahme ist optional. Prüfen Sie bei verzögerter Erfassung die Akku- und Hintergrundbeschränkungen. Die Ausnahme stellt weder entzogene Zugriffsrechte noch zwangsbeendete Apps oder fehlenden Quelltext wieder her.</string>
+    <string name="mobile_background_restricted">Android schränkt die Hintergrundnutzung ein. Prüfen Sie diese App in den Akku-Systemeinstellungen.</string>
 </resources>

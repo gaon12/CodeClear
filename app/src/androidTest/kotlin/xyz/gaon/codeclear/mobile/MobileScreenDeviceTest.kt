@@ -139,6 +139,9 @@ class MobileScreenDeviceTest {
     private var projectLinkFailure = false
     private var manualSupportRefreshes = 0
     private var providerSettingsOpened = 0
+    private var overlaySettingsOpened = 0
+    private var batterySettingsOpened = 0
+    private var presentationAccess by mutableStateOf(PresentationAccess())
     private val context get() = compose.activity
     private val fixtureResources
         get() = localizedFixtureContext(context, context.resources.configuration).resources
@@ -231,6 +234,9 @@ class MobileScreenDeviceTest {
                     false,
                     PreparationState(),
                     MobileActions(
+                        presentationAccess = presentationAccess,
+                        overlaySettings = { overlaySettingsOpened++ },
+                        batterySettings = { batterySettingsOpened++ },
                         configure = {
                             configured = it
                             state = state.copy(options = it)
@@ -968,6 +974,41 @@ class MobileScreenDeviceTest {
         compose.onNodeWithTag("destination-2").assertDoesNotExist()
         compose.runOnIdle { notificationsAllowed = true }
         switchControl(text(R.string.mobile_result_notifications)).assertIsOn()
+    }
+
+    @Test
+    fun popupDisclosureIsSeparateFromActualOverlayAccessAndBatteryState() {
+        openSettingsPage(SettingsPage.NOTIFICATIONS)
+        switchControl(text(R.string.mobile_deferred_popup)).performScrollTo().assertIsOff()
+            .performClick()
+        compose.onNodeWithText(text(R.string.mobile_overlay_disclosure)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+        compose.runOnIdle { assertFalse(state.options.deferredOverlayEnabled) }
+        switchControl(text(R.string.mobile_deferred_popup)).performScrollTo().performClick()
+        compose.onNodeWithText(text(R.string.mobile_allow)).performClick()
+        compose.runOnIdle { assertTrue(configured.deferredOverlayEnabled) }
+        compose.onNodeWithText(
+            text(R.string.mobile_overlay_access)
+        ).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(1, overlaySettingsOpened)
+            presentationAccess = PresentationAccess(
+                overlayAllowed = true,
+                batteryExempt = true,
+                backgroundRestricted = true
+            )
+        }
+        compose.onNodeWithText(text(R.string.mobile_battery_exempt)).performScrollTo()
+            .assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_background_restricted)).performScrollTo()
+            .assertIsDisplayed()
+        compose.onNodeWithText(
+            text(R.string.mobile_battery_settings)
+        ).performScrollTo().performClick()
+        compose.runOnIdle { assertEquals(1, batterySettingsOpened) }
+        switchControl(text(R.string.mobile_deferred_popup)).performScrollTo().performClick()
+        compose.runOnIdle { assertFalse(configured.deferredOverlayEnabled) }
+        compose.onNodeWithText(text(R.string.mobile_overlay_access)).assertDoesNotExist()
     }
 
     @Test

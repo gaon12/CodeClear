@@ -43,6 +43,7 @@ import xyz.gaon.codeclear.mobile.MobileConfirmationDialog
 import xyz.gaon.codeclear.mobile.MobileOptions
 import xyz.gaon.codeclear.mobile.MobileScreen
 import xyz.gaon.codeclear.mobile.MobileTheme
+import xyz.gaon.codeclear.mobile.PresentationAccess
 import xyz.gaon.codeclear.mobile.ResultNotifications
 import xyz.gaon.codeclear.mobile.SavedAlert
 import xyz.gaon.codeclear.mobile.SpeechPhase
@@ -64,6 +65,7 @@ class MainActivity : AppCompatActivity() {
     }
     private var environment by mutableStateOf<ProbeEnvironment?>(null)
     private var notificationsAllowed by mutableStateOf(false)
+    private var presentationAccess by mutableStateOf(PresentationAccess())
     private var notificationRequested = false
     private var systemSettingsRequest = 0L
     private var systemSettingsOpened = false
@@ -247,7 +249,14 @@ class MainActivity : AppCompatActivity() {
                             closeModelDownload = runtime::closeModelDownload,
                             showModelDownload = runtime::showModelDownload,
                             copyBody = ::copyAlertBody,
-                            shareBody = ::shareAlertBody
+                            shareBody = ::shareAlertBody,
+                            presentationAccess = presentationAccess,
+                            overlaySettings = {
+                                openSettings(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                            },
+                            batterySettings = {
+                                openSettings(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                            }
                         )
                     )
                 }
@@ -271,6 +280,7 @@ class MainActivity : AppCompatActivity() {
                                 runtime.models.withdraw()
                                 runtime.detailLanguages.clear()
                                 runtime.speech.stop()
+                                runtime.alertPresenter.clear()
                                 controller.delete(request.id)
                             }) { Text(stringResource(R.string.mobile_delete)) }
                         },
@@ -299,6 +309,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        mobileRuntime.alertWindow.started(this)
+        mobileRuntime.alertPresenter.activityChanged()
         contentResolver.registerContentObserver(
             Settings.Secure.getUriFor(Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES),
             false,
@@ -325,15 +337,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
+        mobileRuntime.alertWindow.focus(this, hasFocus)
         if (hasFocus && !isFinishing && !isDestroyed) refreshAccess()
     }
 
     override fun onPause() {
         systemSettingsRequest++
+        mobileRuntime.alertPresenter.activityChanged()
+        mobileRuntime.alertWindow.focus(this, false)
         super.onPause()
     }
 
     override fun onStop() {
+        mobileRuntime.alertWindow.stopped(this)
+        mobileRuntime.alertPresenter.activityChanged()
         contentResolver.unregisterContentObserver(accessObserver)
         mobileRuntime.speech.stop()
         mobileRuntime.nearby.foreground(false)
@@ -394,6 +411,7 @@ class MainActivity : AppCompatActivity() {
     private fun refreshAccess() {
         environment = ProbeEnvironment.read(this)
         notificationsAllowed = ResultNotifications(this).allowed()
+        presentationAccess = PresentationAccess.read(this)
     }
 
     private fun configureOptions(options: MobileOptions) {
@@ -454,8 +472,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openSettings(action: String) {
+        mobileRuntime.alertPresenter.clear()
         val intent = Intent(action)
-        if (action ==
+        if (action == Settings.ACTION_MANAGE_OVERLAY_PERMISSION || action ==
             Settings.ACTION_APPLICATION_DETAILS_SETTINGS
         ) {
             intent.data =

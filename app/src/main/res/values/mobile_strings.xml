@@ -252,4 +252,13 @@
     <string name="mobile_model_update_checked">Update check completed. Models are ready.</string>
     <string name="mobile_model_update_count">Models checked: %1$d/%2$d</string>
     <string name="mobile_model_update_notice">Available updates may download over Wi-Fi. No model is downloaded when no update is needed. ML Kit does not report version numbers or whether files changed. No alert text is sent.</string>
+    <string name="mobile_deferred_popup">Popup after system alert</string>
+    <string name="mobile_deferred_popup_summary">Shown only after the reviewed system alert window has disappeared. If this cannot be confirmed, use the notification or history instead. Requires both collection services; no popup on the lock screen.</string>
+    <string name="mobile_overlay_access">Display over other apps</string>
+    <string name="mobile_overlay_disclosure">Allow CodeClear to show the original alert and its available translation after the system alert window disappears. To show it while another app is open, separately allow display over other apps in Android settings. This does not dismiss system warnings, wake the screen, or unlock the device. Popup delivery is best effort; notifications and history remain available. This choice is off by default.</string>
+    <string name="mobile_battery_settings">Battery settings</string>
+    <string name="mobile_battery_exempt">Exempt from optimization</string>
+    <string name="mobile_battery_optimized">Battery optimization enabled</string>
+    <string name="mobile_battery_guidance">An exemption is optional. If collection is delayed in the background, review battery and background restrictions. Exemption does not restore revoked access, a force-stopped app, or unavailable source text.</string>
+    <string name="mobile_background_restricted">Android currently restricts background use. Review this app in system battery settings.</string>
 </resources>

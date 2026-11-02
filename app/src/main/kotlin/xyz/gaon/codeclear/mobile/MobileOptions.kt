@@ -22,7 +22,8 @@ data class MobileOptions(
     val nearbyEnabled: Boolean = false,
     val labsEnabled: Boolean = false,
     val messageViewMode: MessageViewMode = MessageViewMode.SWITCH,
-    val serverAllowed: Boolean = false
+    val serverAllowed: Boolean = false,
+    val deferredOverlayEnabled: Boolean = false
 ) {
     val translationAllowed: Boolean get() = if (engine == TranslationEngineKind.MY_MEMORY) {
         labsEnabled && serverAllowed
@@ -86,6 +87,9 @@ class MobileOptionsStorage(
             nearbyEnabled =
                 currentDisclosure && labsEnabled && saved.getBoolean("nearby_enabled", false),
             labsEnabled = labsEnabled,
+            deferredOverlayEnabled = currentDisclosure &&
+                saved.getInt("overlay_disclosure_version", 0) == 1 &&
+                saved.getBoolean("deferred_overlay_enabled", false),
             serverAllowed =
                 currentDisclosure && labsEnabled && engine == TranslationEngineKind.MY_MEMORY &&
                     saved.getInt("remote_disclosure_version", 0) == 1 &&
@@ -105,6 +109,8 @@ class MobileOptionsStorage(
             .putBoolean("accessibility_consent", options.accessibilityConsent)
             .putBoolean("local_consent", options.localConsent)
             .putInt("remote_disclosure_version", 1)
+            .putInt("overlay_disclosure_version", 1)
+            .putBoolean("deferred_overlay_enabled", options.deferredOverlayEnabled)
             .putBoolean("server_allowed", options.serverAllowed && options.labsEnabled)
             .putString("local_engine", options.engine.key)
             .putBoolean("nearby_enabled", options.nearbyEnabled)

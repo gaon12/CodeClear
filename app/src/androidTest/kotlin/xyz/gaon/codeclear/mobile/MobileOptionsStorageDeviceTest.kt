@@ -15,6 +15,33 @@ import xyz.gaon.codeclear.translation.TranslationTarget
 
 class MobileOptionsStorageDeviceTest {
     @Test
+    fun popupPermissionRequiresItsOwnDisclosureAndPreservesCaptureChoices() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val name = "options-test-${UUID.randomUUID()}"
+        val storage = MobileOptionsStorage(context, name)
+        try {
+            storage.save(
+                MobileOptions(
+                    notificationConsent = true,
+                    accessibilityConsent = true,
+                    deferredOverlayEnabled = true
+                )
+            )
+            assertTrue(storage.load().deferredOverlayEnabled)
+            context.getSharedPreferences(name, Context.MODE_PRIVATE).edit()
+                .remove("overlay_disclosure_version").commit()
+            val restored = storage.load()
+            assertFalse(restored.deferredOverlayEnabled)
+            assertTrue(restored.notificationConsent)
+            assertTrue(restored.accessibilityConsent)
+            storage.save(restored.copy(deferredOverlayEnabled = false))
+            assertFalse(storage.load().deferredOverlayEnabled)
+        } finally {
+            context.deleteSharedPreferences(name)
+        }
+    }
+
+    @Test
     fun freshOptionsUseDeviceDefaultsIndependentlyOfTheApplicationLocale() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val name = "options-test-${UUID.randomUUID()}"
@@ -41,6 +68,7 @@ class MobileOptionsStorageDeviceTest {
                 assertFalse(options.setupComplete)
                 assertFalse(options.nearbyEnabled)
                 assertFalse(options.labsEnabled)
+                assertFalse(options.deferredOverlayEnabled)
                 assertEquals(MessageViewMode.SWITCH, options.messageViewMode)
             }
         } finally {

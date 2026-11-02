@@ -153,6 +153,7 @@ fun MobileSettings(
             )
             SettingNote(stringResource(R.string.mobile_result_notification_summary))
         }
+        PresentationSettings(options, actions)
     }
     if (page == SettingsPage.PRIVACY) {
         SettingsGroup {

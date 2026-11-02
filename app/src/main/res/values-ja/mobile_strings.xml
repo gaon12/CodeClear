@@ -251,4 +251,13 @@
     <string name="mobile_model_update_checked">更新の確認が完了しました。モデルを利用できます。</string>
     <string name="mobile_model_update_count">確認済みモデル：%1$d/%2$d</string>
     <string name="mobile_model_update_notice">更新がある場合は Wi-Fi で取得します。更新が不要ならモデルは再ダウンロードしません。ML Kit はバージョン番号やファイルの変更有無を提供しません。緊急速報の本文は送信しません。</string>
+    <string name="mobile_deferred_popup">システム警報の確認後にポップアップ</string>
+    <string name="mobile_deferred_popup_summary">確認済みのシステム警報画面が消えた後にのみ表示します。確認できない場合は通知か履歴をご利用ください。両方の収集サービスが必要です。ロック画面には表示しません。</string>
+    <string name="mobile_overlay_access">他のアプリの上に表示</string>
+    <string name="mobile_overlay_disclosure">システム警報画面が消えた後、CodeClearが原文と利用可能な翻訳を表示することを許可します。他のアプリの使用中にも表示するには、Androidの設定で重ねて表示する権限を別途許可してください。システム警報を閉じたり、画面を点灯したり、ロックを解除したりしません。ポップアップが表示されなくても通知と履歴で確認できます。初期設定はオフです。</string>
+    <string name="mobile_battery_settings">バッテリー設定</string>
+    <string name="mobile_battery_exempt">最適化の対象外</string>
+    <string name="mobile_battery_optimized">バッテリー最適化が有効</string>
+    <string name="mobile_battery_guidance">最適化の除外は任意です。バックグラウンドでの収集が遅れる場合はバッテリーとバックグラウンドの制限を確認してください。除外しても取り消された権限、強制停止、取得できない原文は復旧しません。</string>
+    <string name="mobile_background_restricted">Androidがバックグラウンドでの使用を制限しています。システムのバッテリー設定でこのアプリを確認してください。</string>
 </resources>

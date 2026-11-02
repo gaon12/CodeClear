@@ -47,5 +47,8 @@ class MobileActions(
     val closeModelDownload: () -> Unit = {},
     val showModelDownload: () -> Unit = {},
     val copyBody: (String) -> Unit = {},
-    val shareBody: (String) -> Unit = {}
+    val shareBody: (String) -> Unit = {},
+    val presentationAccess: PresentationAccess = PresentationAccess(),
+    val overlaySettings: () -> Unit = {},
+    val batterySettings: () -> Unit = {}
 )
