@@ -1,0 +1,5 @@
+# Serve only the endpoint; keep adjacent configuration and documentation private.
+Options -Indexes
+<FilesMatch "^(?!api[.]php$).+">
+    Require all denied
+</FilesMatch>

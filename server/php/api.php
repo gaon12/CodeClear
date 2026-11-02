@@ -141,7 +141,7 @@ final readonly class Configuration
         if (!isset(MODELS[$this->model])) {
             throw new RuntimeException('Unsupported configured model');
         }
-        $this->databasePath = $values['CODECLEAR_DB_PATH'] ?? dirname(__DIR__) . '/data/cache.sqlite3';
+        $this->databasePath = $values['CODECLEAR_DB_PATH'] ?? __DIR__ . '/data/cache.sqlite3';
         if (str_contains($this->databasePath, "\0") ||
             preg_match('~^(?:/|[A-Za-z]:[/\\\\])~', $this->databasePath) !== 1) {
             throw new RuntimeException('Database path must be absolute');
@@ -184,9 +184,9 @@ final readonly class Configuration
 
     public static function load(): self
     {
-        $file = getenv('CODECLEAR_ENV_FILE') ?: dirname(__DIR__) . '/.env';
+        $file = getenv('CODECLEAR_ENV_FILE') ?: __DIR__ . '/.env';
         if (is_file($file)) {
-            assertOutsidePublicRoot((string) realpath($file));
+            assertPrivateLocation((string) realpath($file), true);
         }
         $values = dotEnv($file);
         foreach (['GROQ_API_KEY', 'GROQ_MODEL', 'CODECLEAR_CACHE_SECRET', 'CODECLEAR_DB_PATH',
@@ -221,7 +221,7 @@ final readonly class Configuration
     }
 }
 
-function assertOutsidePublicRoot(string $path): void
+function assertPrivateLocation(string $path, bool $environment = false): void
 {
     $documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? '';
     $root = ($documentRoot !== '' ? realpath($documentRoot) : false) ?: realpath(__DIR__);
@@ -232,7 +232,16 @@ function assertOutsidePublicRoot(string $path): void
         $root = strtolower($root);
     }
     if (str_starts_with($path . '/', $root)) {
-        throw new RuntimeException('Private files must be outside the public document root');
+        $adjacent = str_replace('\\', '/', (string) realpath(__DIR__));
+        if (PHP_OS_FAMILY === 'Windows') {
+            $adjacent = strtolower($adjacent);
+        }
+        $expected = $adjacent . ($environment ? '/.env' : '/data');
+        $rules = __DIR__ . ($environment ? '/.htaccess' : '/data/.htaccess');
+        // Adjacent private files also require the web server to honor the supplied deny rules.
+        if ($path !== $expected || !is_file($rules)) {
+            throw new RuntimeException('Install the supplied private-file deny rules or use private external paths');
+        }
     }
 }
 
@@ -405,7 +414,7 @@ final class CacheStore
             throw new RuntimeException('Private database directory unavailable');
         }
         $directory = (string) realpath($directory);
-        assertOutsidePublicRoot($directory);
+        assertPrivateLocation($directory);
         if (is_link($config->databasePath)) {
             throw new RuntimeException('Database symlinks are not permitted');
         }
@@ -689,16 +698,20 @@ final class TranslationService
     }
 }
 
+function isRuntimeCompatible(int $version): bool
+{
+    // Distribution security backports keep their older upstream patch number.
+    return $version >= 80300;
+}
+
 function checkRuntime(): void
 {
-    if (PHP_VERSION_ID < 80336 || PHP_VERSION_ID >= 80600 ||
-        (PHP_VERSION_ID >= 80400 && PHP_VERSION_ID < 80427) ||
-        (PHP_VERSION_ID >= 80500 && PHP_VERSION_ID < 80512)) {
-        throw new RuntimeException('Use a current security-patched PHP release');
+    if (!isRuntimeCompatible(PHP_VERSION_ID)) {
+        throw new RuntimeException('PHP 8.3 or newer is required');
     }
     foreach (['curl', 'pdo_sqlite', 'mbstring'] as $extension) {
         if (!extension_loaded($extension)) {
-            throw new RuntimeException('Required PHP extension is unavailable');
+            throw new RuntimeException('Required PHP extension is unavailable: ' . $extension);
         }
     }
 }
@@ -768,9 +781,12 @@ function main(): never
         send(200, $service->handle($method, $authorization, $_SERVER['CONTENT_TYPE'] ?? '', $body));
     } catch (ApiFailure $failure) {
         send($failure->status, ['error' => $failure->reason], $failure->retryAfter);
-    } catch (Throwable) {
+    } catch (Throwable $error) {
         if (PHP_SAPI === 'cli') {
-            fwrite(STDERR, "Configuration unavailable: check PHP, private paths, .env and client token hashes.\n");
+            $reason = $error instanceof RuntimeException && !$error instanceof \PDOException
+                ? $error->getMessage()
+                : 'Storage initialization failed; check private paths and file permissions';
+            fwrite(STDERR, 'Configuration unavailable: ' . $reason . "\n");
             exit(1);
         }
         error_log('[CodeClear API] Service configuration or storage unavailable.');

@@ -1,0 +1,2 @@
+# Keep SQLite files, sidecars and future private storage inaccessible over HTTP.
+Require all denied

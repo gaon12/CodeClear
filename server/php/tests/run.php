@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 define('CODECLEAR_LIBRARY', true);
-require dirname(__DIR__) . '/public/api.php';
+require dirname(__DIR__) . '/api.php';
 
 use CodeClear\ApiFailure;
 use CodeClear\CacheStore;
@@ -130,6 +130,36 @@ $fixture = static function (array $overrides = []) use ($root, &$fixtures): Harn
 $test = static function (string $name, Closure $action) use (&$tests): void {
     $tests[$name] = $action;
 };
+
+$test('distribution backport versions satisfy runtime compatibility', static function (): void {
+    check(CodeClear\isRuntimeCompatible(80306));
+    check(CodeClear\isRuntimeCompatible(80336));
+    check(CodeClear\isRuntimeCompatible(80427));
+    check(!CodeClear\isRuntimeCompatible(80299));
+});
+
+$test('adjacent private paths require supplied deny rules and reject other public paths', static function (): void {
+    $directory = str_replace('\\', '/', (string) realpath(dirname(__DIR__)));
+    $previous = $_SERVER['DOCUMENT_ROOT'] ?? null;
+    $_SERVER['DOCUMENT_ROOT'] = $directory;
+    try {
+        CodeClear\assertPrivateLocation($directory . '/.env', true);
+        CodeClear\assertPrivateLocation($directory . '/data');
+        $rejected = false;
+        try {
+            CodeClear\assertPrivateLocation($directory . '/exposed-data');
+        } catch (RuntimeException) {
+            $rejected = true;
+        }
+        check($rejected);
+    } finally {
+        if ($previous === null) {
+            unset($_SERVER['DOCUMENT_ROOT']);
+        } else {
+            $_SERVER['DOCUMENT_ROOT'] = $previous;
+        }
+    }
+});
 
 $test('valid cache hit avoids a second provider call and preserves metadata', static function () use ($fixture): void {
     $h = $fixture();

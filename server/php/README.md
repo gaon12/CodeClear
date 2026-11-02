@@ -7,47 +7,57 @@ provider calls are needed for the supplied tests.
 
 ## Deployment
 
-Use a current security-patched PHP 8.3, 8.4 or 8.5 release with `curl`,
-`pdo_sqlite` and `mbstring`. Minimum security patch levels checked by the
-endpoint are 8.3.36, 8.4.27 and 8.5.12. Use the latest platform build as well;
-Windows builds were additionally rebuilt for a Brotli fix. The locally
-verified development runtime is the official PHP 8.3.36-1 Windows build.
-See [PHP downloads](https://www.php.net/downloads.php).
+Use PHP 8.3 or newer with `curl`, `pdo_sqlite` and `mbstring`. Install the
+current security updates from the runtime vendor or Linux distribution.
+Runtime compatibility checks do not determine security patch status from
+`PHP_VERSION_ID`: distributions backport fixes while retaining an older
+upstream number. For example, Ubuntu 24.04 maintains its PHP 8.3.6 packages
+through its security repository. See [Ubuntu security updates](https://documentation.ubuntu.com/security/security-updates/)
+and the [PHP package](https://packages.ubuntu.com/noble/php8.3).
 
-Use this directory arrangement:
+Put `api.php` and `.env` in the same directory:
 
 ```text
-/srv/codeclear/
+codeclear/
+  api.php
   .env                 # private, mode 0600
-  data/                # private, mode 0700; writable by PHP
-  public/
-    api.php            # the only public deployment file
+  .htaccess            # Apache deny rules; do not omit
+  data/
+    .htaccess          # denies every private storage file
+    cache.sqlite3      # created automatically, mode 0600
 ```
 
-1. Copy `public/api.php` to the public directory. It has no Composer runtime
-   dependencies. Set the web server document root to that directory.
-2. Copy `.env.example` to the parent directory as `.env`, then fill in the
-   Groq key, absolute private DB path and a new random cache secret. Process
-   environment variables override file values. `CODECLEAR_ENV_FILE` can point
-   to a different private file. Do not place the DB, `.env`, backups or logs
-   in the document root. The endpoint rejects configured public private-file
-   paths, but the web server must also prevent static secret-file exposure.
-3. Run `php public/api.php generate-token` on your server for each authorized
-   client. Give that client the generated token and put only its SHA-256
-   digest in `CODECLEAR_CLIENT_TOKENS`, using a distinct label. Tokens must
-   never be provider API keys. The example contains invalid placeholders.
-   Public mobile distribution needs a deliberate secure token-provisioning
-   and abuse-control flow; do not embed an administrator token in an APK.
-4. Run `php public/api.php config-check` with the same PHP user/environment
-   as the web process. This checks configuration/storage without calling Groq.
-5. Serve HTTPS, forward the `Authorization` header to PHP, and set the PHP
-   `HTTPS` server parameter correctly if TLS terminates at a trusted proxy.
-   The endpoint does not trust a caller's `X-Forwarded-Proto` header. Do not
-   disable HTTPS on a public deployment. The false setting is for isolated
-   loopback tests only.
-6. Limit request bodies to 100 KB at the web server too. Apply edge rate and
-   connection limits. Run only one SQLite deployment on local storage; shared
-   network filesystems and multiple independent replicas are unsupported.
+1. Upload `api.php`, `.htaccess` and `data/.htaccess`. There are no Composer
+   runtime dependencies. Only `api.php` should be accessible over HTTP.
+   Apache 2.4 must allow the supplied `.htaccess` directives. For Nginx,
+   adapt `nginx-location.example.conf` instead; Nginx ignores `.htaccess`.
+   Keep the supplied files present for the adjacent-layout checks too.
+2. Copy `.env.example` to `.env` beside `api.php`. Fill in the Groq key and
+   a new random cache secret. The adjacent protected `data/cache.sqlite3`
+   is the default; an optional `CODECLEAR_DB_PATH` must be absolute. A DB
+   outside the document root remains supported. Process environment variables
+   override file values. `CODECLEAR_ENV_FILE` can select a different private
+   external file. Never commit populated configuration, databases or backups.
+3. Run `php api.php generate-token` for each client. Put the returned
+   64-character SHA-256 digest in `CODECLEAR_CLIENT_TOKENS`; give the token
+   itself only to that client. Custom tokens may be 32-256 ASCII characters
+   from `A-Z`, `a-z`, `0-9`, `.`, `_`, `~`, `-`. A token is not a provider API
+   key. Public mobile distribution needs deliberate per-client provisioning;
+   do not embed an administrator token in an APK.
+4. Run `php api.php config-check` as the same user/environment as the web
+   process. This checks runtime/configuration/storage without calling Groq.
+   CLI failures identify the configuration category without printing secrets;
+   HTTP failures remain generic.
+5. Verify that HTTP requests for `.env`, `data/`, database files and sidecars
+   return 403/404 before real use. Merely shipping deny files cannot prove
+   the web server honors them. If a private path is accessible, fix the
+   server configuration before storing credentials or alert bodies.
+6. Serve HTTPS, forward `Authorization` to PHP and set the server `HTTPS`
+   parameter correctly if TLS terminates at a trusted proxy. A caller's
+   `X-Forwarded-Proto` is not trusted. Disabling HTTPS is for isolated loopback
+   tests only. Limit request bodies to 100 KB at the web server too, and
+   apply edge connection/rate limits. Use local SQLite storage on one server;
+   shared network filesystems and independent replicas are unsupported.
 
 Generate a cache secret without printing a provider credential:
 
@@ -55,12 +65,11 @@ Generate a cache secret without printing a provider credential:
 php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'
 ```
 
-The default model is `openai/gpt-oss-120b`. The reviewed explicit alternatives
-are `openai/gpt-oss-20b` and experimental `qwen/qwen3.8-27b`. Set one model in
-`.env`; there is no automatic model or key fallback on quota errors. Defaults
-bound provider calls to 10/minute, 500/day and two concurrent requests. These
-are application limits, not a guarantee of your account's provider allowance.
-The fixed provider, selected model and
+The default model is `openai/gpt-oss-120b`. Reviewed explicit alternatives are
+`openai/gpt-oss-20b` and experimental `qwen/qwen3.8-27b`. There is no automatic
+model or key fallback. Defaults bound provider calls to 10/minute, 500/day
+and two concurrent requests. These are application limits, not a guarantee
+of your account's allowance. The fixed provider, selected model and
 [strict structured-output support](https://console.groq.com/docs/structured-outputs)
 were reviewed on 2026-11-02.
 
@@ -138,7 +147,7 @@ results and causing repeated provider calls. Schedule this command at least
 hourly to remove expired content and truncate the SQLite WAL:
 
 ```sh
-php /srv/codeclear/public/api.php prune
+php /srv/codeclear/api.php prune
 ```
 
 Backups, web/proxy request logging and provider retention are separate from
@@ -152,7 +161,7 @@ may already have processed a source when the client clears its cache.
 Run with a patched PHP executable and PDO SQLite enabled:
 
 ```sh
-php -l server/php/public/api.php
+php -l server/php/api.php
 php -l server/php/tests/run.php
 php server/php/tests/run.php
 python server/php/tests/http_contract.py /absolute/path/to/php

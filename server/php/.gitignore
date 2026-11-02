@@ -1,7 +1,8 @@
 .env
 .env.*
 !.env.example
-/data/
+/data/*
+!/data/.htaccess
 /vendor/
 *.sqlite*
 *.db*

@@ -16,7 +16,7 @@ import urllib.request
 from pathlib import Path
 
 PHP = str(Path(sys.argv[1]).resolve())
-API = Path(__file__).resolve().parents[1] / "public/api.php"
+API = Path(__file__).resolve().parents[1] / "api.php"
 TOKEN = "synthetic-http-client-aaaaaaaaaaaaaaaa"
 OTHER = "synthetic-http-client-bbbbbbbbbbbbbbbb"
 TEXT = "[DRILL] Gate 3, call 112."
