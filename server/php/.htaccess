@@ -1,4 +1,5 @@
 # Serve only the endpoint; keep adjacent configuration and documentation private.
+CGIPassAuth On
 Options -Indexes
 <FilesMatch "^(?!api[.]php$).+">
     Require all denied

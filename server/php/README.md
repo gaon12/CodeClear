@@ -32,6 +32,8 @@ codeclear/
    Apache 2.4 must allow the supplied `.htaccess` directives. For Nginx,
    adapt `nginx-location.example.conf` instead; Nginx ignores `.htaccess`.
    Keep the supplied files present for the adjacent-layout checks too.
+   `CGIPassAuth On` forwards the Bearer header to CGI/PHP-FPM; see the
+   [Apache directive](https://httpd.apache.org/docs/2.4/mod/core.html#cgipassauth).
 2. Copy `.env.example` to `.env` beside `api.php`. Fill in the Groq key and
    a new random cache secret. The adjacent protected `data/cache.sqlite3`
    is the default; an optional `CODECLEAR_DB_PATH` must be absolute. A DB
