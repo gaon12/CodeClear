@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val validationBuild = providers.gradleProperty("codeclear.validationBuild")
+    .map(String::toBooleanStrict).getOrElse(false)
+
 android {
     namespace = "xyz.gaon.codeclear"
     compileSdk {
@@ -10,18 +13,32 @@ android {
     }
 
     defaultConfig {
-        applicationId = "xyz.gaon.codeclear"
+        applicationId = if (validationBuild) {
+            "xyz.gaon.codeclear.validation"
+        } else {
+            "xyz.gaon.codeclear"
+        }
         minSdk = 30
         targetSdk = 37
         versionCode = 1
         versionName = "1.0.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = if (validationBuild) {
+            "xyz.gaon.codeclear.CollectionPreservingTestRunner"
+        } else {
+            "androidx.test.runner.AndroidJUnitRunner"
+        }
+        manifestPlaceholders["applicationLabel"] = if (validationBuild) {
+            resValue("string", "validation_application_name", "CodeClear Validation")
+            "@string/validation_application_name"
+        } else {
+            "@string/app_name"
+        }
     }
 
     buildTypes {
         debug {
-            versionNameSuffix = "-capture-probe"
+            versionNameSuffix = if (validationBuild) "-validation" else "-capture-probe"
         }
         release {
             optimization {
@@ -36,11 +53,18 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
+        resValues = validationBuild
     }
     bundle {
         language {
             enableSplit = false
         }
+    }
+}
+
+androidComponents {
+    beforeVariants(selector().withBuildType("release")) {
+        if (validationBuild) it.enable = false
     }
 }
 
