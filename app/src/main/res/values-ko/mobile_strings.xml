@@ -32,12 +32,12 @@
     <string name="mobile_appearance">화면 및 언어</string>
     <string name="mobile_result_notifications">재난문자 알림</string>
     <string name="mobile_privacy">개인정보 및 기록</string>
-    <string name="mobile_privacy_description">삭제할 때까지 원문과 번역을 기기 내 전용 저장소에 보관합니다. 가입과 동기화는 없으며 앱 백업과 기기 간 이전은 비활성화되어 있습니다. MyMemory 서버 번역을 별도로 허용하고 사용할 때만 본문을 전송하며, 제공업체가 전송된 내용을 보관할 수 있습니다.</string>
+    <string name="mobile_privacy_description">삭제할 때까지 원문과 번역을 기기 내 전용 저장소에 보관합니다. 가입과 동기화는 없으며 앱 백업과 기기 간 이전은 비활성화되어 있습니다. 서버 번역을 서비스별로 별도 허용하고 사용할 때만 본문을 전송합니다. 보관 기간과 삭제 방법은 각 서비스의 안내에서 확인할 수 있습니다.</string>
     <string name="mobile_delete_all">모든 기록 삭제</string>
     <string name="mobile_compatibility">기기 호환성</string>
     <string name="mobile_compatibility_description">CodeClear는 Android 11 이상 스마트폰과 태블릿에서 사용할 수 있습니다. 재난문자를 직접 수신하려면 이동통신 수신 기능이 필요합니다. Wi-Fi 전용 기기에서도 저장된 기록과 번역은 확인할 수 있습니다. 전체 내용 수집 여부는 수신 앱과 펌웨어에 따라 다르며, 검증된 기기만으로 전 세계 지원을 보장하지 않습니다. 수집은 재부팅 후 첫 잠금 해제부터 시작합니다.</string>
-    <string name="mobile_notification_disclosure">Android 알림 접근은 다른 앱의 알림에도 접근할 수 있는 권한입니다. CodeClear는 검토된 시스템 재난문자 수신 앱만 읽고, 확인된 개별 본문을 기기 내 전용 기록에 보관해 번역합니다. 화면을 자동으로 열지 않습니다. 수집 스위치를 끄거나 Android 설정에서 접근 권한을 해제하면 수집을 중단합니다. 서버 번역은 MyMemory 사용을 별도로 허용해야 합니다.</string>
-    <string name="mobile_accessibility_disclosure">CodeClear는 접근성으로 검토된 시스템 재난문자 모달의 개별 본문·제목·대기 개수를 읽습니다. 다른 화면과 기록 목록은 읽지 않습니다. 제스처를 실행하거나 경고를 닫지 않습니다. 원문은 기기 내 번역을 위해 전용 기록에 보관합니다. 장애인 지원 도구는 아닙니다. 수집 스위치를 끄거나 Android 설정에서 접근 권한을 해제하면 수집을 중단합니다. 서버 번역은 MyMemory 사용을 별도로 허용해야 합니다.</string>
+    <string name="mobile_notification_disclosure">Android 알림 접근은 다른 앱의 알림에도 접근할 수 있는 권한입니다. CodeClear는 검토된 시스템 재난문자 수신 앱만 읽고, 확인된 개별 본문을 기기 내 전용 기록에 보관해 번역합니다. 화면을 자동으로 열지 않습니다. 수집 스위치를 끄거나 Android 설정에서 접근 권한을 해제하면 수집을 중단합니다. 서버 번역은 서비스별로 별도 허용이 필요합니다.</string>
+    <string name="mobile_accessibility_disclosure">CodeClear는 접근성으로 검토된 시스템 재난문자 모달의 개별 본문·제목·대기 개수를 읽습니다. 다른 화면과 기록 목록은 읽지 않습니다. 제스처를 실행하거나 경고를 닫지 않습니다. 원문은 기기 내 번역을 위해 전용 기록에 보관합니다. 장애인 지원 도구는 아닙니다. 수집 스위치를 끄거나 Android 설정에서 접근 권한을 해제하면 수집을 중단합니다. 서버 번역은 서비스별로 별도 허용이 필요합니다.</string>
     <string name="mobile_local_disclosure">수집한 재난문자를 기기 안에서 자동으로 번역합니다. 언어 모델을 내려받으려면 별도로 Wi-Fi 다운로드를 시작해야 합니다. 번역 서버로 본문을 전송하지 않습니다. 끄면 새 번역을 중단하며 기존 기록은 유지합니다.</string>
     <string name="mobile_cancel">취소</string>
     <string name="mobile_access_needed">Android 설정에서 접근을 허용하세요</string>

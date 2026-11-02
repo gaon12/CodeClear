@@ -71,10 +71,10 @@
     <string name="mobile_delete_title">删除已保存的记录？</string>
     <string name="mobile_settings_missing">请打开 Android 设置 → 应用 → CodeClear，然后选择相应的访问设置。</string>
     <string name="mobile_restricted">Android 13 及以上版本可能限制直接通过 APK 安装的应用。请打开应用信息 → 更多 → 允许受限设置，然后分别开启各项访问权限。若菜单中没有该选项，请通过下方按钮打开 Android 应用列表，选择 CodeClear，再打开更多。菜单因设备而异，管理员也可能禁止更改。</string>
-    <string name="mobile_privacy_description">原文和译文会保存在设备私有存储中，直到您删除。无需账号，不提供同步；备份和设备间迁移已禁用。仅在您单独允许并使用 MyMemory 服务器翻译时发送正文，提供方可能保留提交的文本。</string>
+    <string name="mobile_privacy_description">原文和译文会保存在设备私有存储中，直到您删除。无需账号，不提供同步；备份和设备间迁移已禁用。仅在您单独允许并使用某项服务器翻译服务时才会发送正文。各服务的说明列出了保留期限和删除方式。</string>
     <string name="mobile_compatibility_description">CodeClear 可用于 Android 11 及以上的手机和平板电脑。直接接收紧急警报需要蜂窝通信硬件。仅支持 Wi-Fi 的设备仍可查看已保存的记录和译文。能否完整采集取决于警报接收应用和固件；已测试的配置不代表全球支持。重启后首次解锁才开始采集。</string>
-    <string name="mobile_notification_disclosure">Android 通知访问权限也可能允许访问其他应用的通知。CodeClear 只读取经审核的系统紧急警报接收来源，将完整的单条警报正文保存到设备内的私有记录中，用于设备内翻译。不会自动打开页面。您可以随时在此关闭采集，或在 Android 设置中撤销访问权限。 服务器翻译需要单独允许 MyMemory。</string>
-    <string name="mobile_accessibility_disclosure">CodeClear 使用无障碍功能读取经审核的系统紧急警报对话框中的单条正文、标题和待处理数量，不读取其他页面或历史列表行。不会执行手势或关闭警告。原文保留在私有记录中，用于设备内翻译。本应用并非残障辅助工具。您可以随时在此关闭采集，或在 Android 设置中撤销访问权限。 服务器翻译需要单独允许 MyMemory。</string>
+    <string name="mobile_notification_disclosure">Android 通知访问权限也可能允许访问其他应用的通知。CodeClear 只读取经审核的系统紧急警报接收来源，将完整的单条警报正文保存到设备内的私有记录中，用于设备内翻译。不会自动打开页面。您可以随时在此关闭采集，或在 Android 设置中撤销访问权限。 服务器翻译需要单独允许每项服务。</string>
+    <string name="mobile_accessibility_disclosure">CodeClear 使用无障碍功能读取经审核的系统紧急警报对话框中的单条正文、标题和待处理数量，不读取其他页面或历史列表行。不会执行手势或关闭警告。原文保留在私有记录中，用于设备内翻译。本应用并非残障辅助工具。您可以随时在此关闭采集，或在 Android 设置中撤销访问权限。 服务器翻译需要单独允许每项服务。</string>
     <string name="mobile_local_disclosure">启用对已采集警报的设备内自动翻译。语言模型需要另外通过 Wi-Fi 下载。不会向翻译服务器发送警报正文。关闭后将停止新翻译，现有记录仍会保留。</string>
     <string name="mobile_storage_notice">为避免记录丢失，已暂停采集和翻译。请检查可用存储空间后重试，再重新确认采集权限。</string>
     <string name="mobile_tutorial_receive_body">Android 通过内置紧急警报功能接收蜂窝广播。仅支持 Wi-Fi 的设备没有蜂窝接收硬件，无法直接接收这些警报。</string>
