@@ -162,7 +162,6 @@ fun MobileScreen(
                     key(state.detailId) {
                         AlertDetailPage(
                             state,
-                            preparation,
                             actions,
                             historyDetailScroll,
                             back,

@@ -1180,6 +1180,32 @@ class MobileScreenDeviceTest {
     }
 
     @Test
+    fun completedRecordDoesNotShowAnUnrelatedGlobalModelPreparationStatus() {
+        compose.runOnIdle {
+            modelPreparation = PreparationState(
+                PreparationPhase.READY,
+                target = "de",
+                modelLanguage = "de"
+            )
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performClick()
+        compose.onNodeWithTag("history-detail-body").performScrollToNode(hasTestTag("delete-alert"))
+        compose.onNodeWithTag("delete-alert").assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_models_ready)).assertDoesNotExist()
+        for (phase in listOf(
+            PreparationPhase.IDENTIFYING,
+            PreparationPhase.WAITING_FOR_WIFI,
+            PreparationPhase.UNKNOWN_LANGUAGE,
+            PreparationPhase.FAILED
+        )) {
+            compose.runOnIdle { modelPreparation = modelPreparation.copy(phase = phase) }
+            compose.onNodeWithText(text(preparationMessage(phase))).assertDoesNotExist()
+        }
+        compose.runOnIdle { assertTrue(requestedModels.isEmpty()) }
+    }
+
+    @Test
     fun groupedHistoryPreservesVisibleObservationTimesAndPaginationActions() {
         compose.runOnIdle {
             val saved = record(1).copy(

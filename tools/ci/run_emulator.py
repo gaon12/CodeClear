@@ -32,7 +32,7 @@ FIXTURES = {
     "capture.CaptureObserverDeviceTest": 3,
     "capture.CaptureServiceComponentsDeviceTest": 2,
     "capture.SourceWindowVisibilityDeviceTest": 4,
-    "mobile.MobileScreenDeviceTest": 68,
+    "mobile.MobileScreenDeviceTest": 69,
     "mobile.NotificationContentDeviceTest": 1,
     "mobile.TextTransferDeviceTest": 3,
     "mobile.UiLocaleResourcesDeviceTest": 1,

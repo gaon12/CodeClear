@@ -23,7 +23,6 @@ import xyz.gaon.codeclear.translation.TranslationEngineKind
 @Composable
 internal fun AlertDetailPage(
     state: MobileState,
-    preparation: PreparationState,
     actions: MobileActions,
     scroll: ScrollState,
     back: () -> Unit,
@@ -42,11 +41,6 @@ internal fun AlertDetailPage(
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
             AlertDetailBody(state, actions)
-            if (preparation.phase != PreparationPhase.IDLE &&
-                state.options.engine == TranslationEngineKind.ML_KIT
-            ) {
-                Text(stringResource(preparationMessage(preparation.phase)))
-            }
         }
     }
 }
