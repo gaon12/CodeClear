@@ -269,4 +269,11 @@
     <string name="mobile_delete_group_notice">この原文、翻訳、および同じ原文にまとめられた収集履歴をすべて削除しますか？</string>
     <string name="mobile_share">共有</string>
     <string name="mobile_history_actions">メッセージの操作</string>
+    <string name="mobile_title_estimate">件名による推定: %1$s</string>
+    <string name="mobile_hint_national">国家警報</string>
+    <string name="mobile_hint_extreme">極めて重大な警報</string>
+    <string name="mobile_hint_severe">重大な警報</string>
+    <string name="mobile_hint_safety">安全情報</string>
+    <string name="mobile_hint_missing">行方不明者の警報</string>
+    <string name="mobile_hint_test">試験警報</string>
 </resources>

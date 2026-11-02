@@ -827,12 +827,101 @@ class MobileScreenDeviceTest {
         compose.runOnIdle { state = state.copy(latest = original) }
         compose.onNodeWithTag("mobile-feed").performScrollToNode(hasTestTag("national-alert-type"))
         compose.onNodeWithTag("national-alert-type").assertIsDisplayed()
+        compose.onNodeWithTag("alert-symbol-safety").assertIsDisplayed()
         compose.runOnIdle {
             state = state.copy(
                 latest = original.copy(capture = original.capture.copy(source = CaptureSource.PEER))
             )
         }
         compose.onNodeWithTag("national-alert-type").assertDoesNotExist()
+        compose.onNodeWithTag("estimated-alert-type").assertDoesNotExist()
+    }
+
+    @Test
+    fun reviewedTitleEstimatesShowDistinctHistorySymbolsInBothThemes() {
+        val hints = listOf("EXTREME", "SEVERE", "AMBER", "PUBLIC_SAFETY", "TEST", "UNKNOWN")
+        val symbols = listOf("critical", "urgent", "missing", "safety", "test", "general")
+        compose.runOnIdle {
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            state = state.copy(
+                records = hints.mapIndexed { index, hint ->
+                    record(index + 1L).let {
+                        it.copy(
+                            capture = it.capture.copy(
+                                sourcePackage = "com.google.android.cellbroadcastreceiver",
+                                headingHint = hint
+                            )
+                        )
+                    }
+                }
+            )
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
+            compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            hints.indices.forEach { index ->
+                compose.onNodeWithTag(
+                    "mobile-feed"
+                ).performScrollToNode(hasTestTag("history-row-${index + 1}"))
+                compose.onNodeWithTag(
+                    "alert-symbol-${symbols[index]}",
+                    useUnmergedTree = true
+                ).assertIsDisplayed()
+                val estimate = compose.onNode(
+                    hasTestTag("estimated-alert-type") and
+                        hasAnyAncestor(hasTestTag("history-row-${index + 1}")),
+                    useUnmergedTree = true
+                )
+                if (index ==
+                    hints.lastIndex
+                ) {
+                    estimate.assertDoesNotExist()
+                } else {
+                    estimate.assertIsDisplayed()
+                }
+                compose.onNodeWithTag("national-alert-type").assertDoesNotExist()
+            }
+            compose.onNodeWithTag("mobile-feed").performScrollToNode(hasTestTag("history-row-1"))
+            savePreview("alert-symbols-${theme.name.lowercase()}")
+        }
+    }
+
+    @Test
+    fun detailTitleEstimateYieldsToStructuredOfficialEvidence() {
+        compose.runOnIdle {
+            state = state.copy(
+                records = listOf(
+                    record(1).let {
+                        it.copy(
+                            capture = it.capture.copy(
+                                sourcePackage = "com.google.android.cellbroadcastreceiver",
+                                headingHint = "AMBER"
+                            )
+                        )
+                    }
+                )
+            )
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performClick()
+        compose.onNodeWithTag("estimated-alert-type").assertIsDisplayed()
+        compose.onNodeWithTag("alert-symbol-missing", useUnmergedTree = true).assertIsDisplayed()
+        compose.runOnIdle {
+            val detail = state.detail!!
+            state = state.copy(
+                detail = detail.copy(
+                    capture = detail.capture.copy(
+                        context = ReceptionContext(
+                            ReceptionCountry("KR", CountryEvidence.CBS_PLMN)
+                        ),
+                        broadcast = BroadcastMetadata(1, 42, 4371, 3, 1, null)
+                    )
+                )
+            )
+        }
+        compose.onNodeWithTag("national-alert-type").assertIsDisplayed()
+        compose.onNodeWithTag("estimated-alert-type").assertDoesNotExist()
+        compose.onNodeWithTag("alert-symbol-urgent", useUnmergedTree = true).assertIsDisplayed()
     }
 
     @Test

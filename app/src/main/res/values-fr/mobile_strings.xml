@@ -271,4 +271,11 @@
     <string name="mobile_delete_group_notice">Supprimer ce texte original, ses traductions et toutes les collectes regroupées avec le même original ?</string>
     <string name="mobile_share">Partager</string>
     <string name="mobile_history_actions">Actions du message</string>
+    <string name="mobile_title_estimate">Estimation selon le titre : %1$s</string>
+    <string name="mobile_hint_national">Alerte nationale</string>
+    <string name="mobile_hint_extreme">Alerte extrême</string>
+    <string name="mobile_hint_severe">Alerte grave</string>
+    <string name="mobile_hint_safety">Information de sécurité</string>
+    <string name="mobile_hint_missing">Alerte disparition</string>
+    <string name="mobile_hint_test">Alerte de test</string>
 </resources>

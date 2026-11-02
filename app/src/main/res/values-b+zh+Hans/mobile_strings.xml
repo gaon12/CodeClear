@@ -269,4 +269,11 @@
     <string name="mobile_delete_group_notice">要删除此原文、译文以及合并在相同原文下的所有收集记录吗？</string>
     <string name="mobile_share">分享</string>
     <string name="mobile_history_actions">消息操作</string>
+    <string name="mobile_title_estimate">根据标题推测：%1$s</string>
+    <string name="mobile_hint_national">国家警报</string>
+    <string name="mobile_hint_extreme">极端危险警报</string>
+    <string name="mobile_hint_severe">严重危险警报</string>
+    <string name="mobile_hint_safety">安全提示</string>
+    <string name="mobile_hint_missing">失踪人员警报</string>
+    <string name="mobile_hint_test">测试警报</string>
 </resources>

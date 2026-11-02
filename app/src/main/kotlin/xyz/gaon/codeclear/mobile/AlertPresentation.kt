@@ -26,7 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -46,6 +45,7 @@ fun AlertPresentation(
     compact: Boolean = false,
     messageActions: MobileActions? = null
 ) {
+    val symbol = alertSymbol(alert.capture)
     // Script conversion can change the text even when the language codes match.
     val translatedReady = alert.translation?.phase == TranslationPhase.READY &&
         !alert.translation.text.isNullOrBlank() &&
@@ -67,12 +67,7 @@ fun AlertPresentation(
         ) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (!compact) {
-                    Icon(
-                        painterResource(R.drawable.ic_result),
-                        null,
-                        Modifier.size(28.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    AlertSymbolIcon(symbol, Modifier.size(28.dp))
                 }
                 Column(Modifier.weight(1f)) {
                     Text(
@@ -93,13 +88,7 @@ fun AlertPresentation(
                                 dateTime(alert.capture.capturedAtMillis),
                                 style = MaterialTheme.typography.labelMedium
                             )
-                            nationalAlertType(alert.capture)?.let {
-                                Text(
-                                    stringResource(it.label),
-                                    Modifier.testTag("national-alert-type"),
-                                    style = MaterialTheme.typography.labelMedium
-                                )
-                            }
+                            AlertTypeLabel(symbol)
                             alert.capture.context.country?.let {
                                 Text(
                                     it.flag + " " +
@@ -122,17 +111,7 @@ fun AlertPresentation(
                             ),
                             style = MaterialTheme.typography.labelMedium
                         )
-                        nationalAlertType(alert.capture)?.let { category ->
-                            Text(
-                                stringResource(
-                                    R.string.mobile_alert_type,
-                                    stringResource(category.label)
-                                ),
-                                Modifier.testTag("national-alert-type"),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                        AlertTypeLabel(symbol, expanded = true)
                         alert.capture.context.country?.let { country ->
                             Text(
                                 country.flag + " " + country.displayName(

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -28,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
@@ -58,6 +56,7 @@ fun AlertHistoryRow(
     delete: (() -> Unit)? = null,
     share: (() -> Unit)? = null
 ) {
+    val symbol = alertSymbol(alert.capture)
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val focused by interaction.collectIsFocusedAsState()
@@ -123,12 +122,7 @@ fun AlertHistoryRow(
             ) {
                 Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer) {
                     Box(Modifier.size(44.dp), contentAlignment = Alignment.Center) {
-                        Icon(
-                            painterResource(R.drawable.ic_message),
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                            tint = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
+                        AlertSymbolIcon(symbol, Modifier.size(24.dp))
                     }
                 }
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -147,6 +141,7 @@ fun AlertHistoryRow(
                         if (!largeText) HistoryCaptureTime(alert.capture.capturedAtMillis)
                     }
                     if (largeText) HistoryCaptureTime(alert.capture.capturedAtMillis)
+                    AlertTypeLabel(symbol)
                     Text(
                         preview,
                         Modifier.testTag("history-preview-${alert.id}"),
