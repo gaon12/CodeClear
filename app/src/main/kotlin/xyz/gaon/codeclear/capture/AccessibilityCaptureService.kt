@@ -33,6 +33,7 @@ open class AccessibilityCaptureService : AccessibilityService() {
 
     @Volatile private var rootWindowId = -1
     private var readAttempts = 0
+    private var visibilityConnection: AutoCloseable? = null
     private data class BodyStamp(val digest: List<Byte>, val limited: Boolean, val queueSize: Int?)
     private var lastBody: BodyStamp? = null
 
@@ -46,6 +47,8 @@ open class AccessibilityCaptureService : AccessibilityService() {
     }
 
     override fun onServiceConnected() {
+        visibilityConnection?.close()
+        visibilityConnection = SourceWindowVisibility.connect(::visibleWindowIds)
         ProbeSession.setConnected(ProbeRoute.ACCESSIBILITY, true)
     }
 
@@ -62,6 +65,7 @@ open class AccessibilityCaptureService : AccessibilityService() {
                 val environment = ProbeEnvironment.read(this)
                 val ticket = ProbeSession.ticket(ProbeRoute.ACCESSIBILITY, environment) ?: return
                 if (packageName !in environment.systemPackages) return
+                SourceWindowVisibility.sourceOpened(event.windowId)
                 val windowClass = BoundedText.read(event.className, 256).value
                 ProbeSession.noteAccessibilityWindow(windowClass)
                 val window = windows.windowChanged(packageName, windowClass, event.windowId)
@@ -170,10 +174,11 @@ open class AccessibilityCaptureService : AccessibilityService() {
 
     private fun readAlertBody(window: ProbeAlertWindow): ProbeObservation? {
         val startedAt = SystemClock.elapsedRealtime()
-        val root = rootForAlert(window) ?: run {
+        val located = rootForAlert(window) ?: run {
             lastReadOutcome = "NO_EVENT_ROOT"
             return null
         }
+        val root = located.node
         try {
             rootWindowId = root.windowId
             if (root.packageName?.toString() != window.packageName ||
@@ -208,7 +213,9 @@ open class AccessibilityCaptureService : AccessibilityService() {
                     windowClass = ProbeWindowTracker.ALERT_CLASS,
                     readDurationMillis = SystemClock.elapsedRealtime() - startedAt,
                     bodyEvidence = ProbeBodyEvidence.VISIBLE_DIALOG_FIELD,
-                    reportedDialogQueueSize = ProbeDialogQueue.reportedMultipleCount(dismiss)
+                    reportedDialogQueueSize = ProbeDialogQueue.reportedMultipleCount(dismiss),
+                    sourceWindowId = window.windowId.takeIf { it >= 0 },
+                    sourceDisplayId = located.displayId?.takeIf { it >= 0 }
                 )
             } finally {
                 fields.forEach(::releaseNode)
@@ -218,8 +225,10 @@ open class AccessibilityCaptureService : AccessibilityService() {
         }
     }
 
+    private data class LocatedRoot(val node: AccessibilityNodeInfo, val displayId: Int?)
+
     @Suppress("DEPRECATION")
-    private fun rootForAlert(window: ProbeAlertWindow): AccessibilityNodeInfo? {
+    private fun rootForAlert(window: ProbeAlertWindow): LocatedRoot? {
         // An emergency dialog can be visible while another window retains input focus.
         // Inspect only window IDs; retrieve content solely for the verified event's window.
         val displays = windowsOnAllDisplays
@@ -227,12 +236,36 @@ open class AccessibilityCaptureService : AccessibilityService() {
             var inspected = 0
             for (display in 0 until minOf(displays.size, 8)) {
                 for (candidate in displays.valueAt(display)) {
-                    if (++inspected > 64) return rootInActiveWindow
-                    if (candidate.id == window.windowId) return candidate.root
+                    if (++inspected > 64) return rootInActiveWindow?.let { LocatedRoot(it, null) }
+                    if (candidate.id == window.windowId) {
+                        return candidate.root?.let { LocatedRoot(it, displays.keyAt(display)) }
+                    }
                 }
             }
             // Some receivers expose only the active window; the caller still checks its exact ID.
-            return rootInActiveWindow
+            return rootInActiveWindow?.let { LocatedRoot(it, null) }
+        } finally {
+            for (display in 0 until displays.size) {
+                displays.valueAt(display).forEach { it.recycle() }
+            }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun visibleWindowIds(): Set<Int>? {
+        if (destroyed || !isUnlocked()) return null
+        val displays = windowsOnAllDisplays
+        try {
+            if (displays.size > 8) return null
+            val ids = linkedSetOf<Int>()
+            var inspected = 0
+            for (display in 0 until displays.size) {
+                for (window in displays.valueAt(display)) {
+                    if (++inspected > 64) return null
+                    ids += window.id
+                }
+            }
+            return ids.takeIf { it.isNotEmpty() }
         } finally {
             for (display in 0 until displays.size) {
                 displays.valueAt(display).forEach { it.recycle() }
@@ -273,6 +306,8 @@ open class AccessibilityCaptureService : AccessibilityService() {
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
+        visibilityConnection?.close()
+        visibilityConnection = null
         reads.discardPending()
         windows.clear()
         main.removeCallbacks(pendingRead)
@@ -282,6 +317,8 @@ open class AccessibilityCaptureService : AccessibilityService() {
 
     override fun onDestroy() {
         destroyed = true
+        visibilityConnection?.close()
+        visibilityConnection = null
         reads.discardPending()
         windows.clear()
         worker.shutdownNow()

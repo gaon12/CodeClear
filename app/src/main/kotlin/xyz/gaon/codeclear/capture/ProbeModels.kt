@@ -42,7 +42,9 @@ data class ProbeObservation(
     val headingHint: ProbeHeadingKind = ProbeHeadingKind.UNKNOWN,
     val reportedDialogQueueSize: Int? = null,
     val broadcastFields: ProbeBroadcastFields? = null,
-    val sourceObservationKey: String? = null
+    val sourceObservationKey: String? = null,
+    val sourceWindowId: Int? = null,
+    val sourceDisplayId: Int? = null
 )
 
 data class ProbeRecord(val id: Long, val observation: ProbeObservation)

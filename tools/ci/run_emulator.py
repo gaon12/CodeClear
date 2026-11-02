@@ -19,7 +19,7 @@ def _require(condition, message="Emulator validation condition failed"):
 FIXTURES = {
     "mobile.MobileControllerDeviceTest": 20,
     "mobile.HistoryWorkerDeviceTest": 6,
-    "mobile.AlertCaptureIngestorDeviceTest": 4,
+    "mobile.AlertCaptureIngestorDeviceTest": 5,
     "mobile.AlertHistoryStoreDeviceTest": 23,
     "mobile.ObservationGroupsDeviceTest": 8,
     "mobile.MobileRuntimeDeviceTest": 1,
@@ -29,6 +29,7 @@ FIXTURES = {
     "capture.SourceActionDeviceTest": 1,
     "capture.CaptureObserverDeviceTest": 3,
     "capture.CaptureServiceComponentsDeviceTest": 2,
+    "capture.SourceWindowVisibilityDeviceTest": 4,
     "mobile.MobileScreenDeviceTest": 60,
     "mobile.NotificationContentDeviceTest": 1,
     "mobile.TextTransferDeviceTest": 1,

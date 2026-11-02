@@ -32,6 +32,8 @@ class AlertCaptureIngestorDeviceTest {
     private lateinit var scope: AutoCloseable
     private val failures = AtomicInteger()
     private val captured = AtomicInteger()
+    private val observations = mutableListOf<Triple<Boolean, Int?, Int?>>()
+    private var presentationFails = false
     private val unblock = CountDownLatch(1)
     private var state = MobileState(
         loaded = true,
@@ -55,7 +57,11 @@ class AlertCaptureIngestorDeviceTest {
                 { environment },
                 captured = { _, _ -> captured.incrementAndGet() },
                 networkCountry = { null },
-                changed = {}
+                changed = {},
+                observed = { observation, _, window, display ->
+                    observations += Triple(observation.created, window, display)
+                    if (presentationFails) error("Synthetic presentation failure")
+                }
             )
         }
     }
@@ -73,6 +79,33 @@ class AlertCaptureIngestorDeviceTest {
             assertEquals(0, failures.get())
         } finally {
             onMain { scope.close() }
+        }
+    }
+
+    @Test
+    fun aGroupedDialogRetainsWindowEvidenceEvenWhenOptionalPresentationFails() {
+        onMain {
+            state = state.copy(options = state.options.copy(accessibilityConsent = true))
+            presentationFails = true
+            ingestion.added(generation, record(1, "notification"))
+            val dialog = record(2, "dialog")
+            ingestion.added(
+                generation,
+                dialog.copy(
+                    observation = dialog.observation.copy(
+                        route = ProbeRoute.ACCESSIBILITY,
+                        bodyEvidence = ProbeBodyEvidence.VISIBLE_DIALOG_FIELD,
+                        sourceWindowId = 10,
+                        sourceDisplayId = 0
+                    )
+                )
+            )
+        }
+        drain()
+        assertEquals(1, store.page("", state.options.target.languageTag).size)
+        assertEquals(1, captured.get())
+        onMain {
+            assertEquals(listOf(Triple(true, null, null), Triple(false, 10, 0)), observations)
         }
     }
 

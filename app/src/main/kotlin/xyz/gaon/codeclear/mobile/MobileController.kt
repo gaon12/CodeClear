@@ -29,7 +29,8 @@ class MobileController(
     cancelEngine: () -> Unit = {},
     captured: (Long, CapturedAlert) -> Unit = { _, _ -> },
     networkCountry: () -> ReceptionCountry? = NetworkCountry(context)::read,
-    private val optionsReady: (MobileOptions) -> Unit = {}
+    private val optionsReady: (MobileOptions) -> Unit = {},
+    observed: (StoredObservation, CapturedAlert, Int?, Int?) -> Unit = { _, _, _, _ -> }
 ) : CaptureObserver,
     AutoCloseable {
     private val main = Handler(Looper.getMainLooper())
@@ -53,7 +54,8 @@ class MobileController(
         changed = {
             refresh()
             translations.kick()
-        }
+        },
+        observed = observed
     )
     private val history = AlertHistoryReader(store)
     private val subscription = ProbeSession.observe(this)

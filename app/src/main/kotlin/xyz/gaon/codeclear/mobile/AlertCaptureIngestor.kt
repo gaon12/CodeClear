@@ -19,7 +19,8 @@ internal class AlertCaptureIngestor(
     private val environment: () -> ProbeEnvironment,
     private val captured: (Long, CapturedAlert) -> Unit,
     private val networkCountry: () -> ReceptionCountry?,
-    private val changed: () -> Unit
+    private val changed: () -> Unit,
+    private val observed: (StoredObservation, CapturedAlert, Int?, Int?) -> Unit = { _, _, _, _ -> }
 ) : CaptureObserver,
     AutoCloseable {
     private data class ObservationKey(
@@ -119,6 +120,16 @@ internal class AlertCaptureIngestor(
             val (observation, enriched) = result ?: return@submit
             if (generation == captureGeneration.get() && !capturePaused) {
                 if (observation.created) captured(observation.id, enriched)
+                try {
+                    observed(
+                        observation,
+                        enriched,
+                        record.observation.sourceWindowId,
+                        record.observation.sourceDisplayId
+                    )
+                } catch (_: RuntimeException) {
+                    // Optional presentation must not interrupt saved history or translation work.
+                }
                 changed()
             }
         }
