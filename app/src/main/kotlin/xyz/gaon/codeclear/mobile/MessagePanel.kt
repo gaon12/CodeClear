@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,10 +43,14 @@ internal fun MessagePanel(
         Modifier.fillMaxWidth()
     }
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        FlowRow(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
             Text(
                 label,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.align(Alignment.CenterVertically),
                 style = MaterialTheme.typography.labelLarge,
                 color = if (translated) {
                     MaterialTheme.colorScheme.primary
@@ -54,8 +58,13 @@ internal fun MessagePanel(
                     MaterialTheme.colorScheme.onSurfaceVariant
                 }
             )
-            headerActions()
-            bodyActions?.let { MessageActions(label, body, it) }
+            FlowRow(
+                Modifier.align(Alignment.CenterVertically),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                headerActions()
+                bodyActions?.let { MessageActions(label, body, it) }
+            }
         }
         SelectionContainer { Text(body, style = MaterialTheme.typography.bodyLarge) }
     }

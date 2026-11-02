@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
@@ -60,8 +61,10 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.window.DialogWindowProvider
 import java.io.File
@@ -746,6 +749,14 @@ class MobileScreenDeviceTest {
         ).assertIsDisplayed()
         compose.onNodeWithTag("delete-alert").assertDoesNotExist()
         compose.onNodeWithTag("alert-metadata").assertDoesNotExist()
+        val labelLayouts = mutableListOf<TextLayoutResult>()
+        compose.onNode(
+            hasText(
+                text(R.string.mobile_translation, languageName(state.options.target.languageTag))
+            ) and
+                hasAnyAncestor(hasTestTag("alert-modal-card"))
+        ).performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(labelLayouts) }
+        assertEquals(1, labelLayouts.single().lineCount)
         savePreview("compact-alert-modal", dialog = true)
         compose.onNodeWithTag("alert-modal-card").performTouchInput { click(center) }
         compose.onNodeWithTag("alert-modal-card").assertIsDisplayed()
