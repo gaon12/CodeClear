@@ -267,4 +267,6 @@
     <string name="mobile_observation_dialog">システム警報画面</string>
     <string name="mobile_observation_original">元の警報</string>
     <string name="mobile_delete_group_notice">この原文、翻訳、および同じ原文にまとめられた収集履歴をすべて削除しますか？</string>
+    <string name="mobile_share">共有</string>
+    <string name="mobile_history_actions">メッセージの操作</string>
 </resources>

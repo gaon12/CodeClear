@@ -267,4 +267,6 @@
     <string name="mobile_observation_dialog">系統警報視窗</string>
     <string name="mobile_observation_original">原始警報</string>
     <string name="mobile_delete_group_notice">要刪除此原文、譯文及合併在相同原文下的所有收集記錄嗎？</string>
+    <string name="mobile_share">分享</string>
+    <string name="mobile_history_actions">訊息操作</string>
 </resources>

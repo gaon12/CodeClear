@@ -51,6 +51,7 @@ import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -64,6 +65,9 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeLeft
+import androidx.compose.ui.test.swipeRight
+import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.window.DialogWindowProvider
@@ -978,6 +982,112 @@ class MobileScreenDeviceTest {
         compose.onNodeWithTag("destination-2").assertDoesNotExist()
         compose.runOnIdle { notificationsAllowed = true }
         switchControl(text(R.string.mobile_result_notifications)).assertIsOn()
+    }
+
+    @Test
+    fun swipingRevealsTwoActionsWithoutDeletingAndSharingClosesTheRow() {
+        compose.runOnIdle { context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performTouchInput { swipeLeft() }
+        compose.onNodeWithTag("history-share-1").assertIsDisplayed()
+        compose.onNodeWithTag("history-delete-1").assertIsDisplayed()
+        compose.runOnIdle {
+            assertEquals(0, deletionRequests)
+            assertEquals(null, state.detailId)
+        }
+        savePreview("history-actions-revealed")
+        compose.onNodeWithTag("history-share-1").performClick()
+        compose.onNodeWithTag("history-share-1").assertDoesNotExist()
+        compose.runOnIdle {
+            assertEquals(1, sharedBodies.size)
+            assertTrue(sharedBodies.single().contains(state.records.first().capture.original))
+            assertTrue(sharedBodies.single().contains(state.records.first().translation!!.text!!))
+        }
+        compose.onNodeWithTag("history-row-1").performClick()
+        compose.onNodeWithTag("history-detail").assertIsDisplayed()
+    }
+
+    @Test
+    fun longPressActionsShareDeleteAndCancelWithoutOpeningDetails() {
+        compose.runOnIdle { context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performTouchInput { longClick() }
+        compose.onNodeWithTag("history-action-menu").assertIsDisplayed()
+        savePreview("history-actions-menu", dialog = true)
+        compose.onNodeWithText(text(R.string.mobile_close)).performClick()
+        compose.onNodeWithTag("history-action-menu").assertDoesNotExist()
+        compose.runOnIdle {
+            assertEquals(0, deletionRequests)
+            assertEquals(null, state.detailId)
+        }
+        compose.onNodeWithTag("history-row-1").performTouchInput { longClick() }
+        compose.onNode(
+            hasText(text(R.string.mobile_delete)) and
+                hasAnyAncestor(hasTestTag("history-action-menu"))
+        ).performClick()
+        compose.onNodeWithTag("history-action-menu").assertDoesNotExist()
+        compose.runOnIdle {
+            assertEquals(1, deletionRequests)
+            assertEquals(1L, deletedAlertId)
+        }
+        compose.onNodeWithTag("history-row-1").performTouchInput { longClick() }
+        compose.onNode(
+            hasText(text(R.string.mobile_share)) and
+                hasAnyAncestor(hasTestTag("history-action-menu"))
+        ).performClick()
+        compose.runOnIdle {
+            assertEquals(1, sharedBodies.size)
+            assertEquals(null, state.detailId)
+        }
+    }
+
+    @Test
+    fun accessibilityActionsAndVerticalScrollingWorkWhileOnlyOneRowIsRevealed() {
+        compose.runOnIdle { state = state.copy(records = List(20) { record(it + 1L) }) }
+        compose.onNodeWithTag("destination-1").performClick()
+        val custom = compose.onNodeWithTag("history-row-1").fetchSemanticsNode()
+            .config[SemanticsActions.CustomActions]
+        assertEquals(
+            listOf(text(R.string.mobile_delete), text(R.string.mobile_share)),
+            custom.map { it.label }
+        )
+        compose.runOnIdle { assertTrue(custom[1].action()) }
+        compose.waitForIdle()
+        compose.runOnIdle { assertEquals(1, sharedBodies.size) }
+        compose.onNodeWithTag("history-row-1").performTouchInput { swipeLeft() }
+        compose.onNodeWithTag("history-delete-1").assertIsDisplayed()
+        compose.onNodeWithTag("history-row-2").performTouchInput { swipeLeft() }
+        compose.onNodeWithTag("history-delete-2").assertIsDisplayed()
+        compose.onNodeWithTag("history-delete-1").assertDoesNotExist()
+        compose.onNodeWithTag("history-row-2").performTouchInput { swipeRight() }
+        compose.onNodeWithTag("history-delete-2").assertDoesNotExist()
+        val axis = compose.onNodeWithTag("mobile-feed").fetchSemanticsNode()
+            .config[SemanticsProperties.VerticalScrollAxisRange]
+        val before = axis.value()
+        compose.onNodeWithTag("history-row-2").performTouchInput { swipeUp() }
+        compose.runOnIdle {
+            assertTrue(axis.value() > before)
+            assertEquals(0, deletionRequests)
+            assertEquals(null, state.detailId)
+        }
+    }
+
+    @Test
+    fun largeTextHistoryActionsStayVisibleInBothThemes() {
+        compose.runOnIdle {
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            fontScale = 1.8f
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
+            compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            compose.onNodeWithTag("history-row-1").performTouchInput { swipeLeft() }
+            compose.onNodeWithTag("history-share-1").assertIsDisplayed()
+            compose.onNodeWithTag("history-delete-1").assertIsDisplayed()
+            savePreview("history-actions-large-${theme.name.lowercase()}")
+            compose.onNodeWithTag("history-row-1").performTouchInput { swipeRight() }
+            compose.onNodeWithTag("history-delete-1").assertDoesNotExist()
+        }
     }
 
     @Test

@@ -269,4 +269,6 @@
     <string name="mobile_observation_dialog">Fenêtre d’alerte système</string>
     <string name="mobile_observation_original">Alerte originale</string>
     <string name="mobile_delete_group_notice">Supprimer ce texte original, ses traductions et toutes les collectes regroupées avec le même original ?</string>
+    <string name="mobile_share">Partager</string>
+    <string name="mobile_history_actions">Actions du message</string>
 </resources>

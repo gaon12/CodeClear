@@ -24,6 +24,7 @@ import xyz.gaon.codeclear.R
 internal fun LazyListScope.historyFeed(
     state: MobileState,
     actions: MobileActions,
+    rowActions: HistoryRowActionState,
     openNearby: () -> Unit,
     openDetail: (Long) -> Unit
 ) {
@@ -77,13 +78,13 @@ internal fun LazyListScope.historyFeed(
         itemsIndexed(state.records, key = { _, alert ->
             alert.id
         }) { index, alert ->
-            AlertHistoryRow(
+            HistoryActionRow(
                 alert = alert,
-                target = state.options.target.languageTag,
-                engine = state.options.engine,
-                localEnabled = state.options.translationAllowed,
+                options = state.options,
                 first = index == 0,
                 last = index == state.records.lastIndex,
+                actions = actions,
+                coordinator = rowActions,
                 open = {
                     openDetail(alert.id)
                 }

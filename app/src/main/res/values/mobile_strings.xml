@@ -268,4 +268,6 @@
     <string name="mobile_observation_dialog">System alert window</string>
     <string name="mobile_observation_original">Original alert</string>
     <string name="mobile_delete_group_notice">Delete this original, its translations and all collection observations grouped with the same original?</string>
+    <string name="mobile_share">Share</string>
+    <string name="mobile_history_actions">Message actions</string>
 </resources>

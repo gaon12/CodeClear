@@ -1,6 +1,6 @@
 package xyz.gaon.codeclear.mobile
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -30,8 +30,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,7 +52,11 @@ fun AlertHistoryRow(
     localEnabled: Boolean,
     first: Boolean,
     last: Boolean,
-    open: () -> Unit
+    open: () -> Unit,
+    modifier: Modifier = Modifier,
+    longPress: (() -> Unit)? = null,
+    delete: (() -> Unit)? = null,
+    share: (() -> Unit)? = null
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
@@ -63,8 +69,11 @@ fun AlertHistoryRow(
     val preview = remember(source) { historyPreview(source) }
     val title = alert.capture.title.ifBlank { stringResource(R.string.mobile_alert) }
     val largeText = LocalDensity.current.fontScale > 1.3f
+    val deleteLabel = stringResource(R.string.mobile_delete)
+    val shareLabel = stringResource(R.string.mobile_share)
+    val actionsLabel = stringResource(R.string.mobile_history_actions)
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(
             topStart = if (first) 24.dp else 0.dp,
             topEnd = if (first) 24.dp else 0.dp,
@@ -80,7 +89,34 @@ fun AlertHistoryRow(
         Column {
             Row(
                 Modifier.fillMaxWidth().testTag("history-row-${alert.id}")
-                    .clickable(interaction, indication = null, role = Role.Button, onClick = open)
+                    .semantics {
+                        customActions = buildList {
+                            delete?.let { action ->
+                                add(
+                                    CustomAccessibilityAction(deleteLabel) {
+                                        action()
+                                        true
+                                    }
+                                )
+                            }
+                            share?.let { action ->
+                                add(
+                                    CustomAccessibilityAction(shareLabel) {
+                                        action()
+                                        true
+                                    }
+                                )
+                            }
+                        }
+                    }
+                    .combinedClickable(
+                        interactionSource = interaction,
+                        indication = null,
+                        role = Role.Button,
+                        onClick = open,
+                        onLongClickLabel = actionsLabel,
+                        onLongClick = longPress
+                    )
                     .padding(horizontal = 20.dp, vertical = 18.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalAlignment = Alignment.Top

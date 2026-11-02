@@ -15,11 +15,11 @@ internal object AlertTextTransfer {
     }
 
     fun share(body: String): Intent {
-        validate(body)
+        validate(body, limit = 32_768)
         return Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, body)
     }
 
-    private fun validate(body: String) {
-        require(body.length in 1..16_384 && body.isNotBlank())
+    private fun validate(body: String, limit: Int = 16_384) {
+        require(body.length in 1..limit && body.isNotBlank())
     }
 }

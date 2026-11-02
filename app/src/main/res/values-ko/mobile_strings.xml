@@ -267,4 +267,6 @@
     <string name="mobile_observation_dialog">시스템 경보 창</string>
     <string name="mobile_observation_original">원본 경보</string>
     <string name="mobile_delete_group_notice">이 원문과 번역, 같은 원문으로 묶인 수집 이력을 모두 삭제할까요?</string>
+    <string name="mobile_share">공유</string>
+    <string name="mobile_history_actions">메시지 메뉴</string>
 </resources>

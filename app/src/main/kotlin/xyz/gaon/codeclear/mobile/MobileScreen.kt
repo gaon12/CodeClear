@@ -54,6 +54,7 @@ fun MobileScreen(
     val isHistoryDetail = state.detailId != null && state.detailId == historyDetailId
     val homeScroll = rememberLazyListState()
     val historyScroll = rememberLazyListState()
+    val historyActions = remember { HistoryRowActionState() }
     val historyDetailScroll = key(state.detailId) { rememberScrollState() }
     val settingsState = rememberSaveableStateHolder()
     var settingsEntry by rememberSaveable { mutableIntStateOf(0) }
@@ -75,6 +76,10 @@ fun MobileScreen(
         if (state.detailId != historyDetailId) historyDetailId = null
     }
     LaunchedEffect(state.query, state.beforeId) { historyScroll.scrollToItem(0) }
+    LaunchedEffect(tab, state.query, state.beforeId) { historyActions.openId = null }
+    BackHandler(enabled = currentTab == 1 && !isHistoryDetail && historyActions.openId != null) {
+        historyActions.openId = null
+    }
     val feedScroll = if (showTutorial) {
         tutorialScroll
     } else if (currentTab ==
@@ -272,6 +277,7 @@ fun MobileScreen(
                             currentTab == 1 -> historyFeed(
                                 state,
                                 actions,
+                                historyActions,
                                 openNearby = { nearbyPage = true },
                                 openDetail = {
                                     historyDetailId = it
