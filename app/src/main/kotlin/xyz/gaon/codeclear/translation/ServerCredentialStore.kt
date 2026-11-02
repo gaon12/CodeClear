@@ -12,12 +12,18 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
+internal interface ServerTokenStorage {
+    fun save(value: String)
+    fun load(): ServerAccessToken?
+    fun clear()
+}
+
 /** Encrypt one access token with a non-exportable platform key, outside backup and saved UI state. */
 internal class ServerCredentialStore(
     context: Context,
     private val scope: String,
     name: String = "server_access"
-) {
+) : ServerTokenStorage {
     init {
         require(scope.matches(Regex("[0-9a-f]{64}")))
         require(name.matches(Regex("[A-Za-z][A-Za-z0-9_]{0,39}")))
@@ -28,7 +34,7 @@ internal class ServerCredentialStore(
     private val alias = "codeclear.$name"
 
     @Synchronized
-    fun save(value: String) {
+    override fun save(value: String) {
         checkWorker()
         val token = requireNotNull(ServerAccessToken.parse(value))
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -54,7 +60,7 @@ internal class ServerCredentialStore(
     }
 
     @Synchronized
-    fun load(): ServerAccessToken? {
+    override fun load(): ServerAccessToken? {
         checkWorker()
         return try {
             val bytes = file.openRead().use { input ->
@@ -88,7 +94,7 @@ internal class ServerCredentialStore(
     }
 
     @Synchronized
-    fun clear() {
+    override fun clear() {
         checkWorker()
         val keys = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
         keys.deleteEntry(alias)

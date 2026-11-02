@@ -43,7 +43,7 @@ internal class OwnedServerEndpoint private constructor(internal val url: HttpUrl
 
 /** A client access token, never a provider key or an APK constant. */
 internal class ServerAccessToken private constructor(private val value: String) {
-    val fingerprint: String get() = serverDigest(value)
+    val fingerprint: String = serverDigest(value)
     internal fun authorization(): String = "Bearer $value"
     internal fun bytes(): ByteArray = value.toByteArray(Charsets.US_ASCII)
     override fun toString(): String = "ServerAccessToken([redacted])"
@@ -63,15 +63,31 @@ internal sealed interface OwnedServerReply {
     data object Failed : OwnedServerReply
 }
 
-internal enum class ServerCacheClearResult { CLEARED, UNAVAILABLE, FAILED }
+enum class ServerCacheClearResult { CLEARED, UNAVAILABLE, FAILED }
 
 private class ServerSendAuthorization(val allowed: () -> Boolean)
+
+internal interface OwnedServerClient : AutoCloseable {
+    fun translate(
+        original: String,
+        target: TranslationTarget,
+        token: ServerAccessToken,
+        cancellation: RemoteCancellation,
+        authorized: () -> Boolean
+    ): OwnedServerReply
+
+    fun clearCache(
+        token: ServerAccessToken,
+        cancellation: RemoteCancellation,
+        authorized: () -> Boolean
+    ): ServerCacheClearResult
+}
 
 /** Fixed build route, one transmission, bounded plaintext JSON and no redirects or retries. */
 internal class OwnedServerTransport(
     private val endpoint: OwnedServerEndpoint,
     builder: OkHttpClient.Builder = OkHttpClient.Builder()
-) : AutoCloseable {
+) : OwnedServerClient {
     private val client = builder.addNetworkInterceptor { chain ->
         val allowed = chain.request().tag(ServerSendAuthorization::class.java)
         val permit = chain.request().tag(RemoteSendPermit::class.java)
@@ -83,7 +99,7 @@ internal class OwnedServerTransport(
         .connectTimeout(8, TimeUnit.SECONDS).readTimeout(35, TimeUnit.SECONDS)
         .writeTimeout(8, TimeUnit.SECONDS).callTimeout(45, TimeUnit.SECONDS).build()
 
-    fun translate(
+    override fun translate(
         original: String,
         target: TranslationTarget,
         token: ServerAccessToken,
@@ -147,7 +163,7 @@ internal class OwnedServerTransport(
         }
     }
 
-    fun clearCache(
+    override fun clearCache(
         token: ServerAccessToken,
         cancellation: RemoteCancellation,
         authorized: () -> Boolean
