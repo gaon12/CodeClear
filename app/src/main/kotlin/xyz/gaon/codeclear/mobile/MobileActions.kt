@@ -50,5 +50,7 @@ class MobileActions(
     val shareBody: (String) -> Unit = {},
     val presentationAccess: PresentationAccess = PresentationAccess(),
     val overlaySettings: () -> Unit = {},
-    val batterySettings: () -> Unit = {}
+    val batterySettings: () -> Unit = {},
+    val olderObservations: () -> Unit = {},
+    val newestObservations: () -> Unit = {}
 )

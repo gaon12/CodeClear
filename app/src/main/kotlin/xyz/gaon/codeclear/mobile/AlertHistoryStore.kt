@@ -134,7 +134,8 @@ class AlertHistoryStore(
         limit: Int = 50,
         cancellation: CancellationSignal? = null,
         engine: TranslationEngineKind = TranslationEngineKind.ML_KIT,
-        nativeOnly: Boolean = false
+        nativeOnly: Boolean = false,
+        groupIdenticalOriginals: Boolean = false
     ): List<SavedAlert> {
         require(target in HistoryText.targets && query.length <= 256 && limit in 1..50)
         val args = mutableListOf(target, engine.key, beforeId.toString())
@@ -143,15 +144,31 @@ class AlertHistoryStore(
         } else {
             val pattern = HistoryText.literalLike(query)
             args += listOf(pattern, pattern)
-            " AND (a.search_original LIKE ? ESCAPE '\\' OR EXISTS " +
-                "(SELECT 1 FROM translations s WHERE s.alert_id=a.id AND " +
-                "s.search_text LIKE ? ESCAPE '\\'))"
+            if (groupIdenticalOriginals) {
+                " AND EXISTS (SELECT 1 FROM alerts n WHERE ($CONTENT_FAMILY) AND " +
+                    "(n.search_original LIKE ? ESCAPE '\\' OR EXISTS " +
+                    "(SELECT 1 FROM translations s WHERE s.alert_id=n.id AND " +
+                    "s.search_text LIKE ? ESCAPE '\\')))"
+            } else {
+                " AND (a.search_original LIKE ? ESCAPE '\\' OR EXISTS " +
+                    "(SELECT 1 FROM translations s WHERE s.alert_id=a.id AND " +
+                    "s.search_text LIKE ? ESCAPE '\\'))"
+            }
         }
         args += limit.toString()
         return database.rawQuery(
-            SELECT_ALERT + " WHERE a.display_group_id IS NULL AND a.id<?" +
-                (if (nativeOnly) " AND a.source_kind!='PEER'" else "") + matching +
-                " ORDER BY a.id DESC LIMIT ?",
+            selectAlert(groupIdenticalOriginals) + " WHERE a.display_group_id IS NULL AND a.id<?" +
+                (if (nativeOnly) " AND a.source_kind!='PEER'" else "") +
+                (
+                    if (groupIdenticalOriginals) {
+                        " AND NOT EXISTS (SELECT 1 FROM alerts n " +
+                            "WHERE n.display_group_id IS NULL " +
+                            "AND n.id>a.id AND ($CONTENT_FAMILY))"
+                    } else {
+                        ""
+                    }
+                    ) +
+                matching + " ORDER BY a.id DESC LIMIT ?",
             args.toTypedArray(),
             cancellation
         ).use { cursor -> buildList { while (cursor.moveToNext()) add(readAlert(cursor)) } }
@@ -160,14 +177,48 @@ class AlertHistoryStore(
     fun find(
         id: Long,
         target: String,
-        engine: TranslationEngineKind = TranslationEngineKind.ML_KIT
+        engine: TranslationEngineKind = TranslationEngineKind.ML_KIT,
+        withObservations: Boolean = false,
+        observationBeforeId: Long = Long.MAX_VALUE,
+        cancellation: CancellationSignal? = null
     ): SavedAlert? {
         require(target in HistoryText.targets)
-        return database.rawQuery(
-            SELECT_ALERT +
+        require(observationBeforeId > 0)
+        val alert = database.rawQuery(
+            selectAlert(withObservations) +
                 " WHERE a.id=(SELECT COALESCE(display_group_id,id) FROM alerts WHERE id=?) LIMIT 1",
-            arrayOf(target, engine.key, id.toString())
-        ).use { if (it.moveToFirst()) readAlert(it) else null }
+            arrayOf(target, engine.key, id.toString()),
+            cancellation
+        ).use { if (it.moveToFirst()) readAlert(it) else null } ?: return null
+        if (!withObservations) return alert
+        val family = contentFamily(alert.id) ?: return alert
+        val observations = database.rawQuery(
+            "SELECT id,source_kind,captured_ms,posted_ms,received_ms FROM alerts " +
+                "WHERE (${family.where}) AND id<? ORDER BY id DESC LIMIT 21",
+            family.args + observationBeforeId.toString(),
+            cancellation
+        ).use { cursor ->
+            buildList {
+                fun optional(index: Int): Long? =
+                    if (cursor.isNull(index)) null else cursor.getLong(index)
+                while (cursor.moveToNext()) {
+                    add(
+                        HistoryObservation(
+                            cursor.getLong(0),
+                            CaptureSource.valueOf(cursor.getString(1)),
+                            cursor.getLong(2),
+                            optional(3),
+                            optional(4)
+                        )
+                    )
+                }
+            }
+        }
+        return alert.copy(
+            observations = observations.take(20),
+            moreObservations =
+                observations.size > 20
+        )
     }
 
     private fun resolveId(id: Long): Long? = database.rawQuery(
@@ -395,6 +446,43 @@ class AlertHistoryStore(
         deleteMatching(null, null)
     }
 
+    private data class ContentFamily(val where: String, val args: Array<String>)
+
+    private fun contentFamily(id: Long): ContentFamily? = database.rawQuery(
+        "SELECT source_package,source_kind,original_hash,original FROM alerts WHERE id=?",
+        arrayOf(id.toString())
+    ).use { cursor ->
+        if (!cursor.moveToFirst()) {
+            null
+        } else if (cursor.getString(1) == CaptureSource.PEER.name) {
+            ContentFamily("id=?", arrayOf(id.toString()))
+        } else {
+            ContentFamily(
+                "source_package=? AND source_kind!='PEER' AND original_hash=? AND original=?",
+                arrayOf(cursor.getString(0), cursor.getString(2), cursor.getString(3))
+            )
+        }
+    }
+
+    /** Content grouping is a history choice, not a claim that postings are the same broadcast. */
+    fun deleteContent(id: Long, notificationCandidates: Set<Long> = emptySet()): Set<Long> {
+        require(notificationCandidates.size <= 40 && notificationCandidates.all { it > 0 })
+        return database.transaction(exclusive = false) {
+            val family = contentFamily(id) ?: return@transaction emptySet()
+            val affected = if (notificationCandidates.isEmpty()) {
+                emptySet()
+            } else {
+                database.rawQuery(
+                    "SELECT id FROM alerts WHERE (${family.where}) AND id IN (" +
+                        notificationCandidates.joinToString(",") { "?" } + ")",
+                    family.args + notificationCandidates.map(Long::toString)
+                ).use { cursor -> buildSet { while (cursor.moveToNext()) add(cursor.getLong(0)) } }
+            }
+            deleteMatching(family.where, family.args)
+            affected
+        }
+    }
+
     private fun deleteMatching(where: String?, args: Array<String>?) {
         val db = database
         db.transaction(exclusive = false) {
@@ -481,7 +569,9 @@ class AlertHistoryStore(
                 broadcast = metadata,
                 context = ReceptionContext.decode(text("reception_context"))
             ),
-            translated
+            translated,
+            observationCount = getColumnIndex("observation_count").takeIf { it >= 0 }
+                ?.let { getLong(it).coerceAtMost(Int.MAX_VALUE.toLong()).toInt() } ?: 1
         )
     }
 
@@ -520,6 +610,10 @@ class AlertHistoryStore(
 
         override fun onOpen(db: SQLiteDatabase) {
             db.execSQL(
+                "CREATE INDEX IF NOT EXISTS alert_content_history " +
+                    "ON alerts(source_package,original_hash,id DESC)"
+            )
+            db.execSQL(
                 "CREATE INDEX IF NOT EXISTS alert_source_kind ON alerts(source_kind,id DESC)"
             )
             pruneIgnored(db)
@@ -553,11 +647,23 @@ class AlertHistoryStore(
 
     private companion object {
         const val IGNORE_LIFETIME_MILLIS = 30L * 24 * 60 * 60 * 1000
-        const val SELECT_ALERT = "SELECT a.*, t.phase AS translation_phase, " +
+        const val CONTENT_FAMILY = "(a.source_kind='PEER' AND n.id=a.id) OR " +
+            "(a.source_kind!='PEER' AND n.source_kind!='PEER' AND " +
+            "n.source_package=a.source_package AND n.original_hash=a.original_hash AND n.original=a.original)"
+        const val ALERT_COLUMNS = "t.phase AS translation_phase, " +
             "t.text AS translation_text, t.source_language AS source_language, " +
             "t.revision AS translation_revision, t.engine AS translation_engine, " +
             "t.same_language AS same_language FROM alerts a LEFT JOIN translations t " +
             "ON t.alert_id=a.id AND t.target=? AND t.engine=?"
+
+        fun selectAlert(countObservations: Boolean): String = "SELECT a.*, " +
+            (
+                if (countObservations) {
+                    "(SELECT COUNT(*) FROM alerts n WHERE $CONTENT_FAMILY) AS observation_count, "
+                } else {
+                    ""
+                }
+                ) + ALERT_COLUMNS
 
         fun originalHash(original: String): String = MessageDigest.getInstance("SHA-256")
             .digest(original.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }

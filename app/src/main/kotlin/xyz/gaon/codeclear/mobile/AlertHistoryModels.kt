@@ -73,7 +73,22 @@ data class SavedTranslation(
 /** A display group owns side effects; every raw source observation keeps its own identity. */
 data class StoredObservation(val id: Long, val created: Boolean, val observationId: Long = id)
 
-data class SavedAlert(val id: Long, val capture: CapturedAlert, val translation: SavedTranslation?)
+data class HistoryObservation(
+    val id: Long,
+    val source: CaptureSource,
+    val capturedAtMillis: Long,
+    val postedAtMillis: Long?,
+    val receivedAtMillis: Long?
+)
+
+data class SavedAlert(
+    val id: Long,
+    val capture: CapturedAlert,
+    val translation: SavedTranslation?,
+    val observationCount: Int = 1,
+    val observations: List<HistoryObservation> = emptyList(),
+    val moreObservations: Boolean = false
+)
 
 data class TranslationTicket(
     val alertId: Long,

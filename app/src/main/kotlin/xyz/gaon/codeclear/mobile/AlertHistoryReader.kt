@@ -16,7 +16,8 @@ internal class AlertHistoryReader(private val store: AlertHistoryStore) {
             request.options.target.languageTag,
             request.beforeId,
             cancellation = cancellation,
-            engine = request.options.engine
+            engine = request.options.engine,
+            groupIdenticalOriginals = true
         ),
         store.page(
             "",
@@ -35,7 +36,10 @@ internal class AlertHistoryReader(private val store: AlertHistoryStore) {
             store.find(
                 it,
                 request.detailTarget ?: request.options.target.languageTag,
-                request.detailEngine ?: request.options.engine
+                request.detailEngine ?: request.options.engine,
+                withObservations = true,
+                observationBeforeId = request.observationBeforeId,
+                cancellation = cancellation
             )
         }
     )

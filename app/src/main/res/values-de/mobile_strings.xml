@@ -261,4 +261,11 @@
     <string name="mobile_battery_optimized">Akkuoptimierung aktiv</string>
     <string name="mobile_battery_guidance">Die Ausnahme ist optional. Prüfen Sie bei verzögerter Erfassung die Akku- und Hintergrundbeschränkungen. Die Ausnahme stellt weder entzogene Zugriffsrechte noch zwangsbeendete Apps oder fehlenden Quelltext wieder her.</string>
     <string name="mobile_background_restricted">Android schränkt die Hintergrundnutzung ein. Prüfen Sie diese App in den Akku-Systemeinstellungen.</string>
+    <string name="mobile_observations">Erfassungsverlauf</string>
+    <string name="mobile_observation_count">Erfassungen · %1$d</string>
+    <string name="mobile_observation_notice">Identische Originaltexte erscheinen als ein Verlaufseintrag. Erfassungen können erneute Systemanzeigen oder verschiedene Erfassungswege enthalten; sie belegen keine getrennten Warnsendungen.</string>
+    <string name="mobile_observation_notification">Benachrichtigung</string>
+    <string name="mobile_observation_dialog">Systemwarnfenster</string>
+    <string name="mobile_observation_original">Originalwarnung</string>
+    <string name="mobile_delete_group_notice">Diesen Originaltext, seine Übersetzungen und alle zugehörigen Erfassungen mit identischem Original löschen?</string>
 </resources>

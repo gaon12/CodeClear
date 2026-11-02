@@ -251,6 +251,8 @@ class MainActivity : AppCompatActivity() {
                             copyBody = ::copyAlertBody,
                             shareBody = ::shareAlertBody,
                             presentationAccess = presentationAccess,
+                            olderObservations = controller::olderObservations,
+                            newestObservations = controller::newestObservations,
                             overlaySettings = {
                                 openSettings(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
                             },
@@ -270,7 +272,13 @@ class MainActivity : AppCompatActivity() {
                         },
                         text = {
                             Text(
-                                stringResource(R.string.mobile_delete_notice),
+                                stringResource(
+                                    if (request.id == null) {
+                                        R.string.mobile_delete_notice
+                                    } else {
+                                        R.string.mobile_delete_group_notice
+                                    }
+                                ),
                                 Modifier.verticalScroll(rememberScrollState())
                             )
                         },

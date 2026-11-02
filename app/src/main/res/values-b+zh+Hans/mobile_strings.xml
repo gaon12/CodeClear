@@ -260,4 +260,11 @@
     <string name="mobile_battery_optimized">电池优化已启用</string>
     <string name="mobile_battery_guidance">电池优化豁免为可选项。如果后台收集延迟，请检查电池及后台限制。豁免无法恢复被撤销的权限、被强行停止的应用或不可获取的原文。</string>
     <string name="mobile_background_restricted">Android 当前限制后台使用。请在系统电池设置中查看此应用。</string>
+    <string name="mobile_observations">收集记录</string>
+    <string name="mobile_observation_count">收集记录 · %1$d 条</string>
+    <string name="mobile_observation_notice">相同原文合并为一条历史记录。收集记录可能包含系统重复显示和不同收集途径，并不代表分别发送的警报。</string>
+    <string name="mobile_observation_notification">通知</string>
+    <string name="mobile_observation_dialog">系统警报窗口</string>
+    <string name="mobile_observation_original">原始警报</string>
+    <string name="mobile_delete_group_notice">要删除此原文、译文以及合并在相同原文下的所有收集记录吗？</string>
 </resources>

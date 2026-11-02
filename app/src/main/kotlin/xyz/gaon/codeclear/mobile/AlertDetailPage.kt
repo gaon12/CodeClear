@@ -85,6 +85,7 @@ internal fun AlertDetailBody(
             messageActions = actions
         )
         if (!compact) AlertMetadata(alert)
+        if (!compact) ObservationHistory(alert, state, actions)
         if (!compact) {
             OutlinedButton(
                 onClick = { actions.delete(alert.id) },

@@ -150,22 +150,50 @@ class ResultNotifications(private val context: Context) {
             posted.remove(PREFIX + id)
             pending.remove(PREFIX + id)
             manager.cancel(PREFIX + id, ID)
-            // Active snapshots can still contain earlier cancellations from this batch.
-            // Only reuse actions whose tags remain in the restored process ledger.
-            val latest = manager.activeNotifications.filter {
-                it.tag in posted
-            }.maxByOrNull { it.postTime }?.notification
-            if (latest == null) {
-                manager.cancel(SUMMARY, ID)
-            } else {
-                try {
-                    updateSummary(latest)
-                } catch (_: SecurityException) {
-                    manager.cancel(SUMMARY, ID)
-                }
-            }
+            updateRemainingSummary()
         }
         rememberCancellation(tags)
+    }
+
+    @Synchronized
+    fun knownIds(): Set<Long> {
+        restorePosted()
+        return (posted + pending.keys).mapNotNull { tag ->
+            tag.removePrefix(PREFIX).toLongOrNull()?.takeIf { it > 0 }
+        }.takeLast(40).toSet()
+    }
+
+    @Synchronized
+    fun cancel(ids: Set<Long>) {
+        require(ids.size <= 40 && ids.all { it > 0 })
+        if (ids.isEmpty()) return
+        restorePosted()
+        summaryRevision++
+        summaryTask?.let(handler::removeCallbacks)
+        summaryTask = null
+        val tags = ids.map { PREFIX + it }.toSet()
+        tags.forEach { tag ->
+            posted.remove(tag)
+            pending.remove(tag)
+            manager.cancel(tag, ID)
+        }
+        updateRemainingSummary()
+        rememberCancellation(tags)
+    }
+
+    private fun updateRemainingSummary() {
+        // Ignore lagging platform snapshots whose entries were already removed from the ledger.
+        val latest = manager.activeNotifications.filter { it.tag in posted }
+            .maxByOrNull { it.postTime }?.notification
+        if (latest == null) {
+            manager.cancel(SUMMARY, ID)
+        } else {
+            try {
+                updateSummary(latest)
+            } catch (_: SecurityException) {
+                manager.cancel(SUMMARY, ID)
+            }
+        }
     }
 
     private fun rememberCancellation(tags: Collection<String>) {

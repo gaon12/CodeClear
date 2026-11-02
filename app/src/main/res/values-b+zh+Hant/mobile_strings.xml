@@ -260,4 +260,11 @@
     <string name="mobile_battery_optimized">電池最佳化已啟用</string>
     <string name="mobile_battery_guidance">電池最佳化豁免為選用項目。若背景收集延遲，請檢查電池及背景限制。豁免無法恢復已撤銷的權限、遭強制停止的應用程式或無法取得的原文。</string>
     <string name="mobile_background_restricted">Android 目前限制背景使用。請在系統電池設定中查看此應用程式。</string>
+    <string name="mobile_observations">收集記錄</string>
+    <string name="mobile_observation_count">收集記錄 · %1$d 筆</string>
+    <string name="mobile_observation_notice">相同原文合併為一筆歷史記錄。收集記錄可能包含系統重複顯示和不同收集途徑，並不代表分別發送的警報。</string>
+    <string name="mobile_observation_notification">通知</string>
+    <string name="mobile_observation_dialog">系統警報視窗</string>
+    <string name="mobile_observation_original">原始警報</string>
+    <string name="mobile_delete_group_notice">要刪除此原文、譯文及合併在相同原文下的所有收集記錄嗎？</string>
 </resources>

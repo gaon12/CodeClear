@@ -30,7 +30,9 @@ class MobileController(
     captured: (Long, CapturedAlert) -> Unit = { _, _ -> },
     networkCountry: () -> ReceptionCountry? = NetworkCountry(context)::read,
     private val optionsReady: (MobileOptions) -> Unit = {},
-    observed: (StoredObservation, CapturedAlert, Int?, Int?) -> Unit = { _, _, _, _ -> }
+    observed: (StoredObservation, CapturedAlert, Int?, Int?) -> Unit = { _, _, _, _ -> },
+    private val deletionCandidates: () -> Set<Long> = { emptySet() },
+    private val deletedBatch: (Set<Long>) -> Unit = { ids -> ids.forEach(deleted) }
 ) : CaptureObserver,
     AutoCloseable {
     private val main = Handler(Looper.getMainLooper())
@@ -243,6 +245,11 @@ class MobileController(
         update(
             state.copy(
                 detailId = validId,
+                observationBeforeId = if (validId == state.detailId) {
+                    state.observationBeforeId
+                } else {
+                    Long.MAX_VALUE
+                },
                 detailSourceLanguage = if (validId != null && validId == state.detailId) {
                     state.detailSourceLanguage ?: state.detail?.translation?.sourceLanguage
                 } else {
@@ -281,6 +288,21 @@ class MobileController(
             refresh()
             translations.kick()
         }
+    }
+
+    fun olderObservations() {
+        requireMain()
+        val detail = state.detail ?: return
+        if (!detail.moreObservations) return
+        val before = detail.observations.lastOrNull()?.id ?: return
+        update(state.copy(observationBeforeId = before))
+        refresh()
+    }
+
+    fun newestObservations() {
+        requireMain()
+        update(state.copy(observationBeforeId = Long.MAX_VALUE))
+        refresh()
     }
 
     fun refresh() {
@@ -340,17 +362,26 @@ class MobileController(
         queryCancellation?.cancel()
         ProbeSession.clear()
         deleted(id)
+        val candidates = if (id == null) {
+            emptySet()
+        } else {
+            (setOf(id) + deletionCandidates()).take(40).toSet()
+        }
         update(state.copy(loading = true))
         io({
-            if (id ==
+            val affected = if (id ==
                 null
             ) {
                 store.deleteAll()
+                emptySet()
             } else {
-                store.delete(id)
+                store.deleteContent(id, candidates)
             }
             store.recoverInterruptedWork()
-        }) {
+            affected
+        }) { affected ->
+            val otherIds = affected.filterNot { it == id }.toSet()
+            if (otherIds.isNotEmpty()) deletedBatch(otherIds)
             refresh()
             translations.kick()
         }

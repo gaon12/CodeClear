@@ -261,4 +261,11 @@
     <string name="mobile_battery_optimized">Battery optimization enabled</string>
     <string name="mobile_battery_guidance">An exemption is optional. If collection is delayed in the background, review battery and background restrictions. Exemption does not restore revoked access, a force-stopped app, or unavailable source text.</string>
     <string name="mobile_background_restricted">Android currently restricts background use. Review this app in system battery settings.</string>
+    <string name="mobile_observations">Capture history</string>
+    <string name="mobile_observation_count">Capture history · %1$d</string>
+    <string name="mobile_observation_notice">Identical originals share one history entry. Observations can include system redisplays and different capture paths; they do not establish separate broadcasts.</string>
+    <string name="mobile_observation_notification">Notification</string>
+    <string name="mobile_observation_dialog">System alert window</string>
+    <string name="mobile_observation_original">Original alert</string>
+    <string name="mobile_delete_group_notice">Delete this original, its translations and all collection observations grouped with the same original?</string>
 </resources>

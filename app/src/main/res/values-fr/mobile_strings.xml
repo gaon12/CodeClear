@@ -262,4 +262,11 @@
     <string name="mobile_battery_optimized">Optimisation de batterie active</string>
     <string name="mobile_battery_guidance">L’exemption est facultative. Si la collecte est retardée en arrière-plan, vérifiez les restrictions de batterie et d’arrière-plan. L’exemption ne restaure ni les accès révoqués, ni une appli arrêtée de force, ni le texte source indisponible.</string>
     <string name="mobile_background_restricted">Android limite actuellement l’utilisation en arrière-plan. Vérifiez cette appli dans les paramètres système de batterie.</string>
+    <string name="mobile_observations">Historique de collecte</string>
+    <string name="mobile_observation_count">Collectes · %1$d</string>
+    <string name="mobile_observation_notice">Les textes originaux identiques sont regroupés dans une seule entrée. Les collectes peuvent inclure des réaffichages système et différents accès ; elles ne prouvent pas des diffusions distinctes.</string>
+    <string name="mobile_observation_notification">Notification</string>
+    <string name="mobile_observation_dialog">Fenêtre d’alerte système</string>
+    <string name="mobile_observation_original">Alerte originale</string>
+    <string name="mobile_delete_group_notice">Supprimer ce texte original, ses traductions et toutes les collectes regroupées avec le même original ?</string>
 </resources>

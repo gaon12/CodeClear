@@ -260,4 +260,11 @@
     <string name="mobile_battery_optimized">バッテリー最適化が有効</string>
     <string name="mobile_battery_guidance">最適化の除外は任意です。バックグラウンドでの収集が遅れる場合はバッテリーとバックグラウンドの制限を確認してください。除外しても取り消された権限、強制停止、取得できない原文は復旧しません。</string>
     <string name="mobile_background_restricted">Androidがバックグラウンドでの使用を制限しています。システムのバッテリー設定でこのアプリを確認してください。</string>
+    <string name="mobile_observations">収集履歴</string>
+    <string name="mobile_observation_count">収集履歴 %1$d件</string>
+    <string name="mobile_observation_notice">同じ原文は履歴の1項目にまとめます。システムの再表示や異なる収集経路が含まれる場合があり、それぞれ別の警報が発信されたことを意味しません。</string>
+    <string name="mobile_observation_notification">通知</string>
+    <string name="mobile_observation_dialog">システム警報画面</string>
+    <string name="mobile_observation_original">元の警報</string>
+    <string name="mobile_delete_group_notice">この原文、翻訳、および同じ原文にまとめられた収集履歴をすべて削除しますか？</string>
 </resources>

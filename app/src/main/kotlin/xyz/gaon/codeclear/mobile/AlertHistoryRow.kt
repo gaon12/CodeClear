@@ -126,6 +126,16 @@ fun AlertHistoryRow(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
+                    if (alert.observationCount > 1) {
+                        Text(
+                            stringResource(
+                                R.string.mobile_observation_count,
+                                alert.observationCount
+                            ),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     Text(
                         if (translated != null) {
                             stringResource(R.string.mobile_translation, languageName(target))

@@ -133,7 +133,13 @@ class MobileRuntime(context: Context) {
                 it.engine == TranslationEngineKind.MY_MEMORY && it.translationAllowed
             )
         },
-        observed = alertPresenter::observed
+        observed = alertPresenter::observed,
+        deletionCandidates = notifications::knownIds,
+        deletedBatch = { ids ->
+            alertPresenter.clear()
+            notifications.cancel(ids)
+            ids.forEach(nearby::deleted)
+        }
     )
 
     private fun notificationStrings(): Context {

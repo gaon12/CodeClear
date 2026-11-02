@@ -15,5 +15,6 @@ data class MobileState(
     val query: String = "",
     val beforeId: Long = Long.MAX_VALUE,
     val loading: Boolean = false,
-    val storageError: Boolean = false
+    val storageError: Boolean = false,
+    val observationBeforeId: Long = Long.MAX_VALUE
 )

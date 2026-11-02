@@ -141,6 +141,8 @@ class MobileScreenDeviceTest {
     private var providerSettingsOpened = 0
     private var overlaySettingsOpened = 0
     private var batterySettingsOpened = 0
+    private var olderObservationRequests = 0
+    private var newestObservationRequests = 0
     private var presentationAccess by mutableStateOf(PresentationAccess())
     private val context get() = compose.activity
     private val fixtureResources
@@ -234,6 +236,8 @@ class MobileScreenDeviceTest {
                     false,
                     PreparationState(),
                     MobileActions(
+                        olderObservations = { olderObservationRequests++ },
+                        newestObservations = { newestObservationRequests++ },
                         presentationAccess = presentationAccess,
                         overlaySettings = { overlaySettingsOpened++ },
                         batterySettings = { batterySettingsOpened++ },
@@ -974,6 +978,51 @@ class MobileScreenDeviceTest {
         compose.onNodeWithTag("destination-2").assertDoesNotExist()
         compose.runOnIdle { notificationsAllowed = true }
         switchControl(text(R.string.mobile_result_notifications)).assertIsOn()
+    }
+
+    @Test
+    fun groupedHistoryPreservesVisibleObservationTimesAndPaginationActions() {
+        compose.runOnIdle {
+            val saved = record(1).copy(
+                observationCount = 24,
+                moreObservations = true,
+                observations = listOf(
+                    HistoryObservation(
+                        12,
+                        CaptureSource.NOTIFICATION,
+                        1700000002000,
+                        1700000001000,
+                        null
+                    ),
+                    HistoryObservation(
+                        11,
+                        CaptureSource.ORIGINAL_NOTIFICATION,
+                        1700000000000,
+                        null,
+                        1699999999000
+                    )
+                )
+            )
+            state = state.copy(records = listOf(saved), latest = saved, observationBeforeId = 100)
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithText(text(R.string.mobile_observation_count, 24)).assertIsDisplayed()
+        compose.onNodeWithTag("history-row-1").performClick()
+        compose.onNodeWithText(text(R.string.mobile_observations)).performScrollTo().performClick()
+        compose.onNodeWithTag("observation-12").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("observation-11").performScrollTo().assertIsDisplayed()
+        compose.onNode(
+            hasText(text(R.string.mobile_older)) and
+                hasAnyAncestor(hasTestTag("observation-history"))
+        ).performScrollTo().performClick()
+        compose.onNode(
+            hasText(text(R.string.mobile_newest)) and
+                hasAnyAncestor(hasTestTag("observation-history"))
+        ).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(1, olderObservationRequests)
+            assertEquals(1, newestObservationRequests)
+        }
     }
 
     @Test

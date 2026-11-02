@@ -33,6 +33,9 @@ class MobileControllerDeviceTest {
     private val noticeEngines = mutableListOf<TranslationEngineKind>()
     private val noticeBodies = mutableListOf<String>()
     private val savedOptions = mutableListOf<MobileOptions>()
+    private val deletedAlerts = mutableListOf<Long?>()
+    private val deletedBatches = mutableListOf<Set<Long>>()
+    private var notificationCandidates: Set<Long> = emptySet()
     private var diagnosticScope: AutoCloseable? = null
 
     @Before
@@ -262,16 +265,19 @@ class MobileControllerDeviceTest {
     }
 
     @Test
-    fun equalBodiesReuseTranslationWithoutMergingOccurrencesOrStartingTwoSdkJobs() {
+    fun equalBodiesShareHistoryWhilePreservingOccurrencesAndOneSdkJob() {
         store.insert(capture("[DRILL] Same original"))
         store.insert(capture("[DRILL] Same original"))
         start()
         await { engine.calls == 1 && it.latest != null }
         onMain { engine.complete("Local result") }
         await {
-            it.records.size == 2 &&
-                it.records.all { row -> row.translation?.phase == TranslationPhase.READY }
+            it.records.size == 1 && it.records.single().observationCount == 2 &&
+                it.records.single().translation?.phase == TranslationPhase.READY &&
+                onMain { notices.distinct().size == 2 }
         }
+        assertEquals(2, store.page("", "en").size)
+        assertTrue(store.page("", "en").all { it.translation?.phase == TranslationPhase.READY })
         assertEquals(1, onMain { engine.calls })
         assertEquals(2, onMain { notices.distinct().size })
     }
@@ -287,6 +293,45 @@ class MobileControllerDeviceTest {
         SystemClock.sleep(200)
         assertTrue(latest.get().records.isEmpty())
         assertTrue(onMain { notices.isEmpty() })
+    }
+
+    @Test
+    fun deletingAGroupedEntryRemovesAllItsReceiptsAndOnlyMatchingNotificationIds() {
+        val first = store.insert(capture("[DRILL] Grouped original"))!!
+        val repeated = store.insert(capture("[DRILL] Grouped original"))!!
+        val other = store.insert(capture("[DRILL] Another original"))!!
+        notificationCandidates = setOf(first, repeated, other)
+        start(local = false)
+        await { !it.loading && it.records.size == 2 }
+        onMain { controller!!.delete(repeated) }
+        await {
+            !it.loading && it.records.singleOrNull()?.id == other &&
+                onMain { deletedBatches.isNotEmpty() }
+        }
+        assertEquals(listOf(repeated), onMain { deletedAlerts.toList() })
+        assertEquals(listOf(setOf(first)), onMain { deletedBatches.toList() })
+        assertEquals(null, store.find(first, "en"))
+        assertEquals(null, store.find(repeated, "en"))
+        assertEquals(other, store.find(other, "en")?.id)
+    }
+
+    @Test
+    fun collectionHistoryPagesStayAttachedToTheirSelectedOriginal() {
+        val ids = List(25) { store.insert(capture("[DRILL] Paged original"))!! }
+        start(local = false)
+        await { !it.loading && it.records.size == 1 }
+        onMain { controller!!.openDetail(ids.last()) }
+        await { !it.loading && it.detail?.observations?.size == 20 }
+        val newest = latest.get().detail!!.observations.map { it.id }
+        onMain { controller!!.olderObservations() }
+        await { !it.loading && it.detail?.observations?.size == 5 }
+        val older = latest.get().detail!!.observations.map { it.id }
+        assertEquals(ids.reversed(), newest + older)
+        onMain { controller!!.newestObservations() }
+        await {
+            !it.loading && it.observationBeforeId == Long.MAX_VALUE &&
+                it.detail?.observations?.map { row -> row.id } == newest
+        }
     }
 
     @Test
@@ -605,7 +650,10 @@ class MobileControllerDeviceTest {
                     noticeEngines += producer
                     noticeBodies += body
                 },
-                optionsReady = savedOptions::add
+                optionsReady = savedOptions::add,
+                deleted = deletedAlerts::add,
+                deletionCandidates = { notificationCandidates },
+                deletedBatch = deletedBatches::add
             ).also { it.start() }
         }
     }
