@@ -1821,19 +1821,25 @@ class MobileScreenDeviceTest {
     }
 
     @Test
-    fun disabledRemoteConsentBlocksEngineSelectionAndStaleConfirmation() {
+    fun disabledRemoteConsentHidesEngineAndBlocksStaleConfirmation() {
+        val remote = hasText(text(R.string.mobile_engine_mymemory)) and isRadioChoice()
+        openEnginePicker()
+        compose.onAllNodes(remote).assertCountEquals(0)
         compose.runOnIdle {
             state = state.copy(options = state.options.copy(labsEnabled = true))
         }
-        openEnginePicker()
-        val remote = hasText(text(R.string.mobile_engine_mymemory)) and isRadioChoice()
-        compose.onNode(remote).assertIsNotEnabled()
-        compose.onNodeWithText(
-            text(R.string.mobile_engine_remote_disabled, text(R.string.mobile_labs))
-        ).assertIsDisplayed()
+        compose.onAllNodes(remote).assertCountEquals(0)
         compose.runOnIdle {
             assertFalse(state.options.serverAllowed)
             state = state.copy(options = state.options.copy(serverAllowed = true))
+        }
+        compose.onNode(remote).assertIsEnabled()
+        compose.runOnIdle {
+            state = state.copy(options = state.options.copy(labsEnabled = false))
+        }
+        compose.onAllNodes(remote).assertCountEquals(0)
+        compose.runOnIdle {
+            state = state.copy(options = state.options.copy(labsEnabled = true))
         }
         compose.onNode(remote).assertIsEnabled().performClick()
         compose.runOnIdle {

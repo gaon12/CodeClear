@@ -228,7 +228,6 @@
     <string name="mobile_server_terms">提供方条款和隐私政策</string>
     <string name="mobile_server_description">MyMemory · 使用互联网 · 需要单独允许</string>
     <string name="mobile_server_translation_notice">自动翻译可能不准确。请同时查看原始警报和官方指引。</string>
-    <string name="mobile_engine_remote_disabled">请先在%1$s中允许 MyMemory 远程翻译，再选择此引擎。</string>
     <string name="mobile_message_actions">复制或分享%1$s</string>
     <string name="mobile_copy_body">复制正文</string>
     <string name="mobile_share_body">分享正文</string>

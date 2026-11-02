@@ -120,7 +120,7 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                     Column(Modifier.selectableGroup()) {
                         TranslationEngineKind.entries.filter {
                             it != TranslationEngineKind.MY_MEMORY ||
-                                options.labsEnabled
+                                remoteSelectable
                         }.forEach { engine ->
                             val selectable = when (engine) {
                                 TranslationEngineKind.ML_KIT -> true
@@ -149,16 +149,6 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                                     availability,
                                     options.target,
                                     Modifier.padding(start = 46.dp, bottom = 8.dp)
-                                )
-                            } else if (engine == TranslationEngineKind.MY_MEMORY && !selectable) {
-                                Text(
-                                    stringResource(
-                                        R.string.mobile_engine_remote_disabled,
-                                        stringResource(R.string.mobile_labs)
-                                    ),
-                                    Modifier.padding(start = 46.dp, bottom = 8.dp),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }

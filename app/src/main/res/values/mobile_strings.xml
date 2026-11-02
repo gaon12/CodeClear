@@ -229,7 +229,6 @@
     <string name="mobile_server_terms">Provider terms and privacy</string>
     <string name="mobile_server_description">MyMemory · Internet · Separate permission required</string>
     <string name="mobile_server_translation_notice">Automatic translation may be inaccurate. Follow the original alert and official guidance.</string>
-    <string name="mobile_engine_remote_disabled">Allow MyMemory remote translation in %1$s to select this engine.</string>
     <string name="mobile_message_actions">%1$s: copy or share</string>
     <string name="mobile_copy_body">Copy text</string>
     <string name="mobile_share_body">Share text</string>
