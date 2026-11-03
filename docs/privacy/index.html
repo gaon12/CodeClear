@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="noindex" />
+        <title>CodeClear privacy policy draft</title>
+        <link rel="stylesheet" href="policy.css" />
+    </head>
+    <body>
+        <header>
+            <p>CodeClear · xyz.gaon.codeclear</p>
+            <h1>Privacy policy</h1>
+            <nav aria-label="Policy language">
+                <a href="index.html" aria-current="page" lang="en">English</a
+                ><a href="ko.html" lang="ko">한국어</a>
+            </nav>
+            <p>Draft prepared: November 3, 2026. Not yet effective.</p>
+        </header>
+        <main>
+            <p class="notice">
+                <strong>Publisher review draft.</strong> Hosting and
+                support-message retention, server maintenance, provider account
+                settings require confirmation before this policy takes effect.
+                This draft does not certify release readiness.
+            </p>
+            <p>
+                This policy covers CodeClear, an Android app for reading, saving
+                and translating emergency-alert messages, and its optional
+                CodeClear translation service. The privacy contact is the
+                CodeClear developer at
+                <a href="mailto:gokirito12@gmail.com">gokirito12@gmail.com</a>.
+            </p>
+            <h2>Alert collection and private device history</h2>
+            <p>
+                With your separate in-app consent and Android notification
+                access, CodeClear filters messages from reviewed system
+                emergency-alert receiver apps. Android notification access can
+                make other notifications available to the listener, but
+                CodeClear does not retain unrelated notifications. With separate
+                accessibility consent, it reads the individual message field,
+                title and pending count in reviewed system alert dialogs. It
+                does not press buttons, dismiss system warnings or record
+                screenshots. This accessibility service is not a disability
+                assistance tool.
+            </p>
+            <p>
+                Local history contains alert originals and titles, source and
+                collection timestamps, available alert-type evidence, collection
+                observations and translations. Alert text can itself contain
+                names, telephone numbers, addresses or other personal
+                information. Identical originals are grouped, with their
+                individual collection observations preserved. Settings and
+                preparation state are also stored locally. CodeClear does not
+                require an app account and does not read your SMS inbox,
+                contacts, microphone or camera.
+            </p>
+            <p>
+                Records stay in the app’s private storage until you delete them.
+                App backup and device-to-device app-data transfer are disabled.
+                This is private app storage, not a claim that the entire
+                database is separately encrypted. You can delete an individual
+                original and its grouped translations/observations, clear
+                history, or clear the app’s storage in Android settings. Turning
+                collection off stops new collection; it does not delete existing
+                history.
+            </p>
+            <h2>On-device translation and language models</h2>
+            <p>
+                ML Kit translates alert text on the device after you permit the
+                required model preparation. Downloading models needs an internet
+                connection. Google’s SDKs collect diagnostic and usage
+                information, including device and app information, installation
+                identifiers, performance and error events, and
+                identified/configured languages. Local text translation does not
+                mean that the SDK sends no network data. See
+                <a
+                    href="https://developers.google.com/ml-kit/android-data-disclosure"
+                    >Google’s ML Kit data disclosure</a
+                >
+                and
+                <a href="https://policies.google.com/privacy"
+                    >Google’s privacy policy</a
+                >.
+            </p>
+            <p>
+                If you enable compatible Android system translation, text is
+                passed to the installed system translation service through
+                Android’s on-device translation API. Availability and language
+                preparation depend on that service. Its provider’s data
+                practices also apply.
+            </p>
+            <h2>Optional online translation</h2>
+            <p>
+                Online engines in Labs are off until you separately enable and
+                authorize the particular service. When you select an authorized
+                online engine, new captured alerts and requested history or
+                nearby-message translations can send the original and selected
+                language information over HTTPS. CodeClear does not silently
+                switch to an online engine. You can withdraw each permission to
+                stop new requests; this cannot recall information already
+                received by a provider.
+            </p>
+            <p>
+                <strong>MyMemory (Translated).</strong> MyMemory receives the
+                original text, language pair and normal connection metadata,
+                including your network IP address. Its terms state that
+                submitted segments are retained long term and can be processed
+                by translation partners to provide or improve their services.
+                CodeClear’s anonymous integration does not request a MyMemory
+                account or API key and does not provide an in-app deletion API
+                for that provider. See
+                <a href="https://mymemory.translated.net/terms-and-conditions"
+                    >MyMemory’s terms and privacy information</a
+                >.
+            </p>
+            <p>
+                <strong>CodeClear service and Groq.</strong> Configured builds
+                can offer a fixed CodeClear service that requires a separately
+                supplied service access code. The service receives the original,
+                target language and authorization credential, then forwards
+                inference requests to Groq. The device protects the saved access
+                code using Android Keystore-backed encryption. It is not a Groq
+                provider key.
+            </p>
+            <p>
+                The service cache is scoped to the authenticated client, rather
+                than a public translation archive. It stores the original,
+                validated translation and issuer fields, model and prompt
+                information, measured processing time, bounded usage metadata
+                and creation/expiry information. Cache reuse avoids repeated
+                provider requests. Results expire within 30 days of creation,
+                without extending expiry on a cache hit. Body-free rate-limit
+                and deletion-generation records serve abuse prevention and
+                prevent stale requests from restoring cleared cache entries.
+            </p>
+            <p class="pending">
+                <strong>Deployment confirmation required:</strong> scheduled
+                removal of expired cache and database journal data, exact
+                body-free counter retention, hosting/proxy operator and country,
+                IP/access-log fields and retention, and backup
+                retention/exclusion must be confirmed. Cache expiry alone does
+                not establish when every stored copy is physically removed.
+            </p>
+            <p>
+                Use the app’s separate server-cache clear action while its
+                access code is still available to request deletion of that
+                authenticated cache scope. Pausing the engine, deleting local
+                history or removing the code does not clear the server cache.
+                Devices sharing the same service credential can share a cache
+                scope. If you cannot access the deletion action, contact the
+                privacy email without sending the access code. Deleting a
+                CodeClear cache cannot delete copies already processed by Groq.
+            </p>
+            <p>
+                Groq says inference inputs/outputs are not retained by default,
+                but reliability or abuse investigations can retain them for up
+                to 30 days or longer if legally required. Usage metadata is
+                retained separately. Account data controls can change these
+                practices; CodeClear does not claim that Zero Data Retention is
+                enabled. Groq describes retained customer data as stored in the
+                United States. See
+                <a href="https://console.groq.com/docs/your-data"
+                    >Groq’s data-handling information</a
+                >.
+            </p>
+            <h2>Nearby sharing, notifications and speech</h2>
+            <p>
+                Optional Bluetooth sharing requires Labs consent and Android
+                permissions. If you enable sending, nearby CodeClear users can
+                receive freshly captured originals, titles and timestamps, with
+                a temporary random occurrence identifier. These broadcasts are
+                intended to be readable by nearby users and are not a
+                confidential messaging channel. Received messages have
+                unverified origin, are saved in private nearby history until
+                deleted, and are not forwarded again. CodeClear does not collect
+                GPS coordinates; Android 11 requires location permission and
+                location services for Bluetooth scanning, with separate
+                background permission for background operation.
+            </p>
+            <p>
+                Result notifications and optional app overlays can show alert
+                originals or translations. Android notification and lock-screen
+                settings affect visibility. Copy/share actions send the selected
+                content to the clipboard or app you choose; that recipient then
+                handles the content under its own practices.
+            </p>
+            <p>
+                Speech is user-started and passes the chosen text to the
+                selected installed speech service. CodeClear selects installed
+                voices reported as requiring no network and does not fall back
+                to a network-only voice. The speech-service provider remains
+                responsible for its own implementation and privacy practices.
+            </p>
+            <h2>Support, security and your choices</h2>
+            <p>
+                CodeClear does not include advertising or a first-party
+                advertising profile. Optional services and SDK diagnostics are
+                described above; do not treat this as a promise of zero data
+                collection. The app uses Android permission controls and private
+                storage; remote translation connections use HTTPS. Nearby
+                sharing has the separate public-to-nearby behavior described
+                above.
+            </p>
+            <p>
+                If you email support, we receive your email address and the
+                information you choose to provide for support or privacy
+                requests. Avoid sending alert bodies, access codes or provider
+                keys unless a specific, necessary request has been agreed.
+            </p>
+            <p class="pending">
+                <strong>Publisher confirmation required:</strong> retention and
+                deletion periods for support correspondence, and intended age
+                audience, before this policy takes effect.
+            </p>
+            <p>
+                You can revoke Android notification/accessibility access, turn
+                off each translation permission, stop nearby sharing, remove
+                downloaded models, delete local records, clear the authorized
+                server cache, or clear/uninstall the app. Local removal does not
+                erase data held by external providers or chosen sharing
+                recipients. Email the privacy contact for questions, access or
+                deletion requests concerning the CodeClear-operated service; do
+                not email secret credentials.
+            </p>
+            <h2>This policy website</h2>
+            <p>
+                This policy website is hosted on GitHub Pages. GitHub records
+                visitor IP addresses for service security under its
+                <a
+                    href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement"
+                    >privacy statement</a
+                >. These pages add no analytics, advertising scripts or remote
+                fonts. Visiting the policy does not upload your app history.
+            </p>
+            <h2>Policy updates</h2>
+            <p>
+                The effective date will be set when the publisher confirms the
+                deployment facts. Material changes to optional data transmission
+                require the corresponding updated in-app disclosure and
+                permission.
+            </p>
+        </main>
+        <footer>
+            <p>
+                Contact:
+                <a href="mailto:gokirito12@gmail.com">gokirito12@gmail.com</a>
+            </p>
+        </footer>
+    </body>
+</html>
