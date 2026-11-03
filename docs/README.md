@@ -14,3 +14,9 @@ contact. Confirm operating details when changing retention or hosting.
 The pages exclude the actual translation endpoint, credentials, private alert
 history, advertising scripts, remote fonts and tracking code. Relative language
 links work on a project Pages path. Keep `.nojekyll` for static publication.
+
+The publisher authorized the synthetic accessibility review video under
+`review/` for public hosting and Play review on November 3, 2026. It contains
+only emulator drill content. Keep its validation-build and system-receiver
+limitations visible; it is not physical reception or universal compatibility
+evidence. Do not replace it with recordings of private device history.

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>CodeClear accessibility review demonstration</title>
+        <link rel="stylesheet" href="../privacy/policy.css" />
+        <link rel="stylesheet" href="review.css" />
+    </head>
+    <body>
+        <header><h1>CodeClear accessibility review demonstration</h1></header>
+        <main>
+            <p class="notice">
+                This 85-second recording uses a validation build, an Android
+                emulator and synthetic drill messages. It demonstrates user
+                consent and visible system alert observation. It does not
+                establish physical radio reception, universal device support or
+                translation accuracy.
+            </p>
+            <video
+                controls
+                preload="metadata"
+                aria-label="CodeClear accessibility review with English captions"
+            >
+                <source src="accessibility.mp4" type="video/mp4" />
+                <a href="accessibility.mp4">Download the review video</a>.
+            </video>
+            <h2>Recording sequence</h2>
+            <ol>
+                <li>
+                    Read the separate accessibility disclosure; cancel without
+                    granting access.
+                </li>
+                <li>
+                    Reopen the disclosure and explicitly enable access in
+                    Android settings.
+                </li>
+                <li>
+                    Review and separately grant notification access. Remote and
+                    local translation remain off.
+                </li>
+                <li>
+                    Trigger a synthetic message through the system receiver. Its
+                    original warning remains visible.
+                </li>
+                <li>
+                    Inspect the captured original in CodeClear history without
+                    dismissing the system warning.
+                </li>
+            </ol>
+            <p>
+                CodeClear observes supported emergency-alert source screens to
+                recover original messages for the user's history and chosen
+                translation engine. Access can be withdrawn in Android settings.
+                Production collection does not require ADB or the fixture used
+                to make this recording.
+            </p>
+            <p><a href="../privacy/">Privacy policy</a></p>
+        </main>
+    </body>
+</html>
