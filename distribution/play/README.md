@@ -1,7 +1,7 @@
 # Google Play submission materials
 
-The listing JSON files are local drafts. They have not been entered into Play
-Console or submitted for review. They do not establish production readiness.
+The listing JSON files are source drafts for Play Console. Saving a console
+draft does not submit it for review or establish production readiness.
 
 ## Localized listings
 
@@ -21,15 +21,15 @@ remote-translation permission are stated in every language.
 - Confirm the Play application identity, existing releases and signing state.
   The package is `xyz.gaon.codeclear`; the release version name is `1.0.0`.
   The latest optimized artifacts are unsigned and are not upload-ready.
-- Complete the current optimized-runtime and capture validation gates. Do not
+- Complete the applicable optimized-runtime and capture validation gates. Do not
   describe a debug installation or a successful bundle build as a final release.
 - Provide the public privacy-policy URL and a working privacy contact. Confirm
   the deployed service's logging, retention and deletion behavior before making
   declarations about hosting metadata or provider handling.
 - Complete accurate Data safety, accessibility and foreground-service forms,
   app-access instructions, audience/content-rating and distribution settings.
-- Prepare the app icon, feature graphic, localized screenshots and accessibility
-  demonstration video. No completed image assets are included in this folder.
+- Review the app icon, feature graphic, localized screenshots and accessibility
+  demonstration video. Generated image assets are kept outside the repository.
 
 ML Kit documents collection of diagnostic/usage data, including device/app
 information, installation identifiers, performance information and language
@@ -51,6 +51,31 @@ and 3840 pixels, with the longer dimension at most twice the shorter. Review
 captures rather than stretching a taller device image into that aspect ratio.
 Use ADB only on the explicitly prepared fixture/device. Do not disable the
 owner application's protected-window behavior to extract private content.
+
+### Explicit synthetic export
+
+`PlayStoreAssetsDeviceTest` renders the application's actual screen components
+with three distinct, clearly marked drill messages. Translations are fixture
+text: these captures demonstrate presentation, not translation accuracy or
+successful emergency reception. Its callbacks cannot request translations,
+download models or delete history.
+
+Run the class explicitly on a disposable Android 11 or later emulator with a
+1080 by 1920 pixel display. Build the debug application and its instrumentation
+APK with `-Pcodeclear.validationBuild=true`, verify that both package identities
+use `xyz.gaon.codeclear.validation`, and install only those APKs. The fixture
+refuses to export from the owner's normal application package. It is excluded
+from the routine device-fixture selection and from release packages.
+
+The instrumentation class is
+`xyz.gaon.codeclear.mobile.PlayStoreAssetsDeviceTest`, using
+`xyz.gaon.codeclear.CollectionPreservingTestRunner`. Outputs are in the
+validation application's private `cache/play-assets` directory: four JPEG
+screens per application locale, a 512-pixel native icon and a 1024 by 500 pixel
+feature graphic. Export with ADB `run-as` for that validation package, retain
+the original pixels, verify file dimensions, and inspect each locale before
+uploading. Only the synthetic fixture activity clears its protected-window
+flag; the production application keeps its protection.
 
 Keep configured APKs/AABs, credentials and the actual translation route out of
 this directory and public repository. Follow [private build instructions](../../tools/PRIVATE_BUILDS.md).
