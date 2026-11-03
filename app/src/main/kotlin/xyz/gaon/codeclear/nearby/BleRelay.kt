@@ -59,6 +59,13 @@ class BleRelay(
     private var diagnosticSightings = 0
     private var advertising = false
     private var server: BluetoothGattServer? = null
+    private val serverClose = DeferredGattClose {
+        runCatching { server?.clearServices() }
+        runCatching { server?.close() }
+        server = null
+        worker.removeCallbacksAndMessages(null)
+        thread.quitSafely()
+    }
     private var serverReady = false
     private var peer: BluetoothDevice? = null
     private var peerSession = 0L
@@ -300,18 +307,35 @@ class BleRelay(
             )
         )
         server = manager.openGattServer(context, serving)
-        if (server?.addService(service) != true) receiveStatus = NearbyStatus.RECEIVE_ONLY
+        serverClose.registrationStarted()
+        val accepted = try {
+            server?.addService(service) == true
+        } catch (error: RuntimeException) {
+            serverClose.registrationFinished()
+            throw error
+        }
+        if (!accepted) {
+            serverClose.registrationFinished()
+            receiveStatus = NearbyStatus.RECEIVE_ONLY
+        }
     }
 
     private val serving = object : BluetoothGattServerCallback() {
-        override fun onServiceAdded(code: Int, service: BluetoothGattService) = post {
-            if (code != BluetoothGatt.GATT_SUCCESS) diagnostic("server", code)
-            serverReady = code == BluetoothGatt.GATT_SUCCESS
-            if (serverReady) diagnostic("server-ready", 0)
-            if (serverReady && exports.isNotEmpty()) advertise()
-            if (!serverReady) {
-                receiveStatus = NearbyStatus.RECEIVE_ONLY
-                status(if (scanning) receiveStatus else NearbyStatus.COOLDOWN)
+        override fun onServiceAdded(code: Int, service: BluetoothGattService) {
+            // This callback must survive close(): unregistering while addService is pending
+            // can leave attribute handles routed to a dead server on the tested firmware.
+            worker.post {
+                serverClose.registrationFinished()
+                post {
+                    if (code != BluetoothGatt.GATT_SUCCESS) diagnostic("server", code)
+                    serverReady = code == BluetoothGatt.GATT_SUCCESS
+                    if (serverReady) diagnostic("server-ready", 0)
+                    if (serverReady && exports.isNotEmpty()) advertise()
+                    if (!serverReady) {
+                        receiveStatus = NearbyStatus.RECEIVE_ONLY
+                        status(if (scanning) receiveStatus else NearbyStatus.COOLDOWN)
+                    }
+                }
             }
         }
         override fun onConnectionStateChange(device: BluetoothDevice, code: Int, state: Int) =
@@ -627,19 +651,22 @@ class BleRelay(
 
     override fun close() {
         if (!closed.compareAndSet(false, true)) return
-        worker.removeCallbacksAndMessages(null)
         worker.post {
             runCatching { if (scanning) adapter.bluetoothLeScanner?.stopScan(scan) }
             runCatching {
                 if (advertising) adapter.bluetoothLeAdvertiser?.stopAdvertising(advertiseCallback)
             }
             disconnectClient()
-            runCatching { server?.close() }
-            server = null
             exports.clear()
             snapshot = emptyList()
             cooldown.clear()
-            thread.quitSafely()
+            serverClose.close()
+            if (!serverClose.released) {
+                worker.postDelayed({
+                    if (!serverClose.released) diagnostic("server-close-timeout", 0)
+                    serverClose.expire()
+                }, 5000)
+            }
         }
     }
 
