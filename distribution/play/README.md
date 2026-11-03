@@ -20,7 +20,8 @@ remote-translation permission are stated in every language.
 
 - Confirm the Play application identity, existing releases and signing state.
   The package is `xyz.gaon.codeclear`; the release version name is `1.0.0`.
-  The latest optimized artifacts are unsigned and are not upload-ready.
+  Sign the optimized bundle with the protected upload key and verify it before
+  uploading. An unsigned bundle is not upload-ready.
 - Complete the applicable optimized-runtime and capture validation gates. Do not
   describe a debug installation or a successful bundle build as a final release.
 - Provide the public privacy-policy URL and a working privacy contact. Confirm
