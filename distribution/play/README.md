@@ -78,6 +78,25 @@ the original pixels, verify file dimensions, and inspect each locale before
 uploading. Only the synthetic fixture activity clears its protected-window
 flag; the production application keeps its protection.
 
+### Accessibility review recording
+
+`AccessibilityReviewRecordingDeviceTest` is an explicitly invoked recording
+session for the real `MainActivity` consent and settings flows. It accepts only
+a debug validation package on reviewed emulator hardware. Use a disposable
+emulator containing synthetic alerts; never instrument or record owner history.
+The session temporarily makes that synthetic activity recordable, restores its
+protected-window flag on exit, and times out after three minutes. Release
+packages do not contain the session or an option to disable protection.
+
+An external reviewer drives ordinary controls, including refusal, reopening the
+separate accessibility explanation, consent, Android's grant screen and the
+feature using accessibility. The session exposes a private
+`cache/accessibility-review.ready` marker and finishes when the controller
+creates `cache/accessibility-review.stop` through ADB `run-as`. Preserve the
+distinction between an emulated system-receiver injection and physical radio
+reception in the video's captions. Review the recording before sharing it, and
+host it only at an authorized review destination.
+
 Keep configured APKs/AABs, credentials and the actual translation route out of
 this directory and public repository. Follow [private build instructions](../../tools/PRIVATE_BUILDS.md).
 
