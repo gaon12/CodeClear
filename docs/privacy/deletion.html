@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>CodeClear data deletion</title>
+        <link rel="stylesheet" href="policy.css" />
+    </head>
+    <body>
+        <header>
+            <p>CodeClear · xyz.gaon.codeclear</p>
+            <h1>Data deletion</h1>
+            <nav aria-label="Language">
+                <a href="deletion.html" lang="en" aria-current="page">English</a
+                ><a href="deletion-ko.html" lang="ko">한국어</a>
+            </nav>
+            <p>Effective November 3, 2026.</p>
+        </header>
+        <main>
+            <p class="notice">
+                You can delete local history and the authenticated CodeClear
+                server cache separately. Removing the app or its access token
+                does not delete existing server data.
+            </p>
+            <h2>Delete on your device</h2>
+            <p>
+                Delete a record from History, or open Settings → Privacy and
+                delete all local records. Downloaded ML Kit models have separate
+                removal actions in model management. Android app storage removal
+                or uninstall removes CodeClear's private local data.
+            </p>
+            <h2>Delete the CodeClear service cache</h2>
+            <ol>
+                <li>
+                    Keep your saved access token until cache deletion is
+                    complete.
+                </li>
+                <li>
+                    Open Settings → Labs → CodeClear server and choose the
+                    server cache deletion action.
+                </li>
+                <li>
+                    Confirm the request and wait for its result. This deletes
+                    the cache scope authenticated by that token, including
+                    stored originals and translated results.
+                </li>
+                <li>
+                    You may then turn the service off or remove the token. Your
+                    device history is separate.
+                </li>
+            </ol>
+            <h2>Request help or deletion by email</h2>
+            <p>
+                Email
+                <a
+                    href="mailto:gokirito12@gmail.com?subject=CodeClear%20data%20deletion"
+                    >gokirito12@gmail.com</a
+                >
+                with the subject “CodeClear data deletion”. State whether you
+                need help with the CodeClear service cache or support
+                correspondence. Do not send access tokens, provider keys or
+                alert bodies. We may need to verify the relevant service access
+                before acting on a request.
+            </p>
+            <h2>What may be retained</h2>
+            <p>
+                Active translation results expire within 30 days of creation.
+                Cache deletion does not promise immediate erasure of operational
+                logs, backups, security counters or deletion-generation records.
+                These have separate operational or legal retention; contact the
+                privacy email for the applicable information and deletion
+                assistance. Support messages are retained while needed for the
+                request, necessary follow-up or legal obligations.
+            </p>
+            <p>
+                CodeClear cannot erase data already processed by Groq or
+                MyMemory, or copies received through sharing. Their separate
+                practices and the SDK diagnostics disclosures are explained in
+                the <a href="index.html">privacy policy</a>. The app has no
+                in-app account creation.
+            </p>
+        </main>
+    </body>
+</html>
