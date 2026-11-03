@@ -27,15 +27,22 @@ Japanese, French, German, Simplified Chinese, and Traditional Chinese.
   download action; background translation does not silently download models.
 - Android system translation is available only when the installed provider exposes
   a supported language pair. Service presence alone does not establish support.
-- Labs contains experimental nearby sharing and MyMemory translation. MyMemory
-  requires a separate, default-off remote permission and disclosure of provider
-  retention and quota limits. There is no silent remote fallback.
+- Labs contains experimental nearby sharing and MyMemory translation. Configured
+  private builds can also expose the fixed CodeClear translation service. Each
+  remote service requires its own default-off permission and retention/quota
+  disclosure. There is no silent remote fallback.
 - Alert history stays in app-private storage until deletion. App backup and device
   transfer are disabled. Remote permission covers automatic captured-alert
   translation and requested historical/peer-original translations. Nearby sharing
   has its own disclosure and permission for peer exchange.
-- Other server providers, user-supplied endpoints and keys, shared server caches,
-  and backend deployment are deferred.
+- The optional owned backend is in `server/php`; the owner deploys it separately.
+  Private builds inject only its route, while the client token is stored through
+  Android Keystore-backed encryption. See [private builds](tools/PRIVATE_BUILDS.md).
+  Arbitrary provider endpoints and provider-key integration remain out of scope.
+
+Draft [Google Play materials](distribution/play/README.md) include localized
+listing copy and remaining submission inputs. They have not been submitted and
+do not waive the capture or optimized-runtime release gates.
 
 ## Build and check
 
