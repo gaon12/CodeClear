@@ -1,16 +1,16 @@
-# Public privacy review pages
+# Public privacy pages
 
-GitHub Pages serves this directory. The English and Korean pages under
-`privacy/` are publisher-review drafts, with no effective date. Do not register
-them as a finalized Play privacy policy until the operating facts are confirmed
-and the in-app policy is consistent with the published version.
+GitHub Pages serves this directory. The English and Korean policies under
+`privacy/` take effect on November 3, 2026, as authorized by the publisher.
+Keep the in-app disclosure, Play declarations and published policy consistent.
 
-Confirm hosting and proxy processing, access-log fields and retention, database
-backup handling, expired-cache maintenance, body-free counter retention,
-support-correspondence retention and intended age audience. Do not replace
-unknown facts with an assumption of zero collection or zero retention.
+The policy distinguishes active translation-cache expiry from infrastructure
+logs and backup retention. It does not promise zero SDK collection, enabled
+provider Zero Data Retention, a fixed unverified log-deletion schedule or
+physical erasure of every copy when a cache entry expires. The publisher must
+maintain the actual service and respond to privacy requests through the stated
+contact. Confirm operating details when changing retention or hosting.
 
-The pages do not contain the actual translation endpoint, credentials, private
-alert history, advertising scripts, remote fonts or tracking code. Relative
-links work on a project Pages path. Keep `.nojekyll` so the static files are
-published without a documentation-theme build.
+The pages exclude the actual translation endpoint, credentials, private alert
+history, advertising scripts, remote fonts and tracking code. Relative language
+links work on a project Pages path. Keep `.nojekyll` for static publication.
