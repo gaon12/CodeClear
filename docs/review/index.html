@@ -3,13 +3,14 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>CodeClear accessibility review demonstration</title>
+        <title>CodeClear review demonstrations</title>
         <link rel="stylesheet" href="../privacy/policy.css" />
         <link rel="stylesheet" href="review.css" />
     </head>
     <body>
-        <header><h1>CodeClear accessibility review demonstration</h1></header>
+        <header><h1>CodeClear review demonstrations</h1></header>
         <main>
+            <h2>Accessibility and supported system alerts</h2>
             <p class="notice">
                 This 85-second recording uses a validation build, an Android
                 emulator and synthetic drill messages. It demonstrates user
@@ -55,6 +56,48 @@
                 Production collection does not require ADB or the fixture used
                 to make this recording.
             </p>
+            <h2>Connected-device foreground service</h2>
+            <p class="notice">
+                This 32-second recording shows two physical devices using an
+                isolated validation build. The user enables optional nearby
+                sharing, reads its disclosure and grants Nearby devices access.
+                A fixture supplies one synthetic original to the sender; actual
+                Bluetooth transfers it to the receiver's private history. The
+                receiver switches to another app and returns to inspect the
+                unverified original, then the user stops sharing. Ordinary alert
+                capture and translation remain off in these test installations.
+                Cuts remove navigation, waiting and private connection checks.
+            </p>
+            <video
+                controls
+                preload="metadata"
+                aria-label="CodeClear Bluetooth foreground service review with English captions"
+            >
+                <source src="connected-device-service.mp4" type="video/mp4" />
+                <a href="connected-device-service.mp4"
+                    >Download the service review video</a
+                >.
+            </video>
+            <h2>Android 11 Bluetooth discovery permissions</h2>
+            <p class="notice">
+                This 30-second Android 11 emulator recording shows the separate
+                in-app disclosure, foreground location prompt, explanation of
+                background Bluetooth access, and the user's Allow all the time
+                selection in Android settings. No GPS coordinates are collected.
+                This recording demonstrates actual permission controls, not
+                physical Bluetooth or cellular reception. Android 12 and later
+                use Nearby devices permission instead of these location grants.
+            </p>
+            <video
+                controls
+                preload="metadata"
+                aria-label="CodeClear Android 11 Bluetooth permission review with English captions"
+            >
+                <source src="background-location.mp4" type="video/mp4" />
+                <a href="background-location.mp4"
+                    >Download the permission review video</a
+                >.
+            </video>
             <p><a href="../privacy/">Privacy policy</a></p>
         </main>
     </body>
