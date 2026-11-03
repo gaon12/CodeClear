@@ -279,7 +279,7 @@
     <string name="mobile_owned_server">CodeClear 伺服器</string>
     <string name="mobile_owned_description">CodeClear 服務 · 網際網路 · 需個別授權</string>
     <string name="mobile_owned_permission">允許 CodeClear 伺服器翻譯</string>
-    <string name="mobile_owned_disclosure">警報原文與目標語言會傳送至 CodeClear 服務，再由服務向 Groq 請求翻譯。服務依存取權杖分別保留私有原文與譯文快取，最長30天。Groq 可能依資料設定，為排除故障或調查濫用而保留資料。服務配額可能中斷翻譯。暫停傳送或刪除權杖不會刪除既有伺服器資料；如需刪除，請先清空伺服器快取，再刪除權杖。不會自動改用其他翻譯引擎。</string>
+    <string name="mobile_owned_disclosure">將警報原文和目標語言傳送至CodeClear服務，再由服務向Groq請求推論。快取結果會在30天內到期；執行紀錄和備份的保留規則在隱私權政策中另行說明。Groq可能因可靠性或濫用調查保留資料。配額可能導致翻譯停止。關閉傳送或移除存取碼不會刪除既有伺服器資料。移除存取碼前請另外清空伺服器快取。不會自動切換至其他引擎。</string>
     <string name="mobile_owned_access">存取權杖</string>
     <string name="mobile_owned_access_saved">已安全儲存</string>
     <string name="mobile_owned_access_missing">需要存取權杖</string>
@@ -296,4 +296,5 @@
     <string name="mobile_owned_unavailable">伺服器翻譯無法使用。請檢查授權、存取權杖與網路。</string>
     <string name="mobile_owned_quota">已達到 CodeClear 服務使用上限，請稍後重試。</string>
     <string name="mobile_owned_too_long">此訊息過長，無法傳送至 CodeClear 服務。原文保持不變。</string>
+    <string name="mobile_privacy_policy">隱私權政策</string>
 </resources>

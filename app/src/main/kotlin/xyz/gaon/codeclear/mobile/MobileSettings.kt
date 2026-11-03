@@ -169,6 +169,8 @@ fun MobileSettings(
                     SettingsInfo.PRIVACY
             })
             SettingDivider()
+            PrivacyPolicyLink()
+            SettingDivider()
             SettingRow(stringResource(R.string.mobile_delete_all), onClick = {
                 actions.delete(null)
             }, destructive = true)

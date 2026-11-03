@@ -110,7 +110,7 @@ class MobileOptionsStorage(
                     saved.getInt("remote_disclosure_version", 0) == 1 &&
                     saved.getBoolean("server_allowed", false),
             ownedServerAllowed = currentDisclosure && labsEnabled && ownedConfigured &&
-                ownedId.isNotEmpty() && saved.getInt("owned_disclosure_version", 0) == 1 &&
+                ownedId.isNotEmpty() && saved.getInt("owned_disclosure_version", 0) == 2 &&
                 saved.getBoolean("owned_server_allowed", false),
             ownedServerCredentialId = ownedId,
             messageViewMode = MessageViewMode.entries.firstOrNull {
@@ -131,7 +131,7 @@ class MobileOptionsStorage(
             .putInt("overlay_disclosure_version", 1)
             .putBoolean("deferred_overlay_enabled", options.deferredOverlayEnabled)
             .putBoolean("server_allowed", options.serverAllowed && options.labsEnabled)
-            .putInt("owned_disclosure_version", 1)
+            .putInt("owned_disclosure_version", 2)
             .putBoolean(
                 "owned_server_allowed",
                 options.ownedServerAllowed && options.labsEnabled &&

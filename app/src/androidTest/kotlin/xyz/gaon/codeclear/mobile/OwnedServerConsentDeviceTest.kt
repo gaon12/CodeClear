@@ -56,10 +56,24 @@ class OwnedServerConsentDeviceTest {
     fun oldDisclosureAndInvalidCredentialIdentifiersCannotEnableOwnedTranslation() {
         try {
             val storage = MobileOptionsStorage(context, name, ownedConfigured = true)
-            storage.save(granted)
             val preferences = context.getSharedPreferences(name, 0)
-            assertTrue(preferences.edit().putInt("owned_disclosure_version", 0).commit())
-            assertFalse(storage.load().translationAllowed)
+            for (oldVersion in listOf(0, 1)) {
+                storage.save(
+                    granted.copy(
+                        notificationConsent = true,
+                        accessibilityConsent = true,
+                        localConsent = true
+                    )
+                )
+                assertTrue(
+                    preferences.edit().putInt("owned_disclosure_version", oldVersion).commit()
+                )
+                val restored = storage.load()
+                assertFalse(restored.translationAllowed)
+                assertTrue(restored.notificationConsent)
+                assertTrue(restored.accessibilityConsent)
+                assertTrue(restored.localConsent)
+            }
             storage.save(granted.copy(ownedServerCredentialId = "not-a-credential-fingerprint"))
             assertFalse(storage.load().translationAllowed)
             assertEquals("", storage.load().ownedServerCredentialId)

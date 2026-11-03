@@ -280,7 +280,7 @@
     <string name="mobile_owned_server">CodeClear-Server</string>
     <string name="mobile_owned_description">CodeClear-Dienst · Internet · Separate Zustimmung erforderlich</string>
     <string name="mobile_owned_permission">Übersetzung über CodeClear erlauben</string>
-    <string name="mobile_owned_disclosure">Originalmeldungen und Zielsprache werden an den CodeClear-Dienst gesendet, der Groq beauftragt. Der Dienst speichert Originale und Übersetzungen pro Zugangstoken bis zu 30 Tage im privaten Cache. Groq kann Daten gemäß den Dateneinstellungen zur Fehlerbehebung oder Missbrauchsuntersuchung speichern. Dienstlimits können Übersetzungen stoppen. Pausieren oder Entfernen des Tokens löscht keine vorhandenen Serverdaten; leeren Sie den Cache vor dem Entfernen separat. Es erfolgt kein automatischer Wechsel zu einer anderen Engine.</string>
+    <string name="mobile_owned_disclosure">Senden Sie Warnungsoriginal und Zielsprache an den CodeClear-Dienst, der die Anfrage an Groq weiterleitet. Cache-Ergebnisse laufen innerhalb von 30 Tagen ab; Betriebsprotokolle und Sicherungen haben eine eigene, in der Datenschutzerklärung beschriebene Aufbewahrung. Groq kann Daten für Zuverlässigkeit oder Missbrauchsuntersuchungen speichern. Kontingente können die Übersetzung stoppen. Das Ausschalten oder Entfernen des Zugangscodes löscht keine vorhandenen Serverdaten. Leeren Sie den Servercache vor dem Entfernen des Codes gesondert. Andere Engines werden nie automatisch gewählt.</string>
     <string name="mobile_owned_access">Zugangstoken</string>
     <string name="mobile_owned_access_saved">Sicher gespeichert</string>
     <string name="mobile_owned_access_missing">Zugangstoken erforderlich</string>
@@ -297,4 +297,5 @@
     <string name="mobile_owned_unavailable">Serverübersetzung nicht verfügbar. Prüfen Sie Zustimmung, Token und Verbindung.</string>
     <string name="mobile_owned_quota">Das Nutzungslimit des CodeClear-Dienstes ist erreicht. Versuchen Sie es später erneut.</string>
     <string name="mobile_owned_too_long">Diese Meldung ist für den CodeClear-Dienst zu lang. Das Original bleibt unverändert.</string>
+    <string name="mobile_privacy_policy">Datenschutzerklärung</string>
 </resources>

@@ -1964,6 +1964,25 @@ class MobileScreenDeviceTest {
         assertEquals(actionsWidth, close.fetchSemanticsNode().boundsInRoot.width, 1f)
         close.performTouchInput { click(Offset(8f, centerY)) }
         compose.onNodeWithTag("confirmation-actions").assertDoesNotExist()
+        for (language in listOf("en", "ko", "ja", "zh-Hans", "zh-Hant", "fr", "de")) {
+            compose.runOnIdle { previewLanguage = language }
+            compose.onNodeWithTag("privacy-policy-link").performScrollTo().performClick()
+            compose.runOnIdle {
+                assertEquals(
+                    "https://gaon12.github.io/CodeClear/privacy/" +
+                        if (language == "ko") "ko.html" else "",
+                    projectLinks.last()
+                )
+            }
+        }
+        compose.runOnIdle { projectLinkFailure = true }
+        compose.onNodeWithTag("privacy-policy-link").performClick()
+        compose.onNodeWithTag("settings-detail-title").assertExists()
+        compose.runOnIdle {
+            assertEquals(0, deletionRequests)
+            assertEquals(0, serverAllows)
+            assertTrue(requestedModels.isEmpty())
+        }
     }
 
     @Test

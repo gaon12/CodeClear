@@ -279,7 +279,7 @@
     <string name="mobile_owned_server">CodeClear 服务器</string>
     <string name="mobile_owned_description">CodeClear 服务 · 互联网 · 需单独授权</string>
     <string name="mobile_owned_permission">允许 CodeClear 服务器翻译</string>
-    <string name="mobile_owned_disclosure">警报原文和目标语言会发送给 CodeClear 服务，再由服务请求 Groq 翻译。服务按访问令牌分别保留私有原文和译文缓存，最长30天。Groq 可能根据数据设置，为排查故障或调查滥用而保留数据。服务配额可能中断翻译。暂停发送或删除令牌不会删除已有服务器数据；如需删除，请先清空服务器缓存，再删除令牌。不会自动改用其他翻译引擎。</string>
+    <string name="mobile_owned_disclosure">将警报原文和目标语言发送到CodeClear服务，再由服务向Groq请求推理。缓存结果在30天内到期；运行日志和备份的保留规则在隐私政策中另行说明。Groq可能为可靠性或滥用调查保留数据。配额可能导致翻译停止。关闭发送或移除访问码不会删除已有服务器数据。移除访问码前请单独清空服务器缓存。不会自动切换到其他引擎。</string>
     <string name="mobile_owned_access">访问令牌</string>
     <string name="mobile_owned_access_saved">已安全保存</string>
     <string name="mobile_owned_access_missing">需要访问令牌</string>
@@ -296,4 +296,5 @@
     <string name="mobile_owned_unavailable">服务器翻译不可用。请检查授权、访问令牌和网络。</string>
     <string name="mobile_owned_quota">已达到 CodeClear 服务使用上限，请稍后重试。</string>
     <string name="mobile_owned_too_long">此消息过长，无法发送给 CodeClear 服务。原文保持不变。</string>
+    <string name="mobile_privacy_policy">隐私政策</string>
 </resources>

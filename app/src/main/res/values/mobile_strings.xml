@@ -280,7 +280,7 @@
     <string name="mobile_owned_server">CodeClear server</string>
     <string name="mobile_owned_description">CodeClear service · Internet · Separate permission required</string>
     <string name="mobile_owned_permission">Allow CodeClear server translation</string>
-    <string name="mobile_owned_disclosure">Send alert originals and the selected target language to the CodeClear service, which forwards requests to Groq. The service keeps private cached originals and translations for up to 30 days. Groq may retain data for reliability or abuse investigations under its data controls. Service quotas may stop translation. Pausing sending or removing the access code does not erase existing server data; clear the server cache separately before removing the code. Other engines are never selected automatically.</string>
+    <string name="mobile_owned_disclosure">Send alert originals and the target language to the CodeClear service, which forwards inference to Groq. Cached results expire within 30 days; operational logs and backups have separate retention described in the privacy policy. Groq may retain data for reliability or abuse investigations. Quotas may stop translation. Turning sending off or removing the access code does not erase existing server data. Clear the server cache separately before removing the code. Other engines are never selected automatically.</string>
     <string name="mobile_owned_access">Access token</string>
     <string name="mobile_owned_access_saved">Saved securely</string>
     <string name="mobile_owned_access_missing">Access token required</string>
@@ -297,4 +297,5 @@
     <string name="mobile_owned_unavailable">Server translation unavailable. Check permission, access token and connection.</string>
     <string name="mobile_owned_quota">The CodeClear service limit was reached. Try again later.</string>
     <string name="mobile_owned_too_long">This message is too long for the CodeClear service. The original is unchanged.</string>
+    <string name="mobile_privacy_policy">Privacy policy</string>
 </resources>

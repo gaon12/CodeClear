@@ -264,4 +264,5 @@ internal fun OwnedProviderTermsLink() {
             Toast.makeText(context, R.string.mobile_link_unavailable, Toast.LENGTH_LONG).show()
         }
     }) { Text(stringResource(R.string.mobile_owned_terms)) }
+    PrivacyPolicyLink()
 }

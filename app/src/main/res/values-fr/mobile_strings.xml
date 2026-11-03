@@ -281,7 +281,7 @@
     <string name="mobile_owned_server">Serveur CodeClear</string>
     <string name="mobile_owned_description">Service CodeClear · Internet · Autorisation distincte requise</string>
     <string name="mobile_owned_permission">Autoriser la traduction CodeClear</string>
-    <string name="mobile_owned_disclosure">Les alertes originales et la langue cible sont envoyées au service CodeClear, qui transmet les demandes à Groq. Les originaux et traductions sont conservés dans un cache privé par jeton pendant 30 jours au maximum. Selon ses paramètres, Groq peut conserver des données pour résoudre des incidents ou enquêter sur des abus. Les limites du service peuvent interrompre la traduction. La pause ou la suppression du jeton ne supprime pas les données existantes ; videz le cache avant de retirer le jeton. Aucun autre moteur ne sera choisi automatiquement.</string>
+    <string name="mobile_owned_disclosure">Envoyez le texte original et la langue cible au service CodeClear, qui transmet la demande à Groq. Les résultats en cache expirent sous 30 jours ; les journaux et sauvegardes ont une conservation distincte décrite dans la politique de confidentialité. Groq peut conserver des données pour la fiabilité ou les enquêtes sur les abus. Des quotas peuvent interrompre la traduction. Désactiver l’envoi ou supprimer le code ne supprime pas les données du serveur. Videz séparément le cache avant de retirer le code. Aucun autre moteur n’est choisi automatiquement.</string>
     <string name="mobile_owned_access">Jeton d’accès</string>
     <string name="mobile_owned_access_saved">Enregistré de façon sécurisée</string>
     <string name="mobile_owned_access_missing">Jeton d’accès requis</string>
@@ -298,4 +298,5 @@
     <string name="mobile_owned_unavailable">Traduction serveur indisponible. Vérifiez l’autorisation, le jeton et la connexion.</string>
     <string name="mobile_owned_quota">La limite du service CodeClear est atteinte. Réessayez plus tard.</string>
     <string name="mobile_owned_too_long">Ce message est trop long pour le service CodeClear. L’original est conservé sans modification.</string>
+    <string name="mobile_privacy_policy">Politique de confidentialité</string>
 </resources>
