@@ -415,7 +415,7 @@ class MainActivity : AppCompatActivity() {
             runtime.state.options.labsEnabled && runtime.state.options.nearbyEnabled &&
             !runtime.nearby.state.backgroundRunning && !runtime.diagnosticsActive() &&
             NearbyAccess.granted(this, runtime.nearby.sender) &&
-            NearbyAccess.backgroundGranted(this)
+            NearbyAccess.supportsBackgroundSharing()
         ) {
             NearbyBackgroundService.start(this)
         }

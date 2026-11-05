@@ -160,8 +160,9 @@
     <string name="mobile_nearby_receive_only">Suche nach Geräten · nur Empfang</string>
     <string name="mobile_nearby_transferring">Original aus der Nähe wird empfangen</string>
     <string name="mobile_nearby_error">Austausch beendet. Zugriff prüfen und erneut versuchen.</string>
+    <string name="mobile_agree_continue">Zustimmen und fortfahren</string>
     <string name="mobile_allow">Erlauben</string>
-    <string name="mobile_nearby_legacy_location">Android 11 benötigt Standortberechtigung und aktivierten Systemstandort für die Bluetooth-Suche. Diese App erfasst keine GPS-Koordinaten.</string>
+    <string name="mobile_nearby_legacy_location">CodeClear benötigt unter Android 11 die Standortberechtigung und den eingeschalteten Systemstandort, um Bluetooth-Geräte in der Nähe zu finden, während die App sichtbar ist. Standortkoordinaten werden weder erfasst noch zur Standortbestimmung verwendet. Beim Verlassen der App pausiert das Teilen. Standortzugriff im Hintergrund wird nicht angefordert.</string>
     <string name="mobile_nearby_saved_at">Gespeichert %1$s</string>
     <string name="mobile_nearby_cooldown">Kurze Wartezeit vor der nächsten Suche</string>
     <string name="mobile_country_cbs">Empfangsland (CBS-Netz): %1$s</string>
@@ -182,7 +183,6 @@
     <string name="mobile_nearby_background_notice">Bluetooth-Empfang im Hintergrund. App öffnen oder Freigabe stoppen.</string>
     <string name="mobile_nearby_stop">Freigabe stoppen</string>
     <string name="mobile_nearby_background_needed">Der Hintergrundempfang läuft nicht. Lassen Sie die App offen und prüfen Sie die Zugriffsrechte.</string>
-    <string name="mobile_nearby_background_location">Unter Android 11 benötigt die Bluetooth-Suche im Hintergrund den Standortzugriff „Immer zulassen“ in den App-Einstellungen. Ohne diesen zusätzlichen Zugriff ist die Freigabe bei sichtbarer App möglich.</string>
     <string name="mobile_message_view">Nachrichtenanzeige</string>
     <string name="mobile_message_both">Original und Übersetzung zusammen</string>
     <string name="mobile_message_switch">Einzeln umschalten</string>

@@ -100,7 +100,9 @@ class MobileOptionsStorage(
             setupComplete = currentDisclosure && saved.getBoolean("setup_complete", false),
             engine = engine ?: TranslationEngineKind.ML_KIT,
             nearbyEnabled =
-                currentDisclosure && labsEnabled && saved.getBoolean("nearby_enabled", false),
+                currentDisclosure && labsEnabled &&
+                    saved.getInt("nearby_disclosure_version", 0) == 1 &&
+                    saved.getBoolean("nearby_enabled", false),
             labsEnabled = labsEnabled,
             deferredOverlayEnabled = currentDisclosure &&
                 saved.getInt("overlay_disclosure_version", 0) == 1 &&
@@ -145,6 +147,7 @@ class MobileOptionsStorage(
                 }.orEmpty()
             )
             .putString("local_engine", options.engine.key)
+            .putInt("nearby_disclosure_version", 1)
             .putBoolean("nearby_enabled", options.nearbyEnabled)
             .putBoolean("labs_enabled", options.labsEnabled)
             .putString("message_view_mode", options.messageViewMode.name)

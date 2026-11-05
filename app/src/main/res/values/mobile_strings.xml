@@ -160,8 +160,9 @@
     <string name="mobile_nearby_receive_only">Looking for nearby devices · receive only</string>
     <string name="mobile_nearby_transferring">Receiving nearby original</string>
     <string name="mobile_nearby_error">Exchange stopped. Check access and try again.</string>
+    <string name="mobile_agree_continue">Agree and continue</string>
     <string name="mobile_allow">Allow</string>
-    <string name="mobile_nearby_legacy_location">Android 11 requires location permission and system location for Bluetooth discovery. This app does not collect GPS coordinates.</string>
+    <string name="mobile_nearby_legacy_location">CodeClear needs location permission and system location on Android 11 to discover nearby Bluetooth devices while this app is visible. It does not collect location coordinates or determine your location. Sharing pauses when you leave the app; background location access is not requested.</string>
     <string name="mobile_nearby_saved_at">Saved %1$s</string>
     <string name="mobile_nearby_cooldown">Waiting briefly before searching again</string>
     <string name="mobile_country_cbs">Reception country (CBS network): %1$s</string>
@@ -182,7 +183,6 @@
     <string name="mobile_nearby_background_notice">Receiving with Bluetooth in the background. Tap to open the app or stop sharing.</string>
     <string name="mobile_nearby_stop">Stop sharing</string>
     <string name="mobile_nearby_background_needed">Background reception is not running. Keep the app open and check access.</string>
-    <string name="mobile_nearby_background_location">On Android 11, background Bluetooth discovery needs location access set to Allow all the time in app settings. You can keep using sharing while the app is visible without that extra access.</string>
     <string name="mobile_message_view">Message display</string>
     <string name="mobile_message_both">Original and translation together</string>
     <string name="mobile_message_switch">One at a time</string>

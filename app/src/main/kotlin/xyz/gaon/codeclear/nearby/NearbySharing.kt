@@ -18,7 +18,7 @@ data class NearbyState(
     val retainedIds: Map<String, Long> = emptyMap(),
     val retentionProblem: Boolean = false,
     val backgroundRunning: Boolean = false,
-    val backgroundAllowed: Boolean = true
+    val backgroundAllowed: Boolean = NearbyAccess.supportsBackgroundSharing()
 )
 
 /** Owns explicit sharing access, fresh exports, and bounded recent unverified receipts. */
@@ -31,7 +31,6 @@ class NearbySharing(
     },
     private val retain: ((NearbyOriginal, () -> Boolean, (Long?) -> Unit) -> Unit)? = null
 ) {
-    private val application = context.applicationContext
     private val main = Handler(Looper.getMainLooper())
     private val inbox = RelayInbox()
     private val retainedIds = linkedMapOf<String, Long>()
@@ -89,8 +88,9 @@ class NearbySharing(
     fun background(enabled: Boolean) {
         requireMain()
         val previouslyActive = active()
-        background = enabled
-        state = state.copy(backgroundRunning = enabled)
+        // Legacy Bluetooth discovery uses foreground location access only.
+        background = enabled && NearbyAccess.supportsBackgroundSharing()
+        state = state.copy(backgroundRunning = background)
         if (previouslyActive != active()) refresh()
     }
 
@@ -103,7 +103,7 @@ class NearbySharing(
         ) {
             refresh()
         } else {
-            state = state.copy(backgroundAllowed = NearbyAccess.backgroundGranted(application))
+            state = state.copy(backgroundAllowed = NearbyAccess.supportsBackgroundSharing())
         }
     }
 
@@ -129,7 +129,7 @@ class NearbySharing(
         state =
             state.copy(
                 status = status,
-                backgroundAllowed = NearbyAccess.backgroundGranted(application)
+                backgroundAllowed = NearbyAccess.supportsBackgroundSharing()
             )
         if (status !in setOf(NearbyStatus.LISTENING, NearbyStatus.RECEIVE_ONLY)) return
         val next = factory.create(sender, {

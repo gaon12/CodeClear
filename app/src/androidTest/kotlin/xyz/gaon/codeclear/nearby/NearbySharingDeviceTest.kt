@@ -1,5 +1,8 @@
 package xyz.gaon.codeclear.nearby
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.test.platform.app.InstrumentationRegistry
 import java.util.concurrent.FutureTask
 import org.junit.Assert.assertEquals
@@ -19,6 +22,16 @@ class NearbySharingDeviceTest {
 
     @Test
     fun foregroundAndServiceOwnershipHandOffWithoutRestartingAnActiveTransfer() {
+        val supportsBackground = Build.VERSION.SDK_INT >= 31
+        assertEquals(supportsBackground, NearbyAccess.supportsBackgroundSharing())
+        val context = instrumentation.targetContext
+
+        @Suppress("DEPRECATION")
+        val permissions = context.packageManager.getPackageInfo(
+            context.packageName,
+            PackageManager.GET_PERMISSIONS
+        ).requestedPermissions.orEmpty()
+        assertFalse(Manifest.permission.ACCESS_BACKGROUND_LOCATION in permissions)
         val sessions = mutableListOf<FakeRadio>()
         val owner = onMain {
             NearbySharing(
@@ -36,12 +49,26 @@ class NearbySharingDeviceTest {
         try {
             onMain {
                 owner.background(true)
+                if (!supportsBackground) {
+                    assertFalse(owner.state.backgroundRunning)
+                    assertFalse(owner.state.backgroundAllowed)
+                    owner.foreground(false)
+                    assertTrue(sessions.single().closed)
+                    assertEquals(NearbyStatus.PAUSED, owner.state.status)
+                    owner.background(true)
+                    assertEquals(1, sessions.size)
+                    owner.foreground(true)
+                    assertEquals(2, sessions.size)
+                    assertFalse(sessions.last().closed)
+                    return@onMain
+                }
                 owner.foreground(false)
                 assertEquals(1, sessions.size)
                 assertFalse(sessions.single().closed)
                 assertTrue(owner.state.backgroundRunning)
                 sessions.single().receive(original())
             }
+            if (!supportsBackground) return
             onMain {
                 assertEquals(1, owner.state.originals.size)
                 owner.foreground(true)

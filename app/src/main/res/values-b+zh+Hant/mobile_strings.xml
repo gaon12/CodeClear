@@ -159,8 +159,9 @@
     <string name="mobile_nearby_receive_only">正在尋找附近裝置 · 僅接收</string>
     <string name="mobile_nearby_transferring">正在接收附近原文</string>
     <string name="mobile_nearby_error">交換已停止，請檢查權限後重試。</string>
+    <string name="mobile_agree_continue">同意並繼續</string>
     <string name="mobile_allow">允許</string>
-    <string name="mobile_nearby_legacy_location">Android 11進行Bluetooth搜尋時需要位置權限與系統位置設定。本應用程式不收集GPS座標。</string>
+    <string name="mobile_nearby_legacy_location">CodeClear 在 Android 11 上需要位置權限和系統位置設定，以便在應用程式畫面可見時尋找附近的 Bluetooth 裝置。應用程式不會收集位置座標或判定您的位置。離開應用程式後分享會暫停，應用程式不會要求背景位置權限。</string>
     <string name="mobile_nearby_saved_at">儲存於%1$s</string>
     <string name="mobile_nearby_cooldown">稍候片刻後自動重新搜尋</string>
     <string name="mobile_country_cbs">接收國家（CBS網路）：%1$s</string>
@@ -181,7 +182,6 @@
     <string name="mobile_nearby_background_notice">正在背景透過藍牙接收。可開啟應用程式或停止共享。</string>
     <string name="mobile_nearby_stop">停止共享</string>
     <string name="mobile_nearby_background_needed">背景接收尚未執行。請保持應用程式開啟並檢查權限。</string>
-    <string name="mobile_nearby_background_location">Android 11背景藍牙搜尋需要在應用程式設定中將位置權限設為「一律允許」。沒有該額外權限時，仍可在應用程式顯示時共享。</string>
     <string name="mobile_message_view">訊息顯示方式</string>
     <string name="mobile_message_both">同時顯示原文與譯文</string>
     <string name="mobile_message_switch">逐一切換顯示</string>

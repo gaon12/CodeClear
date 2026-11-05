@@ -36,7 +36,7 @@ open class NearbyBackgroundService : Service() {
         override fun run() {
             val owner = leased ?: return
             if (!permitted() || !NearbyAccess.granted(this@NearbyBackgroundService, owner.sender) ||
-                !NearbyAccess.backgroundGranted(this@NearbyBackgroundService)
+                !NearbyAccess.supportsBackgroundSharing()
             ) {
                 stopSelf()
                 return
@@ -66,7 +66,7 @@ open class NearbyBackgroundService : Service() {
         }
         val owner = sharing()
         if (!NearbyAccess.granted(this, owner.sender) ||
-            !NearbyAccess.backgroundGranted(this)
+            !NearbyAccess.supportsBackgroundSharing()
         ) {
             stopSelf()
             return START_NOT_STICKY

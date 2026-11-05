@@ -54,7 +54,7 @@ class BackgroundRelayDeviceTest {
         )
         assertTrue(
             "Background discovery access is required",
-            NearbyAccess.backgroundGranted(context)
+            NearbyAccess.supportsBackgroundSharing()
         )
         val name = "relay-background-${UUID.randomUUID()}.db"
         val store = AlertHistoryStore(context, name)

@@ -1035,7 +1035,7 @@ class MobileScreenDeviceTest {
         compose.runOnIdle { assertEquals(0, nearbyRequests) }
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
         switchControl(text(R.string.mobile_nearby_allow)).assertIsOff().performClick()
-        compose.onNodeWithText(text(R.string.mobile_allow)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_agree_continue)).performClick()
         compose.runOnIdle {
             assertEquals(1, nearbyRequests)
             assertTrue(configured.nearbyEnabled)
@@ -1043,6 +1043,27 @@ class MobileScreenDeviceTest {
         }
         switchControl(text(R.string.mobile_nearby_allow)).assertIsOn().performClick().assertIsOff()
         compose.runOnIdle { assertFalse(configured.nearbyEnabled) }
+    }
+
+    @Test
+    fun nearbyPermissionRetriesAndSettingsRequireTheDisclosureAgain() {
+        openSettingsPage(SettingsPage.SHARING)
+        compose.runOnIdle { nearby = nearby.copy(status = NearbyStatus.PERMISSION_REQUIRED) }
+        compose.onNodeWithText(text(R.string.mobile_allow)).performClick()
+        compose.runOnIdle { assertEquals(0, nearbyRequests) }
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+        compose.runOnIdle { assertEquals(0, nearbyRequests) }
+        compose.onNodeWithText(text(R.string.mobile_open_settings)).performClick()
+        compose.runOnIdle { assertEquals(0, settingsOpened) }
+        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_open_settings)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_agree_continue)).performClick()
+        compose.runOnIdle {
+            assertEquals(1, settingsOpened)
+            assertEquals(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, lastSettingsAction)
+            assertEquals(0, nearbyRequests)
+            assertFalse(configured.nearbyEnabled)
+        }
     }
 
     @Test

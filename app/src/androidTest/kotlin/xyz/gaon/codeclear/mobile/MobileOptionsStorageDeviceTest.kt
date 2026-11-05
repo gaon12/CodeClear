@@ -15,6 +15,40 @@ import xyz.gaon.codeclear.translation.TranslationTarget
 
 class MobileOptionsStorageDeviceTest {
     @Test
+    fun updatedNearbyDisclosureRequiresNewAgreementWithoutResettingCapture() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val name = "options-test-${UUID.randomUUID()}"
+        val storage = MobileOptionsStorage(context, name)
+        try {
+            storage.save(
+                MobileOptions(
+                    notificationConsent = true,
+                    accessibilityConsent = true,
+                    localConsent = true,
+                    labsEnabled = true,
+                    nearbyEnabled = true
+                )
+            )
+            assertTrue(storage.load().nearbyEnabled)
+            assertTrue(
+                context.getSharedPreferences(name, Context.MODE_PRIVATE).edit()
+                    .remove("nearby_disclosure_version").commit()
+            )
+            val restored = storage.load()
+            assertFalse(restored.nearbyEnabled)
+            assertTrue(restored.notificationConsent)
+            assertTrue(restored.accessibilityConsent)
+            assertTrue(restored.localConsent)
+            storage.save(restored)
+            assertFalse(storage.load().nearbyEnabled)
+            storage.save(restored.copy(nearbyEnabled = true))
+            assertTrue(storage.load().nearbyEnabled)
+        } finally {
+            context.deleteSharedPreferences(name)
+        }
+    }
+
+    @Test
     fun popupPermissionRequiresItsOwnDisclosureAndPreservesCaptureChoices() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val name = "options-test-${UUID.randomUUID()}"

@@ -161,8 +161,9 @@
     <string name="mobile_nearby_receive_only">Recherche d’appareils · réception seule</string>
     <string name="mobile_nearby_transferring">Réception d’un original à proximité</string>
     <string name="mobile_nearby_error">Échange arrêté. Vérifiez les autorisations et réessayez.</string>
+    <string name="mobile_agree_continue">Accepter et continuer</string>
     <string name="mobile_allow">Autoriser</string>
-    <string name="mobile_nearby_legacy_location">Android 11 exige l’autorisation et l’activation de la localisation système pour rechercher des appareils Bluetooth. Cette application ne recueille pas de coordonnées GPS.</string>
+    <string name="mobile_nearby_legacy_location">Sur Android 11, CodeClear utilise l’autorisation de localisation et la localisation du système pour détecter les appareils Bluetooth à proximité lorsque l’application est visible. Aucune coordonnée ni position n’est collectée ou déterminée. Le partage est suspendu lorsque vous quittez l’application. La localisation en arrière-plan n’est pas demandée.</string>
     <string name="mobile_nearby_saved_at">Enregistré %1$s</string>
     <string name="mobile_nearby_cooldown">Courte pause avant une nouvelle recherche</string>
     <string name="mobile_country_cbs">Pays de réception (réseau CBS) : %1$s</string>
@@ -183,7 +184,6 @@
     <string name="mobile_nearby_background_notice">Réception Bluetooth en arrière-plan. Ouvrez l’application ou arrêtez le partage.</string>
     <string name="mobile_nearby_stop">Arrêter le partage</string>
     <string name="mobile_nearby_background_needed">La réception en arrière-plan est arrêtée. Gardez l’application ouverte et vérifiez les autorisations.</string>
-    <string name="mobile_nearby_background_location">Sous Android 11, la recherche Bluetooth en arrière-plan nécessite l’accès à la position « Toujours autoriser » dans les paramètres de l’application. Sans cet accès supplémentaire, le partage reste possible quand l’application est visible.</string>
     <string name="mobile_message_view">Affichage des messages</string>
     <string name="mobile_message_both">Original et traduction ensemble</string>
     <string name="mobile_message_switch">Afficher un texte à la fois</string>

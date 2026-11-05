@@ -22,6 +22,12 @@ import xyz.gaon.codeclear.nearby.NearbyStatus
 internal fun NearbySettings(state: MobileState, actions: MobileActions) {
     val options = state.options
     var disclosure by remember { mutableStateOf(false) }
+    var permissionSettings by remember { mutableStateOf(false) }
+    val operatingNotice = if (android.os.Build.VERSION.SDK_INT == 30) {
+        R.string.mobile_nearby_legacy_location
+    } else {
+        R.string.mobile_nearby_foreground
+    }
     SettingsGroup {
         SettingSwitchRow(
             stringResource(R.string.mobile_nearby_allow),
@@ -29,21 +35,19 @@ internal fun NearbySettings(state: MobileState, actions: MobileActions) {
             options.nearbyEnabled,
             enabled = state.loaded && !state.storageError
         ) {
-            if (it) disclosure = true else actions.configure(options.copy(nearbyEnabled = false))
-        }
-        SettingDivider()
-        SettingNote(stringResource(R.string.mobile_nearby_foreground))
-        if (options.nearbyEnabled && !actions.nearby.backgroundRunning) {
-            SettingNote(stringResource(R.string.mobile_nearby_background_needed))
-            if (!actions.nearby.backgroundAllowed) {
-                SettingNote(stringResource(R.string.mobile_nearby_background_location))
-                SettingRow(stringResource(R.string.mobile_open_settings), onClick = {
-                    actions.settings(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                })
+            if (it) {
+                permissionSettings = false
+                disclosure = true
+            } else {
+                actions.configure(options.copy(nearbyEnabled = false))
             }
         }
-        if (android.os.Build.VERSION.SDK_INT == 30) {
-            SettingNote(stringResource(R.string.mobile_nearby_legacy_location))
+        SettingDivider()
+        SettingNote(stringResource(operatingNotice))
+        if (options.nearbyEnabled && actions.nearby.backgroundAllowed &&
+            !actions.nearby.backgroundRunning
+        ) {
+            SettingNote(stringResource(R.string.mobile_nearby_background_needed))
         }
         SettingNote(stringResource(R.string.mobile_nearby_disclosure))
         if (actions.nearby.retentionProblem) {
@@ -53,10 +57,14 @@ internal fun NearbySettings(state: MobileState, actions: MobileActions) {
             NearbyStatus.PERMISSION_REQUIRED -> {
                 SettingRow(
                     stringResource(R.string.mobile_allow),
-                    onClick = actions.nearbyPermission
+                    onClick = {
+                        permissionSettings = false
+                        disclosure = true
+                    }
                 )
                 SettingRow(stringResource(R.string.mobile_open_settings), onClick = {
-                    actions.settings(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    permissionSettings = true
+                    disclosure = true
                 })
             }
 
@@ -96,17 +104,18 @@ internal fun NearbySettings(state: MobileState, actions: MobileActions) {
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(stringResource(R.string.mobile_nearby_disclosure))
-                    Text(stringResource(R.string.mobile_nearby_foreground))
-                    if (android.os.Build.VERSION.SDK_INT == 30) {
-                        Text(stringResource(R.string.mobile_nearby_legacy_location))
-                    }
+                    Text(stringResource(operatingNotice))
                 }
             },
             confirmButton = {
                 TextButton(onClick = {
                     disclosure = false
-                    actions.nearbyPermission()
-                }) { Text(stringResource(R.string.mobile_allow)) }
+                    if (permissionSettings) {
+                        actions.settings(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                    } else {
+                        actions.nearbyPermission()
+                    }
+                }) { Text(stringResource(R.string.mobile_agree_continue)) }
             },
             dismissButton = {
                 TextButton(onClick = {

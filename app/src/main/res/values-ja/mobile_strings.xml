@@ -159,8 +159,9 @@
     <string name="mobile_nearby_receive_only">近くの端末を検索中・受信専用</string>
     <string name="mobile_nearby_transferring">近くから原文を受信中</string>
     <string name="mobile_nearby_error">交換が停止しました。権限を確認して再試行してください。</string>
+    <string name="mobile_agree_continue">同意して続行</string>
     <string name="mobile_allow">許可</string>
-    <string name="mobile_nearby_legacy_location">Android 11ではBluetooth検索に位置情報の権限と設定が必要です。GPS座標は収集しません。</string>
+    <string name="mobile_nearby_legacy_location">CodeClearはAndroid 11でアプリ画面の表示中に近くのBluetooth機器を検出するため、位置情報の権限と端末の位置情報設定を使用します。位置座標の収集や現在地の特定は行いません。アプリを離れると共有は一時停止し、バックグラウンドの位置情報権限は要求しません。</string>
     <string name="mobile_nearby_saved_at">保存 %1$s</string>
     <string name="mobile_nearby_cooldown">しばらく待ってから自動で再検索します</string>
     <string name="mobile_country_cbs">受信国（CBS網）：%1$s</string>
@@ -181,7 +182,6 @@
     <string name="mobile_nearby_background_notice">バックグラウンドでBluetooth受信中です。アプリを開くか共有を停止できます。</string>
     <string name="mobile_nearby_stop">共有を停止</string>
     <string name="mobile_nearby_background_needed">バックグラウンド受信は停止中です。アプリを開いたまま権限を確認してください。</string>
-    <string name="mobile_nearby_background_location">Android 11のバックグラウンドBluetooth検索には、アプリ設定で位置情報を「常に許可」にする必要があります。この追加権限なしでも画面表示中は共有できます。</string>
     <string name="mobile_message_view">メッセージの表示</string>
     <string name="mobile_message_both">原文と訳文を並べて表示</string>
     <string name="mobile_message_switch">1つずつ切り替える</string>
