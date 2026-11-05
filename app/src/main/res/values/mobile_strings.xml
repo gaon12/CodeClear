@@ -175,8 +175,9 @@
     <string name="mobile_type_missing">Missing-person alert</string>
     <string name="mobile_labs">Labs</string>
     <string name="mobile_labs_summary">Try features in development</string>
-    <string name="mobile_labs_notice">Experimental features may change. Nearby sharing stays off until you allow it.</string>
-    <string name="mobile_labs_unlocked">Labs is unlocked. Open it from Settings.</string>
+    <string name="mobile_labs_enable">Enable experimental features</string>
+    <string name="mobile_labs_notice">Experimental features may change. Each sharing or online service still needs separate agreement. Turning this off stops sharing and withdraws online translation permission.</string>
+    <string name="mobile_labs_unlocked">Labs is available in Settings.</string>
     <string name="mobile_server_translation">Server translation</string>
     <string name="mobile_nearby_retention_problem">Could not save a received message. Nearby history is limited to 1,000 records. Check storage or delete unwanted nearby records, then try saving again. Existing history is preserved.</string>
     <string name="mobile_nearby_background_title">Nearby sharing is on</string>

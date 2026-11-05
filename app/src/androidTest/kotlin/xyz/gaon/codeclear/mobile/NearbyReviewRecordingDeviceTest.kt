@@ -163,16 +163,16 @@ class NearbyReviewRecordingDeviceTest {
             "version" to context.getString(R.string.mobile_version),
             "done" to context.getString(R.string.mobile_done),
             "labs" to context.getString(R.string.mobile_labs),
+            "labs_enable" to context.getString(R.string.mobile_labs_enable),
             "nearby" to context.getString(R.string.mobile_nearby),
             "nearby_allow" to context.getString(R.string.mobile_nearby_allow),
-            "allow" to context.getString(R.string.mobile_allow),
+            "allow" to context.getString(R.string.mobile_agree_continue),
             "history" to context.getString(R.string.mobile_history),
             "home" to context.getString(R.string.mobile_home),
             "original" to BODY,
             "os_allow" to "Allow",
             "os_allow_ko" to "허용",
-            "os_foreground" to "While using the app",
-            "os_background" to "Allow all the time"
+            "os_foreground" to "While using the app"
         )
         val owner = root?.packageName?.toString().orEmpty()
         val allowed = owner in setOf(

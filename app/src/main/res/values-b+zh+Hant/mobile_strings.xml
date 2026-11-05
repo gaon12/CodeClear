@@ -174,8 +174,9 @@
     <string name="mobile_type_missing">失蹤人員警報</string>
     <string name="mobile_labs">實驗室</string>
     <string name="mobile_labs_summary">試用開發中的功能</string>
-    <string name="mobile_labs_notice">實驗功能可能會變更。附近共享僅在您允許後開啟。</string>
-    <string name="mobile_labs_unlocked">實驗室已解鎖，請在設定中查看。</string>
+    <string name="mobile_labs_enable">啟用實驗功能</string>
+    <string name="mobile_labs_notice">實驗功能可能會變更。附近分享和線上服務仍需分別同意。關閉此設定會停止分享並撤回線上翻譯許可。</string>
+    <string name="mobile_labs_unlocked">可在設定中查看實驗室。</string>
     <string name="mobile_server_translation">伺服器翻譯</string>
     <string name="mobile_nearby_retention_problem">無法儲存收到的訊息。附近訊息歷史紀錄最多保留1,000筆。請檢查儲存空間或刪除不需要的附近訊息紀錄，然後重新儲存。現有紀錄將保留。</string>
     <string name="mobile_nearby_background_title">附近共享已開啟</string>

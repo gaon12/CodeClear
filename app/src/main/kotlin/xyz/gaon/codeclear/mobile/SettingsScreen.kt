@@ -70,10 +70,8 @@ internal val SettingsPage.parent: SettingsPage?
         else -> null
     }
 
-internal fun settingsMenuPages(options: MobileOptions): List<SettingsPage> =
-    SettingsPage.entries.filter {
-        it.parent == null && (it != SettingsPage.LABS || options.labsEnabled)
-    }
+internal fun settingsMenuPages(): List<SettingsPage> =
+    SettingsPage.entries.filter { it.parent == null }
 
 @Composable
 fun SettingsScreen(
@@ -93,7 +91,7 @@ fun SettingsScreen(
         val selection = selectedPage?.takeUnless {
             (
                 !state.options.labsEnabled &&
-                    (it == SettingsPage.LABS || it.parent == SettingsPage.LABS)
+                    it.parent == SettingsPage.LABS
                 ) ||
                 (it == SettingsPage.OWNED_SERVER && !actions.serverAccess.configured)
         }
@@ -160,7 +158,7 @@ private fun SettingsMenu(
             if (!expanded && (!state.loaded || state.storageError)) {
                 item { SettingsStatus(state, actions) }
             }
-            items(settingsMenuPages(state.options).chunked(2), key = { it.first().name }) { group ->
+            items(settingsMenuPages().chunked(2), key = { it.first().name }) { group ->
                 Surface(
                     Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),

@@ -34,7 +34,7 @@ internal object ProjectInformation {
 }
 
 @Composable
-internal fun AppAboutSettings(unlock: () -> Unit, compatibility: () -> Unit) {
+internal fun AppAboutSettings(compatibility: () -> Unit) {
     val uriHandler = LocalUriHandler.current
     var linkFailed by remember { mutableStateOf(false) }
     var showEgg by remember { mutableStateOf(false) }
@@ -56,7 +56,6 @@ internal fun AppAboutSettings(unlock: () -> Unit, compatibility: () -> Unit) {
             Column(
                 Modifier.fillMaxWidth().testTag("app-version-row").clickable(role = Role.Button) {
                     if (taps.tap(SystemClock.elapsedRealtime())) {
-                        unlock()
                         showEgg = true
                     }
                 }.heightIn(min = 72.dp).padding(horizontal = 24.dp, vertical = 18.dp),

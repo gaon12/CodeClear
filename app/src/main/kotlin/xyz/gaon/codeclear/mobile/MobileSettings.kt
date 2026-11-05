@@ -90,21 +90,41 @@ fun MobileSettings(
     if (page == SettingsPage.SHARING) NearbySettings(state, actions)
     if (page == SettingsPage.LABS) {
         SettingsGroup {
-            SettingNote(stringResource(R.string.mobile_labs_notice))
-            SettingRow(stringResource(R.string.mobile_nearby), onClick = {
-                navigate(SettingsPage.SHARING)
-            })
+            SettingSwitchRow(
+                stringResource(R.string.mobile_labs_enable),
+                stringResource(R.string.mobile_labs_notice),
+                checked = options.labsEnabled,
+                enabled = state.loaded && !state.storageError
+            ) {
+                actions.configure(
+                    options.copy(
+                        labsEnabled = it,
+                        nearbyEnabled = false,
+                        serverAllowed = false,
+                        ownedServerAllowed = false
+                    )
+                )
+            }
+            SettingDivider()
+            SettingRow(
+                stringResource(R.string.mobile_nearby),
+                onClick = { navigate(SettingsPage.SHARING) },
+                enabled = options.labsEnabled
+            )
             SettingDivider()
             SettingRow(
                 stringResource(R.string.mobile_server_translation),
                 "MyMemory",
-                onClick = { navigate(SettingsPage.SERVER) }
+                onClick = { navigate(SettingsPage.SERVER) },
+                enabled = options.labsEnabled
             )
             if (actions.serverAccess.configured) {
                 SettingDivider()
-                SettingRow(stringResource(R.string.mobile_owned_server), onClick = {
-                    navigate(SettingsPage.OWNED_SERVER)
-                })
+                SettingRow(
+                    stringResource(R.string.mobile_owned_server),
+                    onClick = { navigate(SettingsPage.OWNED_SERVER) },
+                    enabled = options.labsEnabled
+                )
             }
         }
     }
@@ -181,7 +201,6 @@ fun MobileSettings(
     }
     if (page == SettingsPage.ABOUT) {
         AppAboutSettings(
-            unlock = { actions.configure(options.copy(labsEnabled = true)) },
             compatibility = { navigate(SettingsPage.COMPATIBILITY) }
         )
     }

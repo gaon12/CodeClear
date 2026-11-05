@@ -175,8 +175,9 @@
     <string name="mobile_type_missing">Vermisstenwarnung</string>
     <string name="mobile_labs">Labor</string>
     <string name="mobile_labs_summary">Funktionen in Entwicklung ausprobieren</string>
-    <string name="mobile_labs_notice">Experimentelle Funktionen können sich ändern. Die Freigabe in der Nähe bleibt bis zu Ihrer Erlaubnis aus.</string>
-    <string name="mobile_labs_unlocked">Das Labor ist freigeschaltet und in den Einstellungen verfügbar.</string>
+    <string name="mobile_labs_enable">Experimentelle Funktionen aktivieren</string>
+    <string name="mobile_labs_notice">Experimentelle Funktionen können sich ändern. Teilen und Onlinedienste benötigen jeweils eine gesonderte Zustimmung. Ausschalten beendet das Teilen und widerruft die Erlaubnis zur Onlineübersetzung.</string>
+    <string name="mobile_labs_unlocked">Das Labor ist in den Einstellungen verfügbar.</string>
     <string name="mobile_server_translation">Serverübersetzung</string>
     <string name="mobile_nearby_retention_problem">Eine Nachricht konnte nicht gespeichert werden. Bis zu 1.000 empfangene Nachrichten bleiben im Verlauf. Prüfen Sie den Speicher oder löschen Sie unerwünschte empfangene Einträge und speichern Sie erneut. Vorhandene Einträge bleiben erhalten.</string>
     <string name="mobile_nearby_background_title">Freigabe in der Nähe aktiv</string>

@@ -1309,6 +1309,7 @@ class MobileScreenDeviceTest {
     fun ownedServiceStaysHiddenWithoutBuildConfigurationAndMyMemoryCannotAuthorizeIt() {
         openSettingsPage(SettingsPage.LABS)
         compose.onNodeWithText(text(R.string.mobile_owned_server)).assertDoesNotExist()
+        switchControl(text(R.string.mobile_labs_enable)).assertIsOff().performClick()
         compose.runOnIdle {
             serverAccess = ServerAccessState(configured = true, loaded = true)
             state = state.copy(options = state.options.copy(serverAllowed = true))
@@ -1657,7 +1658,7 @@ class MobileScreenDeviceTest {
             assertTrue(detail.left >= menu.right - 1f)
             assertTrue(detail.width >= 460f * density)
         }
-        for (page in settingsMenuPages(state.options)) {
+        for (page in settingsMenuPages()) {
             compose.onNodeWithTag("settings-menu").performScrollToNode(
                 hasTestTag("settings-category-${page.name}")
             )
@@ -1745,7 +1746,7 @@ class MobileScreenDeviceTest {
         SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
 
     private fun openSettingsPage(page: SettingsPage) {
-        if (page == SettingsPage.LABS || page.parent == SettingsPage.LABS) {
+        if (page.parent == SettingsPage.LABS) {
             compose.runOnIdle {
                 state = state.copy(options = state.options.copy(labsEnabled = true))
             }
@@ -1764,20 +1765,32 @@ class MobileScreenDeviceTest {
     }
 
     @Test
-    fun sevenVersionTapsRevealTheEggAndLabsChildPages() {
+    fun labsIsVisibleAndVersionTapsDoNotEnableExperimentalFeatures() {
         compose.onNodeWithTag("destination-2").performClick()
-        compose.onNodeWithTag("settings-category-LABS").assertDoesNotExist()
+        compose.onNodeWithTag(
+            "settings-menu"
+        ).performScrollToNode(hasTestTag("settings-category-LABS"))
+        compose.onNodeWithTag("settings-category-LABS").assertIsDisplayed()
         openSettingsPage(SettingsPage.ABOUT)
         repeat(6) { compose.onNodeWithTag("app-version-row").performClick() }
         compose.onNodeWithTag("signal-easter-egg").assertDoesNotExist()
         compose.onNodeWithTag("app-version-row").performClick()
         compose.onNodeWithTag("signal-easter-egg").assertIsDisplayed()
-        assertTrue(configured.labsEnabled)
+        assertFalse(configured.labsEnabled)
         assertFalse(configured.nearbyEnabled)
         compose.onNodeWithTag("signal-egg-pulse").performClick()
         savePreview("labs-egg", dialog = true)
         compose.onNodeWithTag("signal-egg-close").performClick()
         openSettingsPage(SettingsPage.LABS)
+        compose.onNodeWithText(text(R.string.mobile_nearby)).assertIsNotEnabled()
+        compose.onNodeWithText(text(R.string.mobile_server_translation)).assertIsNotEnabled()
+        switchControl(text(R.string.mobile_labs_enable)).assertIsOff().performClick()
+        compose.runOnIdle {
+            assertTrue(configured.labsEnabled)
+            assertFalse(configured.nearbyEnabled)
+            assertFalse(configured.serverAllowed)
+            assertFalse(configured.ownedServerAllowed)
+        }
         compose.onNodeWithText(text(R.string.mobile_server_translation)).performClick()
         compose.onNodeWithText(text(R.string.mobile_server_permission)).assertIsOff()
         compose.onNodeWithTag("settings-back").performClick()
@@ -1788,6 +1801,35 @@ class MobileScreenDeviceTest {
         compose.onNodeWithTag("settings-back").performClick()
         compose.onNodeWithTag("settings-detail-title").assertTextEquals(text(R.string.mobile_labs))
         savePreview("labs-menu")
+        compose.runOnIdle {
+            state = state.copy(
+                options = state.options.copy(
+                    nearbyEnabled = true,
+                    serverAllowed = true,
+                    ownedServerAllowed = true,
+                    notificationConsent = true,
+                    accessibilityConsent = true,
+                    localConsent = true
+                )
+            )
+        }
+        switchControl(text(R.string.mobile_labs_enable)).assertIsOn().performClick().assertIsOff()
+        compose.onNodeWithText(text(R.string.mobile_nearby)).assertIsNotEnabled()
+        compose.runOnIdle {
+            assertFalse(configured.labsEnabled)
+            assertFalse(configured.nearbyEnabled)
+            assertFalse(configured.serverAllowed)
+            assertFalse(configured.ownedServerAllowed)
+            assertTrue(configured.notificationConsent)
+            assertTrue(configured.accessibilityConsent)
+            assertTrue(configured.localConsent)
+        }
+        switchControl(text(R.string.mobile_labs_enable)).performClick().assertIsOn()
+        compose.runOnIdle {
+            assertFalse(configured.nearbyEnabled)
+            assertFalse(configured.serverAllowed)
+            assertFalse(configured.ownedServerAllowed)
+        }
         compose.onNodeWithTag("destination-2").performClick()
         compose.onNodeWithTag("settings-menu").assertIsDisplayed()
     }
