@@ -58,43 +58,48 @@
             </p>
             <h2>Connected-device foreground service</h2>
             <p class="notice">
-                This 32-second recording shows two physical devices using an
-                isolated validation build. The user enables optional nearby
-                sharing, reads its disclosure and grants Nearby devices access.
-                A fixture supplies one synthetic original to the sender; actual
-                Bluetooth transfers it to the receiver's private history. The
-                receiver switches to another app and returns to inspect the
-                unverified original, then the user stops sharing. Ordinary alert
-                capture and translation remain off in these test installations.
-                Cuts remove navigation, waiting and private connection checks.
+                The first chapter was recorded on November 5, 2026, using
+                version code 4 on an Android 17 phone. It shows the visible
+                Settings → Labs entry, separate sharing disclosure,
+                cancellation, actual Nearby devices permission, and service
+                operation while another app is visible, followed by stopping
+                sharing. Capture and translation remain off. The second chapter
+                is earlier physical Bluetooth evidence from November 3, using
+                version code 3 on a phone and tablet with synthetic originals.
+                Each chapter identifies its source version and date. This is not
+                a new two-device test of version code 4 or 5. Version code 5
+                retains the demonstrated UI and only changes optional hardware
+                declarations and build number.
             </p>
             <video
                 controls
                 preload="metadata"
                 aria-label="CodeClear Bluetooth foreground service review with English captions"
             >
-                <source src="connected-device-service.mp4" type="video/mp4" />
-                <a href="connected-device-service.mp4"
+                <source src="connected-device-code4.mp4" type="video/mp4" />
+                <a href="connected-device-code4.mp4"
                     >Download the service review video</a
                 >.
             </video>
             <h2>Android 11 Bluetooth discovery permissions</h2>
             <p class="notice">
-                This 30-second Android 11 emulator recording shows the separate
-                in-app disclosure, foreground location prompt, explanation of
-                background Bluetooth access, and the user's Allow all the time
-                selection in Android settings. No GPS coordinates are collected.
-                This recording demonstrates actual permission controls, not
+                This 29-second Android 11 emulator recording from November 5
+                uses version code 4. It shows the separate disclosure,
+                cancellation, and actual Android location prompt with While
+                using the app selected. Background location access is not
+                requested; sharing pauses when the app is no longer visible. No
+                location coordinates are collected. Version code 5 retains this
+                permission flow. This demonstrates permission controls, not
                 physical Bluetooth or cellular reception. Android 12 and later
-                use Nearby devices permission instead of these location grants.
+                use Nearby devices access instead of location access.
             </p>
             <video
                 controls
                 preload="metadata"
                 aria-label="CodeClear Android 11 Bluetooth permission review with English captions"
             >
-                <source src="background-location.mp4" type="video/mp4" />
-                <a href="background-location.mp4"
+                <source src="foreground-location-code4.mp4" type="video/mp4" />
+                <a href="foreground-location-code4.mp4"
                     >Download the permission review video</a
                 >.
             </video>
