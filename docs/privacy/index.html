@@ -14,7 +14,7 @@
                 <a href="index.html" aria-current="page" lang="en">English</a
                 ><a href="ko.html" lang="ko">한국어</a>
             </nav>
-            <p>Effective date and last updated: November 3, 2026.</p>
+            <p>Effective date and last updated: November 5, 2026.</p>
         </header>
         <main>
             <p class="notice">
@@ -176,9 +176,14 @@
                 confidential messaging channel. Received messages have
                 unverified origin, are saved in private nearby history until
                 deleted, and are not forwarded again. CodeClear does not collect
-                GPS coordinates; Android 11 requires location permission and
-                location services for Bluetooth scanning, with separate
-                background permission for background operation.
+                location coordinates or determine your location. Android 11
+                requires foreground location permission and system location for
+                Bluetooth discovery while the app is visible. Sharing pauses
+                when you leave the app. CodeClear does not request background
+                location permission. Android 12 and later use Nearby devices
+                permission and can continue sharing with a persistent,
+                user-stoppable foreground-service notification. Android may stop
+                background operation; reopen the app to resume.
             </p>
             <p>
                 Result notifications and optional app overlays can show alert
