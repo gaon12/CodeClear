@@ -41,7 +41,7 @@ android {
         }
         minSdk = 30
         targetSdk = 37
-        versionCode = 4
+        versionCode = 5
         versionName = "1.0.0"
         buildConfigField("String", "OWNED_TRANSLATION_URL", ownedTranslationUrl.get())
 
