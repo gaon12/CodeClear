@@ -298,4 +298,6 @@
     <string name="mobile_owned_quota">已达到 CodeClear 服务使用上限，请稍后重试。</string>
     <string name="mobile_owned_too_long">此消息过长，无法发送给 CodeClear 服务。原文保持不变。</string>
     <string name="mobile_privacy_policy">隐私政策</string>
+    <string name="mobile_information_sources">信息来源和官方指引</string>
+    <string name="mobile_independent_notice">CodeClear 是独立应用，不隶属于任何政府，不受政府背书，也不代表政府。应用读取受支持的系统警报文本。附近共享的消息未经验证，翻译也可能不准确。请以原文和官方指引为准。</string>
 </resources>

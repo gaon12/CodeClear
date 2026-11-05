@@ -299,4 +299,6 @@
     <string name="mobile_owned_quota">The CodeClear service limit was reached. Try again later.</string>
     <string name="mobile_owned_too_long">This message is too long for the CodeClear service. The original is unchanged.</string>
     <string name="mobile_privacy_policy">Privacy policy</string>
+    <string name="mobile_information_sources">Information sources and official guidance</string>
+    <string name="mobile_independent_notice">CodeClear is an independent app. It is not affiliated with, endorsed by, or acting on behalf of any government. It reads supported system alert text. Nearby messages are unverified and translations may be inaccurate. Follow the original alert and official guidance.</string>
 </resources>

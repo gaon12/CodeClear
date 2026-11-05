@@ -299,4 +299,6 @@
     <string name="mobile_owned_quota">Das Nutzungslimit des CodeClear-Dienstes ist erreicht. Versuchen Sie es später erneut.</string>
     <string name="mobile_owned_too_long">Diese Meldung ist für den CodeClear-Dienst zu lang. Das Original bleibt unverändert.</string>
     <string name="mobile_privacy_policy">Datenschutzerklärung</string>
+    <string name="mobile_information_sources">Informationsquellen und offizielle Hinweise</string>
+    <string name="mobile_independent_notice">CodeClear ist eine unabhängige App, steht in keiner Verbindung zu einer Regierung, ist nicht von ihr anerkannt und handelt nicht in ihrem Namen. Die App liest unterstützte Systemwarnungen. Nachrichten aus der Nähe sind ungeprüft und Übersetzungen können fehlerhaft sein. Befolgen Sie Originalwarnungen und offizielle Hinweise.</string>
 </resources>

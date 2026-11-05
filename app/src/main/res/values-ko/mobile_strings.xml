@@ -298,4 +298,6 @@
     <string name="mobile_owned_quota">CodeClear 서비스의 사용 한도에 도달했습니다. 나중에 다시 시도하세요.</string>
     <string name="mobile_owned_too_long">CodeClear 서비스에 보내기에는 메시지가 너무 깁니다. 원문은 그대로 보존됩니다.</string>
     <string name="mobile_privacy_policy">개인정보처리방침</string>
+    <string name="mobile_information_sources">정보 출처 및 공식 안내</string>
+    <string name="mobile_independent_notice">CodeClear는 정부 기관과 제휴하거나 정부를 대표하지 않는 독립 앱이며 정부의 승인을 받은 앱이 아닙니다. 지원되는 시스템 경보 본문을 읽습니다. 주변 공유 메시지는 진위가 확인되지 않았고 번역은 부정확할 수 있습니다. 원문과 공식 안내를 우선하세요.</string>
 </resources>

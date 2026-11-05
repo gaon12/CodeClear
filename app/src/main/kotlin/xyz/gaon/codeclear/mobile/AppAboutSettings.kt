@@ -30,6 +30,7 @@ import xyz.gaon.codeclear.R
 internal object ProjectInformation {
     const val REPOSITORY = "https://github.com/gaon12/CodeClear"
     const val CONTRIBUTORS = "$REPOSITORY/graphs/contributors"
+    const val SOURCES = "https://gaon12.github.io/CodeClear/sources/"
     const val MAINTAINER = "gaon12"
 }
 
@@ -97,6 +98,13 @@ internal fun AppAboutSettings(compatibility: () -> Unit) {
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        SettingsGroup {
+            SettingNote(stringResource(R.string.mobile_independent_notice))
+            SettingRow(
+                stringResource(R.string.mobile_information_sources),
+                onClick = { open(ProjectInformation.SOURCES) }
             )
         }
         SettingsGroup {

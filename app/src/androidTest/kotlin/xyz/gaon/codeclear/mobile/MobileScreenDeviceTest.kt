@@ -1049,14 +1049,14 @@ class MobileScreenDeviceTest {
     fun nearbyPermissionRetriesAndSettingsRequireTheDisclosureAgain() {
         openSettingsPage(SettingsPage.SHARING)
         compose.runOnIdle { nearby = nearby.copy(status = NearbyStatus.PERMISSION_REQUIRED) }
-        compose.onNodeWithText(text(R.string.mobile_allow)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_allow)).performScrollTo().performClick()
         compose.runOnIdle { assertEquals(0, nearbyRequests) }
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
         compose.runOnIdle { assertEquals(0, nearbyRequests) }
-        compose.onNodeWithText(text(R.string.mobile_open_settings)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_open_settings)).performScrollTo().performClick()
         compose.runOnIdle { assertEquals(0, settingsOpened) }
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
-        compose.onNodeWithText(text(R.string.mobile_open_settings)).performClick()
+        compose.onNodeWithText(text(R.string.mobile_open_settings)).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_agree_continue)).performClick()
         compose.runOnIdle {
             assertEquals(1, settingsOpened)
@@ -1608,11 +1608,15 @@ class MobileScreenDeviceTest {
             text(R.string.mobile_project_repository)
         ).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_contributors)).performScrollTo().performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_information_sources)
+        ).performScrollTo().performClick()
         compose.runOnIdle {
             assertEquals(
                 listOf(
                     "https://github.com/gaon12/CodeClear",
-                    "https://github.com/gaon12/CodeClear/graphs/contributors"
+                    "https://github.com/gaon12/CodeClear/graphs/contributors",
+                    "https://gaon12.github.io/CodeClear/sources/"
                 ),
                 projectLinks
             )

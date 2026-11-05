@@ -298,4 +298,6 @@
     <string name="mobile_owned_quota">CodeClear サービスの利用上限に達しました。時間をおいて再度お試しください。</string>
     <string name="mobile_owned_too_long">CodeClear サービスに送信するには長すぎるメッセージです。原文はそのまま保存されています。</string>
     <string name="mobile_privacy_policy">プライバシーポリシー</string>
+    <string name="mobile_information_sources">情報源と公式の案内</string>
+    <string name="mobile_independent_notice">CodeClearは独立したアプリです。政府機関との提携、政府による承認、政府の代理を行いません。対応するシステム警報文を読み取ります。周辺共有の受信文は真偽未確認で、翻訳は不正確な場合があります。原文と公式の案内を優先してください。</string>
 </resources>
