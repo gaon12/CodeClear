@@ -188,6 +188,60 @@ runtime fixture verifies process replacement during the upgrade and again during
 the persistence reinstall. It does not validate the local-consent UX or production
 signing. It uses no production key and publishes no APK or test artifact.
 
+## Standard wording translation
+
+The translation queue checks a bounded, versioned local catalog before calling the
+selected engine. A complete, unique match uses prepared wording without requesting
+a model or sending the alert to a provider. Where engine attribution is shown,
+the result is labeled **Standard wording translation**. The selected engine still identifies the existing consent
+and history partition; catalog attribution records how this particular result was
+produced.
+
+The initial catalog contains 44 exact source variants:
+
+| Source                                                                   | Variants | Prepared direction                                  |
+| ------------------------------------------------------------------------ | -------: | --------------------------------------------------- |
+| Korean general disaster, earthquake/tsunami, and civil-defense standards |       27 | Korean to English, application-authored adaptations |
+| Japan Meteorological Agency earthquake/tsunami expressions               |       16 | Japanese to English, official expression pairs      |
+| FCC earthquake warning                                                   |        1 | English to Korean, official expression pair         |
+
+Sources are the Korean [general disaster-message rules](https://www.law.go.kr/행정규칙/재난문자방송기준및운영규정),
+[KMA Annex 2](https://www.law.go.kr/LSW/flDownload.do?flSeq=164566155&bylClsCd=200201),
+[civil-defense Annex 9](https://www.law.go.kr/LSW/flDownload.do?flSeq=160780739&bylClsCd=200201),
+[JMA's 2015 multilingual dictionary](https://www.jma.go.jp/jma/press/1510/29a/tagengo20151029_dictionary.pdf),
+and [FCC DA 25-12](https://docs.fcc.gov/public/attachments/DA-25-12A1.pdf).
+The catalog records the edition, source reference, and translation origin. JMA
+expression pairs are reproduced with attribution; this application and its
+adaptations are not government-produced or government-endorsed translations.
+The JMA import covers selected 2015 expressions, not the unreviewed 2026 workbook.
+FCC publication does not establish that every US sender or installed receiver uses
+its wording.
+
+Matching escapes fixed text and uses anchored, bounded typed slots, valid dates
+and times, exact jurisdiction-scoped names, and complete variable preservation.
+Only NFC and ASCII layout whitespace are normalized. The initial name list has
+17 Korean first-level regions, four Korean agency/government names, and four US
+agency names/abbreviations. Ambiguous short names such as `광주`, `제주`, and unqualified
+`중구` are not guessed. This is a prepared subset, not a complete geographic or
+worldwide language catalog.
+
+Changed instructions, negation, added conditions, unknown names, ambiguous
+matches, and unprepared target languages continue through the existing engine
+with the **entire original body**. Missing models and remote permission continue
+to follow that engine's existing rules. The catalog never enables remote fallback
+or model downloads. Matching does not authenticate a sender, establish capture
+support, or infer an official alert level. For example, the same Korean tsunami
+body can represent different structured warning levels.
+
+Catalog results carry a template ID and revision. On a catalog revision change,
+only older catalog outputs expire; ordinary engine translations remain. Expired
+outputs wait for an explicit retry, which avoids historical result notifications
+or background provider work after an application update.
+Synthetic tests cover action/release distinctions, malformed variables,
+nonstandard fallback, scoped names, ambiguity, cache/migration preservation,
+permission changes, deletion, result attribution, and long near-match inputs.
+These checks do not certify translation semantics or physical alert reception.
+
 ## Source map
 
 All handwritten sources are Kotlin and live under each source set's `kotlin/`
@@ -211,8 +265,8 @@ Within `mobile`, `MobileController` owns product state and consent decisions.
 observations before storage. `AlertHistoryReader` composes bounded history views;
 the controller owns their cancellation and stale-response checks.
 `AlertTranslationQueue` selects and completes translation jobs while preserving
-their producing engine and work generation. `HistoryWorker` serializes storage
-operations, bounds pending work, and releases storage after active work completes.
+their selected engine, catalog attribution, and work generation. `HistoryWorker`
+serializes storage operations, bounds pending work, and releases storage after active work completes.
 `MobileScreen` owns navigation and scroll state; tutorial steps, home/history
 feeds, and the detail dialog render through focused components. Alert formatting,
 metadata, message panels, and shared settings controls have separate owners.
