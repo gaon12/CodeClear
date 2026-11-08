@@ -78,7 +78,6 @@ fun SettingsScreen(
     state: MobileState,
     environment: ProbeEnvironment,
     session: ProbeSessionState,
-    preparation: PreparationState,
     actions: MobileActions,
     selectedPage: SettingsPage?,
     selectPage: (SettingsPage?) -> Unit,
@@ -113,7 +112,7 @@ fun SettingsScreen(
                 )
                 SettingsDetail(
                     page, pageScroll.getValue(page), state, environment, session,
-                    preparation, actions, tutorial, selectPage,
+                    actions, tutorial, selectPage,
                     page.parent?.let { { selectPage(it) } }, Modifier.weight(1f)
                 )
             }
@@ -130,7 +129,7 @@ fun SettingsScreen(
         } else {
             SettingsDetail(
                 page, pageScroll.getValue(page), state, environment, session,
-                preparation, actions, tutorial, selectPage,
+                actions, tutorial, selectPage,
                 { selectPage(page.parent) }, Modifier.fillMaxSize()
             )
         }
@@ -241,7 +240,6 @@ private fun SettingsDetail(
     state: MobileState,
     environment: ProbeEnvironment,
     session: ProbeSessionState,
-    preparation: PreparationState,
     actions: MobileActions,
     tutorial: () -> Unit,
     navigate: (SettingsPage) -> Unit,
@@ -266,12 +264,6 @@ private fun SettingsDetail(
                 item { SettingsStatus(state, actions) }
                 item(key = page) {
                     MobileSettings(page, state, environment, session, actions, tutorial, navigate)
-                }
-                if (page == SettingsPage.TRANSLATION &&
-                    preparation.phase != PreparationPhase.IDLE &&
-                    state.options.engine == TranslationEngineKind.ML_KIT
-                ) {
-                    item { Text(stringResource(preparationMessage(preparation.phase))) }
                 }
             }
         }

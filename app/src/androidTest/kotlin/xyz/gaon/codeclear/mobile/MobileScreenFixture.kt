@@ -120,7 +120,6 @@ abstract class MobileScreenFixture {
     protected var serverAllows = 0
     protected var serverRemovals = 0
     protected var serverCacheClears = 0
-    protected var globalPreparation by mutableStateOf(PreparationState())
     protected val serverTokens = mutableListOf<String>()
     protected val context get() = compose.activity
     protected val fixtureResources
@@ -212,7 +211,6 @@ abstract class MobileScreenFixture {
                         accessibilityConnected = fixtureAccessibilityConnected
                     ),
                     false,
-                    globalPreparation,
                     MobileActions(
                         olderObservations = { olderObservationRequests++ },
                         newestObservations = { newestObservationRequests++ },

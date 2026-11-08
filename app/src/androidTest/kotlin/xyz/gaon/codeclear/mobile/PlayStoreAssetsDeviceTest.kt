@@ -108,7 +108,6 @@ class PlayStoreAssetsDeviceTest {
                             accessibilityConnected = true
                         ),
                         false,
-                        PreparationState(),
                         fixtureActions()
                     )
                 }

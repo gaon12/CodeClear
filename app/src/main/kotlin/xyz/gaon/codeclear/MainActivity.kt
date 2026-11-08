@@ -175,7 +175,6 @@ class MainActivity : AppCompatActivity() {
                         current,
                         ProbeSession.state,
                         ProbeSourceActions.state.available,
-                        runtime.preparation,
                         MobileActions(
                             ::configureOptions, controller::search, {
                                 runtime.speech.stop()

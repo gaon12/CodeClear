@@ -43,7 +43,6 @@ fun MobileScreen(
     environment: ProbeEnvironment,
     session: ProbeSessionState,
     sourceAvailable: Boolean,
-    preparation: PreparationState,
     actions: MobileActions
 ) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -176,7 +175,6 @@ fun MobileScreen(
                             state = state,
                             environment = environment,
                             session = session,
-                            preparation = preparation,
                             actions = actions,
                             selectedPage = settingsPage,
                             selectPage = { settingsPage = it },
@@ -284,17 +282,6 @@ fun MobileScreen(
                                 }
                             )
                         }
-                        if (preparation.phase != PreparationPhase.IDLE &&
-                            state.options.engine == TranslationEngineKind.ML_KIT
-                        ) {
-                            item {
-                                Text(
-                                    stringResource(
-                                        preparationMessage(preparation.phase)
-                                    )
-                                )
-                            }
-                        }
                     }
                 }
             }
@@ -309,12 +296,4 @@ fun MobileScreen(
             ModelDownloadDialog(it, actions)
         }
     }
-}
-
-internal fun preparationMessage(phase: PreparationPhase): Int = when (phase) {
-    PreparationPhase.IDENTIFYING -> R.string.mobile_working
-    PreparationPhase.WAITING_FOR_WIFI -> R.string.mobile_downloading
-    PreparationPhase.READY -> R.string.mobile_models_ready
-    PreparationPhase.UNKNOWN_LANGUAGE -> R.string.mobile_unknown_language
-    else -> R.string.mobile_failed
 }

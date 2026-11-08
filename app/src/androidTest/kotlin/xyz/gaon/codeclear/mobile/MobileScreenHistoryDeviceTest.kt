@@ -178,28 +178,35 @@ class MobileScreenHistoryDeviceTest : MobileScreenFixture() {
     }
 
     @Test
-    fun completedRecordDoesNotShowAnUnrelatedGlobalModelPreparationStatus() {
-        compose.runOnIdle {
-            globalPreparation = PreparationState(
-                PreparationPhase.READY,
-                target = "de",
-                modelLanguage = "de"
-            )
+    fun modelPreparationStatusStaysInModelManagementInsteadOfFeedsAndSettings() {
+        val bareStatus = listOf(
+            R.string.mobile_working,
+            R.string.mobile_downloading,
+            R.string.mobile_models_ready,
+            R.string.mobile_unknown_language,
+            R.string.mobile_failed
+        ).map(::text)
+        fun assertNoBareStatus() = bareStatus.forEach {
+            compose.onNodeWithText(it).assertDoesNotExist()
         }
-        compose.onNodeWithTag("destination-1").performClick()
+        for (phase in PreparationPhase.entries - PreparationPhase.IDLE) {
+            compose.runOnIdle {
+                modelPreparation = PreparationState(phase, target = "de", modelLanguage = "de")
+            }
+            compose.onNodeWithTag("destination-0").performClick()
+            assertNoBareStatus()
+            compose.onNodeWithTag("destination-1").performClick()
+            assertNoBareStatus()
+        }
+        compose.runOnIdle { modelPreparation = PreparationState(PreparationPhase.READY) }
         compose.onNodeWithTag("history-row-1").performClick()
         compose.onNodeWithTag("history-detail-body").performScrollToNode(hasTestTag("delete-alert"))
         compose.onNodeWithTag("delete-alert").assertIsDisplayed()
+        assertNoBareStatus()
+        openSettingsPage(SettingsPage.TRANSLATION)
+        compose.onNodeWithTag("settings-detail").performScrollToIndex(1)
+        compose.onNodeWithTag("model-management").assertExists()
         compose.onNodeWithText(text(R.string.mobile_models_ready)).assertDoesNotExist()
-        for (phase in listOf(
-            PreparationPhase.IDENTIFYING,
-            PreparationPhase.WAITING_FOR_WIFI,
-            PreparationPhase.UNKNOWN_LANGUAGE,
-            PreparationPhase.FAILED
-        )) {
-            compose.runOnIdle { globalPreparation = globalPreparation.copy(phase = phase) }
-            compose.onNodeWithText(text(preparationMessage(phase))).assertDoesNotExist()
-        }
         compose.runOnIdle { assertTrue(requestedModels.isEmpty()) }
     }
 
