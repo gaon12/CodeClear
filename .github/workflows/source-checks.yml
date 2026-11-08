@@ -3,7 +3,15 @@ name: Source checks
 on:
     push:
         branches: [main]
+        paths-ignore:
+            - "**/*.md"
+            - "docs/**"
+            - "distribution/**"
     pull_request:
+        paths-ignore:
+            - "**/*.md"
+            - "docs/**"
+            - "distribution/**"
     workflow_dispatch:
 
 permissions:
