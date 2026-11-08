@@ -119,6 +119,5 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.mlkit.translate)
     implementation(libs.mlkit.language.id)
-    implementation(libs.icu4j)
     implementation(libs.okhttp)
 }

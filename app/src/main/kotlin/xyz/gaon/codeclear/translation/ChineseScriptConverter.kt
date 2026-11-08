@@ -1,8 +1,12 @@
 package xyz.gaon.codeclear.translation
 
-import com.ibm.icu.text.Transliterator
+import android.icu.text.Transliterator
 
-/** Confine this instance to the translation worker; ICU transliterators are mutable. */
+/**
+ * Converts between Simplified and Traditional Chinese with the platform ICU transliterators
+ * (public since API 29), so the app does not bundle a separate ICU library and its data.
+ * Confine this instance to the translation worker; ICU transliterators are mutable.
+ */
 class ChineseScriptConverter {
     private val simplified by lazy { Transliterator.getInstance("Traditional-Simplified") }
     private val traditional by lazy { Transliterator.getInstance("Simplified-Traditional") }

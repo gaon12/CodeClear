@@ -89,22 +89,6 @@ class LocalTranslationTest {
         assertEquals(1, engine.calls.size)
     }
 
-    @Test
-    fun chineseConversionPreservesEmergencyNumbersPunctuationAndOtherScripts() {
-        val converter = ChineseScriptConverter()
-        val simplified = "[演练] 请勿进入危险区域。14:05，112，3 km。서울 东京 ひらがな 🚨 https://example.org/a?x=1"
-        val traditional = "[演練] 請勿進入危險區域。14:05，112，3 km。서울 東京 ひらがな 🚨 https://example.org/a?x=1"
-        assertEquals(
-            traditional,
-            converter.convert(simplified, TranslationTarget.TRADITIONAL_CHINESE)
-        )
-        assertEquals(
-            simplified,
-            converter.convert(traditional, TranslationTarget.SIMPLIFIED_CHINESE)
-        )
-        assertEquals(simplified, converter.convert(simplified, TranslationTarget.ENGLISH))
-    }
-
     private fun input(id: Long) =
         TranslationInput(id, "[DRILL] Do not enter Zone $id.", TranslationTarget.KOREAN)
     private fun ready(text: String) = TranslationResult.Ready(text, "en", false)

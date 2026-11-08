@@ -63,6 +63,7 @@ FIXTURES = {
     "translation.MyMemoryTransportDeviceTest": 6,
     "translation.LocalEngineDeviceTest#bundledLanguageIdentificationRunsWithoutAModelDownload": 1,
     "translation.LocalEngineDeviceTest#chineseScriptConversionRunsOnTheDeviceAndPreservesNumbers": 1,
+    "translation.LocalEngineDeviceTest#platformChineseConversionPreservesNumbersPunctuationAndOtherScriptsInBothDirections": 1,
 }
 
 

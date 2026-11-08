@@ -10,7 +10,6 @@ kotlin = "2.4.21"
 composeBom = "2026.09.00"
 mlkitTranslate = "17.0.3"
 mlkitLanguageId = "17.0.6"
-icu = "79.1"
 appcompat = "1.8.0"
 okhttp = "5.5.1"
 okio = "3.18.2"
@@ -35,7 +34,6 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 mlkit-translate = { group = "com.google.mlkit", name = "translate", version.ref = "mlkitTranslate" }
 mlkit-language-id = { group = "com.google.mlkit", name = "language-id", version.ref = "mlkitLanguageId" }
-icu4j = { group = "com.ibm.icu", name = "icu4j", version.ref = "icu" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

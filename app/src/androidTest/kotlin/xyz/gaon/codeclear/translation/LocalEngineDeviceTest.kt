@@ -36,6 +36,22 @@ class LocalEngineDeviceTest {
     }
 
     @Test
+    fun platformChineseConversionPreservesNumbersPunctuationAndOtherScriptsInBothDirections() {
+        val converter = ChineseScriptConverter()
+        val simplified = "[演练] 请勿进入危险区域。14:05，112，3 km。서울 东京 ひらがな 🚨 https://example.org/a?x=1"
+        val traditional = "[演練] 請勿進入危險區域。14:05，112，3 km。서울 東京 ひらがな 🚨 https://example.org/a?x=1"
+        assertEquals(
+            traditional,
+            converter.convert(simplified, TranslationTarget.TRADITIONAL_CHINESE)
+        )
+        assertEquals(
+            simplified,
+            converter.convert(traditional, TranslationTarget.SIMPLIFIED_CHINESE)
+        )
+        assertEquals(simplified, converter.convert(simplified, TranslationTarget.ENGLISH))
+    }
+
+    @Test
     fun preparedTranslationRunsInTheSelectedAbiWithoutDownloadingModels() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val arguments = InstrumentationRegistry.getArguments()
