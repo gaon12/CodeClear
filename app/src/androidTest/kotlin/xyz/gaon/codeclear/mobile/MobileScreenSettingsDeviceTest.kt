@@ -498,6 +498,8 @@ class MobileScreenSettingsDeviceTest : MobileScreenFixture() {
                 "mobile-feed"
             ).performScrollToNode(hasText(text(R.string.mobile_home_empty_title)))
             compose.onNodeWithText(text(R.string.mobile_home_empty_title)).assertIsDisplayed()
+            compose.onNodeWithText(text(R.string.mobile_last_saved)).assertDoesNotExist()
+            compose.onNodeWithText(text(R.string.mobile_home_view_history)).assertDoesNotExist()
             savePreview("home-empty-${theme.name.lowercase()}")
         }
         compose.onNodeWithTag(
@@ -511,6 +513,9 @@ class MobileScreenSettingsDeviceTest : MobileScreenFixture() {
         compose.onNodeWithTag("settings-detail-title")
             .assertTextEquals(text(R.string.mobile_translation_settings))
         compose.onNodeWithTag("destination-0").performClick()
+        compose.runOnIdle { state = state.copy(latest = record(1)) }
+        compose.onNodeWithTag("mobile-feed")
+            .performScrollToNode(hasText(text(R.string.mobile_home_view_history)))
         compose.onNodeWithText(text(R.string.mobile_home_view_history)).performClick()
         compose.onNodeWithTag("destination-title").assertTextEquals(text(R.string.mobile_history))
         compose.runOnIdle { assertEquals(0, prepared) }

@@ -37,25 +37,26 @@ internal fun LazyListScope.homeFeed(
             openSettings(SettingsPage.TRANSLATION)
         })
     }
-    item {
-        Row(
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                stringResource(R.string.mobile_last_saved),
-                Modifier.weight(1f),
-                style = MaterialTheme.typography.titleMedium
-            )
-            TextButton(onClick = openHistory) {
-                Text(stringResource(R.string.mobile_home_view_history))
-            }
-        }
-    }
     val latest = state.latest
     if (latest == null) {
+        // Without a saved alert there is no latest-alert heading or history shortcut to offer.
         item { HomeEmptyState() }
     } else {
+        item {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    stringResource(R.string.mobile_last_saved),
+                    Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                TextButton(onClick = openHistory) {
+                    Text(stringResource(R.string.mobile_home_view_history))
+                }
+            }
+        }
         item {
             AlertPresentation(
                 latest,

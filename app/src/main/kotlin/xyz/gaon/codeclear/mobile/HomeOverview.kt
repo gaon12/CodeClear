@@ -43,6 +43,9 @@ internal fun HomeOverview(
                 state.options.accessibilityConsent && environment.accessibilityGranted &&
                     session.accessibilityConnected
                 )
+    // The completeness caveat qualifies a "connected" status, so it is shown only with that status.
+    val connectedStatus = environment.radio == ProbeRadio.PRESENT &&
+        environment.systemPackages.isNotEmpty() && captureActive
     SettingsGroup {
         Row(Modifier.fillMaxWidth().testTag("home-overview")) {
             OverviewAction(
@@ -87,7 +90,7 @@ internal fun HomeOverview(
                 openTranslation
             )
         }
-        if (environment.radio == ProbeRadio.PRESENT) {
+        if (connectedStatus) {
             Text(
                 stringResource(R.string.mobile_home_capture_notice),
                 Modifier.padding(start = 18.dp, end = 18.dp, bottom = 16.dp)

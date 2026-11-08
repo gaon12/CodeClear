@@ -81,6 +81,7 @@ class HomeCaptureStatusDeviceTest {
         compose.onNodeWithTag("home-capture-notice").performScrollTo().assertIsDisplayed()
         compose.runOnIdle { options = options.copy(notificationConsent = false) }
         status(R.string.mobile_home_setup).performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("home-capture-notice").assertDoesNotExist()
         compose.runOnIdle { options = options.copy(accessibilityConsent = true) }
         status(R.string.mobile_home_setup).assertIsDisplayed()
         compose.runOnIdle { session = session.copy(accessibilityConnected = true) }
@@ -89,6 +90,7 @@ class HomeCaptureStatusDeviceTest {
         status(R.string.mobile_home_setup).assertIsDisplayed()
         compose.runOnIdle { environment = environment.copy(systemPackages = emptySet()) }
         status(R.string.mobile_home_check_source).assertIsDisplayed()
+        compose.onNodeWithTag("home-capture-notice").assertDoesNotExist()
         compose.runOnIdle { environment = environment.copy(radio = ProbeRadio.ABSENT) }
         status(R.string.mobile_home_no_radio).assertIsDisplayed()
         compose.onNodeWithTag("home-capture-notice").assertDoesNotExist()
