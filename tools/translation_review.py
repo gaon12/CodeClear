@@ -11,6 +11,12 @@ SUITE = Path(__file__).with_name("translation_review_cases.json")
 MAX_REVIEW_BYTES = 1024 * 1024
 
 
+def url_tokens(text):
+    return Counter(
+        match.rstrip(".,;:!?)]}") for match in re.findall(r"https?://[^\s<>\"']+", text)
+    )
+
+
 def load_suite():
     data = SUITE.read_bytes()
     return json.loads(data), hashlib.sha256(data).hexdigest()
@@ -75,9 +81,7 @@ def evaluate(review):
                 re.findall(r"[0-9]+", text)
             ):
                 failures.append("numeric tokens")
-            if any(
-                url not in text for url in re.findall(r"https://\S+", case["source"])
-            ):
+            if url_tokens(case["source"]) != url_tokens(text):
                 failures.append("URL")
         pending = (
             not text.strip()

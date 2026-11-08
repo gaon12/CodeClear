@@ -50,11 +50,19 @@ class TranslationReviewTest(unittest.TestCase):
                 old, new
             )
             self.assertIn(expected, evaluate(review)["cases"][0]["failures"])
+        original = complete["results"][5]["text"]
+        for changed in [
+            original.replace("example.org", "example.net"),
+            original.replace("/drill", "/drill.evil"),
+            original.replace("https://", "http://"),
+            original + " https://example.net/extra",
+        ]:
+            review = copy.deepcopy(complete)
+            review["results"][5]["text"] = changed
+            self.assertIn("URL", evaluate(review)["cases"][5]["failures"])
         review = copy.deepcopy(complete)
-        review["results"][5]["text"] = review["results"][5]["text"].replace(
-            "example.org", "example.net"
-        )
-        self.assertIn("URL", evaluate(review)["cases"][5]["failures"])
+        review["results"][5]["text"] += "."
+        self.assertEqual("passed", evaluate(review)["status"])
 
     def test_stale_or_incomplete_case_sets_are_rejected(self):
         complete = self.complete_review()
