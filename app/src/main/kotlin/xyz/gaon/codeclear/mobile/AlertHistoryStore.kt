@@ -9,7 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.os.CancellationSignal
 import android.os.Looper
 import androidx.core.database.sqlite.transaction
-import java.security.MessageDigest
+import xyz.gaon.codeclear.sha256Hex
 import xyz.gaon.codeclear.translation.StandardTranslationAttribution
 import xyz.gaon.codeclear.translation.StandardTranslationCatalog
 import xyz.gaon.codeclear.translation.TranslationEngineKind
@@ -711,8 +711,7 @@ class AlertHistoryStore(
                 }
                 ) + ALERT_COLUMNS
 
-        fun originalHash(original: String): String = MessageDigest.getInstance("SHA-256")
-            .digest(original.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
+        fun originalHash(original: String): String = sha256Hex(original)
 
         fun sourceFingerprint(source: String, identity: String, bodyHash: String): String =
             originalHash(source + '\u0000' + identity + '\u0000' + bodyHash)
