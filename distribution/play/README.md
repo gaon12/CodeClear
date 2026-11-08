@@ -1,6 +1,8 @@
 # Google Play submission materials
 
-The listing JSON files are source drafts for Play Console. Saving a console
+CodeClear 1.0.0 is [available on Google Play](https://play.google.com/store/apps/details?id=xyz.gaon.codeclear).
+The first published release uses version code 5. The listing JSON files retain
+the localized submission sources for future updates. Saving a future Console
 draft does not submit it for review or establish production readiness.
 
 ## Localized listings
@@ -16,7 +18,7 @@ The copy describes source-dependent capture rather than promising that every
 Android device can expose every alert. Accessibility use and the separate
 remote-translation permission are stated in every language.
 
-## Remaining submission inputs
+## Future submission checklist
 
 - Confirm the Play application identity, existing releases and signing state.
   The package is `xyz.gaon.codeclear`; the release version name is `1.0.0`.
@@ -98,7 +100,28 @@ reception in the video's captions. Review the recording before sharing it, and
 host it only at an authorized review destination.
 
 Keep configured APKs/AABs, credentials and the actual translation route out of
-this directory and public repository. Follow [private build instructions](../../tools/PRIVATE_BUILDS.md).
+this directory and Git history. Explicitly authorized release binaries belong in
+[GitHub Releases](https://github.com/gaon12/CodeClear/releases); they contain the
+same configured route distributed through Play, but must never contain client
+tokens or signing keys. Follow [private build instructions](../../tools/PRIVATE_BUILDS.md).
+
+## Release files and update compatibility
+
+Archive the exact upload-signed AAB accepted for the published version. An AAB is
+for publishing and cannot be installed directly. For a public installable APK,
+download the **signed universal APK** for that version from Play Console under
+**Test and release > Latest releases and bundles > Downloads**. Verify its package,
+version code, non-debuggable state, signature and app-signing certificate before
+uploading it, and publish SHA-256 file checksums alongside the assets.
+
+The upload key authenticates AAB submissions; Google Play signs installed APKs
+with the app-signing key. Matching only the upload certificate does not establish
+APK update compatibility. Preserve the same package identity and compatible
+app-signing certificates across distribution channels, and increment the version
+code for future Play updates. Do not publish the local `device-release.apk` files:
+they preserve an existing debug-signing identity and cannot update Play installs.
+Do not uninstall an existing local build to resolve a signing mismatch without a
+supported history-preserving migration.
 
 ## Official references
 

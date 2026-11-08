@@ -4,12 +4,27 @@ CodeClear is an Android app for preserving emergency-alert originals and showing
 translations alongside them. It targets Android 11 (API 30) and later smartphones
 and tablets, with on-device translation as the default.
 
+## Download
+
+[Get CodeClear on Google Play](https://play.google.com/store/apps/details?id=xyz.gaon.codeclear)
+
+CodeClear 1.0.0 is available on Google Play. See [GitHub Releases](https://github.com/gaon12/CodeClear/releases)
+for archived release files and their checksums. An Android App Bundle (`.aab`)
+is a publishing artifact and cannot be installed directly on a device.
+
+APK updates require the same package identity and compatible app-signing
+certificates; future Play updates also require a higher version code. The AAB
+upload certificate can differ from the certificate Google Play uses for installed
+APKs. Public APKs must come from Play Console's signed universal APK download,
+or use the same app-signing identity. Local debug-signed builds use a separate
+identity. See [Play App Signing](https://support.google.com/googleplay/android-developer/answer/9842756?hl=en).
+
 ## Project status
 
-The app is under development. Reliable recovery of complete alert bodies is the
-primary release gate. Android version compatibility, a successful build, or a
-working translation engine does not establish emergency-alert capture support.
-Capture must be validated for each supported alert source and firmware profile.
+Reliable recovery of complete alert bodies remains the primary capture criterion.
+Store availability, Android version compatibility, a successful build, or a working
+translation engine does not establish capture support for every alert source and
+firmware profile.
 
 Home, searchable history, original/translation details, model management, speech
 playback, and settings are implemented. The interface supports English, Korean,
@@ -40,9 +55,9 @@ Japanese, French, German, Simplified Chinese, and Traditional Chinese.
   Android Keystore-backed encryption. See [private builds](tools/PRIVATE_BUILDS.md).
   Arbitrary provider endpoints and provider-key integration remain out of scope.
 
-Draft [Google Play materials](distribution/play/README.md) include localized
-listing copy and remaining submission inputs. They have not been submitted and
-do not waive the capture or optimized-runtime release gates.
+[Google Play materials](distribution/play/README.md) include localized listing
+sources and a checklist for future submissions. Store approval does not replace
+source-specific capture or optimized-runtime validation.
 
 ## Build and check
 
@@ -114,14 +129,14 @@ All handwritten sources are Kotlin and live under each source set's `kotlin/`
 directory in the single `app` module. Main packages under
 `app/src/main/kotlin/xyz/gaon/codeclear/` are:
 
-| Package | Responsibility |
-| --- | --- |
-| `mobile` | Product screens, settings, history, runtime ownership, and work coordination |
-| `capture` | Alert-source observation, extraction, source verification, and capture services |
-| `probe` | Stable Android service entry points that preserve existing user grants |
+| Package       | Responsibility                                                                                            |
+| ------------- | --------------------------------------------------------------------------------------------------------- |
+| `mobile`      | Product screens, settings, history, runtime ownership, and work coordination                              |
+| `capture`     | Alert-source observation, extraction, source verification, and capture services                           |
+| `probe`       | Stable Android service entry points that preserve existing user grants                                    |
 | `translation` | Shared translation contracts, on-device engines, MyMemory transport, and future server response contracts |
-| `nearby` | Experimental Bluetooth relay protocol, radio work, and peer inbox |
-| `reception` | Radio/network country context and country-code mappings |
+| `nearby`      | Experimental Bluetooth relay protocol, radio work, and peer inbox                                         |
+| `reception`   | Radio/network country context and country-code mappings                                                   |
 
 `src/debug/kotlin` contains diagnostic entry points. `src/testDebug/kotlin`
 contains JVM tests, and `src/androidTest/kotlin` contains instrumented tests.
