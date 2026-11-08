@@ -87,6 +87,14 @@ Some test classes change app state, use Bluetooth, or contact the remote provide
 Review the selected fixtures and use isolated synthetic data before running device
 tests. Building the test APK does not execute those tests.
 
+The `Source checks` workflow runs on pushes to `main`, pull requests, and manual
+dispatch. It checks tracked Kotlin formatting, Python formatting/lint and tooling
+tests, workflow syntax, both Android lint variants, JVM tests, and app/test APK
+compilation. Tool versions are pinned; downloaded lint binaries have pinned
+SHA-256 checksums. It starts no emulator, downloads no translation models, and
+uses no private translation configuration or signing credentials. These checks
+do not execute instrumented tests or establish alert-capture support.
+
 The manually dispatched `Android validation` GitHub Actions workflow builds a
 clean checkout on standard Linux runners and runs an explicit software-fixture
 allowlist on disposable AOSP API 30, 31, and 35 emulators. Each emulator uses two

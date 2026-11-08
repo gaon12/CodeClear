@@ -1,0 +1,73 @@
+name: Source checks
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: source-checks-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    source:
+        runs-on: ubuntu-24.04
+        timeout-minutes: 25
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+            - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+              with:
+                  distribution: temurin
+                  java-version: "25"
+            - name: Check Kotlin formatting
+              env:
+                  KTLINT_SHA256: a3fd620207d5c40da6ca789b95e7f823c54e854b7fade7f613e91096a3706d75
+              run: |
+                  curl --fail --location --silent --show-error --max-time 120 \
+                    https://github.com/ktlint/ktlint/releases/download/1.8.0/ktlint \
+                    --output "$RUNNER_TEMP/ktlint"
+                  printf '%s  %s\n' "$KTLINT_SHA256" "$RUNNER_TEMP/ktlint" | sha256sum --check
+                  git ls-files -z -- '*.kt' '*.kts' | xargs -0 java -jar "$RUNNER_TEMP/ktlint"
+            - name: Check Python formatting and lint
+              run: |
+                  python3 -m pip install --disable-pip-version-check ruff==0.16.2
+                  python3 -m ruff format --check tools server/php/tests
+                  python3 -m ruff check tools server/php/tests
+            - name: Check workflow syntax
+              env:
+                  ACTIONLINT_SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+              run: |
+                  curl --fail --location --silent --show-error --max-time 120 \
+                    https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz \
+                    --output "$RUNNER_TEMP/actionlint.tar.gz"
+                  printf '%s  %s\n' "$ACTIONLINT_SHA256" "$RUNNER_TEMP/actionlint.tar.gz" | sha256sum --check
+                  tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
+                  "$RUNNER_TEMP/actionlint" -color
+            - name: Test validation tooling
+              run: python3 -B -m unittest discover -s tools/ci -p 'test_*.py'
+            - name: Prepare build SDK without an emulator
+              run: |
+                  python3 - <<'PY'
+                  import os
+                  import subprocess
+                  from pathlib import Path
+
+                  sdk = Path(os.environ["ANDROID_HOME"])
+                  latest = sdk / "cmdline-tools/latest/bin/sdkmanager"
+                  subprocess.run([str(latest), "--licenses"], input="yes\n" * 100, text=True, check=True, timeout=180)
+                  subprocess.run([str(latest), "cmdline-tools;23.0"], check=True, timeout=300)
+                  manager = sdk / "cmdline-tools/23.0/bin/sdkmanager"
+                  subprocess.run([str(manager), "platforms;android-37.0", "build-tools;37.0.0"], check=True, timeout=300)
+                  PY
+            - name: Check Android sources and build test APKs
+              run: >-
+                  ./gradlew --no-daemon --max-workers=2 --console=plain
+                  :app:lintDebug :app:lintRelease :app:testDebugUnitTest
+                  :app:assembleDebug :app:assembleDebugAndroidTest
+                  :app:bundleReleaseClassesToCompileJar
