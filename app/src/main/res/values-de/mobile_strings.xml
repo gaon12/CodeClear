@@ -133,6 +133,8 @@
     <string name="mobile_original_unknown">Die Originalsprache konnte nicht ermittelt werden. Prüfen Sie das Original und versuchen Sie es erneut.</string>
     <string name="mobile_original_language_choice">%1$s · Originalsprache</string>
     <string name="mobile_home_check_source">Quelle prüfen</string>
+    <string name="mobile_home_capture_connected">Erfassung verbunden</string>
+    <string name="mobile_home_capture_notice">Ein verbundener Dienst bestätigt nicht, dass alle Warnmeldungen gespeichert wurden. Die Erfassung hängt von der System-Warn-App und der Firmware ab.</string>
     <string name="mobile_home_setup">Zugriff einrichten</string>
     <string name="mobile_home_empty_title">Ihre Warnungen an einem Ort</string>
     <string name="mobile_home_view_history">Verlauf öffnen</string>
@@ -239,7 +241,7 @@
     <string name="mobile_compat_android">Android %1$s (API %2$d; mindestens 30)</string>
     <string name="mobile_compat_form">Smartphone- oder Tablet-Hardware</string>
     <string name="mobile_compat_radio">Hardware für Mobilfunkempfang</string>
-    <string name="mobile_compat_source">Geprüfte System-Warnmeldungsquelle installiert</string>
+    <string name="mobile_compat_source">Mögliche System-Warn-App installiert</string>
     <string name="mobile_compat_os_grants">Systemzugriff erteilt</string>
     <string name="mobile_compat_consent">Erfassung in CodeClear erlaubt</string>
     <string name="mobile_compat_connections">Erfassungsdienste verbunden</string>

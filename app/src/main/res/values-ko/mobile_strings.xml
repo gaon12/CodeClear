@@ -133,6 +133,8 @@
     <string name="mobile_original_unknown">원문 언어를 확인하지 못했습니다. 원문을 확인하고 다시 시도해 주세요.</string>
     <string name="mobile_original_language_choice">%1$s · 원문 언어</string>
     <string name="mobile_home_check_source">수집 경로 확인</string>
+    <string name="mobile_home_capture_connected">수집 경로 연결됨</string>
+    <string name="mobile_home_capture_notice">서비스가 연결되어 있어도 모든 경보가 저장되었다는 뜻은 아닙니다. 수집 가능 여부는 시스템 재난문자 앱과 펌웨어에 따라 달라집니다.</string>
     <string name="mobile_home_setup">권한 설정 필요</string>
     <string name="mobile_home_empty_title">수신한 문자를 한곳에서</string>
     <string name="mobile_home_view_history">기록 보기</string>
@@ -238,7 +240,7 @@
     <string name="mobile_compat_android">Android %1$s (API %2$d · 최소 30)</string>
     <string name="mobile_compat_form">스마트폰 또는 태블릿 하드웨어</string>
     <string name="mobile_compat_radio">셀룰러 수신 하드웨어</string>
-    <string name="mobile_compat_source">검토된 시스템 재난문자 수신 앱 설치</string>
+    <string name="mobile_compat_source">수집 후보인 시스템 재난문자 앱 설치</string>
     <string name="mobile_compat_os_grants">시스템 접근 권한 허용</string>
     <string name="mobile_compat_consent">CodeClear에서 수집 허용</string>
     <string name="mobile_compat_connections">수집 서비스 연결</string>

@@ -133,6 +133,8 @@
     <string name="mobile_original_unknown">原文の言語を確認できませんでした。原文を確認して、もう一度お試しください。</string>
     <string name="mobile_original_language_choice">%1$s · 原文の言語</string>
     <string name="mobile_home_check_source">収集元を確認</string>
+    <string name="mobile_home_capture_connected">収集経路に接続済み</string>
+    <string name="mobile_home_capture_notice">サービスへの接続は、すべての警報が保存されたことを意味しません。収集の可否はシステム警報アプリとファームウェアによって異なります。</string>
     <string name="mobile_home_setup">アクセスの設定が必要</string>
     <string name="mobile_home_empty_title">受信した警報をまとめて確認</string>
     <string name="mobile_home_view_history">履歴を見る</string>
@@ -238,7 +240,7 @@
     <string name="mobile_compat_android">Android %1$s（API %2$d・最小30）</string>
     <string name="mobile_compat_form">スマートフォンまたはタブレット</string>
     <string name="mobile_compat_radio">携帯電話網の受信ハードウェア</string>
-    <string name="mobile_compat_source">確認済みのシステム警報アプリをインストール済み</string>
+    <string name="mobile_compat_source">収集候補のシステム警報アプリをインストール済み</string>
     <string name="mobile_compat_os_grants">システムアクセスを許可済み</string>
     <string name="mobile_compat_consent">CodeClearで取得を許可済み</string>
     <string name="mobile_compat_connections">取得サービスの接続</string>

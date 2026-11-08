@@ -133,6 +133,8 @@
     <string name="mobile_original_unknown">无法确认原文语言。请保留原文并重试。</string>
     <string name="mobile_original_language_choice">%1$s · 原文语言</string>
     <string name="mobile_home_check_source">检查来源</string>
+    <string name="mobile_home_capture_connected">采集通道已连接</string>
+    <string name="mobile_home_capture_notice">服务已连接并不表示所有警报均已保存。能否采集取决于系统警报应用和固件。</string>
     <string name="mobile_home_setup">需要设置权限</string>
     <string name="mobile_home_empty_title">在一处查看收到的警报</string>
     <string name="mobile_home_view_history">查看记录</string>
@@ -238,7 +240,7 @@
     <string name="mobile_compat_android">Android %1$s（API %2$d，最低30）</string>
     <string name="mobile_compat_form">手机或平板设备</string>
     <string name="mobile_compat_radio">蜂窝接收硬件</string>
-    <string name="mobile_compat_source">已安装经审核的系统警报应用</string>
+    <string name="mobile_compat_source">已安装候选系统警报应用</string>
     <string name="mobile_compat_os_grants">已授予系统访问权限</string>
     <string name="mobile_compat_consent">已允许CodeClear采集</string>
     <string name="mobile_compat_connections">采集服务已连接</string>

@@ -59,7 +59,7 @@ internal fun HomeOverview(
                             R.string.mobile_home_check_source
                         }
 
-                        captureActive -> R.string.mobile_on
+                        captureActive -> R.string.mobile_home_capture_connected
 
                         else -> R.string.mobile_home_setup
                     }
@@ -85,6 +85,15 @@ internal fun HomeOverview(
                 },
                 Modifier.weight(1f),
                 openTranslation
+            )
+        }
+        if (environment.radio == ProbeRadio.PRESENT) {
+            Text(
+                stringResource(R.string.mobile_home_capture_notice),
+                Modifier.padding(start = 18.dp, end = 18.dp, bottom = 16.dp)
+                    .testTag("home-capture-notice"),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
