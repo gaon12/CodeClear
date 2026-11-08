@@ -241,14 +241,8 @@ class MobileScreenHistoryDeviceTest : MobileScreenFixture() {
         compose.onNodeWithText(text(R.string.mobile_observations)).performScrollTo().performClick()
         compose.onNodeWithTag("observation-12").performScrollTo().assertIsDisplayed()
         compose.onNodeWithTag("observation-11").performScrollTo().assertIsDisplayed()
-        compose.onNode(
-            hasText(text(R.string.mobile_older)) and
-                hasAnyAncestor(hasTestTag("observation-history"))
-        ).performScrollTo().performClick()
-        compose.onNode(
-            hasText(text(R.string.mobile_newest)) and
-                hasAnyAncestor(hasTestTag("observation-history"))
-        ).performScrollTo().performClick()
+        compose.onNodeWithTag("observations-navigation-next").performScrollTo().performClick()
+        compose.onNodeWithTag("observations-navigation-previous").performScrollTo().performClick()
         compose.runOnIdle {
             assertEquals(1, olderObservationRequests)
             assertEquals(1, newestObservationRequests)

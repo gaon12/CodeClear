@@ -307,4 +307,8 @@
     <string name="mobile_independent_notice">CodeClearは独立したアプリです。政府機関との提携、政府による承認、政府の代理を行いません。対応するシステム警報文を読み取ります。周辺共有の受信文は真偽未確認で、翻訳は不正確な場合があります。原文と公式の案内を優先してください。</string>
     <string name="mobile_result_standard">標準文例に基づく翻訳</string>
     <string name="mobile_standard_updated">標準文例が更新されました。再翻訳して結果を更新してください。</string>
+    <string name="mobile_previous">前へ</string>
+    <string name="mobile_settings_alerts_group">緊急速報</string>
+    <string name="mobile_settings_general_group">一般</string>
+    <string name="mobile_settings_information_group">情報</string>
 </resources>

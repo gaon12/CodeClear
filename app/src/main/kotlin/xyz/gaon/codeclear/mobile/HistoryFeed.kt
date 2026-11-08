@@ -129,18 +129,13 @@ internal fun LazyListScope.historyFeed(
         val morePossible = state.records.size == 50
         if (olderPage || morePossible) {
             item {
-                Row(Modifier.padding(vertical = 12.dp)) {
-                    if (olderPage) {
-                        TextButton(onClick = actions.newest) {
-                            Text(stringResource(R.string.mobile_newest))
-                        }
-                    }
-                    if (morePossible) {
-                        TextButton(onClick = actions.older) {
-                            Text(stringResource(R.string.mobile_older))
-                        }
-                    }
-                }
+                PageNavigation(
+                    previousLabel = stringResource(R.string.mobile_newest),
+                    nextLabel = stringResource(R.string.mobile_older),
+                    previous = actions.newest.takeIf { olderPage },
+                    next = actions.older.takeIf { morePossible },
+                    tag = "history-navigation"
+                )
             }
         }
     }

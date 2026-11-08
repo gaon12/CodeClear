@@ -2,6 +2,7 @@ package xyz.gaon.codeclear.mobile
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -38,12 +39,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import xyz.gaon.codeclear.BuildConfig
 import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.capture.ProbeEnvironment
 import xyz.gaon.codeclear.capture.ProbeSessionState
@@ -70,11 +75,27 @@ internal val SettingsPage.parent: SettingsPage?
         else -> null
     }
 
+internal data class SettingsMenuGroup(val title: Int?, val pages: List<SettingsPage>)
+
+internal fun settingsMenuGroups(options: MobileOptions): List<SettingsMenuGroup> = buildList {
+    add(
+        SettingsMenuGroup(
+            R.string.mobile_settings_alerts_group,
+            listOf(SettingsPage.CAPTURE, SettingsPage.TRANSLATION, SettingsPage.NOTIFICATIONS)
+        )
+    )
+    add(SettingsMenuGroup(R.string.mobile_settings_general_group, listOf(SettingsPage.APPEARANCE)))
+    add(
+        SettingsMenuGroup(
+            R.string.mobile_settings_information_group,
+            listOf(SettingsPage.PRIVACY, SettingsPage.ABOUT)
+        )
+    )
+    if (options.labsVisible) add(SettingsMenuGroup(null, listOf(SettingsPage.LABS)))
+}
+
 internal fun settingsMenuPages(options: MobileOptions = MobileOptions()): List<SettingsPage> =
-    SettingsPage.entries.filter {
-        it.parent == null &&
-            (it != SettingsPage.LABS || options.labsVisible)
-    }
+    settingsMenuGroups(options).flatMap { it.pages }
 
 @Composable
 fun SettingsScreen(
@@ -152,8 +173,13 @@ private fun SettingsMenu(
     select: (SettingsPage) -> Unit,
     modifier: Modifier
 ) {
-    Column(modifier) {
-        MobilePageHeader(stringResource(R.string.mobile_settings), titleTag = "settings-menu-title")
+    val headingState = rememberPageHeading(scroll, expandable = !expanded)
+    Column(modifier.nestedScroll(headingState)) {
+        CollapsingPageHeading(
+            stringResource(R.string.mobile_settings),
+            headingState,
+            titleTag = "settings-menu-title"
+        )
         LazyColumn(
             Modifier.weight(1f).fillMaxWidth().testTag("settings-menu").selectableGroup(),
             state = scroll,
@@ -163,14 +189,24 @@ private fun SettingsMenu(
             if (!expanded && (!state.loaded || state.storageError)) {
                 item { SettingsStatus(state, actions) }
             }
-            items(settingsMenuPages(state.options).chunked(2), key = { it.first().name }) { group ->
+            items(settingsMenuGroups(state.options), key = { it.pages.first().name }) { group ->
+                group.title?.let { title ->
+                    Text(
+                        stringResource(title),
+                        Modifier.padding(start = 24.dp, end = 24.dp, bottom = 8.dp).semantics {
+                            heading()
+                        },
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
                 Surface(
                     Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),
                     color = MaterialTheme.colorScheme.surface
                 ) {
                     Column {
-                        group.forEachIndexed { index, page ->
+                        group.pages.forEachIndexed { index, page ->
                             if (index > 0) {
                                 HorizontalDivider(
                                     Modifier.padding(start = 76.dp, end = 20.dp),
@@ -178,7 +214,9 @@ private fun SettingsMenu(
                                     color = MaterialTheme.colorScheme.outlineVariant
                                 )
                             }
-                            SettingsCategory(page, state.options, selected == page) { select(page) }
+                            SettingsCategory(page, state.options, selected == page, expanded) {
+                                select(page)
+                            }
                         }
                     }
                 }
@@ -192,6 +230,7 @@ private fun SettingsCategory(
     page: SettingsPage,
     options: MobileOptions,
     active: Boolean,
+    expanded: Boolean,
     select: () -> Unit
 ) {
     val interaction = remember { MutableInteractionSource() }
@@ -209,12 +248,23 @@ private fun SettingsCategory(
                     Color.Transparent
                 },
                 RoundedCornerShape(20.dp)
-            ).selectable(
-                active,
-                role = Role.Tab,
-                interactionSource = interaction,
-                indication = null,
-                onClick = select
+            ).then(
+                if (expanded) {
+                    Modifier.selectable(
+                        active,
+                        role = Role.Tab,
+                        interactionSource = interaction,
+                        indication = null,
+                        onClick = select
+                    )
+                } else {
+                    Modifier.clickable(
+                        interactionSource = interaction,
+                        indication = null,
+                        role = Role.Button,
+                        onClick = select
+                    )
+                }
             ).heightIn(min = 84.dp).padding(horizontal = 20.dp, vertical = 18.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -311,7 +361,7 @@ private fun settingsSummary(page: SettingsPage, options: MobileOptions): String 
 
     SettingsPage.PRIVACY -> stringResource(R.string.mobile_data_storage)
 
-    SettingsPage.ABOUT -> "CodeClear"
+    SettingsPage.ABOUT -> BuildConfig.VERSION_NAME
 
     SettingsPage.COMPATIBILITY -> stringResource(R.string.mobile_compatibility)
 }

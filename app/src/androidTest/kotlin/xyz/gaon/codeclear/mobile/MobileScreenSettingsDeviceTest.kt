@@ -363,7 +363,7 @@ class MobileScreenSettingsDeviceTest : MobileScreenFixture() {
     }
 
     @Test
-    fun destinationTitlesStayFixedWhileTheirContentScrolls() {
+    fun destinationTitlesRemainAvailableWhileTheirContentScrolls() {
         compose.runOnIdle {
             val density = context.resources.displayMetrics.density
             val widthScale = context.window.decorView.width / density / 320f
@@ -375,9 +375,14 @@ class MobileScreenSettingsDeviceTest : MobileScreenFixture() {
         fun verify(header: String, label: Int, feed: String, scroll: () -> Unit) {
             compose.onNodeWithTag(header).assertTextEquals(text(label)).assertIsDisplayed()
             val before = compose.onNodeWithTag(header).fetchSemanticsNode().boundsInRoot
+            val frame = compose.onNodeWithTag("destination-heading-frame")
+                .fetchSemanticsNode().boundsInRoot
             scroll()
             val after = compose.onNodeWithTag(header).fetchSemanticsNode().boundsInRoot
-            assertEquals(before.top, after.top, 1f)
+            val afterFrame = compose.onNodeWithTag("destination-heading-frame")
+                .fetchSemanticsNode().boundsInRoot
+            assertEquals(frame.top, afterFrame.top, 1f)
+            assertTrue(after.top <= before.top + 1f)
             assertEquals(before.left, after.left, 1f)
             compose.onNodeWithTag(header).assertIsDisplayed()
             val offset = compose.onNodeWithTag(feed).fetchSemanticsNode().config[

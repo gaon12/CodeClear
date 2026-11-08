@@ -29,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -186,25 +187,31 @@ fun MobileScreen(
                     }
                     return@Box
                 }
-                Column(Modifier.widthIn(max = 880.dp).fillMaxSize()) {
-                    MobilePageHeader(
-                        stringResource(
-                            if (showTutorial) {
-                                R.string.mobile_tutorial
-                            } else if (currentTab ==
-                                0
-                            ) {
-                                R.string.mobile_home
+                val heading = rememberPageHeading(feedScroll, expandable = !showTutorial)
+                Column(Modifier.widthIn(max = 880.dp).fillMaxSize().nestedScroll(heading)) {
+                    if (!showTutorial) {
+                        CollapsingPageHeading(
+                            stringResource(
+                                if (currentTab ==
+                                    0
+                                ) {
+                                    R.string.mobile_home
+                                } else {
+                                    R.string.mobile_history
+                                }
+                            ),
+                            heading
+                        )
+                    } else {
+                        MobilePageHeader(
+                            stringResource(R.string.mobile_tutorial),
+                            back = if (!firstRun || step > 0) {
+                                { if (step > 0) step-- else tutorial = false }
                             } else {
-                                R.string.mobile_history
+                                null
                             }
-                        ),
-                        back = if (showTutorial && (!firstRun || step > 0)) {
-                            { if (step > 0) step-- else tutorial = false }
-                        } else {
-                            null
-                        }
-                    )
+                        )
+                    }
                     LazyColumn(
                         Modifier.weight(1f).fillMaxWidth().testTag("mobile-feed"),
                         state = feedScroll,

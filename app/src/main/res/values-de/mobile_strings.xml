@@ -308,4 +308,8 @@
     <string name="mobile_independent_notice">CodeClear ist eine unabhängige App, steht in keiner Verbindung zu einer Regierung, ist nicht von ihr anerkannt und handelt nicht in ihrem Namen. Die App liest unterstützte Systemwarnungen. Nachrichten aus der Nähe sind ungeprüft und Übersetzungen können fehlerhaft sein. Befolgen Sie Originalwarnungen und offizielle Hinweise.</string>
     <string name="mobile_result_standard">Übersetzung anhand einer Standardvorlage</string>
     <string name="mobile_standard_updated">Die Standardvorlage wurde aktualisiert. Übersetzen Sie erneut, um das Ergebnis zu aktualisieren.</string>
+    <string name="mobile_previous">Zurück</string>
+    <string name="mobile_settings_alerts_group">Warnmeldungen</string>
+    <string name="mobile_settings_general_group">Allgemein</string>
+    <string name="mobile_settings_information_group">Informationen</string>
 </resources>

@@ -42,7 +42,9 @@ Japanese, French, German, Simplified Chinese, and Traditional Chinese.
   download action; background translation does not silently download models.
 - Android system translation is available only when the installed provider exposes
   a supported language pair. Service presence alone does not establish support.
-- Labs contains experimental nearby sharing and MyMemory translation. Configured
+- Labs stays hidden until seven quick taps on the version in Settings > About.
+  Revealing the menu does not enable experiments or grant their permissions.
+  Labs contains experimental nearby sharing and MyMemory translation. Configured
   private builds can also expose the fixed CodeClear translation service. Each
   remote service requires its own default-off permission and retention/quota
   disclosure. There is no silent remote fallback.
