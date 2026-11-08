@@ -35,10 +35,15 @@ internal object ProjectInformation {
 }
 
 @Composable
-internal fun AppAboutSettings(compatibility: () -> Unit) {
+internal fun AppAboutSettings(
+    labsVisible: Boolean,
+    unlockLabs: () -> Unit,
+    compatibility: () -> Unit
+) {
     val uriHandler = LocalUriHandler.current
     var linkFailed by remember { mutableStateOf(false) }
     var showEgg by remember { mutableStateOf(false) }
+    var revealedLabs by remember { mutableStateOf(false) }
     val taps = remember { VersionTapUnlock() }
     val open: (String) -> Unit = { url ->
         linkFailed = false
@@ -57,7 +62,12 @@ internal fun AppAboutSettings(compatibility: () -> Unit) {
             Column(
                 Modifier.fillMaxWidth().testTag("app-version-row").clickable(role = Role.Button) {
                     if (taps.tap(SystemClock.elapsedRealtime())) {
-                        showEgg = true
+                        if (labsVisible) {
+                            showEgg = true
+                        } else {
+                            unlockLabs()
+                            revealedLabs = true
+                        }
                     }
                 }.heightIn(min = 72.dp).padding(horizontal = 24.dp, vertical = 18.dp),
                 verticalArrangement = Arrangement.spacedBy(5.dp)
@@ -88,6 +98,16 @@ internal fun AppAboutSettings(compatibility: () -> Unit) {
                 stringResource(R.string.mobile_contributors),
                 stringResource(R.string.mobile_contributors_summary, ProjectInformation.MAINTAINER),
                 onClick = { open(ProjectInformation.CONTRIBUTORS) }
+            )
+        }
+        if (revealedLabs && labsVisible) {
+            Text(
+                stringResource(R.string.mobile_labs_unlocked),
+                Modifier.padding(horizontal = 12.dp).testTag("labs-unlocked-notice").semantics {
+                    liveRegion = LiveRegionMode.Polite
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         if (linkFailed) {

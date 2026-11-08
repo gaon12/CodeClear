@@ -181,7 +181,7 @@
     <string name="mobile_labs_summary">開発中の機能を試す</string>
     <string name="mobile_labs_enable">実験機能を使用</string>
     <string name="mobile_labs_notice">実験機能は変更される場合があります。周辺共有とオンラインサービスには個別の同意が必要です。オフにすると共有が停止し、オンライン翻訳の許可が取り消されます。</string>
-    <string name="mobile_labs_unlocked">ラボは設定から確認できます。</string>
+    <string name="mobile_labs_unlocked">設定にラボが表示されます。機能や権限は個別に有効にするまでオフのままです。</string>
     <string name="mobile_server_translation">サーバー翻訳</string>
     <string name="mobile_nearby_retention_problem">受信文を保存できませんでした。周辺受信の履歴は1,000件までです。空き容量を確認するか不要な周辺受信の履歴を削除して再保存してください。既存の履歴は保持されます。</string>
     <string name="mobile_nearby_background_title">周辺共有を実行中</string>

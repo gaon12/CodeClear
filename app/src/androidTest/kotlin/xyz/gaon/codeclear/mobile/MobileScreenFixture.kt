@@ -457,6 +457,13 @@ abstract class MobileScreenFixture {
         SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.RadioButton)
 
     protected fun openSettingsPage(page: SettingsPage) {
+        if (page == SettingsPage.LABS || page.parent == SettingsPage.LABS) {
+            // Feature fixtures declare discovery; the About test exercises the reveal gesture.
+            compose.runOnIdle {
+                state =
+                    state.copy(options = state.options.copy(labsUnlocked = true))
+            }
+        }
         if (page.parent == SettingsPage.LABS) {
             compose.runOnIdle {
                 state = state.copy(options = state.options.copy(labsEnabled = true))

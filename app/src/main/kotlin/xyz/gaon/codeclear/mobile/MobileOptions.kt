@@ -28,8 +28,11 @@ data class MobileOptions(
     val serverAllowed: Boolean = false,
     val deferredOverlayEnabled: Boolean = false,
     val ownedServerAllowed: Boolean = false,
-    val ownedServerCredentialId: String = ""
+    val ownedServerCredentialId: String = "",
+    val labsUnlocked: Boolean = false
 ) {
+    val labsVisible: Boolean get() = labsUnlocked
+
     val translationAllowed: Boolean get() = when (engine) {
         TranslationEngineKind.MY_MEMORY -> labsEnabled && serverAllowed
 
@@ -68,7 +71,8 @@ class MobileOptionsStorage(
         check(Looper.myLooper() != Looper.getMainLooper())
         val saved = context.getSharedPreferences(name, Context.MODE_PRIVATE)
         val currentDisclosure = saved.getInt("disclosure_version", 0) == 1
-        val labsEnabled = saved.getBoolean("labs_enabled", false)
+        val labsUnlocked = saved.getBoolean("labs_unlocked", false)
+        val labsEnabled = labsUnlocked && saved.getBoolean("labs_enabled", false)
         val ownedId = saved.getString("owned_server_credential_id", "").orEmpty()
             .takeIf { it.matches(serverCredentialPattern) }.orEmpty()
         val engineKey = saved.getString("local_engine", TranslationEngineKind.ML_KIT.key)
@@ -104,6 +108,7 @@ class MobileOptionsStorage(
                     saved.getInt("nearby_disclosure_version", 0) == 1 &&
                     saved.getBoolean("nearby_enabled", false),
             labsEnabled = labsEnabled,
+            labsUnlocked = labsUnlocked,
             deferredOverlayEnabled = currentDisclosure &&
                 saved.getInt("overlay_disclosure_version", 0) == 1 &&
                 saved.getBoolean("deferred_overlay_enabled", false),
@@ -150,6 +155,7 @@ class MobileOptionsStorage(
             .putInt("nearby_disclosure_version", 1)
             .putBoolean("nearby_enabled", options.nearbyEnabled)
             .putBoolean("labs_enabled", options.labsEnabled)
+            .putBoolean("labs_unlocked", options.labsUnlocked)
             .putString("message_view_mode", options.messageViewMode.name)
             .putBoolean("setup_complete", options.setupComplete)
             .putString("target", options.target.name).putString("theme", options.theme.name)

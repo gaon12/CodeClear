@@ -293,17 +293,21 @@ class MobileScreenSettingsDeviceTest : MobileScreenFixture() {
         compose.onNodeWithTag("destination-2").performClick()
         compose.onNodeWithTag(
             "settings-menu"
-        ).performScrollToNode(hasTestTag("settings-category-LABS"))
-        compose.onNodeWithTag("settings-category-LABS").assertIsDisplayed()
+        ).performScrollToNode(hasTestTag("settings-category-ABOUT"))
+        compose.onNodeWithTag("settings-category-LABS").assertDoesNotExist()
         openSettingsPage(SettingsPage.ABOUT)
         repeat(6) { compose.onNodeWithTag("app-version-row").performClick() }
-        compose.onNodeWithTag("signal-easter-egg").assertDoesNotExist()
+        compose.runOnIdle { assertFalse(configured.labsUnlocked) }
         compose.onNodeWithTag("app-version-row").performClick()
+        compose.onNodeWithTag("labs-unlocked-notice").assertIsDisplayed()
+        compose.runOnIdle {
+            assertTrue(configured.labsUnlocked)
+            assertFalse(configured.labsEnabled)
+            assertFalse(configured.serverAllowed)
+            assertFalse(configured.nearbyEnabled)
+        }
+        repeat(7) { compose.onNodeWithTag("app-version-row").performClick() }
         compose.onNodeWithTag("signal-easter-egg").assertIsDisplayed()
-        assertFalse(configured.labsEnabled)
-        assertFalse(configured.nearbyEnabled)
-        compose.onNodeWithTag("signal-egg-pulse").performClick()
-        savePreview("labs-egg", dialog = true)
         compose.onNodeWithTag("signal-egg-close").performClick()
         openSettingsPage(SettingsPage.LABS)
         compose.onNodeWithText(text(R.string.mobile_nearby)).assertIsNotEnabled()

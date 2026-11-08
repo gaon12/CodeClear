@@ -1,16 +1,23 @@
 package xyz.gaon.codeclear.mobile
 
-/** Separate deliberate repeated taps from occasional visits to the version row. */
+/** Reveal only after a short deliberate sequence; reopening About starts a fresh sequence. */
 internal class VersionTapUnlock {
     private var previous = Long.MIN_VALUE
+    private var first = Long.MIN_VALUE
     private var count = 0
 
     fun tap(elapsed: Long): Boolean {
-        if (elapsed < previous || previous == Long.MIN_VALUE || elapsed - previous > 4000) count = 0
+        if (previous == Long.MIN_VALUE || elapsed < previous || elapsed - previous > 1000 ||
+            elapsed - first > 3000
+        ) {
+            count = 0
+            first = elapsed
+        }
         previous = elapsed
         count++
         if (count < 7) return false
         count = 0
+        first = elapsed
         return true
     }
 }

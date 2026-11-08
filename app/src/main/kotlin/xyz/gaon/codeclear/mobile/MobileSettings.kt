@@ -99,6 +99,7 @@ fun MobileSettings(
                 actions.configure(
                     options.copy(
                         labsEnabled = it,
+                        labsUnlocked = true,
                         nearbyEnabled = false,
                         serverAllowed = false,
                         ownedServerAllowed = false
@@ -201,6 +202,8 @@ fun MobileSettings(
     }
     if (page == SettingsPage.ABOUT) {
         AppAboutSettings(
+            labsVisible = options.labsVisible,
+            unlockLabs = { actions.configure(options.copy(labsUnlocked = true)) },
             compatibility = { navigate(SettingsPage.COMPATIBILITY) }
         )
     }

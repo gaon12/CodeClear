@@ -181,7 +181,7 @@
     <string name="mobile_labs_summary">개발 중인 기능을 사용해 보세요</string>
     <string name="mobile_labs_enable">실험실 기능 사용</string>
     <string name="mobile_labs_notice">실험실 기능은 변경될 수 있습니다. 주변 공유와 온라인 서비스는 각각 별도 동의가 필요합니다. 이 설정을 끄면 공유가 중지되고 온라인 번역 허용이 철회됩니다.</string>
-    <string name="mobile_labs_unlocked">실험실은 설정에서 확인할 수 있습니다.</string>
+    <string name="mobile_labs_unlocked">설정에 실험실이 표시됩니다. 기능과 권한은 직접 켜기 전까지 꺼져 있습니다.</string>
     <string name="mobile_server_translation">서버 번역</string>
     <string name="mobile_nearby_retention_problem">받은 문자를 저장하지 못했습니다. 주변 문자 기록은 최대 1,000개까지 보관합니다. 저장 공간을 확인하거나 불필요한 주변 문자 기록을 삭제한 뒤 다시 저장해 주세요. 기존 기록은 유지됩니다.</string>
     <string name="mobile_nearby_background_title">주변 문자 공유 중</string>

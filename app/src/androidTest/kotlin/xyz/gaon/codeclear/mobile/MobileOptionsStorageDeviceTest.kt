@@ -15,6 +15,58 @@ import xyz.gaon.codeclear.translation.TranslationTarget
 
 class MobileOptionsStorageDeviceTest {
     @Test
+    fun legacyExperimentFlagsCannotRevealLabsOrRestoreRemotePermission() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val name = "labs-legacy-${UUID.randomUUID()}"
+        try {
+            context.getSharedPreferences(name, Context.MODE_PRIVATE).edit()
+                .putInt("disclosure_version", 1).putBoolean("labs_enabled", true)
+                .putBoolean("server_allowed", true).putBoolean("nearby_enabled", true)
+                .putInt("nearby_disclosure_version", 1).putInt("remote_disclosure_version", 1)
+                .putBoolean("local_consent", true).putBoolean("notification_consent", true)
+                .putBoolean("accessibility_consent", true).commit()
+            val options = MobileOptionsStorage(context, name).load()
+            assertFalse(options.labsVisible)
+            assertFalse(options.labsEnabled)
+            assertFalse(options.serverAllowed)
+            assertFalse(options.nearbyEnabled)
+            assertTrue(options.localConsent)
+            assertTrue(options.notificationConsent)
+            assertTrue(options.accessibilityConsent)
+            context.getSharedPreferences(name, Context.MODE_PRIVATE).edit()
+                .putString("local_engine", TranslationEngineKind.MY_MEMORY.key).commit()
+            val remote = MobileOptionsStorage(context, name).load()
+            assertFalse(remote.serverAllowed)
+            assertFalse(remote.translationAllowed)
+            assertEquals(TranslationEngineKind.ML_KIT, remote.engine)
+        } finally {
+            context.getSharedPreferences(name, Context.MODE_PRIVATE).edit().clear().commit()
+        }
+    }
+
+    @Test
+    fun labsDiscoveryPersistsWithoutGrantingAnyExperimentalPermission() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val preferences = "labs-discovery-${UUID.randomUUID()}"
+        try {
+            val storage = MobileOptionsStorage(context, preferences)
+            assertFalse(storage.load().labsVisible)
+            storage.save(MobileOptions(labsUnlocked = true))
+            val saved = MobileOptionsStorage(context, preferences).load()
+            assertTrue(saved.labsVisible)
+            assertFalse(saved.labsEnabled)
+            assertFalse(saved.nearbyEnabled)
+            assertFalse(saved.serverAllowed)
+            assertFalse(saved.ownedServerAllowed)
+        } finally {
+            context.getSharedPreferences(
+                preferences,
+                android.content.Context.MODE_PRIVATE
+            ).edit().clear().commit()
+        }
+    }
+
+    @Test
     fun updatedNearbyDisclosureRequiresNewAgreementWithoutResettingCapture() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val name = "options-test-${UUID.randomUUID()}"
@@ -26,6 +78,7 @@ class MobileOptionsStorageDeviceTest {
                     accessibilityConsent = true,
                     localConsent = true,
                     labsEnabled = true,
+                    labsUnlocked = true,
                     nearbyEnabled = true
                 )
             )
@@ -125,6 +178,7 @@ class MobileOptionsStorageDeviceTest {
                     theme = ThemeChoice.DARK,
                     nearbyEnabled = true,
                     labsEnabled = true,
+                    labsUnlocked = true,
                     messageViewMode = MessageViewMode.BOTH
                 )
             )
@@ -151,7 +205,7 @@ class MobileOptionsStorageDeviceTest {
         try {
             storage.save(MobileOptions(nearbyEnabled = true))
             assertFalse(storage.load().nearbyEnabled)
-            storage.save(storage.load().copy(labsEnabled = true))
+            storage.save(storage.load().copy(labsEnabled = true, labsUnlocked = true))
             assertTrue(storage.load().labsEnabled)
             assertFalse(storage.load().nearbyEnabled)
         } finally {
@@ -170,6 +224,7 @@ class MobileOptionsStorageDeviceTest {
                 MobileOptions(
                     localConsent = true,
                     labsEnabled = true,
+                    labsUnlocked = true,
                     engine = TranslationEngineKind.MY_MEMORY
                 )
             )

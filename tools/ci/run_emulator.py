@@ -27,7 +27,7 @@ FIXTURES = {
     "mobile.ObservationGroupsDeviceTest": 8,
     "mobile.ContentHistoryDeviceTest": 6,
     "mobile.MobileRuntimeDeviceTest": 1,
-    "mobile.MobileOptionsStorageDeviceTest": 7,
+    "mobile.MobileOptionsStorageDeviceTest": 9,
     "nearby.NearbySharingDeviceTest": 5,
     "mobile.DeferredAlertPresentationDeviceTest": 3,
     "capture.SourcePayloadDeviceTest": 10,

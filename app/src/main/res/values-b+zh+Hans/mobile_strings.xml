@@ -181,7 +181,7 @@
     <string name="mobile_labs_summary">试用开发中的功能</string>
     <string name="mobile_labs_enable">启用实验功能</string>
     <string name="mobile_labs_notice">实验功能可能会变化。附近共享和在线服务仍需分别同意。关闭此设置会停止共享并撤回在线翻译许可。</string>
-    <string name="mobile_labs_unlocked">可在设置中查看实验室。</string>
+    <string name="mobile_labs_unlocked">设置中现已显示实验室。功能与权限仍需您单独开启。</string>
     <string name="mobile_server_translation">服务器翻译</string>
     <string name="mobile_nearby_retention_problem">无法保存收到的消息。附近消息历史记录最多保留1,000条。请检查存储空间或删除不需要的附近消息记录，然后重新保存。现有记录将保留。</string>
     <string name="mobile_nearby_background_title">附近共享已开启</string>

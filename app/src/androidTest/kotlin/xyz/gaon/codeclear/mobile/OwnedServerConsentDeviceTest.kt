@@ -15,6 +15,7 @@ class OwnedServerConsentDeviceTest {
         target = TranslationTarget.ENGLISH,
         engine = TranslationEngineKind.OWNED_SERVER,
         labsEnabled = true,
+        labsUnlocked = true,
         ownedServerAllowed = true,
         ownedServerCredentialId = "a".repeat(64)
     )
