@@ -2,7 +2,7 @@ package xyz.gaon.codeclear.translation
 
 /** Release-owned data: changing any wording, name, or matching rule requires a new revision. */
 object StandardTranslationCatalog {
-    const val REVISION = "2026-11-08.1"
+    const val REVISION = "2026-11-08.2"
     data class Reference(
         val id: String,
         val url: String,
@@ -75,7 +75,7 @@ object StandardTranslationCatalog {
             Triple("충청북도", "충북", "Chungcheongbuk-do"), Triple("충청남도", "충남", "Chungcheongnam-do"),
             Triple("전북특별자치도", "전북", "Jeonbuk-do"), Triple("전라남도", "전남", "Jeollanam-do"),
             Triple("경상북도", "경북", "Gyeongsangbuk-do"), Triple("경상남도", "경남", "Gyeongsangnam-do"),
-            Triple("제주특별자치도", "제주", "Jeju-do")
+            Triple("제주특별자치도", "", "Jeju-do")
         )
         regions.forEachIndexed { index, (native, alias, english) ->
             add(

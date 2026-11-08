@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class StandardTranslationCatalogTest {
@@ -44,6 +45,18 @@ class StandardTranslationCatalogTest {
         assertEquals(
             "2026-11-08 14:05: Tsunami alert issued for Busan. Evacuate vessels; coastal residents should evacuate to higher ground. Tsunami [Korea Meteorological Administration]",
             StandardTranslationCatalog.translate(body, TranslationTarget.ENGLISH)?.text
+        )
+        assertNull(
+            StandardTranslationCatalog.translate(
+                body.replace("부산", "제주"),
+                TranslationTarget.ENGLISH
+            )
+        )
+        assertTrue(
+            StandardTranslationCatalog.translate(
+                body.replace("부산", "제주특별자치도"),
+                TranslationTarget.ENGLISH
+            )!!.text.contains("Jeju-do")
         )
         val japanese = StandardTranslationCatalog.translate(
             "津波警報が一部解除されました",
