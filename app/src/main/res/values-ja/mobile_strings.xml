@@ -58,7 +58,7 @@
     <string name="mobile_manage_access">取得用アクセスを設定</string>
     <string name="mobile_open_source">元のシステム警報を開く</string>
     <string name="mobile_last_saved">最近収集した警報</string>
-    <string name="mobile_empty">新しく収集した警報がここに表示されます。空の画面は警報の未発令や未受信を意味しません。</string>
+    <string name="mobile_empty">収集した警報がここに表示されます。受信した警報が見当たらない場合は、端末の緊急速報の履歴を確認してください。</string>
     <string name="mobile_search">原文・翻訳を検索</string>
     <string name="mobile_no_results">検索結果がありません</string>
     <string name="mobile_no_results_body">「%1$s」に一致する履歴はありません。</string>
@@ -75,7 +75,7 @@
     <string name="mobile_settings_missing">Androidの設定 → アプリ → CodeClearから該当するアクセス設定を開いてください。</string>
     <string name="mobile_restricted">Android 13以降では、APKから直接インストールしたアプリのアクセスが制限される場合があります。アプリ情報 → その他 → 制限付き設定を許可を選び、その後それぞれのアクセスを有効にしてください。メニューがない場合は、下のボタンからAndroidのアプリ一覧を開き、CodeClearを選んでその他を確認してください。端末や管理者によって変更が制限される場合があります。</string>
     <string name="mobile_privacy_description">原文と翻訳は削除するまで端末内の非公開領域に保存します。アカウントと同期はなく、バックアップと端末間転送は無効です。サーバー翻訳をサービスごとに別途許可して利用した場合のみ本文を送信します。保存期間と削除方法は各サービスの説明で確認できます。</string>
-    <string name="mobile_compatibility_description">CodeClearはAndroid 11以降のスマートフォンとタブレットで利用できます。緊急速報の直接受信には携帯電話回線の受信機能が必要です。Wi-Fi専用端末でも保存済みの履歴と翻訳は確認できます。全文の取得可否は受信アプリとファームウェアに依存し、検証済みの環境だけで世界中の対応を保証するものではありません。再起動後、最初のロック解除から取得を開始します。</string>
+    <string name="mobile_compatibility_description">CodeClearはAndroid 11以降のスマートフォンとタブレットで使えます。緊急速報を直接受信するにはモバイル通信の受信機能が必要です。Wi-Fi専用端末でも保存した履歴と翻訳は表示できます。全文を収集できるかは警報アプリとファームウェアによるため、一部の端末では動作しない場合があります。収集は再起動後の最初のロック解除から始まります。</string>
     <string name="mobile_notification_disclosure">Androidの通知アクセス権では、他のアプリの通知にもアクセスできます。CodeClearは確認済みのシステム緊急速報受信元だけを読み取り、完全な個別本文を端末内の非公開履歴に保存して翻訳します。画面の自動表示は行いません。取得をオフにするか、Android の設定でアクセス許可をいつでも取り消せます。 サーバー翻訳にはサービスごとの個別の許可が必要です。</string>
     <string name="mobile_accessibility_disclosure">CodeClearはユーザー補助を使い、確認済みのシステム緊急速報ダイアログにある個別の本文、件名、待機件数を読み取ります。他の画面や履歴一覧の行は読みません。ジェスチャーの実行や警告の解除は行いません。原文は端末内の翻訳用に非公開履歴へ保存します。障害者向け支援ツールではありません。取得をオフにするか、Android の設定でアクセス許可をいつでも取り消せます。 サーバー翻訳にはサービスごとの個別の許可が必要です。</string>
     <string name="mobile_local_disclosure">取得した緊急速報を端末内で自動翻訳します。言語モデルは別途 Wi-Fi でダウンロードしてください。警報の本文を翻訳サーバーに送ることはありません。無効にすると新たな翻訳を停止し、履歴は保持します。</string>
@@ -201,7 +201,7 @@
     <string name="mobile_engine_query_failed">システム翻訳サービスの対応言語を確認できませんでした。再確認してください。利用可能かどうかは未確認です。</string>
     <string name="mobile_models_title">言語モデル</string>
     <string name="mobile_models_refresh">ダウンロード状態を更新</string>
-    <string name="mobile_models_update_notice">ML Kit はモデルのバージョンや更新一覧を提供しません。インストール済みモデルの更新を確認し、必要な場合に Wi-Fi で取得します。英語は基準言語で、中国語の二つの表記は同じモデルを使用します。</string>
+    <string name="mobile_models_update_notice">モデルはWi-Fiでダウンロードします。言語をタップすると更新を確認します。英語はモデル不要で、中国語の簡体字と繁体字は同じモデルを使います。</string>
     <string name="mobile_models_installed">インストール済み · タップして更新を確認</string>
     <string name="mobile_models_not_installed">未インストール · タップしてダウンロード</string>
     <string name="mobile_models_last_checked">更新の確認: %1$s</string>
@@ -243,7 +243,7 @@
     <string name="mobile_compat_android">Android %1$s（API %2$d・最小30）</string>
     <string name="mobile_compat_form">スマートフォンまたはタブレット</string>
     <string name="mobile_compat_radio">携帯電話網の受信ハードウェア</string>
-    <string name="mobile_compat_source">収集候補のシステム警報アプリをインストール済み</string>
+    <string name="mobile_compat_source">システムの緊急速報アプリを検出</string>
     <string name="mobile_compat_os_grants">システムアクセスを許可済み</string>
     <string name="mobile_compat_consent">CodeClearで取得を許可済み</string>
     <string name="mobile_compat_connections">取得サービスの接続</string>
@@ -258,7 +258,7 @@
     <string name="mobile_model_update_count">確認済みモデル：%1$d/%2$d</string>
     <string name="mobile_model_update_notice">更新がある場合は Wi-Fi で取得します。更新が不要ならモデルは再ダウンロードしません。ML Kit はバージョン番号やファイルの変更有無を提供しません。緊急速報の本文は送信しません。</string>
     <string name="mobile_deferred_popup">システム警報の確認後にポップアップ</string>
-    <string name="mobile_deferred_popup_summary">確認済みのシステム警報画面が消えた後にのみ表示します。確認できない場合は通知か履歴をご利用ください。両方の収集サービスが必要です。ロック画面には表示しません。</string>
+    <string name="mobile_deferred_popup_summary">システムの警報画面が閉じた後に表示されます。閉じたことを確認できない場合は、通知または履歴で確認してください。2つの収集サービスが必要で、ロック画面には表示されません。</string>
     <string name="mobile_overlay_access">他のアプリの上に表示</string>
     <string name="mobile_overlay_disclosure">システム警報画面が消えた後、CodeClearが原文と利用可能な翻訳を表示することを許可します。他のアプリの使用中にも表示するには、Androidの設定で重ねて表示する権限を別途許可してください。システム警報を閉じたり、画面を点灯したり、ロックを解除したりしません。ポップアップが表示されなくても通知と履歴で確認できます。初期設定はオフです。</string>
     <string name="mobile_battery_settings">バッテリー設定</string>

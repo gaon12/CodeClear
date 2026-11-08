@@ -35,7 +35,7 @@
     <string name="mobile_privacy_description">삭제할 때까지 원문과 번역을 기기 내 전용 저장소에 보관합니다. 가입과 동기화는 없으며 앱 백업과 기기 간 이전은 비활성화되어 있습니다. 서버 번역을 서비스별로 별도 허용하고 사용할 때만 본문을 전송합니다. 보관 기간과 삭제 방법은 각 서비스의 안내에서 확인할 수 있습니다.</string>
     <string name="mobile_delete_all">모든 기록 삭제</string>
     <string name="mobile_compatibility">기기 호환성</string>
-    <string name="mobile_compatibility_description">CodeClear는 Android 11 이상 스마트폰과 태블릿에서 사용할 수 있습니다. 재난문자를 직접 수신하려면 이동통신 수신 기능이 필요합니다. Wi-Fi 전용 기기에서도 저장된 기록과 번역은 확인할 수 있습니다. 전체 내용 수집 여부는 수신 앱과 펌웨어에 따라 다르며, 검증된 기기만으로 전 세계 지원을 보장하지 않습니다. 수집은 재부팅 후 첫 잠금 해제부터 시작합니다.</string>
+    <string name="mobile_compatibility_description">CodeClear는 Android 11 이상 스마트폰과 태블릿에서 사용할 수 있습니다. 재난문자를 직접 받으려면 이동통신 수신 기능이 필요하며, Wi-Fi 전용 기기에서도 저장된 기록과 번역은 볼 수 있습니다. 전체 내용 수집은 재난문자 앱과 펌웨어에 따라 달라 일부 기기에서는 동작하지 않을 수 있습니다. 수집은 재부팅 후 첫 잠금 해제부터 시작합니다.</string>
     <string name="mobile_notification_disclosure">Android 알림 접근은 다른 앱의 알림에도 접근할 수 있는 권한입니다. CodeClear는 검토된 시스템 재난문자 수신 앱만 읽고, 확인된 개별 본문을 기기 내 전용 기록에 보관해 번역합니다. 화면을 자동으로 열지 않습니다. 수집 스위치를 끄거나 Android 설정에서 접근 권한을 해제하면 수집을 중단합니다. 서버 번역은 서비스별로 별도 허용이 필요합니다.</string>
     <string name="mobile_accessibility_disclosure">CodeClear는 접근성으로 검토된 시스템 재난문자 모달의 개별 본문·제목·대기 개수를 읽습니다. 다른 화면과 기록 목록은 읽지 않습니다. 제스처를 실행하거나 경고를 닫지 않습니다. 원문은 기기 내 번역을 위해 전용 기록에 보관합니다. 장애인 지원 도구는 아닙니다. 수집 스위치를 끄거나 Android 설정에서 접근 권한을 해제하면 수집을 중단합니다. 서버 번역은 서비스별로 별도 허용이 필요합니다.</string>
     <string name="mobile_local_disclosure">수집한 재난문자를 기기 안에서 자동으로 번역합니다. 언어 모델을 내려받으려면 별도로 Wi-Fi 다운로드를 시작해야 합니다. 번역 서버로 본문을 전송하지 않습니다. 끄면 새 번역을 중단하며 기존 기록은 유지합니다.</string>
@@ -71,7 +71,7 @@
     <string name="mobile_pending">원본 앱에 대기 중 경보 %1$d개가 표시됐습니다. 노출된 개별 본문만 수집할 수 있으니 원본에서 다른 문자도 확인하세요.</string>
     <string name="mobile_open_source">원본 시스템 경보 열기</string>
     <string name="mobile_last_saved">최근 수집한 재난문자</string>
-    <string name="mobile_empty">새로 수집한 문자가 여기에 표시됩니다. 이 화면에 문자가 없어도 재난문자가 발령·수신되지 않았다는 뜻은 아닙니다.</string>
+    <string name="mobile_empty">수집한 재난문자가 여기에 표시됩니다. 받은 문자가 보이지 않으면 휴대전화의 긴급 알림 기록을 확인하세요.</string>
     <string name="mobile_search">원문·번역 검색</string>
     <string name="mobile_no_results">검색 결과가 없습니다</string>
     <string name="mobile_no_results_body">‘%1$s’와(과) 일치하는 기록이 없습니다.</string>
@@ -201,7 +201,7 @@
     <string name="mobile_engine_query_failed">시스템 번역 서비스의 지원 언어를 확인하지 못했습니다. 다시 확인해 주세요. 아직 사용 가능 여부가 확인되지 않았습니다.</string>
     <string name="mobile_models_title">언어 모델</string>
     <string name="mobile_models_refresh">다운로드 상태 새로고침</string>
-    <string name="mobile_models_update_notice">ML Kit은 모델 버전이나 별도의 업데이트 목록을 제공하지 않습니다. 설치된 모델은 업데이트를 확인할 수 있으며 필요한 경우 Wi-Fi에서 받습니다. 영어는 기준 언어이며, 중국어 두 표기는 같은 모델을 사용합니다.</string>
+    <string name="mobile_models_update_notice">모델은 Wi-Fi에서 받습니다. 언어를 누르면 업데이트를 확인합니다. 영어는 모델이 필요 없고, 중국어 간체·번체는 같은 모델을 사용합니다.</string>
     <string name="mobile_models_installed">설치됨 · 눌러서 업데이트 확인</string>
     <string name="mobile_models_not_installed">미설치 · 눌러서 다운로드</string>
     <string name="mobile_models_last_checked">업데이트 확인: %1$s</string>
@@ -243,7 +243,7 @@
     <string name="mobile_compat_android">Android %1$s (API %2$d · 최소 30)</string>
     <string name="mobile_compat_form">스마트폰 또는 태블릿 하드웨어</string>
     <string name="mobile_compat_radio">셀룰러 수신 하드웨어</string>
-    <string name="mobile_compat_source">수집 후보인 시스템 재난문자 앱 설치</string>
+    <string name="mobile_compat_source">시스템 재난문자 앱 확인됨</string>
     <string name="mobile_compat_os_grants">시스템 접근 권한 허용</string>
     <string name="mobile_compat_consent">CodeClear에서 수집 허용</string>
     <string name="mobile_compat_connections">수집 서비스 연결</string>
@@ -258,7 +258,7 @@
     <string name="mobile_model_update_count">모델 확인: %1$d/%2$d 완료</string>
     <string name="mobile_model_update_notice">업데이트가 있으면 Wi-Fi에서 받습니다. 업데이트가 필요 없으면 모델을 다시 받지 않습니다. ML Kit은 버전 번호나 파일 변경 여부를 제공하지 않습니다. 재난문자 본문은 전송하지 않습니다.</string>
     <string name="mobile_deferred_popup">시스템 경보 확인 후 팝업</string>
-    <string name="mobile_deferred_popup_summary">확인된 시스템 경보 창이 사라진 뒤에만 표시합니다. 확인할 수 없으면 알림이나 기록을 이용하세요. 수집 서비스 두 개가 모두 필요하며 잠금 화면에는 표시하지 않습니다.</string>
+    <string name="mobile_deferred_popup_summary">시스템 경보 창이 닫힌 뒤에 표시됩니다. 닫힘을 확인할 수 없으면 알림이나 기록에서 확인하세요. 수집 서비스 두 개가 모두 필요하며 잠금 화면에는 표시되지 않습니다.</string>
     <string name="mobile_overlay_access">다른 앱 위에 표시</string>
     <string name="mobile_overlay_disclosure">시스템 경보 창이 사라진 뒤 CodeClear가 원문과 준비된 번역을 표시하도록 허용합니다. 다른 앱을 사용 중일 때도 표시하려면 Android 설정에서 다른 앱 위에 표시 권한을 별도로 허용하세요. 시스템 경보를 닫거나 화면을 켜거나 잠금을 해제하지 않습니다. 팝업이 표시되지 않아도 알림과 기록에서 확인할 수 있습니다. 기본값은 꺼짐입니다.</string>
     <string name="mobile_battery_settings">배터리 설정</string>

@@ -58,7 +58,7 @@
     <string name="mobile_manage_access">Erfassungszugriff verwalten</string>
     <string name="mobile_open_source">Originalwarnung des Systems öffnen</string>
     <string name="mobile_last_saved">Zuletzt erfasste Warnung</string>
-    <string name="mobile_empty">Neu erfasste Warnungen erscheinen hier. Ein leerer Bildschirm bedeutet nicht, dass keine Warnung ausgegeben oder empfangen wurde.</string>
+    <string name="mobile_empty">Erfasste Warnungen erscheinen hier. Fehlt eine empfangene Warnung, prüfen Sie den Notfallwarnungsverlauf Ihres Telefons.</string>
     <string name="mobile_search">Original oder Übersetzung durchsuchen</string>
     <string name="mobile_no_results">Keine Ergebnisse</string>
     <string name="mobile_no_results_body">Keine Einträge passen zu „%1$s“.</string>
@@ -75,7 +75,7 @@
     <string name="mobile_settings_missing">Öffnen Sie Android-Einstellungen → Apps → CodeClear und wählen Sie die betreffende Zugriffseinstellung.</string>
     <string name="mobile_restricted">Ab Android 13 kann der Zugriff bei direkt installierten APKs eingeschränkt sein. Öffnen Sie App-Info → Mehr → Eingeschränkte Einstellungen zulassen. Aktivieren Sie danach jeden Zugriff einzeln. Fehlt das Menü, öffnen Sie unten die Android-App-Liste, wählen Sie CodeClear und dort Mehr. Menüs können abweichen; Administratoren können Änderungen verhindern.</string>
     <string name="mobile_privacy_description">Originale und Übersetzungen bleiben bis zum Löschen im privaten Gerätespeicher. Kein Konto, keine Synchronisierung; Sicherung und Übertragung sind deaktiviert. Warntext wird nur gesendet, wenn Sie einen Online-Übersetzungsdienst separat erlauben und nutzen. Hinweise zu Speicherung und Löschung finden Sie beim jeweiligen Dienst.</string>
-    <string name="mobile_compatibility_description">CodeClear funktioniert auf Smartphones und Tablets ab Android 11. Der direkte Empfang von Notfallwarnungen erfordert Mobilfunkhardware. Reine WLAN-Geräte können gespeicherte Einträge und Übersetzungen anzeigen. Die vollständige Erfassung hängt von Empfangs-App und Firmware ab; getestete Profile belegen keine weltweite Unterstützung. Die Erfassung beginnt nach dem ersten Entsperren nach einem Neustart.</string>
+    <string name="mobile_compatibility_description">CodeClear läuft auf Smartphones und Tablets ab Android 11. Für den direkten Empfang von Notfallwarnungen ist Mobilfunk-Hardware nötig; reine WLAN-Geräte zeigen gespeicherte Einträge und Übersetzungen trotzdem an. Ob der vollständige Text erfasst werden kann, hängt von Warn-App und Firmware ab und funktioniert daher nicht auf jedem Gerät. Die Erfassung beginnt nach dem ersten Entsperren nach einem Neustart.</string>
     <string name="mobile_notification_disclosure">Der Android-Benachrichtigungszugriff kann auch Benachrichtigungen anderer Apps zugänglich machen. CodeClear liest nur geprüfte System-Apps zum Empfang von Notfallwarnungen und speichert vollständige einzelne Warntexte im privaten lokalen Verlauf zur Übersetzung auf dem Gerät. Bildschirme werden nicht automatisch geöffnet. Sie können die Erfassung hier ausschalten oder den Zugriff in Android jederzeit entziehen. Serverübersetzung erfordert für jeden Dienst eine separate Erlaubnis.</string>
     <string name="mobile_accessibility_disclosure">CodeClear nutzt Bedienungshilfen, um das einzelne Nachrichtenfeld, den Titel und die Anzahl wartender Warnungen in geprüften System-Warndialogen zu lesen. Andere Bildschirme und Verlaufszeilen sind ausgeschlossen. Die App führt keine Gesten aus und schließt keine Warnungen. Originale bleiben für die lokale Übersetzung im privaten Verlauf. Dies ist kein Hilfsmittel für Menschen mit Behinderungen. Sie können die Erfassung hier ausschalten oder den Zugriff in Android jederzeit entziehen. Serverübersetzung erfordert für jeden Dienst eine separate Erlaubnis.</string>
     <string name="mobile_local_disclosure">Aktivieren Sie die automatische Übersetzung erfasster Warnungen auf diesem Gerät. Starten Sie den Download der Sprachmodelle über WLAN separat. Warntexte werden an keinen Übersetzungsserver gesendet. Das Ausschalten stoppt neue Übersetzungen und erhält den Verlauf.</string>
@@ -202,7 +202,7 @@
     <string name="mobile_engine_query_failed">Die unterstützten Sprachen des Systemdienstes konnten nicht abgefragt werden. Versuchen Sie es erneut. Die Unterstützung ist noch nicht bestätigt.</string>
     <string name="mobile_models_title">Sprachmodelle</string>
     <string name="mobile_models_refresh">Downloadstatus aktualisieren</string>
-    <string name="mobile_models_update_notice">ML Kit stellt weder Modellversionen noch eine separate Updateliste bereit. Installierte Modelle können geprüft werden; Updates nutzen WLAN. Englisch ist die Basissprache, beide chinesischen Schriftvarianten nutzen dasselbe Modell.</string>
+    <string name="mobile_models_update_notice">Modelle werden über WLAN geladen. Tippen Sie auf eine Sprache, um nach Updates zu suchen. Englisch braucht kein Modell; beide chinesischen Schriften teilen sich eines.</string>
     <string name="mobile_models_installed">Installiert · Zum Prüfen auf Updates antippen</string>
     <string name="mobile_models_not_installed">Nicht installiert · Zum Herunterladen antippen</string>
     <string name="mobile_models_last_checked">Update geprüft: %1$s</string>
@@ -244,7 +244,7 @@
     <string name="mobile_compat_android">Android %1$s (API %2$d; mindestens 30)</string>
     <string name="mobile_compat_form">Smartphone- oder Tablet-Hardware</string>
     <string name="mobile_compat_radio">Hardware für Mobilfunkempfang</string>
-    <string name="mobile_compat_source">Mögliche System-Warn-App installiert</string>
+    <string name="mobile_compat_source">System-Warn-App gefunden</string>
     <string name="mobile_compat_os_grants">Systemzugriff erteilt</string>
     <string name="mobile_compat_consent">Erfassung in CodeClear erlaubt</string>
     <string name="mobile_compat_connections">Erfassungsdienste verbunden</string>
@@ -259,7 +259,7 @@
     <string name="mobile_model_update_count">Geprüfte Modelle: %1$d/%2$d</string>
     <string name="mobile_model_update_notice">Verfügbare Updates können über WLAN geladen werden. Ohne erforderliches Update wird das Modell nicht erneut geladen. ML Kit meldet weder Versionsnummern noch Dateiänderungen. Es wird kein Warntext gesendet.</string>
     <string name="mobile_deferred_popup">Popup nach Systemwarnung</string>
-    <string name="mobile_deferred_popup_summary">Wird erst angezeigt, wenn das geprüfte Systemwarnfenster verschwunden ist. Ist dies nicht feststellbar, nutzen Sie die Benachrichtigung oder den Verlauf. Beide Erfassungsdienste sind nötig. Keine Anzeige auf dem Sperrbildschirm.</string>
+    <string name="mobile_deferred_popup_summary">Erscheint, nachdem die Systemwarnung geschlossen wurde. Lässt sich das nicht erkennen, nutzen Sie die Benachrichtigung oder den Verlauf. Benötigt beide Erfassungsdienste und erscheint nie auf dem Sperrbildschirm.</string>
     <string name="mobile_overlay_access">Über anderen Apps anzeigen</string>
     <string name="mobile_overlay_disclosure">Erlauben Sie CodeClear, den Originaltext und die verfügbare Übersetzung nach dem Schließen des Systemwarnfensters anzuzeigen. Für die Anzeige über anderen Apps ist eine separate Android-Berechtigung nötig. Systemwarnungen werden nicht geschlossen, der Bildschirm wird nicht eingeschaltet und das Gerät nicht entsperrt. Ein Popup ist nicht garantiert; Benachrichtigungen und Verlauf bleiben verfügbar. Standardmäßig deaktiviert.</string>
     <string name="mobile_battery_settings">Akkueinstellungen</string>

@@ -58,7 +58,7 @@
     <string name="mobile_manage_access">管理采集权限</string>
     <string name="mobile_open_source">打开原始系统警报</string>
     <string name="mobile_last_saved">最近收集的警报</string>
-    <string name="mobile_empty">新收集的警报将显示在这里。此处没有内容并不表示未发布或未收到紧急警报。</string>
+    <string name="mobile_empty">收集到的警报会显示在这里。如果找不到已收到的警报，请查看手机的紧急警报记录。</string>
     <string name="mobile_search">搜索原文或译文</string>
     <string name="mobile_no_results">没有搜索结果</string>
     <string name="mobile_no_results_body">没有与“%1$s”匹配的记录。</string>
@@ -75,7 +75,7 @@
     <string name="mobile_settings_missing">请打开 Android 设置 → 应用 → CodeClear，然后选择相应的访问设置。</string>
     <string name="mobile_restricted">Android 13 及以上版本可能限制直接通过 APK 安装的应用。请打开应用信息 → 更多 → 允许受限设置，然后分别开启各项访问权限。若菜单中没有该选项，请通过下方按钮打开 Android 应用列表，选择 CodeClear，再打开更多。菜单因设备而异，管理员也可能禁止更改。</string>
     <string name="mobile_privacy_description">原文和译文会保存在设备私有存储中，直到您删除。无需账号，不提供同步；备份和设备间迁移已禁用。仅在您单独允许并使用某项服务器翻译服务时才会发送正文。各服务的说明列出了保留期限和删除方式。</string>
-    <string name="mobile_compatibility_description">CodeClear 可用于 Android 11 及以上的手机和平板电脑。直接接收紧急警报需要蜂窝通信硬件。仅支持 Wi-Fi 的设备仍可查看已保存的记录和译文。能否完整采集取决于警报接收应用和固件；已测试的配置不代表全球支持。重启后首次解锁才开始采集。</string>
+    <string name="mobile_compatibility_description">CodeClear 适用于 Android 11 及以上版本的手机和平板电脑。直接接收紧急警报需要蜂窝网络硬件；仅限 Wi-Fi 的设备仍可查看已保存的记录和翻译。能否收集完整警报内容取决于警报应用和固件，因此并非所有设备都能使用。重启后首次解锁时开始收集。</string>
     <string name="mobile_notification_disclosure">Android 通知访问权限也可能允许访问其他应用的通知。CodeClear 只读取经审核的系统紧急警报接收来源，将完整的单条警报正文保存到设备内的私有记录中，用于设备内翻译。不会自动打开页面。您可以随时在此关闭采集，或在 Android 设置中撤销访问权限。 服务器翻译需要单独允许每项服务。</string>
     <string name="mobile_accessibility_disclosure">CodeClear 使用无障碍功能读取经审核的系统紧急警报对话框中的单条正文、标题和待处理数量，不读取其他页面或历史列表行。不会执行手势或关闭警告。原文保留在私有记录中，用于设备内翻译。本应用并非残障辅助工具。您可以随时在此关闭采集，或在 Android 设置中撤销访问权限。 服务器翻译需要单独允许每项服务。</string>
     <string name="mobile_local_disclosure">启用对已采集警报的设备内自动翻译。语言模型需要另外通过 Wi-Fi 下载。不会向翻译服务器发送警报正文。关闭后将停止新翻译，现有记录仍会保留。</string>
@@ -201,7 +201,7 @@
     <string name="mobile_engine_query_failed">无法查询系统翻译服务支持的语言。请重试；目前尚未确认是否可用。</string>
     <string name="mobile_models_title">语言模型</string>
     <string name="mobile_models_refresh">刷新下载状态</string>
-    <string name="mobile_models_update_notice">ML Kit 不提供模型版本或单独的更新列表。可以检查已安装模型的更新，并在需要时通过 Wi-Fi 下载。英语是基准语言，两种中文文字共用一个模型。</string>
+    <string name="mobile_models_update_notice">模型通过 Wi-Fi 下载。点按语言即可检查更新。英语无需模型，简体中文和繁体中文共用一个模型。</string>
     <string name="mobile_models_installed">已安装 · 点按检查更新</string>
     <string name="mobile_models_not_installed">未安装 · 点按下载</string>
     <string name="mobile_models_last_checked">更新检查时间：%1$s</string>
@@ -243,7 +243,7 @@
     <string name="mobile_compat_android">Android %1$s（API %2$d，最低30）</string>
     <string name="mobile_compat_form">手机或平板设备</string>
     <string name="mobile_compat_radio">蜂窝接收硬件</string>
-    <string name="mobile_compat_source">已安装候选系统警报应用</string>
+    <string name="mobile_compat_source">已找到系统警报应用</string>
     <string name="mobile_compat_os_grants">已授予系统访问权限</string>
     <string name="mobile_compat_consent">已允许CodeClear采集</string>
     <string name="mobile_compat_connections">采集服务已连接</string>
@@ -258,7 +258,7 @@
     <string name="mobile_model_update_count">已检查模型：%1$d/%2$d</string>
     <string name="mobile_model_update_notice">如有更新，将通过 Wi-Fi 下载。无需更新时不会重新下载模型。ML Kit 不提供版本号或文件是否变化的信息。不会发送警报正文。</string>
     <string name="mobile_deferred_popup">系统警报关闭后弹窗</string>
-    <string name="mobile_deferred_popup_summary">仅在已核实的系统警报窗口消失后显示。无法确认时，请查看通知或历史记录。需要两个收集服务均运行，不在锁屏上显示。</string>
+    <string name="mobile_deferred_popup_summary">在系统警报窗口关闭后显示。如果无法确认已关闭，请改用通知或记录。需要同时启用两项收集服务，且不会在锁屏上显示。</string>
     <string name="mobile_overlay_access">显示在其他应用上层</string>
     <string name="mobile_overlay_disclosure">允许 CodeClear 在系统警报窗口消失后显示原文和可用译文。如需在使用其他应用时显示，请在 Android 设置中单独授予悬浮窗权限。此功能不会关闭系统警报、唤醒屏幕或解锁设备。弹窗不保证送达，通知和历史记录仍可使用。默认关闭。</string>
     <string name="mobile_battery_settings">电池设置</string>

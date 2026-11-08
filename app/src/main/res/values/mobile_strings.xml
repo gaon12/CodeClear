@@ -35,7 +35,7 @@
     <string name="mobile_privacy_description">Originals and translations stay in private device storage until you delete them. No account or synchronization. App backup and transfer are disabled. Alert text is sent only when you separately allow and use a remote translation service. Review that service’s retention and deletion disclosure.</string>
     <string name="mobile_delete_all">Delete all history</string>
     <string name="mobile_compatibility">Device compatibility</string>
-    <string name="mobile_compatibility_description">CodeClear works on Android 11+ phones and tablets. Direct emergency-alert reception requires cellular hardware. Wi-Fi-only devices can still show saved records and translations. Complete capture depends on the installed alert receiver and firmware; tested profiles do not establish worldwide support. Capture starts after the first unlock following reboot.</string>
+    <string name="mobile_compatibility_description">CodeClear works on Android 11+ phones and tablets. Receiving emergency alerts directly requires cellular hardware; Wi-Fi-only devices can still show saved records and translations. Whether the full alert text can be captured depends on the alert app and firmware, so it may not work on every device. Capture starts after the first unlock following a restart.</string>
     <string name="mobile_notification_disclosure">Android notification access can expose notifications from other apps. CodeClear reads only reviewed installed system emergency-receiver sources and saves individual complete alert text in private local history for on-device translation. It does not open screens automatically. Turn capture off here or revoke access in Android Settings at any time. Remote translation requires separate permission for each service.</string>
     <string name="mobile_accessibility_disclosure">CodeClear uses accessibility to read the single message field, title, and pending count in reviewed system emergency-alert dialogs. Other screens and history rows are excluded. It does not perform gestures or dismiss warnings. Originals stay in private history for local translation. This is not a disability assistance tool. Turn capture off here or revoke access in Android Settings at any time. Remote translation requires separate permission for each service.</string>
     <string name="mobile_local_disclosure">Enable automatic on-device translation of captured alerts. Language models require a separate Wi-Fi download approval. No alert text is sent to a translation server. Turning this off stops new translations while preserving your history.</string>
@@ -71,7 +71,7 @@
     <string name="mobile_pending">Pending alerts reported by the source: %1$d. Only exposed individual bodies can be captured; open the original to check the others.</string>
     <string name="mobile_open_source">Open original system alert</string>
     <string name="mobile_last_saved">Latest captured alert</string>
-    <string name="mobile_empty">Newly captured alerts appear here. An empty screen does not establish whether an emergency alert was issued or received.</string>
+    <string name="mobile_empty">Alerts appear here once they are captured. If an alert you received isn’t here, check your phone’s emergency alert history.</string>
     <string name="mobile_search">Search original or translation</string>
     <string name="mobile_no_results">No results</string>
     <string name="mobile_no_results_body">No alerts match “%1$s”.</string>
@@ -202,7 +202,7 @@
     <string name="mobile_engine_query_failed">Could not query the system translation service. Try again; support has not been confirmed.</string>
     <string name="mobile_models_title">Language models</string>
     <string name="mobile_models_refresh">Refresh download status</string>
-    <string name="mobile_models_update_notice">ML Kit does not expose model versions or a separate update list. Installed models can be checked; an available update uses Wi-Fi. English is the base language; both Chinese scripts share one model.</string>
+    <string name="mobile_models_update_notice">Models download over Wi-Fi. Tap a language to check for updates. English needs no model, and both Chinese scripts share one.</string>
     <string name="mobile_models_installed">Installed · Tap to check for updates</string>
     <string name="mobile_models_not_installed">Not installed · Tap to download</string>
     <string name="mobile_models_last_checked">Update checked: %1$s</string>
@@ -244,7 +244,7 @@
     <string name="mobile_compat_android">Android %1$s (API %2$d; minimum 30)</string>
     <string name="mobile_compat_form">Phone or tablet hardware</string>
     <string name="mobile_compat_radio">Cellular reception hardware</string>
-    <string name="mobile_compat_source">Candidate system alert app installed</string>
+    <string name="mobile_compat_source">System alert app found</string>
     <string name="mobile_compat_os_grants">System access granted</string>
     <string name="mobile_compat_consent">Collection allowed in CodeClear</string>
     <string name="mobile_compat_connections">Collection services connected</string>
@@ -259,7 +259,7 @@
     <string name="mobile_model_update_count">Models checked: %1$d/%2$d</string>
     <string name="mobile_model_update_notice">Available updates may download over Wi-Fi. No model is downloaded when no update is needed. ML Kit does not report version numbers or whether files changed. No alert text is sent.</string>
     <string name="mobile_deferred_popup">Popup after system alert</string>
-    <string name="mobile_deferred_popup_summary">Shown only after the reviewed system alert window has disappeared. If this cannot be confirmed, use the notification or history instead. Requires both collection services; no popup on the lock screen.</string>
+    <string name="mobile_deferred_popup_summary">Appears after the system alert closes. If that can’t be detected, use the notification or History instead. Needs both capture services and never appears on the lock screen.</string>
     <string name="mobile_overlay_access">Display over other apps</string>
     <string name="mobile_overlay_disclosure">Allow CodeClear to show the original alert and its available translation after the system alert window disappears. To show it while another app is open, separately allow display over other apps in Android settings. This does not dismiss system warnings, wake the screen, or unlock the device. Popup delivery is best effort; notifications and history remain available. This choice is off by default.</string>
     <string name="mobile_battery_settings">Battery settings</string>

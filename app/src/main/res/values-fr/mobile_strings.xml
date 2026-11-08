@@ -58,7 +58,7 @@
     <string name="mobile_manage_access">Gérer l’accès à la collecte</string>
     <string name="mobile_open_source">Ouvrir l’alerte système originale</string>
     <string name="mobile_last_saved">Dernière alerte recueillie</string>
-    <string name="mobile_empty">Les nouvelles alertes recueillies apparaissent ici. Un écran vide ne signifie pas qu’aucune alerte n’a été émise ou reçue.</string>
+    <string name="mobile_empty">Les alertes recueillies apparaissent ici. S’il manque une alerte reçue, consultez l’historique des alertes d’urgence de votre téléphone.</string>
     <string name="mobile_search">Rechercher dans l’original ou la traduction</string>
     <string name="mobile_no_results">Aucun résultat</string>
     <string name="mobile_no_results_body">Aucune alerte ne correspond à « %1$s ».</string>
@@ -75,7 +75,7 @@
     <string name="mobile_settings_missing">Ouvrez Paramètres Android → Applications → CodeClear, puis sélectionnez l’accès concerné.</string>
     <string name="mobile_restricted">Android 13 et versions ultérieures peuvent bloquer l’accès après une installation directe par APK. Ouvrez Informations sur l’application → Plus → Autoriser les paramètres restreints, puis activez chaque accès séparément. Si le menu manque, ouvrez la liste des applications Android ci-dessous, sélectionnez CodeClear, puis Plus. Les menus varient et un administrateur peut empêcher les modifications.</string>
     <string name="mobile_privacy_description">Les originaux et traductions restent dans le stockage privé jusqu’à leur suppression. Aucun compte ni synchronisation ; sauvegarde et transfert désactivés. Le texte est envoyé uniquement si vous autorisez et utilisez séparément un service de traduction en ligne. Consultez ses règles de conservation et de suppression.</string>
-    <string name="mobile_compatibility_description">CodeClear fonctionne sur les téléphones et tablettes Android 11 et ultérieurs. La réception directe des alertes nécessite du matériel cellulaire. Les appareils Wi-Fi seuls peuvent consulter les éléments et traductions enregistrés. La collecte complète dépend du récepteur et du micrologiciel ; les profils testés ne prouvent pas une prise en charge mondiale. La collecte commence après le premier déverrouillage suivant un redémarrage.</string>
+    <string name="mobile_compatibility_description">CodeClear fonctionne sur les téléphones et tablettes Android 11 ou version ultérieure. La réception directe des alertes d’urgence nécessite un matériel cellulaire ; les appareils Wi-Fi uniquement peuvent tout de même afficher l’historique et les traductions. La collecte du texte complet dépend de l’application d’alertes et du micrologiciel, et peut donc ne pas fonctionner sur tous les appareils. La collecte commence au premier déverrouillage après un redémarrage.</string>
     <string name="mobile_notification_disclosure">L’accès aux notifications Android peut donner accès aux notifications d’autres applications. CodeClear lit uniquement les sources système de réception d’alertes vérifiées et enregistre les textes individuels complets dans un historique privé sur l’appareil pour les traduire localement. Aucun écran ne s’ouvre automatiquement. Vous pouvez arrêter la collecte ici ou révoquer l’accès dans les paramètres Android à tout moment. La traduction serveur nécessite une autorisation distincte pour chaque service.</string>
     <string name="mobile_accessibility_disclosure">CodeClear utilise l’accessibilité pour lire le champ d’un seul message, son titre et le nombre d’alertes en attente dans les boîtes de dialogue système vérifiées. Les autres écrans et lignes d’historique sont exclus. L’application n’effectue pas de gestes et ne ferme pas les avertissements. Les originaux restent dans l’historique privé pour la traduction locale. Ce n’est pas un outil d’assistance au handicap. Vous pouvez arrêter la collecte ici ou révoquer l’accès dans les paramètres Android à tout moment. La traduction serveur nécessite une autorisation distincte pour chaque service.</string>
     <string name="mobile_local_disclosure">Activez la traduction automatique des alertes recueillies sur cet appareil. Lancez séparément le téléchargement des modèles via Wi-Fi. Aucun texte d’alerte n’est envoyé à un serveur de traduction. La désactivation arrête les nouvelles traductions et conserve l’historique.</string>
@@ -203,7 +203,7 @@
     <string name="mobile_engine_query_failed">Impossible de consulter les langues prises en charge par le service système. Réessayez ; la compatibilité reste à confirmer.</string>
     <string name="mobile_models_title">Modèles de langue</string>
     <string name="mobile_models_refresh">Actualiser les téléchargements</string>
-    <string name="mobile_models_update_notice">ML Kit ne fournit ni version des modèles ni liste des mises à jour. Les modèles installés peuvent être vérifiés ; les mises à jour utilisent le Wi-Fi. L\'anglais est la langue de base et les deux écritures chinoises partagent un modèle.</string>
+    <string name="mobile_models_update_notice">Les modèles se téléchargent en Wi-Fi. Touchez une langue pour rechercher une mise à jour. L’anglais ne nécessite aucun modèle, et les deux écritures chinoises en partagent un.</string>
     <string name="mobile_models_installed">Installé · Toucher pour vérifier les mises à jour</string>
     <string name="mobile_models_not_installed">Non installé · Toucher pour télécharger</string>
     <string name="mobile_models_last_checked">Mise à jour vérifiée : %1$s</string>
@@ -245,7 +245,7 @@
     <string name="mobile_compat_android">Android %1$s (API %2$d ; minimum 30)</string>
     <string name="mobile_compat_form">Téléphone ou tablette</string>
     <string name="mobile_compat_radio">Matériel de réception cellulaire</string>
-    <string name="mobile_compat_source">Application système candidate installée</string>
+    <string name="mobile_compat_source">Application d’alertes système détectée</string>
     <string name="mobile_compat_os_grants">Accès système autorisé</string>
     <string name="mobile_compat_consent">Collecte autorisée dans CodeClear</string>
     <string name="mobile_compat_connections">Services de collecte connectés</string>
@@ -260,7 +260,7 @@
     <string name="mobile_model_update_count">Modèles vérifiés : %1$d/%2$d</string>
     <string name="mobile_model_update_notice">Les mises à jour disponibles peuvent être téléchargées en Wi-Fi. Sans mise à jour nécessaire, le modèle n\'est pas retéléchargé. ML Kit ne fournit ni numéro de version ni indication de changement des fichiers. Aucun texte d\'alerte n\'est envoyé.</string>
     <string name="mobile_deferred_popup">Fenêtre après l’alerte système</string>
-    <string name="mobile_deferred_popup_summary">Affichée uniquement après la disparition de la fenêtre système vérifiée. Si cela ne peut pas être confirmé, utilisez la notification ou l’historique. Les deux services de collecte sont requis. Aucun affichage sur l’écran verrouillé.</string>
+    <string name="mobile_deferred_popup_summary">S’affiche après la fermeture de l’alerte système. Si cela ne peut pas être détecté, utilisez la notification ou l’historique. Nécessite les deux services de collecte et ne s’affiche jamais sur l’écran de verrouillage.</string>
     <string name="mobile_overlay_access">Afficher par-dessus les autres applis</string>
     <string name="mobile_overlay_disclosure">Autorisez CodeClear à afficher le texte original et la traduction disponible après la disparition de la fenêtre d’alerte système. Pour l’afficher par-dessus une autre appli, accordez séparément cette autorisation dans les paramètres Android. Cela ne ferme pas les alertes système, n’allume pas l’écran et ne déverrouille pas l’appareil. La fenêtre peut ne pas apparaître ; les notifications et l’historique restent disponibles. Désactivé par défaut.</string>
     <string name="mobile_battery_settings">Paramètres de batterie</string>
