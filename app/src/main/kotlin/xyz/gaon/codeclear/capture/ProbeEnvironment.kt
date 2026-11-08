@@ -20,8 +20,11 @@ data class ProbeEnvironment(
     val accessibilityGranted: Boolean
 ) {
     companion object {
-        fun read(context: Context): ProbeEnvironment {
-            val packageManager = context.packageManager
+        // Declared hardware features cannot change while the process runs, so the radio class is
+        // queried once. Grants, consent, and source packages are still read on every call.
+        @Volatile private var hardwareRadio: ProbeRadio? = null
+
+        private fun radio(packageManager: PackageManager): ProbeRadio = hardwareRadio ?: run {
             val telephony = packageManager.hasSystemFeature(PackageManager.FEATURE_TELEPHONY)
             val radioAccess = if (Build.VERSION.SDK_INT >= 33) {
                 packageManager.hasSystemFeature(
@@ -30,7 +33,12 @@ data class ProbeEnvironment(
             } else {
                 null
             }
-            val radio = ProbeSourcePolicy.classifyRadio(telephony, radioAccess)
+            ProbeSourcePolicy.classifyRadio(telephony, radioAccess).also { hardwareRadio = it }
+        }
+
+        fun read(context: Context): ProbeEnvironment {
+            val packageManager = context.packageManager
+            val radio = radio(packageManager)
             val systemPackages = ProbeSourcePolicy.candidatePackages.filterTo(mutableSetOf()) {
                 try {
                     val info = packageManager.getApplicationInfo(it, 0)

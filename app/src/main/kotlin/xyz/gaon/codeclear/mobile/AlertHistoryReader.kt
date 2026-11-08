@@ -23,6 +23,7 @@ internal class AlertHistoryReader(private val store: AlertHistoryStore) {
             "",
             request.options.target.languageTag,
             limit = 1,
+            cancellation = cancellation,
             engine = request.options.engine,
             nativeOnly = true
         )
@@ -30,6 +31,7 @@ internal class AlertHistoryReader(private val store: AlertHistoryStore) {
             "",
             request.options.target.languageTag,
             limit = 1,
+            cancellation = cancellation,
             engine = request.options.engine
         ).firstOrNull(),
         request.detailId?.let {

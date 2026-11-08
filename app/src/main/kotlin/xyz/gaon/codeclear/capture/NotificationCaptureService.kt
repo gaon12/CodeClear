@@ -61,9 +61,16 @@ open class NotificationCaptureService : NotificationListenerService() {
                     (sbn.packageName == "com.android.shell" && ProbeSession.state.shellFixture)
                 )
 
-    private fun capture(sbn: StatusBarNotification) {
+    /**
+     * A single posted notification reads the environment fresh. A snapshot batch passes one fresh
+     * read for all of its notifications: the batch runs synchronously on the main thread, so the
+     * consent ticket checked here cannot change between its items.
+     */
+    private fun capture(
+        sbn: StatusBarNotification,
+        environment: ProbeEnvironment = ProbeEnvironment.read(this)
+    ) {
         if (!isUnlocked() || !isCandidate(sbn)) return
-        val environment = ProbeEnvironment.read(this)
         val ticket = ProbeSession.ticket(ProbeRoute.NOTIFICATION, environment) ?: return
         val origin = ProbeSourcePolicy.classify(
             sbn.packageName,
@@ -154,7 +161,11 @@ open class NotificationCaptureService : NotificationListenerService() {
                     val generationMatches = ProbeSession.currentGeneration() == ticket
                     try {
                         if (connected && generationMatches) {
-                            found.filter { snapshotGate.accepts(it.key) }.forEach(::capture)
+                            val accepted = found.filter { snapshotGate.accepts(it.key) }
+                            if (accepted.isNotEmpty()) {
+                                val environment = ProbeEnvironment.read(this)
+                                accepted.forEach { capture(it, environment) }
+                            }
                         }
                     } finally {
                         val refresh = snapshotGate.finish()
