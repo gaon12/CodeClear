@@ -60,8 +60,11 @@
     <string name="mobile_last_saved">Dernière alerte recueillie</string>
     <string name="mobile_empty">Les nouvelles alertes recueillies apparaissent ici. Un écran vide ne signifie pas qu’aucune alerte n’a été émise ou reçue.</string>
     <string name="mobile_search">Rechercher dans l’original ou la traduction</string>
-    <string name="mobile_no_results">Aucun résultat.</string>
-    <string name="mobile_newest">Page la plus récente</string>
+    <string name="mobile_no_results">Aucun résultat</string>
+    <string name="mobile_no_results_body">Aucune alerte ne correspond à « %1$s ».</string>
+    <string name="mobile_history_empty_title">Aucune alerte pour l’instant</string>
+    <string name="mobile_history_empty_body">Les alertes d’urgence recueillies apparaîtront ici.</string>
+    <string name="mobile_newest">Revenir aux plus récentes</string>
     <string name="mobile_older">Entrées plus anciennes</string>
     <string name="mobile_downloading">Préparation des modèles ou attente du Wi-Fi. Android peut poursuivre le téléchargement en arrière-plan.</string>
     <string name="mobile_models_ready">Les modèles de langue sont prêts.</string>

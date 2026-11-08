@@ -60,8 +60,11 @@
     <string name="mobile_last_saved">最近収集した警報</string>
     <string name="mobile_empty">新しく収集した警報がここに表示されます。空の画面は警報の未発令や未受信を意味しません。</string>
     <string name="mobile_search">原文・翻訳を検索</string>
-    <string name="mobile_no_results">一致する履歴がありません。</string>
-    <string name="mobile_newest">最新のページ</string>
+    <string name="mobile_no_results">検索結果がありません</string>
+    <string name="mobile_no_results_body">「%1$s」に一致する履歴はありません。</string>
+    <string name="mobile_history_empty_title">まだ履歴がありません</string>
+    <string name="mobile_history_empty_body">収集した緊急警報がここに表示されます。</string>
+    <string name="mobile_newest">最新に戻る</string>
     <string name="mobile_older">以前の履歴</string>
     <string name="mobile_downloading">モデルを準備しているか、Wi-Fiを待っています。Androidがバックグラウンドでダウンロードを続ける場合があります。</string>
     <string name="mobile_models_ready">言語モデルの準備が完了しました。</string>

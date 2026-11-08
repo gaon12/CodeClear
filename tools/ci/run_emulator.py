@@ -38,7 +38,7 @@ FIXTURES = {
     "mobile.MobileScreenModelSpeechDeviceTest": 6,
     "mobile.MobileScreenAlertDetailDeviceTest": 15,
     "mobile.MobileScreenNearbyDeviceTest": 4,
-    "mobile.MobileScreenHistoryDeviceTest": 11,
+    "mobile.MobileScreenHistoryDeviceTest": 12,
     "mobile.MobileScreenSettingsDeviceTest": 14,
     "mobile.MobileScreenEngineDeviceTest": 15,
     "mobile.NotificationContentDeviceTest": 1,

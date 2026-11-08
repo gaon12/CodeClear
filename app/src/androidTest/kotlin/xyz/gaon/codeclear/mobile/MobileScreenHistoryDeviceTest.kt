@@ -138,6 +138,46 @@ class MobileScreenHistoryDeviceTest : MobileScreenFixture() {
     }
 
     @Test
+    fun firstInstallHistoryShowsAnEmptyStateAndPagingOnlyWhenUseful() {
+        compose.runOnIdle { state = state.copy(records = emptyList(), latest = null) }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-empty").assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_history_empty_title)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_history_empty_body)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_no_results)).assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_search)).assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_newest)).assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_older)).assertDoesNotExist()
+
+        compose.runOnIdle { state = state.copy(records = listOf(record(1))) }
+        compose.onNodeWithTag("history-empty").assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_search)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_newest)).assertDoesNotExist()
+        compose.onNodeWithText(text(R.string.mobile_older)).assertDoesNotExist()
+
+        compose.runOnIdle { state = state.copy(records = List(50) { record(it + 1L) }) }
+        compose.onNodeWithTag(
+            "mobile-feed"
+        ).performScrollToNode(hasText(text(R.string.mobile_older)))
+        compose.onNodeWithText(text(R.string.mobile_older)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_newest)).assertDoesNotExist()
+
+        compose.runOnIdle { state = state.copy(beforeId = 51, records = listOf(record(1))) }
+        compose.onNodeWithTag(
+            "mobile-feed"
+        ).performScrollToNode(hasText(text(R.string.mobile_newest)))
+        compose.onNodeWithText(text(R.string.mobile_newest)).assertIsDisplayed().performClick()
+        compose.runOnIdle { assertEquals(1, newestRequests) }
+
+        compose.onNodeWithText(text(R.string.mobile_search)).performTextInput("Gate 9")
+        compose.runOnIdle { state = state.copy(records = emptyList(), loading = false) }
+        compose.onNodeWithTag("history-no-results").assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_no_results)).assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_no_results_body, "Gate 9")).assertIsDisplayed()
+        compose.onNodeWithTag("history-empty").assertDoesNotExist()
+    }
+
+    @Test
     fun completedRecordDoesNotShowAnUnrelatedGlobalModelPreparationStatus() {
         compose.runOnIdle {
             globalPreparation = PreparationState(

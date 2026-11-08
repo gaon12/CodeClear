@@ -60,8 +60,11 @@
     <string name="mobile_last_saved">最近收集的警报</string>
     <string name="mobile_empty">新收集的警报将显示在这里。此处没有内容并不表示未发布或未收到紧急警报。</string>
     <string name="mobile_search">搜索原文或译文</string>
-    <string name="mobile_no_results">没有匹配的记录。</string>
-    <string name="mobile_newest">最新一页</string>
+    <string name="mobile_no_results">没有搜索结果</string>
+    <string name="mobile_no_results_body">没有与“%1$s”匹配的记录。</string>
+    <string name="mobile_history_empty_title">暂无记录</string>
+    <string name="mobile_history_empty_body">收集到的紧急警报将显示在这里。</string>
+    <string name="mobile_newest">返回最新</string>
     <string name="mobile_older">更早的记录</string>
     <string name="mobile_downloading">正在准备模型或等待 Wi-Fi。Android 可能在后台继续下载。</string>
     <string name="mobile_models_ready">语言模型已准备就绪。</string>

@@ -60,8 +60,11 @@
     <string name="mobile_last_saved">Zuletzt erfasste Warnung</string>
     <string name="mobile_empty">Neu erfasste Warnungen erscheinen hier. Ein leerer Bildschirm bedeutet nicht, dass keine Warnung ausgegeben oder empfangen wurde.</string>
     <string name="mobile_search">Original oder Übersetzung durchsuchen</string>
-    <string name="mobile_no_results">Keine passenden Einträge.</string>
-    <string name="mobile_newest">Neueste Seite</string>
+    <string name="mobile_no_results">Keine Ergebnisse</string>
+    <string name="mobile_no_results_body">Keine Einträge passen zu „%1$s“.</string>
+    <string name="mobile_history_empty_title">Noch keine Warnungen</string>
+    <string name="mobile_history_empty_body">Erfasste Warnmeldungen erscheinen hier.</string>
+    <string name="mobile_newest">Zurück zu den neuesten</string>
     <string name="mobile_older">Ältere Einträge</string>
     <string name="mobile_downloading">Modelle werden vorbereitet oder warten auf WLAN. Android kann den Download im Hintergrund fortsetzen.</string>
     <string name="mobile_models_ready">Die Sprachmodelle sind bereit.</string>
