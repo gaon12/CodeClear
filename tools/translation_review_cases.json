@@ -1,0 +1,108 @@
+{
+    "version": 1,
+    "reference_status": "Draft examples; human review is required for every engine output.",
+    "cases": [
+        {
+            "id": "shelter-negation",
+            "source_language": "en",
+            "target_language": "ko",
+            "source": "[DRILL] Stay inside. Do not evacuate. Call 112 for help.",
+            "reference": "[훈련] 실내에 머무르세요. 대피하지 마세요. 도움이 필요하면 112로 전화하세요.",
+            "checks": {
+                "target_language": "The output is in ko and conveys the original instruction.",
+                "action": "Remain indoors; do not tell the reader to leave.",
+                "negation": "The instruction NOT to evacuate must remain negative."
+            }
+        },
+        {
+            "id": "evacuate-positive",
+            "source_language": "en",
+            "target_language": "ko",
+            "source": "[DRILL] Leave the building now. Use Gate 3. Do not use the elevator.",
+            "reference": "[훈련] 지금 건물 밖으로 대피하세요. 3번 출입구를 이용하세요. 엘리베이터는 이용하지 마세요.",
+            "checks": {
+                "target_language": "The output is in ko and conveys the original instruction.",
+                "action": "Leave now; do not instruct the reader to shelter indoors.",
+                "location": "Use Gate 3, not a different exit.",
+                "negation": "Elevator use remains prohibited."
+            }
+        },
+        {
+            "id": "upstream-distance",
+            "source_language": "en",
+            "target_language": "ko",
+            "source": "[DRILL] Move upstream for 3 km. Keep away from the riverbank.",
+            "reference": "[훈련] 상류 방향으로 3 km 이동하세요. 강둑에 접근하지 마세요.",
+            "checks": {
+                "target_language": "The output is in ko and conveys the original instruction.",
+                "direction": "Upstream must not become downstream.",
+                "distance": "The distance remains 3 km, not metres or miles.",
+                "action": "Avoid the riverbank."
+            }
+        },
+        {
+            "id": "deadline-and-duration",
+            "source_language": "en",
+            "target_language": "ko",
+            "source": "[DRILL] Arrive at Shelter 2 before 14:05. Remain there for 30 minutes.",
+            "reference": "[훈련] 14:05 전에 2번 대피소에 도착하세요. 그곳에 30분 동안 머무르세요.",
+            "checks": {
+                "target_language": "The output is in ko and conveys the original instruction.",
+                "time": "Arrival is BEFORE 14:05; the stay lasts 30 minutes.",
+                "location": "The destination remains Shelter 2.",
+                "action": "Remain at the shelter after arrival."
+            }
+        },
+        {
+            "id": "no-warning-versus-warning",
+            "source_language": "en",
+            "target_language": "ko",
+            "source": "[DRILL] No tsunami warning is in effect. The coastal road remains closed.",
+            "reference": "[훈련] 발효 중인 지진해일 경보는 없습니다. 해안 도로는 계속 폐쇄되어 있습니다.",
+            "checks": {
+                "target_language": "The output is in ko and conveys the original instruction.",
+                "negation": "Do not invent an active tsunami warning.",
+                "action": "Do not imply the coastal road has reopened."
+            }
+        },
+        {
+            "id": "issuer-and-link",
+            "source_language": "en",
+            "target_language": "ko",
+            "source": "[DRILL] Northbridge Safety Office: Avoid Tunnel 4. Updates: https://example.org/drill",
+            "reference": "[훈련] 노스브리지 안전사무소: 4번 터널을 피하세요. 추가 안내: https://example.org/drill",
+            "checks": {
+                "target_language": "The output is in ko and conveys the original instruction.",
+                "issuer": "Preserve the fictional office; do not invent a real authority or endorsement.",
+                "location": "Avoid Tunnel 4.",
+                "action": "The tunnel must not become a recommended route."
+            }
+        },
+        {
+            "id": "korean-negative-direction",
+            "source_language": "ko",
+            "target_language": "en",
+            "source": "[훈련] 하류로 이동하지 마세요. 상류 방향의 2번 대피소로 이동하세요.",
+            "reference": "[DRILL] Do not move downstream. Go to Shelter 2 in the upstream direction.",
+            "checks": {
+                "target_language": "The output is in en and conveys the original instruction.",
+                "negation": "Moving downstream remains prohibited.",
+                "direction": "The shelter is in the upstream direction.",
+                "location": "The destination remains Shelter 2."
+            }
+        },
+        {
+            "id": "korean-time-and-distance",
+            "source_language": "ko",
+            "target_language": "en",
+            "source": "[훈련] 18:30까지 실내에 머무르세요. 공사장으로부터 500 m 이상 떨어져 있으세요.",
+            "reference": "[DRILL] Stay indoors until 18:30. Keep at least 500 m away from the construction site.",
+            "checks": {
+                "target_language": "The output is in en and conveys the original instruction.",
+                "time": "Stay indoors UNTIL 18:30, not only after that time.",
+                "distance": "Keep AT LEAST 500 m away, not within that distance.",
+                "location": "The hazard remains the construction site."
+            }
+        }
+    ]
+}
