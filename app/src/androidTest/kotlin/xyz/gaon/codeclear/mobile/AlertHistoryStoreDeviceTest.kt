@@ -270,6 +270,26 @@ class AlertHistoryStoreDeviceTest {
             it.execSQL("DROP TABLE alerts")
             it.execSQL("ALTER TABLE legacy_alerts RENAME TO alerts")
             it.execSQL("CREATE INDEX alert_original_hash ON alerts(original_hash)")
+            if (version >= 4) {
+                it.execSQL("ALTER TABLE translations RENAME TO current_translations")
+                it.execSQL(
+                    "CREATE TABLE translations (" +
+                        "alert_id INTEGER NOT NULL REFERENCES alerts(id) ON DELETE CASCADE," +
+                        "target TEXT NOT NULL, engine TEXT NOT NULL, " +
+                        "revision INTEGER NOT NULL, phase TEXT NOT NULL," +
+                        "text TEXT, source_language TEXT, search_text TEXT, " +
+                        "same_language INTEGER NOT NULL DEFAULT 0," +
+                        "PRIMARY KEY(alert_id,target,engine))"
+                )
+                it.execSQL(
+                    "INSERT INTO translations SELECT alert_id,target,engine,revision,phase,text," +
+                        "source_language,search_text,same_language FROM current_translations"
+                )
+                it.execSQL("DROP TABLE current_translations")
+                it.execSQL(
+                    "CREATE INDEX translation_queue ON translations(engine,target,phase,alert_id DESC)"
+                )
+            }
             if (version < 4) {
                 it.execSQL("DROP INDEX translation_queue")
                 it.execSQL("ALTER TABLE translations RENAME TO current_translations")

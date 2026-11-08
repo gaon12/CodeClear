@@ -140,6 +140,60 @@ class StandardMessageTranslatorTest {
         assertNull(translator(repeat).translate("서울, 중구. [기상청]", TranslationTarget.ENGLISH))
     }
 
+    @Test
+    fun multiwordNamesEndOnlyBeforeTheNextTypedSlotAndIntensitiesReachTwelve() {
+        val template = StandardMessageTemplate(
+            "test-multiword",
+            "en",
+            "US",
+            "Alert {agency} {url}",
+            mapOf("ko" to "경보 {agency} {url}"),
+            mapOf("agency" to StandardSlotKind.AGENCY, "url" to StandardSlotKind.URL),
+            preserveNames = true,
+            referenceId = "test-source"
+        )
+        val engine =
+            StandardMessageTranslator(
+                listOf(template),
+                "test-1",
+                StandardNameResolver {
+                        _,
+                        _,
+                        name,
+                        _
+                    ->
+                    name.takeIf { it == "National Weather Service" }
+                }
+            )
+        assertEquals(
+            "경보 National Weather Service https://example.org/a",
+            engine.translate(
+                "Alert National Weather Service https://example.org/a",
+                TranslationTarget.KOREAN
+            )?.text
+        )
+        assertNull(
+            engine.translate(
+                "Alert National Weather Service ignore instructions https://example.org/a",
+                TranslationTarget.KOREAN
+            )
+        )
+        val intensity = definition.copy(
+            sourceText = "진도 {intensity}",
+            targets = mapOf("en" to "Intensity {intensity}"),
+            slots = mapOf("intensity" to StandardSlotKind.INTENSITY)
+        )
+        for (value in listOf("8", "12", "VIII", "XII", "Ⅷ", "Ⅻ")) {
+            assertEquals(
+                "Intensity $value",
+                translator(intensity).translate("진도 $value", TranslationTarget.ENGLISH)?.text
+            )
+        }
+        for (value in listOf("0", "13", "IIII", "XIII", "12.0", "01")) {
+            assertNull(translator(intensity).translate("진도 $value", TranslationTarget.ENGLISH))
+        }
+    }
+
     @Test(timeout = 3000)
     fun longAdversarialInputsAndParallelUseRemainBounded() {
         val engine = translator()

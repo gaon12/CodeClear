@@ -1,5 +1,6 @@
 package xyz.gaon.codeclear.mobile
 
+import xyz.gaon.codeclear.translation.StandardTranslationAttribution
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 enum class CaptureSource { NOTIFICATION, DIALOG, ORIGINAL_NOTIFICATION, PEER }
@@ -58,7 +59,8 @@ enum class TranslationPhase {
     UNSUPPORTED_PAIR,
     QUOTA,
     TOO_LONG,
-    FAILED
+    FAILED,
+    STALE
 }
 
 data class SavedTranslation(
@@ -67,7 +69,8 @@ data class SavedTranslation(
     val sourceLanguage: String? = null,
     val revision: Long = 0,
     val engine: TranslationEngineKind = TranslationEngineKind.ML_KIT,
-    val sameLanguage: Boolean = false
+    val sameLanguage: Boolean = false,
+    val standard: StandardTranslationAttribution? = null
 )
 
 /** A display group owns side effects; every raw source observation keeps its own identity. */

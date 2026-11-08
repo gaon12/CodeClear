@@ -10,6 +10,8 @@ import android.os.CancellationSignal
 import android.os.Looper
 import androidx.core.database.sqlite.transaction
 import java.security.MessageDigest
+import xyz.gaon.codeclear.translation.StandardTranslationAttribution
+import xyz.gaon.codeclear.translation.StandardTranslationCatalog
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 /** App-private, credential-encrypted SQLite history. Call every operation from a worker thread. */
@@ -264,6 +266,8 @@ class AlertHistoryStore(
                 putNull("text")
                 putNull("source_language")
                 putNull("search_text")
+                putNull("template_id")
+                putNull("catalog_revision")
             }
             check(
                 db.insertWithOnConflict(
@@ -313,6 +317,8 @@ class AlertHistoryStore(
                         putNull("text")
                         putNull("source_language")
                         putNull("search_text")
+                        putNull("template_id")
+                        putNull("catalog_revision")
                     },
                     "alert_id=? AND target=? AND engine=?",
                     arrayOf(alert.id.toString(), target, engine.key)
@@ -325,8 +331,19 @@ class AlertHistoryStore(
 
     fun finishTranslation(ticket: TranslationTicket, result: SavedTranslation): Boolean {
         require(ticket.target in HistoryText.targets)
-        require(result.phase !in setOf(TranslationPhase.QUEUED, TranslationPhase.WORKING))
+        require(
+            result.phase !in
+                setOf(TranslationPhase.QUEUED, TranslationPhase.WORKING, TranslationPhase.STALE)
+        )
         if (ticket.engine != result.engine) return false
+        if (result.standard != null &&
+            (
+                result.phase != TranslationPhase.READY ||
+                    !StandardTranslationCatalog.isCurrent(result.standard)
+                )
+        ) {
+            return false
+        }
         require(
             result.sourceLanguage == null ||
                 (
@@ -344,6 +361,8 @@ class AlertHistoryStore(
             put("text", result.text)
             put("source_language", result.sourceLanguage)
             put("same_language", result.sameLanguage)
+            put("template_id", result.standard?.templateId)
+            put("catalog_revision", result.standard?.catalogRevision)
             put("search_text", result.text?.let(HistoryText::searchable))
         }
         // Complete only the still-existing current job; never insert history from a response.
@@ -381,16 +400,18 @@ class AlertHistoryStore(
     ): SavedTranslation? {
         require(original.length <= 8192 && target in HistoryText.targets)
         return database.rawQuery(
-            "SELECT t.text, t.source_language, t.same_language FROM translations t " +
+            "SELECT t.text, t.source_language, t.same_language, t.template_id, " +
+                "t.catalog_revision FROM translations t " +
                 "JOIN alerts a ON a.id=t.alert_id " +
                 "WHERE a.original_hash=? AND a.original=? AND t.target=? AND t.engine=? " +
-                "AND t.phase=? LIMIT 1",
+                "AND t.phase=? AND (t.template_id IS NULL OR t.catalog_revision=?) LIMIT 1",
             arrayOf(
                 originalHash(original),
                 original,
                 target,
                 engine.key,
-                TranslationPhase.READY.name
+                TranslationPhase.READY.name,
+                StandardTranslationCatalog.REVISION
             )
         ).use {
             if (it.moveToFirst()) {
@@ -399,7 +420,10 @@ class AlertHistoryStore(
                     it.getString(0),
                     it.getString(1),
                     engine = engine,
-                    sameLanguage = it.getInt(2) != 0
+                    sameLanguage = it.getInt(2) != 0,
+                    standard = it.getString(3)?.let { id ->
+                        StandardTranslationAttribution(id, it.getString(4))
+                    }
                 )
             } else {
                 null
@@ -551,7 +575,10 @@ class AlertHistoryStore(
                     kind.key ==
                         text("translation_engine")
                 },
-                number("same_language") != 0L
+                number("same_language") != 0L,
+                text("template_id")?.let { id ->
+                    StandardTranslationAttribution(id, text("catalog_revision")!!)
+                }
             )
         }
         SavedAlert(
@@ -576,7 +603,7 @@ class AlertHistoryStore(
     }
 
     private class HistoryDatabase(context: Context, name: String) :
-        SQLiteOpenHelper(context, name, null, 6) {
+        SQLiteOpenHelper(context, name, null, 7) {
         init {
             setWriteAheadLoggingEnabled(true)
         }
@@ -616,11 +643,23 @@ class AlertHistoryStore(
             db.execSQL(
                 "CREATE INDEX IF NOT EXISTS alert_source_kind ON alerts(source_kind,id DESC)"
             )
+            db.execSQL(
+                "CREATE INDEX IF NOT EXISTS translation_catalog_revision " +
+                    "ON translations(catalog_revision) WHERE template_id IS NOT NULL"
+            )
+            // Expire only catalog outputs. An explicit retry avoids historical notifications or provider work.
+            db.execSQL(
+                "UPDATE translations SET phase='STALE', revision=revision+1, text=NULL, " +
+                    "source_language=NULL, search_text=NULL, same_language=0, " +
+                    "template_id=NULL, catalog_revision=NULL WHERE template_id IS NOT NULL AND " +
+                    "(catalog_revision IS NULL OR catalog_revision!=?)",
+                arrayOf(StandardTranslationCatalog.REVISION)
+            )
             pruneIgnored(db)
         }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            if (oldVersion !in 1..5 || newVersion != 6) {
+            if (oldVersion !in 1..6 || newVersion != 7) {
                 throw SQLiteException("A preserving history migration is required")
             }
             if (oldVersion <= 3) {
@@ -639,9 +678,15 @@ class AlertHistoryStore(
                 createQueueIndex(db)
             }
             if (oldVersion < 5) db.execSQL("ALTER TABLE alerts ADD COLUMN reception_context TEXT")
-            db.execSQL("ALTER TABLE alerts ADD COLUMN display_group_id INTEGER")
-            createGroupIndexes(db)
-            AlertObservationGroups.migrate(db)
+            if (oldVersion > 3) {
+                db.execSQL("ALTER TABLE translations ADD COLUMN template_id TEXT")
+                db.execSQL("ALTER TABLE translations ADD COLUMN catalog_revision TEXT")
+            }
+            if (oldVersion < 6) {
+                db.execSQL("ALTER TABLE alerts ADD COLUMN display_group_id INTEGER")
+                createGroupIndexes(db)
+                AlertObservationGroups.migrate(db)
+            }
         }
     }
 
@@ -653,7 +698,8 @@ class AlertHistoryStore(
         const val ALERT_COLUMNS = "t.phase AS translation_phase, " +
             "t.text AS translation_text, t.source_language AS source_language, " +
             "t.revision AS translation_revision, t.engine AS translation_engine, " +
-            "t.same_language AS same_language FROM alerts a LEFT JOIN translations t " +
+            "t.same_language AS same_language, t.template_id AS template_id, " +
+            "t.catalog_revision AS catalog_revision FROM alerts a LEFT JOIN translations t " +
             "ON t.alert_id=a.id AND t.target=? AND t.engine=?"
 
         fun selectAlert(countObservations: Boolean): String = "SELECT a.*, " +
@@ -701,6 +747,7 @@ class AlertHistoryStore(
                     revision INTEGER NOT NULL, phase TEXT NOT NULL,
                     text TEXT, source_language TEXT, search_text TEXT,
                     same_language INTEGER NOT NULL DEFAULT 0,
+                    template_id TEXT, catalog_revision TEXT,
                     PRIMARY KEY(alert_id, target, engine)
                 )
                 """.trimIndent()

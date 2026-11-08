@@ -17,6 +17,8 @@ def _require(condition, message="Emulator validation condition failed"):
 
 # Exclude live providers, model downloads, installed voices, radios, and owner-granted access tests.
 FIXTURES = {
+    "mobile.StandardTranslationDeviceTest": 8,
+    "mobile.StandardTranslationScreenDeviceTest": 1,
     "mobile.HomeCaptureStatusDeviceTest": 2,
     "mobile.MobileControllerDeviceTest": 22,
     "mobile.HistoryWorkerDeviceTest": 6,

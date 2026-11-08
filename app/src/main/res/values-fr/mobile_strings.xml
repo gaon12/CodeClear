@@ -307,4 +307,6 @@
     <string name="mobile_privacy_policy">Politique de confidentialité</string>
     <string name="mobile_information_sources">Sources et consignes officielles</string>
     <string name="mobile_independent_notice">CodeClear est une application indépendante, sans affiliation, approbation ou représentation d’un gouvernement. Elle lit les textes d’alerte système pris en charge. Les messages reçus à proximité ne sont pas vérifiés et les traductions peuvent être inexactes. Suivez l’alerte originale et les consignes officielles.</string>
+    <string name="mobile_result_standard">Traduction fondée sur un message type</string>
+    <string name="mobile_standard_updated">La formulation type a été mise à jour. Relancez la traduction pour actualiser ce résultat.</string>
 </resources>

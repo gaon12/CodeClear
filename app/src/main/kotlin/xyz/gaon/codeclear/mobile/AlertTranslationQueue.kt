@@ -1,6 +1,7 @@
 package xyz.gaon.codeclear.mobile
 
 import java.util.concurrent.atomic.AtomicLong
+import xyz.gaon.codeclear.translation.StandardTranslationCatalog
 import xyz.gaon.codeclear.translation.TranslationEngine
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 import xyz.gaon.codeclear.translation.TranslationInput
@@ -73,7 +74,7 @@ internal class AlertTranslationQueue(
             val candidate = detailTicket?.let { ticket ->
                 Candidate(
                     ticket,
-                    store.cachedTranslation(ticket.original, ticket.target, request.engine)
+                    preparedTranslation(ticket)
                 )
             }
             candidate ?: store.nextQueued(request.target.languageTag, request.engine)?.let { id ->
@@ -81,11 +82,7 @@ internal class AlertTranslationQueue(
                     ?.let { ticket ->
                         Candidate(
                             ticket,
-                            store.cachedTranslation(
-                                ticket.original,
-                                request.target.languageTag,
-                                request.engine
-                            )
+                            preparedTranslation(ticket)
                         )
                     }
             }
@@ -105,6 +102,22 @@ internal class AlertTranslationQueue(
                 }
             }
         }
+    }
+
+    // This runs on HistoryWorker. Matching never blocks capture callbacks or the main thread.
+    private fun preparedTranslation(ticket: TranslationTicket): SavedTranslation? {
+        val target = TranslationTarget.entries.single { it.languageTag == ticket.target }
+        val standard = StandardTranslationCatalog.translate(ticket.original, target)
+        if (standard != null) {
+            return SavedTranslation(
+                TranslationPhase.READY,
+                standard.text,
+                standard.sourceLanguage,
+                engine = ticket.engine,
+                standard = standard.attribution
+            )
+        }
+        return store.cachedTranslation(ticket.original, ticket.target, ticket.engine)
     }
 
     private fun run(job: Work) {

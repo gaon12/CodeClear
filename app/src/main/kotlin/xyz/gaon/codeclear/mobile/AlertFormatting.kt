@@ -57,6 +57,8 @@ internal fun translationStatusLabel(
             R.string.mobile_remote_too_long
         }
 
+        TranslationPhase.STALE -> R.string.mobile_standard_updated
+
         TranslationPhase.FAILED -> R.string.mobile_failed
 
         TranslationPhase.READY -> R.string.mobile_failed

@@ -98,8 +98,7 @@ class StandardMessageTranslator(
 
             StandardSlotKind.DISTANCE, StandardSlotKind.NUMBER -> true
 
-            StandardSlotKind.INTENSITY ->
-                value in setOf("1", "2", "3", "4", "5", "6", "7", "Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ", "Ⅴ", "Ⅵ", "Ⅶ")
+            StandardSlotKind.INTENSITY -> value in intensities
 
             StandardSlotKind.AREA, StandardSlotKind.AGENCY ->
                 names.resolve(template.jurisdiction, kind, value, template.sourceLanguage) != null
@@ -144,7 +143,15 @@ class StandardMessageTranslator(
                 expression.append("(?>(?<s").append(index).append('>')
                     .append(slotExpression(template.slots.getValue(token.groupValues[1])))
                     .append(')').append(Pattern.quote(following))
-                if (index == tokens.lastIndex) expression.append("\\z")
+                if (index == tokens.lastIndex) {
+                    expression.append("\\z")
+                } else {
+                    // A space inside a registered multiword name is not its boundary before a URL or number.
+                    val next = tokens[index + 1].groupValues[1]
+                    expression.append(
+                        "(?="
+                    ).append(slotExpression(template.slots.getValue(next))).append(')')
+                }
                 expression.append(')')
             }
         }
@@ -152,8 +159,11 @@ class StandardMessageTranslator(
     }
 
     private companion object {
+        val intensities = (1..12).map(Int::toString).toSet() +
+            listOf("I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII") +
+            ('Ⅰ'..'Ⅻ').map(Char::toString)
         val languages = TranslationTarget.entries.map { it.languageTag }.toSet()
-        val variable = Regex("\\{([a-z][a-z0-9_]*)}")
+        val variable = Regex("\\{([a-z][a-z0-9_]*)\\}")
         val spaces = Regex("[ \\t\\r\\n]+")
         val time = DateTimeFormatter.ofPattern(
             "HH:mm",
@@ -187,7 +197,7 @@ class StandardMessageTranslator(
 
             StandardSlotKind.NUMBER -> "[0-9]{1,4}"
 
-            StandardSlotKind.INTENSITY -> "[1-7ⅠⅡⅢⅣⅤⅥⅦ]"
+            StandardSlotKind.INTENSITY -> "(?:1[0-2]|[1-9]|[IVX]{1,4}|[Ⅰ-Ⅻ])"
 
             StandardSlotKind.AREA, StandardSlotKind.AGENCY ->
                 "[\\p{L}\\p{N}][\\p{L}\\p{N} .·’'()/-]{0,119}?"

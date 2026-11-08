@@ -305,4 +305,6 @@
     <string name="mobile_privacy_policy">隐私政策</string>
     <string name="mobile_information_sources">信息来源和官方指引</string>
     <string name="mobile_independent_notice">CodeClear 是独立应用，不隶属于任何政府，不受政府背书，也不代表政府。应用读取受支持的系统警报文本。附近共享的消息未经验证，翻译也可能不准确。请以原文和官方指引为准。</string>
+    <string name="mobile_result_standard">基于标准文案的翻译</string>
+    <string name="mobile_standard_updated">标准文案已更新，请重新翻译以刷新结果。</string>
 </resources>

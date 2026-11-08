@@ -168,10 +168,11 @@ internal object AlertObservationGroups {
         db.execSQL(
             "INSERT OR REPLACE INTO translations " +
                 "(alert_id,target,engine,revision,phase,text," +
-                "source_language,search_text,same_language) " +
+                "source_language,search_text,same_language,template_id,catalog_revision) " +
                 "SELECT ?,c.target,c.engine,c.revision,c.phase,c.text," +
                 "c.source_language,c.search_text," +
-                "c.same_language FROM translations c WHERE c.alert_id=? AND (NOT EXISTS " +
+                "c.same_language,c.template_id,c.catalog_revision FROM translations c " +
+                "WHERE c.alert_id=? AND (NOT EXISTS " +
                 "(SELECT 1 FROM translations p WHERE p.alert_id=? " +
                 "AND p.target=c.target AND p.engine=c.engine) " +
                 "OR (c.phase='READY' AND EXISTS (SELECT 1 FROM translations p WHERE p.alert_id=? " +

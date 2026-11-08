@@ -212,7 +212,11 @@ fun AlertPresentation(
                         }?.let { result ->
                             Text(
                                 stringResource(
-                                    if (result.engine == TranslationEngineKind.OWNED_SERVER) {
+                                    if (result.standard != null) {
+                                        R.string.mobile_result_standard
+                                    } else if (result.engine ==
+                                        TranslationEngineKind.OWNED_SERVER
+                                    ) {
                                         R.string.mobile_owned_server
                                     } else if (result.engine == TranslationEngineKind.MY_MEMORY) {
                                         R.string.mobile_result_mymemory

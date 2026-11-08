@@ -226,6 +226,22 @@ class ObservationGroupsDeviceTest {
                 "UPDATE alerts SET captured_ms=? WHERE id=?",
                 arrayOf(time + 1_000, second.id)
             )
+            db.execSQL("ALTER TABLE translations RENAME TO current_translations")
+            db.execSQL(
+                "CREATE TABLE translations (" +
+                    "alert_id INTEGER NOT NULL REFERENCES alerts(id) ON DELETE CASCADE," +
+                    "target TEXT NOT NULL, engine TEXT NOT NULL, revision INTEGER NOT NULL," +
+                    "phase TEXT NOT NULL, text TEXT, source_language TEXT, search_text TEXT," +
+                    "same_language INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(alert_id,target,engine))"
+            )
+            db.execSQL(
+                "INSERT INTO translations SELECT alert_id,target,engine,revision,phase,text," +
+                    "source_language,search_text,same_language FROM current_translations"
+            )
+            db.execSQL("DROP TABLE current_translations")
+            db.execSQL(
+                "CREATE INDEX translation_queue ON translations(engine,target,phase,alert_id DESC)"
+            )
             db.version = 5
         }
         store = AlertHistoryStore(context, name)
