@@ -43,8 +43,18 @@ fun MobileSettings(
     var messageViewPicker by remember { mutableStateOf(false) }
     val captureAvailable = environment.radio != ProbeRadio.ABSENT
     if (page == SettingsPage.CAPTURE) {
-        SettingsGroup {
-            if (!captureAvailable) SettingNote(stringResource(R.string.mobile_wifi_only))
+        SettingsGroup(
+            title = stringResource(R.string.mobile_settings_access_group),
+            footer = when {
+                !captureAvailable -> stringResource(R.string.mobile_wifi_only)
+
+                options.accessibilityConsent && !environment.accessibilityGranted ->
+                    stringResource(R.string.mobile_accessibility_restart_notice)
+
+                else -> null
+            },
+            tag = "capture-access-group"
+        ) {
             AccessRow(
                 stringResource(R.string.mobile_notification_access),
                 options.notificationConsent,
@@ -64,35 +74,45 @@ fun MobileSettings(
                 { disclosure = CaptureAccess.ACCESSIBILITY },
                 { actions.configure(options.copy(accessibilityConsent = false)) }
             )
-            if (captureAvailable && options.accessibilityConsent) {
-                if (!environment.accessibilityGranted) {
-                    SettingNote(stringResource(R.string.mobile_accessibility_restart_notice))
-                } else if (!session.accessibilityConnected) {
+            if (captureAvailable && options.accessibilityConsent &&
+                environment.accessibilityGranted && !session.accessibilityConnected
+            ) {
+                SettingRow(
+                    stringResource(R.string.mobile_open_settings),
+                    stringResource(R.string.mobile_reconnect_needed),
+                    onClick = { actions.settings(Settings.ACTION_ACCESSIBILITY_SETTINGS) }
+                )
+            }
+        }
+        if ((captureAvailable && Build.VERSION.SDK_INT >= 33) || showTutorialLink) {
+            SettingsGroup(title = stringResource(R.string.mobile_settings_help_group)) {
+                if (captureAvailable && Build.VERSION.SDK_INT >= 33) {
+                    SettingRow(stringResource(R.string.mobile_permission_help), onClick = {
+                        info = SettingsInfo.RESTRICTED_ACCESS
+                    }, navigation = true)
+                }
+                if (showTutorialLink) {
+                    if (captureAvailable && Build.VERSION.SDK_INT >= 33) SettingDivider()
                     SettingRow(
-                        stringResource(R.string.mobile_open_settings),
-                        stringResource(R.string.mobile_reconnect_needed),
-                        onClick = { actions.settings(Settings.ACTION_ACCESSIBILITY_SETTINGS) }
+                        stringResource(R.string.mobile_tutorial),
+                        onClick = tutorial,
+                        navigation = true
                     )
                 }
-            }
-            if (captureAvailable && Build.VERSION.SDK_INT >= 33) {
-                SettingDivider()
-                SettingRow(stringResource(R.string.mobile_permission_help), onClick = {
-                    info = SettingsInfo.RESTRICTED_ACCESS
-                })
-            }
-            if (showTutorialLink) {
-                SettingDivider()
-                SettingRow(stringResource(R.string.mobile_tutorial), onClick = tutorial)
             }
         }
     }
     if (page == SettingsPage.SHARING) NearbySettings(state, actions)
     if (page == SettingsPage.LABS) {
-        SettingsGroup {
+        SettingsGroup(
+            footer = stringResource(R.string.mobile_labs_notice),
+            tag = "labs-control-group"
+        ) {
             SettingSwitchRow(
                 stringResource(R.string.mobile_labs_enable),
-                stringResource(R.string.mobile_labs_notice),
+                stringResource(
+                    if (options.labsEnabled) R.string.mobile_on else R.string.mobile_off
+                ),
                 checked = options.labsEnabled,
                 enabled = state.loaded && !state.storageError
             ) {
@@ -106,25 +126,29 @@ fun MobileSettings(
                     )
                 )
             }
-            SettingDivider()
+        }
+        SettingsGroup(title = stringResource(R.string.mobile_settings_features_group)) {
             SettingRow(
                 stringResource(R.string.mobile_nearby),
                 onClick = { navigate(SettingsPage.SHARING) },
-                enabled = options.labsEnabled
+                enabled = options.labsEnabled,
+                navigation = true
             )
             SettingDivider()
             SettingRow(
                 stringResource(R.string.mobile_server_translation),
                 "MyMemory",
                 onClick = { navigate(SettingsPage.SERVER) },
-                enabled = options.labsEnabled
+                enabled = options.labsEnabled,
+                navigation = true
             )
             if (actions.serverAccess.configured) {
                 SettingDivider()
                 SettingRow(
                     stringResource(R.string.mobile_owned_server),
                     onClick = { navigate(SettingsPage.OWNED_SERVER) },
-                    enabled = options.labsEnabled
+                    enabled = options.labsEnabled,
+                    navigation = true
                 )
             }
         }
@@ -137,7 +161,10 @@ fun MobileSettings(
         LocalTranslationSettings(options, actions)
     }
     if (page == SettingsPage.APPEARANCE) {
-        SettingsGroup {
+        SettingsGroup(
+            title = stringResource(R.string.mobile_settings_display_group),
+            tag = "appearance-display-group"
+        ) {
             SettingRow(
                 stringResource(R.string.mobile_message_view),
                 stringResource(
@@ -147,15 +174,23 @@ fun MobileSettings(
                         R.string.mobile_message_both
                     }
                 ),
-                onClick = { messageViewPicker = true }
+                onClick = { messageViewPicker = true },
+                navigation = true,
+                value = true
             )
             SettingDivider()
             SettingRow(
                 stringResource(R.string.mobile_screen_mode),
                 stringResource(themeLabel(options.theme)),
-                onClick = { themePicker = true }
+                onClick = { themePicker = true },
+                navigation = true,
+                value = true
             )
-            SettingDivider()
+        }
+        SettingsGroup(
+            title = stringResource(R.string.mobile_settings_language_group),
+            tag = "appearance-language-group"
+        ) {
             SettingRow(
                 stringResource(R.string.mobile_ui_language_title),
                 if (options.uiLanguage.isEmpty()) {
@@ -165,33 +200,45 @@ fun MobileSettings(
                 } else {
                     languageName(options.uiLanguage)
                 },
-                onClick = { uiLanguagePicker = true }
+                onClick = { uiLanguagePicker = true },
+                navigation = true,
+                value = true
             )
         }
     }
     if (page == SettingsPage.NOTIFICATIONS) {
-        SettingsGroup {
+        SettingsGroup(
+            footer = stringResource(R.string.mobile_result_notification_summary),
+            tag = "notification-control-group"
+        ) {
             SettingSwitchRow(
                 stringResource(R.string.mobile_result_notifications),
                 stringResource(
-                    if (actions.notificationsAllowed) R.string.mobile_on else R.string.mobile_off
+                    if (actions.notificationsAllowed) {
+                        R.string.mobile_on
+                    } else {
+                        R.string.mobile_off
+                    }
                 ),
                 checked = actions.notificationsAllowed,
                 onCheckedChange = { actions.notificationPermission() }
             )
-            SettingNote(stringResource(R.string.mobile_result_notification_summary))
         }
         PresentationSettings(options, actions)
     }
     if (page == SettingsPage.PRIVACY) {
-        SettingsGroup {
+        SettingsGroup(title = stringResource(R.string.mobile_settings_data_group)) {
             SettingRow(stringResource(R.string.mobile_data_storage), onClick = {
                 info =
                     SettingsInfo.PRIVACY
-            })
+            }, navigation = true)
             SettingDivider()
             PrivacyPolicyLink()
-            SettingDivider()
+        }
+        SettingsGroup(
+            title = stringResource(R.string.mobile_history),
+            tag = "history-delete-group"
+        ) {
             SettingRow(stringResource(R.string.mobile_delete_all), onClick = {
                 actions.delete(null)
             }, destructive = true)

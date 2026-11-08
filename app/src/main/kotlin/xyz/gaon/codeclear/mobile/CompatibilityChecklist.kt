@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -41,7 +42,7 @@ internal fun CompatibilityChecklist(
     val options = state.options
     Column(
         Modifier.fillMaxWidth().testTag("compatibility-page"),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         SettingSection(stringResource(R.string.mobile_compat_hardware)) {
             CompatibilityCheck(
@@ -126,8 +127,9 @@ internal fun CompatibilityChecklist(
 @Composable
 private fun CompatibilityCheck(id: String, label: String, available: Boolean?) {
     Row(
-        Modifier.fillMaxWidth().testTag("compatibility-$id"),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        Modifier.fillMaxWidth().padding(vertical = 4.dp).testTag("compatibility-$id"),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.Top
     ) {
         Text(
             if (available == true) {
@@ -138,16 +140,20 @@ private fun CompatibilityCheck(id: String, label: String, available: Boolean?) {
                 "?"
             }
         )
-        Text(label, Modifier.weight(1f))
-        Text(
-            stringResource(
-                when (available) {
-                    true -> R.string.mobile_compat_yes
-                    false -> R.string.mobile_compat_no
-                    null -> R.string.mobile_compat_unknown
-                }
-            ),
-            Modifier.testTag("compatibility-$id-status")
-        )
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(label, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                stringResource(
+                    when (available) {
+                        true -> R.string.mobile_compat_yes
+                        false -> R.string.mobile_compat_no
+                        null -> R.string.mobile_compat_unknown
+                    }
+                ),
+                Modifier.testTag("compatibility-$id-status"),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }

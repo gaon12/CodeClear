@@ -38,7 +38,8 @@ internal fun MobilePageHeader(
                 Icon(
                     painterResource(R.drawable.ic_back),
                     stringResource(R.string.mobile_back),
-                    Modifier.size(24.dp)
+                    Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onBackground
                 )
             }
         }

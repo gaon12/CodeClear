@@ -22,8 +22,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -32,15 +35,38 @@ fun SettingRow(
     summary: String? = null,
     onClick: () -> Unit,
     enabled: Boolean = true,
-    destructive: Boolean = false
+    destructive: Boolean = false,
+    navigation: Boolean = false,
+    value: Boolean = false
 ) {
     Row(
         Modifier.fillMaxWidth().clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .heightIn(min = 64.dp).padding(horizontal = 24.dp, vertical = 16.dp)
             .alpha(if (enabled) 1f else 0.4f),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        SettingLabel(title, summary, Modifier.weight(1f), destructive)
+        SettingLabel(title, summary, Modifier.weight(1f), destructive, value)
+        if (navigation) {
+            val color = MaterialTheme.colorScheme.onSurfaceVariant
+            val direction = LocalLayoutDirection.current
+            Canvas(Modifier.size(16.dp)) {
+                val start = if (direction ==
+                    LayoutDirection.Ltr
+                ) {
+                    5f
+                } else {
+                    11f
+                }
+                val end = 16f - start
+                val path = Path().apply {
+                    moveTo(start / 16 * size.width, size.height / 4)
+                    lineTo(end / 16 * size.width, size.height / 2)
+                    lineTo(start / 16 * size.width, size.height * 3 / 4)
+                }
+                drawPath(path, color, style = Stroke(1.5.dp.toPx()))
+            }
+        }
     }
 }
 
@@ -92,7 +118,8 @@ private fun SettingLabel(
     title: String,
     summary: String?,
     modifier: Modifier,
-    destructive: Boolean = false
+    destructive: Boolean = false,
+    value: Boolean = false
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
@@ -107,8 +134,12 @@ private fun SettingLabel(
         if (summary != null) {
             Text(
                 summary,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary
+                style = MaterialTheme.typography.bodySmall,
+                color = if (value) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                }
             )
         }
     }

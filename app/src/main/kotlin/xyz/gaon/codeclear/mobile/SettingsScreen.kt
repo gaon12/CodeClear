@@ -319,7 +319,17 @@ private fun SettingsDetail(
             ) {
                 item { SettingsStatus(state, actions) }
                 item(key = page) {
-                    MobileSettings(page, state, environment, session, actions, tutorial, navigate)
+                    Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+                        MobileSettings(
+                            page,
+                            state,
+                            environment,
+                            session,
+                            actions,
+                            tutorial,
+                            navigate
+                        )
+                    }
                 }
             }
         }

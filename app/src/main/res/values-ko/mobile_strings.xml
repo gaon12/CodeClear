@@ -311,4 +311,13 @@
     <string name="mobile_settings_alerts_group">재난문자</string>
     <string name="mobile_settings_general_group">일반</string>
     <string name="mobile_settings_information_group">정보</string>
+    <string name="mobile_settings_access_group">접근 권한</string>
+    <string name="mobile_settings_help_group">도움말</string>
+    <string name="mobile_settings_features_group">실험 기능</string>
+    <string name="mobile_settings_display_group">화면 표시</string>
+    <string name="mobile_settings_language_group">언어</string>
+    <string name="mobile_settings_data_group">기기에 저장된 데이터</string>
+    <string name="mobile_settings_translation_group">번역 옵션</string>
+    <string name="mobile_settings_background_group">백그라운드 동작</string>
+    <string name="mobile_settings_project_group">프로젝트</string>
 </resources>

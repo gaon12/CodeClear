@@ -312,4 +312,13 @@
     <string name="mobile_settings_alerts_group">Warnmeldungen</string>
     <string name="mobile_settings_general_group">Allgemein</string>
     <string name="mobile_settings_information_group">Informationen</string>
+    <string name="mobile_settings_access_group">Berechtigungen</string>
+    <string name="mobile_settings_help_group">Hilfe</string>
+    <string name="mobile_settings_features_group">Experimentelle Funktionen</string>
+    <string name="mobile_settings_display_group">Anzeige</string>
+    <string name="mobile_settings_language_group">Sprache</string>
+    <string name="mobile_settings_data_group">Daten auf diesem Gerät</string>
+    <string name="mobile_settings_translation_group">Übersetzungsoptionen</string>
+    <string name="mobile_settings_background_group">Hintergrundaktivität</string>
+    <string name="mobile_settings_project_group">Projekt</string>
 </resources>

@@ -26,8 +26,10 @@ internal fun ServerTranslationSettings(options: MobileOptions, actions: MobileAc
     var disclosure by remember { mutableStateOf(false) }
     var targetPicker by remember { mutableStateOf(false) }
     val active = options.engine == TranslationEngineKind.MY_MEMORY && options.translationAllowed
-    SettingsGroup {
-        SettingNote(stringResource(R.string.mobile_server_description))
+    SettingsGroup(
+        description = stringResource(R.string.mobile_server_description),
+        footer = stringResource(R.string.mobile_server_translation_notice)
+    ) {
         SettingSwitchRow(
             stringResource(R.string.mobile_server_permission),
             stringResource(if (active) R.string.mobile_on else R.string.mobile_off),
@@ -52,9 +54,10 @@ internal fun ServerTranslationSettings(options: MobileOptions, actions: MobileAc
             onClick = {
                 targetPicker =
                     true
-            }
+            },
+            navigation = true,
+            value = true
         )
-        SettingNote(stringResource(R.string.mobile_server_translation_notice))
         ProviderTermsLink()
     }
     if (targetPicker) {

@@ -17,7 +17,10 @@ import xyz.gaon.codeclear.R
 internal fun PresentationSettings(options: MobileOptions, actions: MobileActions) {
     var disclosure by remember { mutableStateOf(false) }
     val access = actions.presentationAccess
-    SettingsGroup {
+    SettingsGroup(
+        footer = stringResource(R.string.mobile_deferred_popup_summary),
+        tag = "popup-control-group"
+    ) {
         SettingSwitchRow(
             stringResource(R.string.mobile_deferred_popup),
             stringResource(
@@ -36,7 +39,6 @@ internal fun PresentationSettings(options: MobileOptions, actions: MobileActions
                 }
             }
         )
-        SettingNote(stringResource(R.string.mobile_deferred_popup_summary))
         if (options.deferredOverlayEnabled) {
             SettingDivider()
             SettingRow(
@@ -44,11 +46,15 @@ internal fun PresentationSettings(options: MobileOptions, actions: MobileActions
                 stringResource(
                     if (access.overlayAllowed) R.string.mobile_on else R.string.mobile_off
                 ),
-                onClick = actions.overlaySettings
+                onClick = actions.overlaySettings,
+                navigation = true
             )
         }
     }
-    SettingsGroup {
+    SettingsGroup(
+        title = stringResource(R.string.mobile_settings_background_group),
+        footer = stringResource(R.string.mobile_battery_guidance)
+    ) {
         SettingRow(
             stringResource(R.string.mobile_battery_settings),
             stringResource(
@@ -58,9 +64,9 @@ internal fun PresentationSettings(options: MobileOptions, actions: MobileActions
                     R.string.mobile_battery_optimized
                 }
             ),
-            onClick = actions.batterySettings
+            onClick = actions.batterySettings,
+            navigation = true
         )
-        SettingNote(stringResource(R.string.mobile_battery_guidance))
         if (access.backgroundRestricted) {
             SettingNote(stringResource(R.string.mobile_background_restricted))
         }

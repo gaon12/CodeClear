@@ -15,32 +15,63 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
 
 @Composable
-fun SettingsGroup(content: @Composable () -> Unit) {
-    Card(
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Column(Modifier.padding(vertical = 2.dp)) { content() }
+fun SettingsGroup(
+    title: String? = null,
+    description: String? = null,
+    footer: String? = null,
+    tag: String? = null,
+    content: @Composable () -> Unit
+) {
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (title != null) SettingsSectionHeading(title)
+        if (description != null) SettingsDescription(description)
+        Card(
+            shape = RoundedCornerShape(24.dp),
+            modifier = Modifier.fillMaxWidth().then(
+                if (tag == null) Modifier else Modifier.testTag(tag)
+            ),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Column(Modifier.padding(vertical = 2.dp)) { content() }
+        }
+        if (footer != null) SettingsDescription(footer)
     }
+}
+
+@Composable
+private fun SettingsSectionHeading(title: String) {
+    Text(
+        title,
+        Modifier.padding(horizontal = 24.dp, vertical = 4.dp).semantics { heading() },
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+}
+
+@Composable
+internal fun SettingsDescription(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text,
+        modifier.padding(horizontal = 24.dp, vertical = 4.dp),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
 }
 
 @Composable
 fun SettingSection(title: String, content: @Composable () -> Unit) {
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            title,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        SettingsSectionHeading(title)
         Card(
-            shape = RoundedCornerShape(26.dp),
+            shape = RoundedCornerShape(24.dp),
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {

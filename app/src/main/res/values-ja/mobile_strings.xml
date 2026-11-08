@@ -311,4 +311,13 @@
     <string name="mobile_settings_alerts_group">緊急速報</string>
     <string name="mobile_settings_general_group">一般</string>
     <string name="mobile_settings_information_group">情報</string>
+    <string name="mobile_settings_access_group">アクセス権限</string>
+    <string name="mobile_settings_help_group">ヘルプ</string>
+    <string name="mobile_settings_features_group">試験的な機能</string>
+    <string name="mobile_settings_display_group">表示</string>
+    <string name="mobile_settings_language_group">言語</string>
+    <string name="mobile_settings_data_group">この端末のデータ</string>
+    <string name="mobile_settings_translation_group">翻訳オプション</string>
+    <string name="mobile_settings_background_group">バックグラウンド動作</string>
+    <string name="mobile_settings_project_group">プロジェクト</string>
 </resources>

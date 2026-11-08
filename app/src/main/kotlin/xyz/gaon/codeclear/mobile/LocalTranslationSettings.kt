@@ -47,8 +47,8 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
         access.configured && access.loaded && access.ready && !access.busy &&
         access.credentialId == options.ownedServerCredentialId
     LaunchedEffect(Unit) { actions.refreshSystem(false) }
-    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        SettingsGroup {
+    Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
+        SettingsGroup(tag = "translation-control-group") {
             SettingSwitchRow(
                 stringResource(R.string.mobile_auto_translation),
                 stringResource(
@@ -85,30 +85,33 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                     }
                 }
             )
-            SettingDivider()
+        }
+        SettingsGroup(
+            title = stringResource(R.string.mobile_settings_translation_group),
+            tag = "translation-options-group",
+            footer = stringResource(
+                when (options.engine) {
+                    TranslationEngineKind.OWNED_SERVER -> R.string.mobile_owned_description
+                    TranslationEngineKind.MY_MEMORY -> R.string.mobile_server_description
+                    TranslationEngineKind.ML_KIT -> R.string.mobile_local_description
+                    TranslationEngineKind.SYSTEM -> R.string.mobile_system_description
+                }
+            )
+        ) {
             SettingRow(
                 stringResource(R.string.mobile_target_language),
                 languageName(options.target.languageTag),
-                onClick = { targetPicker = true }
+                onClick = { targetPicker = true },
+                navigation = true,
+                value = true
             )
             SettingDivider()
             SettingRow(
                 stringResource(R.string.mobile_engine_title),
                 stringResource(engineLabel(options.engine)),
-                onClick = { enginePicker = true }
-            )
-            SettingNote(
-                stringResource(
-                    if (options.engine == TranslationEngineKind.OWNED_SERVER) {
-                        R.string.mobile_owned_description
-                    } else if (options.engine == TranslationEngineKind.MY_MEMORY) {
-                        R.string.mobile_server_description
-                    } else if (options.engine == TranslationEngineKind.ML_KIT) {
-                        R.string.mobile_local_description
-                    } else {
-                        R.string.mobile_system_description
-                    }
-                )
+                onClick = { enginePicker = true },
+                navigation = true,
+                value = true
             )
             if (options.engine == TranslationEngineKind.SYSTEM) {
                 Column(Modifier.padding(horizontal = 24.dp)) {

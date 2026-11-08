@@ -313,4 +313,13 @@
     <string name="mobile_settings_alerts_group">Alertes d’urgence</string>
     <string name="mobile_settings_general_group">Préférences</string>
     <string name="mobile_settings_information_group">Informations</string>
+    <string name="mobile_settings_access_group">Autorisations</string>
+    <string name="mobile_settings_help_group">Aide</string>
+    <string name="mobile_settings_features_group">Fonctions expérimentales</string>
+    <string name="mobile_settings_display_group">Affichage</string>
+    <string name="mobile_settings_language_group">Langue</string>
+    <string name="mobile_settings_data_group">Données sur cet appareil</string>
+    <string name="mobile_settings_translation_group">Options de traduction</string>
+    <string name="mobile_settings_background_group">Activité en arrière-plan</string>
+    <string name="mobile_settings_project_group">Projet</string>
 </resources>

@@ -19,9 +19,12 @@ internal fun ModelManagement(actions: MobileActions) {
         preparation.phase in setOf(PreparationPhase.IDENTIFYING, PreparationPhase.WAITING_FOR_WIFI)
     LaunchedEffect(Unit) { actions.refreshModels(false) }
     Column(Modifier.testTag("model-management")) {
-        SettingsGroup {
+        SettingsGroup(
+            title = stringResource(R.string.mobile_models_title),
+            description = stringResource(R.string.mobile_models_update_notice)
+        ) {
             SettingRow(
-                stringResource(R.string.mobile_models_title),
+                stringResource(R.string.mobile_models_refresh),
                 stringResource(
                     when {
                         busy && preparation.checkUpdates -> R.string.mobile_model_checking_updates
@@ -30,13 +33,12 @@ internal fun ModelManagement(actions: MobileActions) {
                         inventory.failed -> R.string.mobile_models_query_failed
                         else -> R.string.mobile_models_refresh
                     }
-                ),
+                ).takeIf { busy || inventory.checking || !inventory.loaded || inventory.failed },
                 onClick = {
                     if (busy) actions.showModelDownload() else actions.refreshModels(true)
                 },
                 enabled = busy || !inventory.checking
             )
-            SettingNote(stringResource(R.string.mobile_models_update_notice))
             (primaryModelLanguages + inventory.downloaded).forEach { language ->
                 SettingDivider()
                 val label =

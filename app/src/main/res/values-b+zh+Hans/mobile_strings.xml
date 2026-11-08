@@ -311,4 +311,13 @@
     <string name="mobile_settings_alerts_group">紧急警报</string>
     <string name="mobile_settings_general_group">通用</string>
     <string name="mobile_settings_information_group">信息</string>
+    <string name="mobile_settings_access_group">访问权限</string>
+    <string name="mobile_settings_help_group">帮助</string>
+    <string name="mobile_settings_features_group">实验性功能</string>
+    <string name="mobile_settings_display_group">显示</string>
+    <string name="mobile_settings_language_group">语言</string>
+    <string name="mobile_settings_data_group">本机数据</string>
+    <string name="mobile_settings_translation_group">翻译选项</string>
+    <string name="mobile_settings_background_group">后台运行</string>
+    <string name="mobile_settings_project_group">项目</string>
 </resources>
