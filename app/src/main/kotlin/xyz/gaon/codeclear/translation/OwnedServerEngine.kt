@@ -21,6 +21,8 @@ data class ServerAccessState(
     val cacheResult: ServerCacheClearResult? = null
 )
 
+private val identifiedLanguage = Regex("[a-z]{2,8}")
+
 /** Persisted consent is bound to a credential; replacing it never authorizes another account. */
 internal class OwnedServerEngine(
     context: Context,
@@ -111,7 +113,7 @@ internal class OwnedServerEngine(
                         TranslationResult.Unavailable
                     } else {
                         val source = runCatching { identify(input.body) }.getOrNull()
-                            ?.takeIf { it.matches(Regex("[a-z]{2,8}")) } ?: "und"
+                            ?.takeIf { it.matches(identifiedLanguage) } ?: "und"
                         if (!allowed()) {
                             TranslationResult.Unavailable
                         } else if (source == input.target.modelCode) {

@@ -1,5 +1,7 @@
 package xyz.gaon.codeclear.translation
 
+private val identifiedLanguageTag = Regex("[a-z]{2,8}(?:-[A-Za-z0-9]{1,8})*")
+
 /** One attempt owns one budget reservation and never retries or falls back to another provider. */
 class MyMemoryOperation(
     private val transport: MyMemoryTransport,
@@ -14,7 +16,7 @@ class MyMemoryOperation(
         fun current() = allowed() && !cancellation.cancelled && elapsed() < deadline
         if (!current()) return TranslationResult.Unavailable
         val source = identify(input.body)?.takeIf {
-            it.length in 2..32 && it.matches(Regex("[a-z]{2,8}(?:-[A-Za-z0-9]{1,8})*")) &&
+            it.length in 2..32 && it.matches(identifiedLanguageTag) &&
                 it != "und"
         } ?: return TranslationResult.UnknownLanguage
         if (!current()) return TranslationResult.Unavailable

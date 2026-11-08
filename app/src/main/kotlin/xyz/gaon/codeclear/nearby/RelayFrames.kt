@@ -1,6 +1,7 @@
 package xyz.gaon.codeclear.nearby
 
 import java.nio.ByteBuffer
+import xyz.gaon.codeclear.toLowerHex
 
 data class RelayEntry(val root: String, val size: Int)
 data class RelayBlockRequest(val index: Int, val offset: Int, val size: Int)
@@ -24,7 +25,7 @@ object RelayFrames {
         val count = input.get().toInt()
         require(count in 0..8 && input.remaining() == count * 36)
         val result = List(count) {
-            val root = ByteArray(32).also(input::get).joinToString("") { "%02x".format(it) }
+            val root = ByteArray(32).also(input::get).toLowerHex()
             val size = input.int
             require(size in 64..RelayProtocol.MAX_BYTES)
             RelayEntry(root, size)

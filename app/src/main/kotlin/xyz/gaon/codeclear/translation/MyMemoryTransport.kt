@@ -127,8 +127,10 @@ class HttpsMyMemoryTransport(builder: OkHttpClient.Builder = OkHttpClient.Builde
     }
 
     private fun validLanguage(value: String): Boolean = value.length in 2..32 &&
-        value.matches(Regex("[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*"))
+        value.matches(languageTagPattern)
 }
+
+private val languageTagPattern = Regex("[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*")
 
 internal fun parseMyMemoryResponse(body: String): MyMemoryReply = try {
     val response = JSONObject(body)

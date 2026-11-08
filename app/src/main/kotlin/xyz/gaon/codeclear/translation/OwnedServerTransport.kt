@@ -7,7 +7,6 @@ import java.io.IOException
 import java.io.StringReader
 import java.net.URI
 import java.nio.ByteBuffer
-import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -17,6 +16,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import xyz.gaon.codeclear.BuildConfig
+import xyz.gaon.codeclear.sha256Hex
 
 internal class OwnedServerEndpoint private constructor(internal val url: HttpUrl) {
     val scope: String = serverDigest(url.toString())
@@ -281,10 +281,7 @@ internal fun parseOwnedServerResponse(
             name.isNotBlank() && translatedName.isNotBlank() && original.contains(name)
         }
     )
-    for (pattern in listOf(
-        Regex("[0-9]+(?:[.,:/-][0-9]+)*(?:%)?"),
-        Regex("https?://[^\\s<>\"\\[\\]]+")
-    )) {
+    for (pattern in preservedTokenPatterns) {
         val expected = pattern.findAll(original).groupingBy { it.value }.eachCount()
         val actual = pattern.findAll(translated).groupingBy { it.value }.eachCount()
         require(expected.all { (token, count) -> (actual[token] ?: 0) >= count })
@@ -293,6 +290,12 @@ internal fun parseOwnedServerResponse(
 } catch (_: Exception) {
     OwnedServerReply.Failed
 }
+
+// Numbers and URLs in the original must survive server translation; compiled once per process.
+private val preservedTokenPatterns = listOf(
+    Regex("[0-9]+(?:[.,:/-][0-9]+)*(?:%)?"),
+    Regex("https?://[^\\s<>\"\\[\\]]+")
+)
 
 private fun safeServerText(value: String): Boolean =
     Charsets.UTF_8.newEncoder().canEncode(value) && value.none {
@@ -310,5 +313,4 @@ private fun readBounded(input: java.io.InputStream, limit: Int): ByteArray? = in
     null
 }
 
-internal fun serverDigest(value: String): String = MessageDigest.getInstance("SHA-256")
-    .digest(value.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
+internal fun serverDigest(value: String): String = sha256Hex(value)

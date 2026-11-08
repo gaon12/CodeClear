@@ -5,13 +5,13 @@ import android.os.Looper
 import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.google.mlkit.nl.translate.TranslateLanguage
-import java.security.MessageDigest
 import java.util.Collections
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
+import xyz.gaon.codeclear.sha256Hex
 
 /** Bundled identification only: one active input, one replaceable input, and no model downloads. */
 class OriginalLanguageIdentifier {
@@ -34,10 +34,7 @@ class OriginalLanguageIdentifier {
         worker.queue.clear()
         try {
             worker.execute {
-                val key = MessageDigest.getInstance(
-                    "SHA-256"
-                ).digest(body.toByteArray(Charsets.UTF_8))
-                    .joinToString("") { "%02x".format(it) }
+                val key = sha256Hex(body)
                 val source = if (cache.containsKey(key)) {
                     cache[key]
                 } else {

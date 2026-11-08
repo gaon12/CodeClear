@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 import java.nio.charset.CodingErrorAction
 import java.security.MessageDigest
 import java.security.SecureRandom
+import xyz.gaon.codeclear.toLowerHex
 
 /** Integrity and occurrence identity only; a digest never authenticates an issuing authority. */
 data class NearbyOriginal(
@@ -76,7 +77,7 @@ object RelayProtocol {
 
     fun root(bytes: ByteArray): String {
         require(bytes.size in (HEADER + 33)..MAX_BYTES)
-        return bytes.takeLast(32).toByteArray().joinToString("") { "%02x".format(it) }
+        return bytes.copyOfRange(bytes.size - 32, bytes.size).toLowerHex()
     }
 
     fun rootBytes(root: String): ByteArray {

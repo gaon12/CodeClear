@@ -28,6 +28,7 @@ import java.security.SecureRandom
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import xyz.gaon.codeclear.toLowerHex
 
 /**
  * Anonymous one-hop transport. All platform calls run behind current permission
@@ -53,7 +54,9 @@ class BleRelay(
     private val exports = linkedMapOf<Long, Export>()
     private val cooldown = linkedMapOf<String, Long>()
     private val attempts = ArrayDeque<Long>()
+    private val random = SecureRandom()
     private var token = ByteArray(8)
+    private var tokenHex = token.toLowerHex()
     private var scanning = false
     private var scanFailures = 0
     private var diagnosticSightings = 0
@@ -210,7 +213,7 @@ class BleRelay(
                 scanPending.set(false)
                 if (diagnosticSightings < 4) diagnostic("discovery", ++diagnosticSightings)
                 if (client != null || peer != null) return@tryPost
-                val key = signal.joinToString("") { "%02x".format(it) }
+                val key = signal.toLowerHex()
                 val now = SystemClock.elapsedRealtime()
                 cooldown.entries.removeAll { it.value <= now }
                 while (attempts.firstOrNull()?.let { it <= now - 60000 } ==
@@ -221,14 +224,14 @@ class BleRelay(
                 if (key in cooldown || attempts.size >= 4) return@tryPost
                 // Deterministic direction avoids two advertising installations connecting at once.
                 if (advertising &&
-                    key >= token.joinToString("") { "%02x".format(it) }
+                    key >= tokenHex
                 ) {
                     return@tryPost
                 }
                 cooldown[key] = now + 30000
                 if (cooldown.size > 64) cooldown.remove(cooldown.keys.first())
                 attempts.addLast(now)
-                later(SecureRandom().nextInt(1200).toLong()) {
+                later(random.nextInt(1200).toLong()) {
                     if (client == null && peer == null) connect(result.device)
                 }
             }
@@ -274,7 +277,8 @@ class BleRelay(
         if (advertising) advertiser.stopAdvertising(advertiseCallback)
         advertising = false
         if (exports.isEmpty() || !serverReady) return
-        token = byteArrayOf(1, 0) + ByteArray(6).also { SecureRandom().nextBytes(it) }
+        token = byteArrayOf(1, 0) + ByteArray(6).also(random::nextBytes)
+        tokenHex = token.toLowerHex()
         // Fresh exports overlap brief low-power listening windows without raising continuous scan duty.
         advertiser.startAdvertising(
             AdvertiseSettings.Builder().setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_BALANCED)
