@@ -59,6 +59,61 @@ Japanese, French, German, Simplified Chinese, and Traditional Chinese.
 sources and a checklist for future submissions. Store approval does not replace
 source-specific capture or optimized-runtime validation.
 
+## Capture evidence and remaining limits
+
+This is an evidence summary as of November 8, 2026, not a certification of every
+device running Android 11+. A candidate system app, granted access, and a connected
+service are prerequisites. They do not prove that every original was exposed or
+saved. Home describes a connection; it does not report verified delivery coverage.
+
+| Profile or scenario                                                                                  | Evidence                                                                                                                                                                               | Remaining limit                                                                                                                                                                                  |
+| ---------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tested AOSP API 30–37 emulator profiles                                                              | Historical receiver-injection runs checked the first original automatically and the exact seven-original set after explicit source actions, using separate testing-mode OFF/ON guests. | Synthetic injection is not physical radio reception. Full-set recovery after a source action is not automatic recovery of every hidden queued body.                                              |
+| API 30 rapid alert batches with an immediate HOME transition                                         | A historical scenario recovered only six of seven expected originals.                                                                                                                  | This remains a separate unresolved scenario; successful foreground source-action runs do not close it.                                                                                           |
+| SM-S731N, API 37, `com.google.android.cellbroadcastreceiver`, version code `300000000` (`R-initial`) | On November 2, one owner-reported fresh event was stored through the notification route. Its original visually matched the visible system warning.                                     | Radio/test-mode state was not independently established. This single event does not establish stacked recovery, accessibility-route success, or resolution of an earlier suspected missed event. |
+| Other cellular devices, receivers, and firmware                                                      | Support must be established for the installed source profile.                                                                                                                          | Android version, manufacturer, package presence, and service connections alone do not establish capture support.                                                                                 |
+| Wi-Fi-only hardware                                                                                  | Saved-history and translation features remain usable.                                                                                                                                  | Cellular emergency-broadcast reception and its automatic capture path are unavailable.                                                                                                           |
+
+Historical software evidence includes the [baseline source matrix](https://github.com/gaon12/CodeClear/actions/runs/41305818397)
+and [API 37 16 KiB source validation](https://github.com/gaon12/CodeClear/actions/runs/41326764494).
+Each run applies to its recorded revision and profile. Later builds require
+affected checks again. Firmware updates can change source behavior.
+
+Further capture claims need a complete expected-original set, independent
+testing-mode evidence, and a clear distinction between automatic collection and
+user-opened source recovery. Physical reception, reboot/locked-device behavior,
+constrained-device latency and idle energy remain separate validation work.
+
+## Translation meaning review
+
+Successful engine execution and preserved numbers do not establish correct
+emergency instructions. The [synthetic review suite](tools/translation_review_cases.json)
+contains eight English/Korean cases covering negation, shelter versus evacuation,
+upstream/downstream direction, locations, times, distances, issuer wording, and a
+reserved example URL. Its reference translations are drafts for review, not
+accepted engine outputs or evidence of seven-language translation quality.
+
+Create a local review file outside the repository, then enter the actual outputs,
+engine/revision description, a reviewer label, and a boolean judgment for each
+case's semantic questions. Record unavailable model-revision information honestly;
+do not invent a version. Use only these synthetic originals in this process.
+
+```powershell
+python tools/translation_review.py --template "$env:TEMP/codeclear-translation-review.json"
+python tools/translation_review.py --review "$env:TEMP/codeclear-translation-review.json"
+```
+
+The tool runs offline and makes no translation or model-download requests. It
+binds reviews to the exact suite SHA-256, requires every case once, and checks
+numeric-token and exact-URL preservation. Each semantic question explains what
+the reviewer must assess. Missing outputs, reviewer/engine metadata, or judgments
+remain `pending` (exit 2); rejected judgments or structural output mismatches are
+`failed` (exit 1). A complete submitted review is `passed` (exit 0). This records
+the reviewer's judgments; it cannot independently verify them. Equivalent
+numeric/time reformattings need a reviewed suite change rather than bypassing a
+failure. The tooling unit tests validate this review process, not an engine's
+translation quality. Human engine reviews remain outstanding.
+
 ## Build and check
 
 Use Android Studio with a JDK 25 installation and Android SDK platform 37. The
