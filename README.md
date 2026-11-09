@@ -57,6 +57,16 @@ Japanese, French, German, Simplified Chinese, and Traditional Chinese.
   using installed offline voices and normal media volume/audio focus. Leaving the
   app, losing audio focus, deletion or permission/selection changes cancel pending
   automatic work. Opening history or returning to the app does not replay it.
+- The optional popup waits until reviewed system alert windows have disappeared.
+  A fresh notification can use a matching receiver's reviewed alert-window identity
+  on the default display even if accessibility cannot read the body again. Unknown,
+  ambiguous, disconnected, locked and expired states retain notifications/history
+  as the fallback. Overlay access does not establish source-window visibility.
+- New notification channels use high importance and alert on individual new
+  records; translation updates do not alert again. Existing channel settings stay
+  unchanged. Settings > Notifications shows the channel's importance and opens
+  its Android settings so an existing quiet channel can allow banners. Importance,
+  device popup settings and Do Not Disturb remain separate platform controls.
 - Nearby messages stay in a bounded, explicitly unverified inbox until the user
   saves one. They are never automatically translated, spoken or forwarded. Same-body
   peer replays with changed occurrence IDs are suppressed for 15 minutes. These
