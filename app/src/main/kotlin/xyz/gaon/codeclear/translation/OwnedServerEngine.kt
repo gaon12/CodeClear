@@ -63,10 +63,12 @@ internal class OwnedServerEngine(
         checkMain()
         if (endpoint != null) {
             worker.execute {
-                val loaded = runCatching { storage.value.load() }.getOrNull()
-                acceptCredential(0L, loaded)
+                val loaded = runCatching { storage.value.loadOrCreateInstallation() }
+                acceptCredential(0L, loaded.getOrNull())
                 main.post {
-                    if (!closed && epoch == 0L) publish(access.copy(loaded = true).withToken())
+                    if (!closed && epoch == 0L) {
+                        publish(access.copy(loaded = true, failed = loaded.isFailure).withToken())
+                    }
                 }
             }
         }
@@ -187,11 +189,16 @@ internal class OwnedServerEngine(
         try {
             worker.execute {
                 val success = runCatching(action).isSuccess
-                val loaded = runCatching { storage.value.load() }.getOrNull()
-                acceptCredential(revision, loaded)
+                val loaded = runCatching { storage.value.loadOrCreateInstallation() }
+                acceptCredential(revision, loaded.getOrNull())
                 main.post {
                     if (!closed && epoch == revision) {
-                        publish(access.copy(busy = false, failed = !success).withToken())
+                        publish(
+                            access.copy(
+                                busy = false,
+                                failed = !success || loaded.isFailure
+                            ).withToken()
+                        )
                     }
                 }
             }

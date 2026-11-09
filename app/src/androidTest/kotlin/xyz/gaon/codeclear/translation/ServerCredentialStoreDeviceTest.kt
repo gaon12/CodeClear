@@ -7,6 +7,34 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class ServerCredentialStoreDeviceTest {
+    @Test
+    fun installationIsCreatedOnceEncryptedAndNeverSilentlyReplacedAfterCorruption() {
+        val store = ServerCredentialStore(context, scope, "fixtureInstallation")
+        try {
+            val first = store.loadOrCreateInstallation()
+            assertEquals(64, first.installationId!!.length)
+            assertEquals(first.fingerprint, store.loadOrCreateInstallation().fingerprint)
+            val bytes = store.path.readBytes()
+            assertEquals(
+                false,
+                bytes.toString(Charsets.ISO_8859_1).contains(first.installationId!!)
+            )
+            bytes[bytes.lastIndex] = (bytes.last().toInt() xor 1).toByte()
+            store.path.writeBytes(bytes)
+            var refused = false
+            try {
+                store.loadOrCreateInstallation()
+            } catch (_: IllegalStateException) {
+                refused = true
+            }
+            assertEquals(true, refused)
+            store.clear()
+            assertEquals(false, first.fingerprint == store.loadOrCreateInstallation().fingerprint)
+        } finally {
+            store.clear()
+        }
+    }
+
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val scope = serverDigest("https://example.invalid/api.php")
     private val token = "synthetic-client-token-aaaaaaaaaaaaaaaa"

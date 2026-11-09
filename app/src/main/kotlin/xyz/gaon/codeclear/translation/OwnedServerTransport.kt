@@ -7,6 +7,7 @@ import java.io.IOException
 import java.io.StringReader
 import java.net.URI
 import java.nio.ByteBuffer
+import java.security.SecureRandom
 import java.util.concurrent.TimeUnit
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -17,6 +18,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import xyz.gaon.codeclear.BuildConfig
 import xyz.gaon.codeclear.sha256Hex
+import xyz.gaon.codeclear.toLowerHex
 
 internal class OwnedServerEndpoint private constructor(internal val url: HttpUrl) {
     val scope: String = serverDigest(url.toString())
@@ -41,14 +43,21 @@ internal class OwnedServerEndpoint private constructor(internal val url: HttpUrl
     }
 }
 
-/** A client access token, never a provider key or an APK constant. */
+/** A legacy access token or locally generated installation capability; never a provider key. */
 internal class ServerAccessToken private constructor(private val value: String) {
     val fingerprint: String = serverDigest(value)
+    internal val installationId: String? get() = value.removePrefix("installation.").takeIf {
+        value.startsWith("installation.") && it.matches(Regex("[a-f0-9]{64}"))
+    }
     internal fun authorization(): String = "Bearer $value"
     internal fun bytes(): ByteArray = value.toByteArray(Charsets.US_ASCII)
     override fun toString(): String = "ServerAccessToken([redacted])"
 
     companion object {
+        fun newInstallation(): ServerAccessToken = ServerAccessToken(
+            "installation." + ByteArray(32).also { SecureRandom().nextBytes(it) }.toLowerHex()
+        )
+
         fun parse(value: String): ServerAccessToken? = value.takeIf {
             it.matches(Regex("[A-Za-z0-9._~-]{32,256}"))
         }?.let(::ServerAccessToken)
@@ -212,7 +221,14 @@ internal class OwnedServerTransport(
         cancellation: RemoteCancellation,
         authorized: () -> Boolean
     ): Request.Builder = Request.Builder().url(endpoint.url)
-        .header("Authorization", token.authorization()).header("Accept", "application/json")
+        .apply {
+            val installation = token.installationId
+            if (installation != null) {
+                header("X-CodeClear-Installation", installation)
+            } else {
+                header("Authorization", token.authorization())
+            }
+        }.header("Accept", "application/json")
         .header("Cache-Control", "no-store")
         .tag(RemoteSendPermit::class.java, RemoteSendPermit())
         .tag(

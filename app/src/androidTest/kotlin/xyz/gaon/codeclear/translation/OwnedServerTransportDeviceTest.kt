@@ -17,6 +17,58 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class OwnedServerTransportDeviceTest {
+    @Test
+    fun installationRequestsAndDeletionNeverSendABearerTokenOrProviderKey() {
+        val installation = ServerAccessToken.newInstallation()
+        val methods = mutableListOf<String>()
+        OwnedServerTransport(
+            endpoint,
+            OkHttpClient.Builder().addInterceptor { chain ->
+                val request = chain.request()
+                methods += request.method
+                assertNull(request.header("Authorization"))
+                assertEquals(
+                    installation.installationId,
+                    request.header("X-CodeClear-Installation")
+                )
+                assertEquals(
+                    setOf("X-CodeClear-Installation", "Accept", "Cache-Control"),
+                    request.headers.names()
+                )
+                response(
+                    request,
+                    200,
+                    if (request.method ==
+                        "DELETE"
+                    ) {
+                        "{\"cleared\":true}"
+                    } else {
+                        success()
+                    }
+                )
+            }
+        ).use { transport ->
+            assertEquals(
+                OwnedServerReply.Text(translation),
+                transport.translate(
+                    original,
+                    TranslationTarget.KOREAN,
+                    installation,
+                    RemoteCancellation()
+                ) { true }
+            )
+            assertEquals(
+                ServerCacheClearResult.CLEARED,
+                transport.clearCache(
+                    installation,
+                    RemoteCancellation()
+                ) { true }
+            )
+        }
+        assertEquals(listOf("POST", "DELETE"), methods)
+        assertFalse(installation.toString().contains(installation.installationId!!))
+    }
+
     private val endpoint =
         requireNotNull(OwnedServerEndpoint.parse("https://example.invalid/api.php"))
     private val token =

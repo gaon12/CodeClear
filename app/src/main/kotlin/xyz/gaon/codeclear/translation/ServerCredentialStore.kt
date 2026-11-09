@@ -15,6 +15,7 @@ import javax.crypto.spec.GCMParameterSpec
 internal interface ServerTokenStorage {
     fun save(value: String)
     fun load(): ServerAccessToken?
+    fun loadOrCreateInstallation(): ServerAccessToken? = load()
     fun clear()
 }
 
@@ -32,6 +33,22 @@ internal class ServerCredentialStore(
     internal val path = File(context.noBackupFilesDir, "$name.bin")
     private val file = AtomicFile(path)
     private val alias = "codeclear.$name"
+
+    @Synchronized
+    override fun loadOrCreateInstallation(): ServerAccessToken {
+        checkWorker()
+        load()?.let { return it }
+        // Corruption or a changed route must not silently abandon an existing private cache.
+        check(!path.exists()) { "Private installation storage is unavailable" }
+        val created = ServerAccessToken.newInstallation()
+        val value = created.bytes()
+        try {
+            save(value.toString(Charsets.US_ASCII))
+        } finally {
+            value.fill(0)
+        }
+        return requireNotNull(load())
+    }
 
     @Synchronized
     override fun save(value: String) {
