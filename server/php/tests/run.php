@@ -578,6 +578,35 @@ $test('anonymous identities cannot collide with a legacy installation-labelled c
     check($h->calls === 2 && count($h->rows()) === 1);
 });
 
+$test('anonymous provider day budgets survive identity rotation and private deletion but not charge hits', static function () use ($fixture): void {
+    $h = $fixture(['CODECLEAR_ALLOW_ANONYMOUS' => 'true', 'CODECLEAR_NETWORK_PROVIDER_RPD' => '2']);
+    $body = encode(['text' => '[DRILL] Gate 3.', 'target_lang' => 'en']);
+    $request = fn (string $id, string $ip = '192.0.2.1'): array => $h->service->handle('POST', '', 'application/json', $body, str_repeat($id, 64), $ip);
+    $request('a');
+    $request('b');
+    check($request('a') === $request('b') && $h->calls === 2);
+    $h->service->handle('DELETE', '', '', '', str_repeat('a', 64), '192.0.2.1');
+    rejected(fn () => $request('a'), 429, 'rate_limited');
+    rejected(fn () => $request('c'), 429, 'rate_limited');
+    check($h->calls === 2);
+    $request('c', '192.0.2.2');
+    check($h->calls === 3);
+    $h->now += 86400000;
+    $request('a');
+    check($h->calls === 4);
+});
+
+$test('failed anonymous provider work consumes its network day allowance', static function () use ($fixture): void {
+    $h = $fixture(['CODECLEAR_ALLOW_ANONYMOUS' => 'true', 'CODECLEAR_NETWORK_PROVIDER_RPD' => '1']);
+    $body = encode(['text' => '[DRILL] Gate 3.', 'target_lang' => 'en']);
+    $h->provider = static function (): never {
+        throw new RuntimeException('Synthetic failure');
+    };
+    rejected(fn () => $h->service->handle('POST', '', 'application/json', $body, str_repeat('a', 64)), 502);
+    rejected(fn () => $h->service->handle('POST', '', 'application/json', $body, str_repeat('b', 64)), 429);
+    check($h->calls === 1);
+});
+
 $failed = 0;
 $total = count($tests);
 try {

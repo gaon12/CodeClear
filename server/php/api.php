@@ -124,6 +124,7 @@ final readonly class Configuration
     public bool $allowAnonymous;
     public int $anonymousPerMinute;
     public int $networkPerMinute;
+    public int $networkProviderPerDay;
     public int $ttlMillis;
     public int $maxEntries;
     public int $clientPerMinute;
@@ -156,6 +157,7 @@ final readonly class Configuration
         $this->allowAnonymous = $anonymous === 'true';
         $this->anonymousPerMinute = $this->integer($values, 'CODECLEAR_ANONYMOUS_RPM', 120, 1, 1200);
         $this->networkPerMinute = $this->integer($values, 'CODECLEAR_NETWORK_RPM', 30, 1, 120);
+        $this->networkProviderPerDay = $this->integer($values, 'CODECLEAR_NETWORK_PROVIDER_RPD', 50, 1, 10000);
         $this->clients = stringObject($values['CODECLEAR_CLIENT_TOKENS'] ?? '{}', 16384);
         if ((!$this->allowAnonymous && count($this->clients) < 1) || count($this->clients) > 100) {
             throw new RuntimeException('Provision clients or explicitly enable anonymous access');
@@ -203,7 +205,7 @@ final readonly class Configuration
             'CODECLEAR_CLIENT_TOKENS', 'CODECLEAR_CACHE_DAYS', 'CODECLEAR_CACHE_ENTRIES',
             'CODECLEAR_CLIENT_RPM', 'CODECLEAR_PROVIDER_RPM', 'CODECLEAR_PROVIDER_RPD',
             'CODECLEAR_PROVIDER_CONCURRENCY', 'CODECLEAR_REQUIRE_HTTPS', 'CODECLEAR_ALLOW_ANONYMOUS',
-            'CODECLEAR_ANONYMOUS_RPM', 'CODECLEAR_NETWORK_RPM'] as $key) {
+            'CODECLEAR_ANONYMOUS_RPM', 'CODECLEAR_NETWORK_RPM', 'CODECLEAR_NETWORK_PROVIDER_RPD'] as $key) {
             $value = getenv($key);
             if ($value !== false) {
                 $values[$key] = $value;
@@ -528,9 +530,9 @@ final class CacheStore
             $config->model, PROMPT_VERSION, $config->epoch()]), $config->cacheSecret);
     }
 
-    public function claim(string $key, string $scope, TranslationRequest $request, Configuration $config, int $now, int $generation): array
+    public function claim(string $key, string $scope, TranslationRequest $request, Configuration $config, int $now, int $generation, ?string $networkScope = null): array
     {
-        return $this->transaction(function () use ($key, $scope, $request, $config, $now, $generation): array {
+        return $this->transaction(function () use ($key, $scope, $request, $config, $now, $generation, $networkScope): array {
             $current = $this->execute('SELECT generation FROM scopes WHERE scope=?', [$scope])->fetchColumn();
             if ($current === false || (int) $current !== $generation) {
                 throw new ApiFailure(409, 'translation_cancelled');
@@ -568,6 +570,9 @@ final class CacheStore
             $day = intdiv($now, 86400000);
             $this->budget('provider:minute:' . $minute, $config->providerPerMinute, ($minute + 2) * 60000);
             $this->budget('provider:day:' . $day, $config->providerPerDay, ($day + 1) * 86400000);
+            if ($networkScope !== null) {
+                $this->budget('provider:network:' . $networkScope . ':' . $day, $config->networkProviderPerDay, ($day + 1) * 86400000);
+            }
             $lease = bin2hex(random_bytes(16));
             $this->execute("INSERT OR REPLACE INTO cache
                 (cache_key,scope,source_hash,original,target,requested_model,prompt_version,state,
@@ -668,7 +673,7 @@ final class TranslationService
         }
         $request = new TranslationRequest($body);
         $key = $this->store->key($scope, $request, $this->config);
-        $claim = $this->store->claim($key, $scope, $request, $this->config, $now, $generation);
+        $claim = $this->store->claim($key, $scope, $request, $this->config, $now, $generation, $networkScope);
         if (isset($claim['cached'])) {
             return $this->response($claim['cached'], $request);
         }
