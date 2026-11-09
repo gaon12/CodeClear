@@ -95,6 +95,21 @@ internal class DeferredAlertQueue(
             sourceAppeared()
             return null
         }
+        // A verified alert window is sufficient evidence even when its body is inaccessible.
+        // Bind only while it is visible, on the reviewed display and from the same source package.
+        if (windows != null) {
+            pending.replaceAll { _, candidate ->
+                val window = windows.alertPackages.filter { (id, source) ->
+                    id in windows.visibleIds && id in windows.sourceIds &&
+                        source == candidate.capture.sourcePackage
+                }.keys.singleOrNull()
+                if (candidate.freshNotification && candidate.windowId == null && window != null) {
+                    candidate.copy(windowId = window)
+                } else {
+                    candidate
+                }
+            }
+        }
         val blockers = windows?.sourceIds.orEmpty() + pending.values.mapNotNull { it.windowId }
         if (windows == null || windows.visibleIds.isEmpty() ||
             blockers.any { it in windows.visibleIds }

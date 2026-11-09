@@ -65,10 +65,10 @@ open class AccessibilityCaptureService : AccessibilityService() {
                 val environment = ProbeEnvironment.read(this)
                 val ticket = ProbeSession.ticket(ProbeRoute.ACCESSIBILITY, environment) ?: return
                 if (packageName !in environment.systemPackages) return
-                SourceWindowVisibility.sourceOpened(event.windowId)
                 val windowClass = BoundedText.read(event.className, 256).value
                 ProbeSession.noteAccessibilityWindow(windowClass)
                 val window = windows.windowChanged(packageName, windowClass, event.windowId)
+                SourceWindowVisibility.sourceOpened(event.windowId, window?.packageName)
                 if (window == null) {
                     reads.discardPending()
                     main.removeCallbacks(pendingRead)
@@ -252,17 +252,17 @@ open class AccessibilityCaptureService : AccessibilityService() {
     }
 
     @Suppress("DEPRECATION")
-    private fun visibleWindowIds(): Set<Int>? {
+    private fun visibleWindowIds(): Map<Int, Int>? {
         if (destroyed || !isUnlocked()) return null
         val displays = windowsOnAllDisplays
         try {
             if (displays.size > 8) return null
-            val ids = linkedSetOf<Int>()
+            val ids = linkedMapOf<Int, Int>()
             var inspected = 0
             for (display in 0 until displays.size) {
                 for (window in displays.valueAt(display)) {
                     if (++inspected > 64) return null
-                    ids += window.id
+                    ids[window.id] = displays.keyAt(display)
                 }
             }
             return ids.takeIf { it.isNotEmpty() }

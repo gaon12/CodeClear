@@ -66,7 +66,7 @@ class DeferredAlertPresentationDeviceTest {
     }
 
     @Test
-    fun sourcePriorityAndWithdrawalRemoveOptionalWindowsWithoutReplaying() {
+    fun notificationOnlyCaptureWaitsForReviewedSourceDisappearanceAndWithdrawal() {
         val surface = Surface()
         val presenter = DeferredAlertPresenter(context, surface)
         var connection: AutoCloseable? = null
@@ -78,17 +78,11 @@ class DeferredAlertPresentationDeviceTest {
                     ProbeSession.configure(route, true)
                     ProbeSession.setConnected(route, true)
                 }
-                connection = SourceWindowVisibility.connect { visible }
+                connection = SourceWindowVisibility.connect { visible.associateWith { 0 } }
                 presenter.authorize(options)
-                SourceWindowVisibility.sourceOpened(10)
+                SourceWindowVisibility.sourceOpened(10, "test.system.receiver")
                 val capture = alert()
                 presenter.observed(StoredObservation(1, true), capture, null, null)
-                presenter.observed(
-                    StoredObservation(1, false),
-                    capture.copy(source = CaptureSource.DIALOG),
-                    10,
-                    0
-                )
             }
             SystemClock.sleep(1000)
             main {

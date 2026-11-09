@@ -8,6 +8,64 @@ import xyz.gaon.codeclear.capture.SourceWindowSnapshot
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 
 class DeferredAlertQueueTest {
+    @Test
+    fun notificationOnlyCandidatesRequireAVisibleReviewedMatchingWindowBeforeDisappearance() {
+        val queue = DeferredAlertQueue()
+        queue.observed(
+            StoredObservation(1, true),
+            capture(CaptureSource.NOTIFICATION),
+            null,
+            null,
+            "en",
+            engine,
+            wall,
+            0
+        )
+        assertNull(queue.select(0, gone))
+        assertNull(queue.select(1000, gone))
+        val wrong = SourceWindowSnapshot(setOf(10, 99), setOf(10), mapOf(10 to "other.receiver"))
+        assertNull(queue.select(1100, wrong))
+        assertNull(queue.select(2000, gone))
+        assertNull(queue.select(3000, gone))
+        val verified = wrong.copy(alertPackages = mapOf(10 to "test.system.receiver"))
+        assertNull(queue.select(3100, verified))
+        assertNull(queue.select(4000, null))
+        assertNull(queue.select(5000, gone))
+        assertEquals(1L, queue.select(5750, gone)?.id)
+        queue.dismiss(1)
+        assertNull(queue.select(6000, gone))
+    }
+
+    @Test
+    fun ambiguousAndUnreviewedSourceWindowsNeverSupplyMissingBodyEvidence() {
+        val queue = DeferredAlertQueue(settleMillis = 0)
+        queue.observed(
+            StoredObservation(1, true),
+            capture(CaptureSource.NOTIFICATION),
+            null,
+            null,
+            "en",
+            engine,
+            wall,
+            0
+        )
+        assertNull(queue.select(0, SourceWindowSnapshot(setOf(10, 99), setOf(10))))
+        assertNull(queue.select(1, gone))
+        assertNull(
+            queue.select(
+                2,
+                SourceWindowSnapshot(
+                    setOf(10, 11, 99),
+                    setOf(10, 11),
+                    mapOf(10 to "test.system.receiver", 11 to "test.system.receiver")
+                )
+            )
+        )
+        assertNull(queue.select(3, gone))
+        queue.clear()
+        assertFalse(queue.hasPending)
+    }
+
     private val wall = 1_700_000_000_000L
     private val engine = TranslationEngineKind.ML_KIT
     private val gone = SourceWindowSnapshot(setOf(99), emptySet())
