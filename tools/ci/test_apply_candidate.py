@@ -1,12 +1,34 @@
 """Reject stale, binary, oversized or out-of-scope remote candidates."""
 
 import base64
+import gzip
 import unittest
 
 from tools.ci.apply_candidate import candidate_patch, candidate_paths
 
 
 class CandidateTest(unittest.TestCase):
+    def compressed(self, value):
+        return "gzip:" + base64.b64encode(gzip.compress(value)).decode()
+
+    def test_compressed_unicode_candidates_preserve_the_exact_reviewed_source(self):
+        source = "--- a/example\n+++ b/example\n+훈련 警報\n".encode()
+        self.assertEqual(
+            source, candidate_patch(self.compressed(source), "a" * 40, "a" * 40)
+        )
+
+    def test_compression_cannot_bypass_expanded_size_or_source_mode_limits(self):
+        for value in [b"x" * 120001, b"new file mode 120000\n", b"GIT binary patch"]:
+            with self.assertRaises(ValueError):
+                candidate_patch(self.compressed(value), "a" * 40, "a" * 40)
+
+    def test_compressed_truncation_concatenation_and_trailing_data_are_rejected(self):
+        payload = gzip.compress(b"--- a/example\n+++ b/example\n")
+        for invalid in [payload[:-1], payload + payload, payload + b"trailing", b"bad"]:
+            encoded = "gzip:" + base64.b64encode(invalid).decode()
+            with self.assertRaises(ValueError):
+                candidate_patch(encoded, "a" * 40, "a" * 40)
+
     def encode(self, text):
         return base64.b64encode(text.encode()).decode()
 

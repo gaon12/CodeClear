@@ -5,6 +5,7 @@ import hashlib
 import os
 import re
 import subprocess
+import zlib
 
 
 def candidate_patch(encoded, expected_base, current_base):
@@ -18,11 +19,22 @@ def candidate_patch(encoded, expected_base, current_base):
     if len(encoded) > 60000:
         raise ValueError("Candidate input exceeds the public-source size limit")
     try:
-        patch = base64.b64decode(encoded, validate=True)
+        compressed = encoded.startswith("gzip:")
+        patch = base64.b64decode(encoded[5:] if compressed else encoded, validate=True)
+        if compressed:
+            decoder = zlib.decompressobj(16 + zlib.MAX_WBITS)
+            patch = decoder.decompress(patch, 120001)
+            if (
+                len(patch) > 120000
+                or not decoder.eof
+                or decoder.unused_data
+                or decoder.unconsumed_tail
+            ):
+                raise ValueError("Invalid or oversized compressed candidate")
         source = patch.decode("utf-8")
-    except (ValueError, UnicodeError) as error:
+    except (ValueError, UnicodeError, zlib.error) as error:
         raise ValueError(
-            "Candidate input must be UTF-8 source encoded as base64"
+            "Candidate input must be bounded UTF-8 source encoded as base64 or gzip:base64"
         ) from error
     if not source or "\x00" in source or "GIT binary patch" in source:
         raise ValueError("Only a nonempty textual source patch is permitted")
