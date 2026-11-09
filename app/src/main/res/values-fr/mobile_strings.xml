@@ -326,4 +326,9 @@
     <string name="mobile_automatic_speech">Lire automatiquement les nouvelles traductions</string>
     <string name="mobile_automatic_speech_description">Désactivé par défaut. Quand cette application est visible et active, les nouvelles traductions d’alertes locales récentes sont lues avec une voix hors ligne installée. Quitter l’application, une alerte système ou une interruption audio arrête la lecture et vide la file. Aucun historique ni message voisin lu automatiquement. Volume multimédia ; aucun téléchargement automatique ni voix réseau.</string>
     <string name="mobile_automatic_speech_unavailable">Lecture automatique impossible. Vérifiez la voix hors ligne et les réglages audio. Une autre application ou alerte système peut interrompre la lecture.</string>
+    <string name="mobile_issuer_estimate">Organisme émetteur (estimation)</string>
+    <string name="mobile_issuer_ai_notice">Nom extrait du message par l’IA. Il peut être erroné. L’identité de l’expéditeur n’est pas authentifiée.</string>
+    <string name="mobile_issuer_rule_notice">Nom estimé à partir du format du message. Il peut être erroné. L’identité de l’expéditeur n’est pas authentifiée.</string>
+    <string name="mobile_issuer_unknown">L’organisme émetteur ne peut pas être identifié dans l’original.</string>
+    <string name="mobile_issuer_evidence">Extrait original : %1$s</string>
 </resources>

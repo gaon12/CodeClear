@@ -65,7 +65,7 @@ internal class ServerAccessToken private constructor(private val value: String) 
 }
 
 internal sealed interface OwnedServerReply {
-    data class Text(val value: String) : OwnedServerReply
+    data class Text(val value: String, val issuer: IssuerClaim? = null) : OwnedServerReply
     data object Quota : OwnedServerReply
     data object Unavailable : OwnedServerReply
     data object TooLong : OwnedServerReply
@@ -125,7 +125,7 @@ internal class OwnedServerTransport(
         val json = JSONObject().put(
             "text",
             original
-        ).put("target_lang", target.languageTag).toString()
+        ).put("target_lang", target.languageTag).put("response_version", "2").toString()
         val request = request(token, cancellation, authorized)
             .post(json.toRequestBody("application/json; charset=utf-8".toMediaType())).build()
         val call = client.newCall(request)
@@ -264,12 +264,12 @@ internal fun parseOwnedServerResponse(
                 reader.beginObject()
                 while (reader.hasNext()) {
                     val key = reader.nextName()
-                    require(key in setOf("original", "translated") && key !in claims)
+                    require(key in setOf("original", "translated", "evidence") && key !in claims)
                     require(reader.peek() == JsonToken.STRING)
                     claims[key] = reader.nextString()
                 }
                 reader.endObject()
-                require(claims.keys == setOf("original", "translated"))
+                require(claims.keys.containsAll(setOf("original", "translated")))
                 issuer = claims
             } else {
                 require(name in setOf("translated_text", "target_lang", "source_sha256"))
@@ -297,12 +297,31 @@ internal fun parseOwnedServerResponse(
             name.isNotBlank() && translatedName.isNotBlank() && original.contains(name)
         }
     )
+    val evidence = claims["evidence"]
+    val attribution = if (name.isEmpty()) {
+        require(evidence.isNullOrEmpty())
+        null
+    } else if (evidence == null) {
+        // Older responses can still supply the translation, but cannot establish an evidenced estimate.
+        null
+    } else {
+        require(evidence.toByteArray(Charsets.UTF_8).size <= 2048 && safeServerText(evidence))
+        requireNotNull(
+            evidencedIssuer(
+                original,
+                name,
+                translatedName,
+                evidence,
+                IssuerBasis.EXTRACTED_FROM_TEXT
+            )
+        )
+    }
     for (pattern in preservedTokenPatterns) {
         val expected = pattern.findAll(original).groupingBy { it.value }.eachCount()
         val actual = pattern.findAll(translated).groupingBy { it.value }.eachCount()
         require(expected.all { (token, count) -> (actual[token] ?: 0) >= count })
     }
-    OwnedServerReply.Text(translated)
+    OwnedServerReply.Text(translated, attribution)
 } catch (_: Exception) {
     OwnedServerReply.Failed
 }

@@ -324,4 +324,9 @@
     <string name="mobile_automatic_speech">新しい翻訳を自動読み上げ</string>
     <string name="mobile_automatic_speech_description">初期設定はオフです。このアプリが表示され操作対象の間、新しく取得した警報の新しい翻訳をインストール済みのオフライン音声で読み上げます。アプリを離れる、システム警告、他の音声による中断で停止し待機列を消去します。履歴や近くのメッセージは自動では読みません。メディア音量を使い、音声の自動ダウンロードやネットワーク音声は使いません。</string>
     <string name="mobile_automatic_speech_unavailable">自動読み上げができませんでした。オフライン音声と音声設定を確認してください。他のアプリやシステム警告で中断する場合があります。</string>
+    <string name="mobile_issuer_estimate">発信機関（推定）</string>
+    <string name="mobile_issuer_ai_notice">AIが本文から抽出した名称です。誤りの可能性があり、送信者の身元は認証されていません。</string>
+    <string name="mobile_issuer_rule_notice">原文の形式から推定した名称です。誤りの可能性があり、送信者の身元は認証されていません。</string>
+    <string name="mobile_issuer_unknown">原文から発信機関を特定できません。</string>
+    <string name="mobile_issuer_evidence">原文の該当箇所：%1$s</string>
 </resources>

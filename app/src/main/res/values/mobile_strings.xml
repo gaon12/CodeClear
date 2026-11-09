@@ -325,4 +325,9 @@
     <string name="mobile_automatic_speech">Automatically read new translations</string>
     <string name="mobile_automatic_speech_description">Off by default. While this app is visible and focused, read new translations of fresh locally captured alerts using an installed offline voice. Leaving the app, a system warning or another audio interruption stops reading and clears the queue. History and nearby messages are not read automatically. Uses media volume; never downloads voices or uses a network voice.</string>
     <string name="mobile_automatic_speech_unavailable">Could not read automatically. Check offline voice and audio settings. Other apps and system alerts may interrupt playback.</string>
+    <string name="mobile_issuer_estimate">Issuing organization (estimate)</string>
+    <string name="mobile_issuer_ai_notice">AI extracted this name from the message. It may be wrong. The sender’s identity is unverified.</string>
+    <string name="mobile_issuer_rule_notice">Estimated from the message format. It may be wrong. The sender’s identity is unverified.</string>
+    <string name="mobile_issuer_unknown">The issuing organization could not be identified from the original.</string>
+    <string name="mobile_issuer_evidence">Original excerpt: %1$s</string>
 </resources>

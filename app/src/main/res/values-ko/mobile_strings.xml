@@ -324,4 +324,9 @@
     <string name="mobile_automatic_speech">새 번역 자동 읽기</string>
     <string name="mobile_automatic_speech_description">기본값은 꺼짐입니다. 이 앱을 보고 있을 때 새로 수집한 알림의 새 번역을 설치된 오프라인 음성으로 읽습니다. 앱을 떠나거나 시스템 경고·다른 오디오가 끼어들면 읽기를 중단하고 대기열을 비웁니다. 과거 기록과 주변 메시지는 자동으로 읽지 않습니다. 미디어 음량을 사용하며 음성을 자동 다운로드하거나 네트워크 음성을 사용하지 않습니다.</string>
     <string name="mobile_automatic_speech_unavailable">자동으로 읽지 못했습니다. 오프라인 음성과 오디오 설정을 확인하세요. 다른 앱이나 시스템 경고가 재생을 중단할 수 있습니다.</string>
+    <string name="mobile_issuer_estimate">발신 주체 (추정)</string>
+    <string name="mobile_issuer_ai_notice">AI가 본문에서 추출한 기관명입니다. 틀릴 수 있으며 실제 발신자 신원은 인증되지 않았습니다.</string>
+    <string name="mobile_issuer_rule_notice">원문 형식으로 추정한 기관명입니다. 틀릴 수 있으며 실제 발신자 신원은 인증되지 않았습니다.</string>
+    <string name="mobile_issuer_unknown">원문에서 발신 주체를 판단할 수 없습니다.</string>
+    <string name="mobile_issuer_evidence">원문 근거: %1$s</string>
 </resources>

@@ -26,10 +26,83 @@ import org.junit.Test
 import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.reception.CountryEvidence
 import xyz.gaon.codeclear.reception.ReceptionCountry
+import xyz.gaon.codeclear.translation.IssuerBasis
+import xyz.gaon.codeclear.translation.TranslationEngineKind
 import xyz.gaon.codeclear.translation.TranslationTarget
+import xyz.gaon.codeclear.translation.evidencedIssuer
 
 /** Alert modal and detail presentation: message views, actions, categories, and languages. */
 class MobileScreenAlertDetailDeviceTest : MobileScreenFixture() {
+    @Test fun aiIssuerShowsItsFallibleBasisAndExactSourceAtLargeText() {
+        val original = "[DRILL] Issued by Agency X."
+        compose.runOnIdle {
+            fontScale = 2f
+            val alert = record(1).let {
+                it.copy(
+                    capture = it.capture.copy(original = original),
+                    translation = it.translation!!.copy(
+                        engine = TranslationEngineKind.OWNED_SERVER,
+                        issuer = evidencedIssuer(
+                            original,
+                            "Agency X",
+                            "기관 X",
+                            "Issued by Agency X.",
+                            IssuerBasis.EXTRACTED_FROM_TEXT
+                        )
+                    )
+                )
+            }
+            state = state.copy(records = listOf(alert), latest = alert)
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performClick()
+        for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
+            compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            compose.onNodeWithTag("issuer-name").performScrollTo()
+                .assertTextContains("기관 X · Agency X")
+            compose.onNodeWithText(
+                text(R.string.mobile_issuer_ai_notice)
+            ).performScrollTo().assertIsDisplayed()
+            compose.onNodeWithTag(
+                "issuer-evidence"
+            ).performScrollTo().assertTextContains(
+                text(R.string.mobile_issuer_evidence, "Issued by Agency X.")
+            )
+        }
+        compose.runOnIdle {
+            assertEquals(0, serverAllows)
+            assertTrue(requestedModels.isEmpty())
+        }
+    }
+
+    @Test fun localIssuerIsOnlyAnEstimateAndUnknownOriginalsStayUnknown() {
+        compose.runOnIdle {
+            val alert = record(1).let {
+                it.copy(
+                    capture = it.capture.copy(original = "[DRILL] Gate 3. [행정안전부]")
+                )
+            }
+            state = state.copy(records = listOf(alert), latest = alert)
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performClick()
+        compose.onNodeWithTag("issuer-name").performScrollTo().assertTextContains("행정안전부")
+        compose.onNodeWithText(
+            text(R.string.mobile_issuer_rule_notice)
+        ).performScrollTo().assertIsDisplayed()
+        compose.runOnIdle {
+            state = state.copy(
+                detail = state.detail!!.let {
+                    it.copy(
+                        capture = it.capture.copy(original = "[DRILL] Seoul, call 112.")
+                    )
+                }
+            )
+        }
+        compose.onNodeWithTag("issuer-unknown").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("issuer-name").assertDoesNotExist()
+    }
+
     @Test
     fun singleMessageViewStartsWithTranslationAndSwitchesToTheOriginal() {
         val original = state.latest!!.capture.original

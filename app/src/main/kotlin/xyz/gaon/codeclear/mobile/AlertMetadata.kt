@@ -16,6 +16,10 @@ import java.text.DateFormat
 import java.util.Date
 import java.util.TimeZone
 import xyz.gaon.codeclear.R
+import xyz.gaon.codeclear.translation.IssuerBasis
+import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.estimateIssuer
+import xyz.gaon.codeclear.translation.evidencedIssuer
 
 @Composable
 fun dateTime(time: Long): String {
@@ -72,6 +76,76 @@ fun AlertMetadata(alert: SavedAlert) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+    IssuerAttribution(alert)
+}
+
+@Composable
+private fun IssuerAttribution(alert: SavedAlert) {
+    val translation = alert.translation
+    val original = alert.capture.original
+    val claim = remember(original, translation?.issuer, translation?.phase, translation?.engine) {
+        val supplied = translation?.issuer?.takeIf {
+            translation.engine == TranslationEngineKind.OWNED_SERVER &&
+                translation.phase == TranslationPhase.READY &&
+                it.basis == IssuerBasis.EXTRACTED_FROM_TEXT
+        }
+        val evidenced = supplied?.let {
+            evidencedIssuer(
+                original,
+                it.originalName,
+                it.translatedName,
+                it.sourceExcerpt.orEmpty(),
+                it.basis
+            )
+                ?.takeIf { validated -> validated == supplied }
+        }
+        evidenced ?: estimateIssuer(original)
+    }
+    SettingsGroup(tag = "issuer-attribution") {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(
+                stringResource(R.string.mobile_issuer_estimate),
+                style = MaterialTheme.typography.titleMedium
+            )
+            if (claim == null) {
+                Text(
+                    stringResource(R.string.mobile_issuer_unknown),
+                    Modifier.testTag("issuer-unknown")
+                )
+            } else {
+                Text(
+                    listOfNotNull(
+                        claim.translatedName?.takeIf {
+                            it != claim.originalName
+                        },
+                        claim.originalName
+                    )
+                        .joinToString(" · "),
+                    Modifier.testTag("issuer-name")
+                )
+                Text(
+                    stringResource(
+                        if (claim.basis ==
+                            IssuerBasis.EXTRACTED_FROM_TEXT
+                        ) {
+                            R.string.mobile_issuer_ai_notice
+                        } else {
+                            R.string.mobile_issuer_rule_notice
+                        }
+                    ),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    stringResource(
+                        R.string.mobile_issuer_evidence,
+                        historyPreview(claim.sourceExcerpt!!)
+                    ),
+                    Modifier.testTag("issuer-evidence"),
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
     }
 }

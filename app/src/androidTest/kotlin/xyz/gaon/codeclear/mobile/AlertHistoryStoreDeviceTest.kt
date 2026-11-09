@@ -22,9 +22,96 @@ import org.junit.Before
 import org.junit.Test
 import xyz.gaon.codeclear.reception.CountryEvidence
 import xyz.gaon.codeclear.reception.ReceptionCountry
+import xyz.gaon.codeclear.translation.IssuerBasis
+import xyz.gaon.codeclear.translation.IssuerClaim
 import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.evidencedIssuer
 
 class AlertHistoryStoreDeviceTest {
+    @Test fun issuerSurvivesCacheRestartButRetryDeletionAndStaleResultsCannotRestoreIt() {
+        val original = "[DRILL] Issued by Agency X."
+        val id = store.insert(capture(original))!!
+        val engine = TranslationEngineKind.OWNED_SERVER
+        val ticket = store.beginTranslation(id, "en", engine = engine)!!
+        val issuer = evidencedIssuer(
+            original,
+            "Agency X",
+            "기관 X",
+            "Issued by Agency X.",
+            IssuerBasis.EXTRACTED_FROM_TEXT
+        )!!
+        val result = ready("[DRILL] Result.").copy(engine = engine, issuer = issuer)
+        assertFalse(
+            store.finishTranslation(
+                ticket,
+                result.copy(
+                    issuer = IssuerClaim(
+                        "Agency Y",
+                        "기관 Y",
+                        IssuerBasis.EXTRACTED_FROM_TEXT,
+                        sourceExcerpt = "Agency Y"
+                    )
+                )
+            )
+        )
+        assertTrue(store.finishTranslation(ticket, result))
+        store.close()
+        store = AlertHistoryStore(context, name)
+        assertEquals(issuer, store.find(id, "en", engine)?.translation?.issuer)
+        assertEquals(issuer, store.cachedTranslation(original, "en", engine)?.issuer)
+        assertNull(store.find(id, "en", TranslationEngineKind.ML_KIT)?.translation)
+        val retry = store.beginTranslation(id, "en", retry = true, engine = engine)!!
+        assertNull(store.find(id, "en", engine)?.translation?.issuer)
+        assertFalse(store.finishTranslation(ticket, result))
+        assertTrue(store.finishTranslation(retry, result))
+        store.delete(id)
+        assertNull(store.find(id, "en", engine))
+        assertNull(store.cachedTranslation(original, "en", engine))
+        assertFalse(store.finishTranslation(retry, result))
+    }
+
+    @Test fun versionSevenMigrationKeepsTranslationsWithoutInventingIssuerMetadata() {
+        val id = store.insert(capture("[DRILL] Migration original."))!!
+        assertTrue(
+            store.finishTranslation(store.beginTranslation(id, "en")!!, ready("Saved translation"))
+        )
+        store.close()
+        SQLiteDatabase.openDatabase(
+            context.getDatabasePath(name).path,
+            null,
+            SQLiteDatabase.OPEN_READWRITE
+        ).use { db ->
+            val schema = db.rawQuery(
+                "SELECT sql FROM sqlite_master WHERE name='translations'",
+                null
+            ).use {
+                check(it.moveToFirst())
+                it.getString(0)
+            }
+            db.execSQL("ALTER TABLE translations RENAME TO current_translations")
+            db.execSQL(
+                schema.replace(
+                    "issuer_original TEXT, issuer_translated TEXT, issuer_evidence TEXT,",
+                    ""
+                )
+            )
+            val fields = "alert_id,target,engine,revision,phase,text,source_language,search_text," +
+                "same_language,template_id,catalog_revision"
+            db.execSQL("INSERT INTO translations($fields) SELECT $fields FROM current_translations")
+            db.execSQL("DROP TABLE current_translations")
+            db.execSQL(
+                "CREATE INDEX translation_queue ON translations(engine,target,phase,alert_id DESC)"
+            )
+            db.version = 7
+        }
+        store = AlertHistoryStore(context, name)
+        val saved = store.find(id, "en")!!
+        assertEquals("[DRILL] Migration original.", saved.capture.original)
+        assertEquals("Saved translation", saved.translation?.text)
+        assertEquals(TranslationPhase.READY, saved.translation?.phase)
+        assertNull(saved.translation?.issuer)
+    }
+
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
     private lateinit var name: String
     private lateinit var store: AlertHistoryStore

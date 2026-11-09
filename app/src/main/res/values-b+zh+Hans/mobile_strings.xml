@@ -324,4 +324,9 @@
     <string name="mobile_automatic_speech">自动朗读新译文</string>
     <string name="mobile_automatic_speech_description">默认关闭。仅在本应用可见且处于操作焦点时，使用已安装的离线语音朗读刚在本机采集的警报的新译文。离开应用、系统警告或其他音频中断会停止朗读并清空队列。历史记录和附近消息不会自动朗读。使用媒体音量，不会自动下载语音或使用网络语音。</string>
     <string name="mobile_automatic_speech_unavailable">无法自动朗读。请检查离线语音及音频设置。其他应用或系统警告可能中断播放。</string>
+    <string name="mobile_issuer_estimate">发布机构（推测）</string>
+    <string name="mobile_issuer_ai_notice">此名称由AI从正文提取，可能有误。发送者身份未经认证。</string>
+    <string name="mobile_issuer_rule_notice">根据原文格式推测，可能有误。发送者身份未经认证。</string>
+    <string name="mobile_issuer_unknown">无法从原文识别发布机构。</string>
+    <string name="mobile_issuer_evidence">原文依据：%1$s</string>
 </resources>

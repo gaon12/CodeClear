@@ -22,8 +22,12 @@ data class TranslationInput(
 }
 
 sealed interface TranslationResult {
-    data class Ready(val text: String, val source: String, val sameLanguage: Boolean) :
-        TranslationResult
+    data class Ready(
+        val text: String,
+        val source: String,
+        val sameLanguage: Boolean,
+        val issuer: IssuerClaim? = null
+    ) : TranslationResult
     data object NeedsModels : TranslationResult
     data object UnknownLanguage : TranslationResult
     data object Unavailable : TranslationResult

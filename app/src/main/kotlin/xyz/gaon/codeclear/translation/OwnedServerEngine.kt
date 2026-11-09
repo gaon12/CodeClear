@@ -137,7 +137,8 @@ internal class OwnedServerEngine(
                                 is OwnedServerReply.Text -> TranslationResult.Ready(
                                     reply.value,
                                     source,
-                                    false
+                                    false,
+                                    reply.issuer
                                 )
 
                                 OwnedServerReply.Quota -> TranslationResult.Quota

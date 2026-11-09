@@ -13,6 +13,25 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class OwnedServerEngineDeviceTest {
+    @Test fun evidencedIssuerTravelsWithItsProducingTranslation() {
+        val body = "[DRILL] Issued by Agency X. Gate 3, 112."
+        Fixture(body = body).use { f ->
+            val issuer = evidencedIssuer(
+                body,
+                "Agency X",
+                "기관 X",
+                "Issued by Agency X.",
+                IssuerBasis.EXTRACTED_FROM_TEXT
+            )!!
+            f.client.issuer = issuer
+            main { f.engine.authorize(true, serverDigest(token)) }
+            assertEquals(
+                TranslationResult.Ready("[DRILL] Result 3, 112.", "en", false, issuer),
+                f.run()
+            )
+            assertEquals(1, f.client.calls.get())
+        }
+    }
     private val token = "synthetic-client-token-aaaaaaaaaaaaaaaa"
     private val replacement = "synthetic-client-token-bbbbbbbbbbbbbbbb"
 
@@ -180,7 +199,8 @@ class OwnedServerEngineDeviceTest {
     private inner class Fixture(
         source: String = "en",
         waitForLoad: Boolean = true,
-        beforeLoad: () -> Unit = {}
+        beforeLoad: () -> Unit = {},
+        private val body: String = "[DRILL] Gate 3, 112."
     ) : AutoCloseable {
         val state = AtomicReference(ServerAccessState())
         val storage = FakeStorage(beforeLoad)
@@ -207,7 +227,7 @@ class OwnedServerEngineDeviceTest {
                 engine.run(
                     TranslationInput(
                         1,
-                        "[DRILL] Gate 3, 112.",
+                        body,
                         TranslationTarget.KOREAN,
                         TranslationEngineKind.OWNED_SERVER
                     ),
@@ -240,6 +260,7 @@ class OwnedServerEngineDeviceTest {
     }
 
     private class FakeClient : OwnedServerClient {
+        var issuer: IssuerClaim? = null
         val calls = AtomicInteger()
         val deletions = AtomicInteger()
         val lastCredential = AtomicReference<String>()
@@ -257,7 +278,7 @@ class OwnedServerEngineDeviceTest {
             calls.incrementAndGet()
             lastCredential.set(token.fingerprint)
             block()
-            return OwnedServerReply.Text("[DRILL] Result 3, 112.")
+            return OwnedServerReply.Text("[DRILL] Result 3, 112.", issuer)
         }
         override fun clearCache(
             token: ServerAccessToken,

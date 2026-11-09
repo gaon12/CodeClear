@@ -137,7 +137,8 @@ internal class AlertTranslationQueue(
                     result.text,
                     result.source,
                     engine = job.ticket.engine,
-                    sameLanguage = result.sameLanguage
+                    sameLanguage = result.sameLanguage,
+                    issuer = result.issuer
                 )
 
                 TranslationResult.Quota -> SavedTranslation(TranslationPhase.QUOTA)

@@ -1,5 +1,6 @@
 package xyz.gaon.codeclear.mobile
 
+import xyz.gaon.codeclear.translation.IssuerClaim
 import xyz.gaon.codeclear.translation.StandardTranslationAttribution
 import xyz.gaon.codeclear.translation.TranslationEngineKind
 
@@ -70,7 +71,8 @@ data class SavedTranslation(
     val revision: Long = 0,
     val engine: TranslationEngineKind = TranslationEngineKind.ML_KIT,
     val sameLanguage: Boolean = false,
-    val standard: StandardTranslationAttribution? = null
+    val standard: StandardTranslationAttribution? = null,
+    val issuer: IssuerClaim? = null
 )
 
 /** A display group owns side effects; every raw source observation keeps its own identity. */

@@ -17,6 +17,45 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class OwnedServerTransportDeviceTest {
+    @Test fun issuerEvidenceIsCorrelatedAndLegacyNamesNeverBecomeAnAiEstimate() {
+        val body = original + " Issued by Agency X."
+        val text = translation + " 기관 X."
+        val issuer = JSONObject().put("original", "Agency X").put("translated", "기관 X")
+            .put("evidence", "Issued by Agency X.")
+        val json = JSONObject(success()).put("translated_text", text)
+            .put("source_sha256", serverDigest(body)).put("issuer", issuer)
+        val claim = evidencedIssuer(
+            body,
+            "Agency X",
+            "기관 X",
+            "Issued by Agency X.",
+            IssuerBasis.EXTRACTED_FROM_TEXT
+        )
+        assertEquals(
+            OwnedServerReply.Text(text, claim),
+            parseOwnedServerResponse(json.toString(), body, "ko")
+        )
+        for (invalid in listOf(
+            JSONObject(issuer.toString()).put("evidence", "Made up Agency X."),
+            JSONObject(issuer.toString()).put("evidence", ""),
+            JSONObject(issuer.toString()).put("evidence", "x".repeat(2049)),
+            JSONObject(issuer.toString()).put("translated", "기관\u202eX"),
+            JSONObject(issuer.toString()).put("country", "US")
+        )) {
+            json.put("issuer", invalid)
+            assertEquals(
+                OwnedServerReply.Failed,
+                parseOwnedServerResponse(json.toString(), body, "ko")
+            )
+        }
+        issuer.remove("evidence")
+        json.put("issuer", issuer)
+        assertEquals(
+            OwnedServerReply.Text(text),
+            parseOwnedServerResponse(json.toString(), body, "ko")
+        )
+    }
+
     @Test
     fun installationRequestsAndDeletionNeverSendABearerTokenOrProviderKey() {
         val installation = ServerAccessToken.newInstallation()
@@ -90,7 +129,11 @@ class OwnedServerTransportDeviceTest {
                 assertEquals(token.authorization(), request.header("Authorization"))
                 val body = Buffer().also { request.body!!.writeTo(it) }.readUtf8()
                 val json = JSONObject(body)
-                assertEquals(setOf("text", "target_lang"), json.keys().asSequence().toSet())
+                assertEquals(
+                    setOf("text", "target_lang", "response_version"),
+                    json.keys().asSequence().toSet()
+                )
+                assertEquals("2", json.getString("response_version"))
                 assertEquals(original, json.getString("text"))
                 assertEquals("ko", json.getString("target_lang"))
                 response(request, 200, success())
