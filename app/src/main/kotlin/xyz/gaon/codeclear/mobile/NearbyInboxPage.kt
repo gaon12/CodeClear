@@ -61,7 +61,6 @@ internal fun NearbyInboxPage(actions: MobileActions, back: () -> Unit, saved: (L
                 }
             }
             val original = actions.nearby.originals.firstOrNull { it.root == selected }
-            val retainedId = actions.nearby.retainedIds[selected]
             if (selected != null && original != null) {
                 item {
                     SettingsGroup {
@@ -84,10 +83,6 @@ internal fun NearbyInboxPage(actions: MobileActions, back: () -> Unit, saved: (L
                 item {
                     Button(
                         onClick = {
-                            if (retainedId != null) {
-                                saved(retainedId)
-                                return@Button
-                            }
                             saving = true
                             failed = false
                             actions.saveNearby(original.root) { id ->
@@ -102,13 +97,7 @@ internal fun NearbyInboxPage(actions: MobileActions, back: () -> Unit, saved: (L
                         ).testTag("save-nearby")
                     ) {
                         Text(
-                            stringResource(
-                                if (retainedId == null) {
-                                    R.string.mobile_nearby_save
-                                } else {
-                                    R.string.mobile_home_view_history
-                                }
-                            )
+                            stringResource(R.string.mobile_nearby_save)
                         )
                     }
                     if (failed) {

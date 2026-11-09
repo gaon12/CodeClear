@@ -146,7 +146,7 @@
     <string name="mobile_nearby_allow">Autoriser le partage à proximité</string>
     <string name="mobile_nearby_disclosure">Les originaux récemment capturés sont partagés à proximité. L’origine et l’authenticité des messages reçus ne sont pas vérifiées. Ils sont automatiquement conservés dans l’historique privé jusqu’à leur suppression et ne sont pas retransmis.</string>
     <string name="mobile_nearby_foreground">Bluetooth peut continuer en arrière-plan avec une notification permanente. Arrêtez-le ici ou depuis la notification. Aucune coordonnée GPS ni aucun serveur n’est utilisé. Si Android arrête l’application, rouvrez-la.</string>
-    <string name="mobile_nearby_unverified">Reçu à proximité · origine non vérifiée</string>
+    <string name="mobile_nearby_unverified">Ces messages proviennent d’autres appareils et leur origine officielle n’est pas authentifiée. Ils restent ici jusqu’à votre choix de les enregistrer. Aucune traduction, lecture vocale ou retransmission automatique. Les doublons sont bloqués pendant 15 minutes. Vérifiez les consignes officielles avant d’agir.</string>
     <string name="mobile_nearby_inbox">Boîte de proximité</string>
     <plurals name="mobile_nearby_count">
         <item quantity="one">%1$d message récent</item>

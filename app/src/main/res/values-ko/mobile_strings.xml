@@ -146,7 +146,7 @@
     <string name="mobile_nearby_allow">주변 공유 허용</string>
     <string name="mobile_nearby_disclosure">새로 수집한 원문을 주변 사용자에게 전달합니다. 받은 문자의 발신자와 진위는 확인되지 않았습니다. 받은 문자는 기록에 자동 저장되며 직접 삭제할 때까지 보관합니다. 다시 주변으로 전달하지 않습니다.</string>
     <string name="mobile_nearby_foreground">상태 알림을 표시하며 백그라운드에서도 블루투스로 주고받습니다. 여기서 또는 알림에서 중지할 수 있습니다. GPS 좌표나 서버를 사용하지 않습니다. Android가 앱을 중지한 경우 다시 열면 재개합니다.</string>
-    <string name="mobile_nearby_unverified">주변 기기에서 받음 · 출처 미확인</string>
+    <string name="mobile_nearby_unverified">주변 메시지는 공식 발신이 인증되지 않은 다른 기기의 정보입니다. 직접 저장하기 전까지 이 수신함에만 보관되며 자동 번역·자동 읽기·재전파하지 않습니다. 같은 본문의 반복 수신은 15분간 차단합니다. 행동하기 전에 공식 기관의 안내를 확인하세요.</string>
     <string name="mobile_nearby_inbox">주변에서 받은 문자</string>
     <plurals name="mobile_nearby_count">
         <item quantity="other">최근 받은 문자 %1$d개</item>

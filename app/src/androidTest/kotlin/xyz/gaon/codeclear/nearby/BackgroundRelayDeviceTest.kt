@@ -90,14 +90,6 @@ class BackgroundRelayDeviceTest {
                         BleRelay(context, send, known, received, status) { event, code ->
                             if (events.size < 64) events.add("$event:$code")
                         }
-                    },
-                    retain = { original, allowed, complete ->
-                        controller!!.saveNearby(
-                            original,
-                            allowed,
-                            translate = false,
-                            complete = complete
-                        )
                     }
                 ).also {
                     it.configure(true)
@@ -144,9 +136,18 @@ class BackgroundRelayDeviceTest {
                     await(60_000, {
                         "Background receipt missing; radio=${events.take(20)}"
                     }) {
-                        onMain { owner!!.state.retainedIds.isNotEmpty() }
+                        onMain { owner!!.state.originals.isNotEmpty() }
                     }
-                    val id = onMain { owner!!.state.retainedIds.values.first() }
+                    val received = onMain { owner!!.state.originals.first() }
+                    val retained = java.util.concurrent.CompletableFuture<Long?>()
+                    onMain {
+                        controller!!.saveNearby(
+                            received,
+                            owner!!.saveAllowance(received.root),
+                            translate = false
+                        ) { retained.complete(it) }
+                    }
+                    val id = requireNotNull(retained.get(5, TimeUnit.SECONDS))
                     val saved = store.find(id, "en")!!
                     assertTrue("Synthetic title mismatch", TITLE == saved.capture.title)
                     assertTrue("Synthetic original mismatch", BODY == saved.capture.original)

@@ -146,7 +146,7 @@
     <string name="mobile_nearby_allow">Allow nearby sharing</string>
     <string name="mobile_nearby_disclosure">Freshly captured originals are available to nearby users. Received messages have unverified origin and authenticity. They are automatically saved in private history until you delete them and are never forwarded again.</string>
     <string name="mobile_nearby_foreground">Bluetooth sharing can continue in the background with a persistent status notification. Stop it here or from the notification. No GPS coordinates or server are used. Android may stop the app; reopen it to resume.</string>
-    <string name="mobile_nearby_unverified">Nearby delivery · unverified origin</string>
+    <string name="mobile_nearby_unverified">Nearby messages are unverified peer claims, not authenticated official alerts. They stay in this inbox until you choose to save them. They are never automatically translated, read aloud or forwarded. Repeated bodies are suppressed for 15 minutes. Check the original authority before acting.</string>
     <string name="mobile_nearby_inbox">Nearby inbox</string>
     <plurals name="mobile_nearby_count">
         <item quantity="one">%1$d recent message</item>

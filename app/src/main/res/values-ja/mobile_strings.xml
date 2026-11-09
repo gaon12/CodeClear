@@ -146,7 +146,7 @@
     <string name="mobile_nearby_allow">近くとの共有を許可</string>
     <string name="mobile_nearby_disclosure">新たに収集した原文を周辺ユーザーに共有します。受信文の発信元や真偽は未確認です。受信文は履歴に自動保存され、削除するまで残ります。再共有はしません。</string>
     <string name="mobile_nearby_foreground">状態通知を表示し、バックグラウンドでもBluetoothで交換します。ここか通知から停止できます。GPS座標やサーバーは使いません。Androidがアプリを停止した場合は開き直して再開してください。</string>
-    <string name="mobile_nearby_unverified">近くの端末から受信・発信元未確認</string>
+    <string name="mobile_nearby_unverified">近くのメッセージは他の端末から届いた未確認情報で、公式な発信を認証していません。保存を選ぶまでこの受信箱だけに保管し、自動翻訳・自動読み上げ・再転送は行いません。同じ本文は15分間重複受信を抑制します。行動する前に公的機関の案内を確認してください。</string>
     <string name="mobile_nearby_inbox">近くからの受信箱</string>
     <plurals name="mobile_nearby_count">
         <item quantity="other">最近受信したメッセージ %1$d件</item>

@@ -15,8 +15,6 @@ import xyz.gaon.codeclear.mobile.CapturedAlert
 data class NearbyState(
     val status: NearbyStatus = NearbyStatus.OFF,
     val originals: List<NearbyOriginal> = emptyList(),
-    val retainedIds: Map<String, Long> = emptyMap(),
-    val retentionProblem: Boolean = false,
     val backgroundRunning: Boolean = false,
     val backgroundAllowed: Boolean = NearbyAccess.supportsBackgroundSharing()
 )
@@ -28,12 +26,10 @@ class NearbySharing(
     private val availability: () -> NearbyStatus = { NearbyAccess.status(context, sender) },
     private val factory: NearbyRadioFactory = NearbyRadioFactory { send, known, received, status ->
         BleRelay(context, send, known, received, status)
-    },
-    private val retain: ((NearbyOriginal, () -> Boolean, (Long?) -> Unit) -> Unit)? = null
+    }
 ) {
     private val main = Handler(Looper.getMainLooper())
     private val inbox = RelayInbox()
-    private val retainedIds = linkedMapOf<String, Long>()
     private data class LocalExport(
         val capture: CapturedAlert,
         val deadline: Long,
@@ -71,8 +67,6 @@ class NearbySharing(
         if (!enabled) {
             outgoing.clear()
             inbox.clear()
-            retainedIds.clear()
-            state = state.copy(retentionProblem = false)
         }
         refresh()
     }
@@ -137,13 +131,6 @@ class NearbySharing(
         }, { original ->
             main.post {
                 if (generation.get() != ticket || !allowed || !active() || suspended) return@post
-                val entries = inbox.originals(SystemClock.elapsedRealtime())
-                if (entries.size >= 32) {
-                    entries.lastOrNull { it.root in retainedIds }?.let {
-                        inbox.remove(it.root)
-                        retainedIds.remove(it.root)
-                    }
-                }
                 if (inbox.accept(
                         original,
                         System.currentTimeMillis(),
@@ -151,20 +138,6 @@ class NearbySharing(
                     )
                 ) {
                     publish()
-                    retain?.invoke(original, saveAllowance(original.root)) { id ->
-                        main.post retained@{
-                            if (generation.get() != ticket ||
-                                inbox.originals(SystemClock.elapsedRealtime()).none {
-                                    it.root == original.root
-                                }
-                            ) {
-                                return@retained
-                            }
-                            if (id != null) retainedIds[original.root] = id
-                            state = state.copy(retentionProblem = id == null)
-                            publish()
-                        }
-                    }
                 }
             }
         }, { result ->
@@ -225,16 +198,10 @@ class NearbySharing(
         requireMain()
         if (id == null) {
             inbox.clear()
-            retainedIds.clear()
             outgoing.clear()
         } else {
             outgoing.remove(id)
-            retainedIds.filterValues { it == id }.keys.toList().forEach {
-                retainedIds.remove(it)
-                inbox.remove(it)
-            }
         }
-        state = state.copy(retentionProblem = false)
         refresh()
     }
 
@@ -247,7 +214,6 @@ class NearbySharing(
     fun dismiss(root: String) {
         requireMain()
         inbox.remove(root)
-        retainedIds.remove(root)
         publish()
     }
 
@@ -266,8 +232,7 @@ class NearbySharing(
     }
     private fun publish() {
         state = state.copy(
-            originals = inbox.originals(SystemClock.elapsedRealtime()),
-            retainedIds = retainedIds.toMap()
+            originals = inbox.originals(SystemClock.elapsedRealtime())
         )
     }
     private fun requireMain() = check(Looper.myLooper() == Looper.getMainLooper())

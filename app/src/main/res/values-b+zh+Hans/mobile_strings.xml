@@ -146,7 +146,7 @@
     <string name="mobile_nearby_allow">允许附近共享</string>
     <string name="mobile_nearby_disclosure">向附近用户分享新收集的原文。收到的消息来源和真实性未经验证。消息自动保存到私密历史记录中，直到您删除为止，不会再次转发。</string>
     <string name="mobile_nearby_foreground">显示持续状态通知，并可在后台通过蓝牙交换。可在此处或通知中停止。不使用GPS坐标或服务器。如果Android停止了应用，请重新打开以恢复。</string>
-    <string name="mobile_nearby_unverified">来自附近设备 · 来源未验证</string>
+    <string name="mobile_nearby_unverified">附近消息来自其他设备，官方来源未经认证。在您主动保存前，仅保留在此收件箱中，不会自动翻译、朗读或转发。15分钟内屏蔽相同正文的重复消息。采取行动前请核实官方指引。</string>
     <string name="mobile_nearby_inbox">附近收件箱</string>
     <plurals name="mobile_nearby_count">
         <item quantity="other">最近收到%1$d条消息</item>

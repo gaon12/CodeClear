@@ -68,7 +68,7 @@ class MobileScreenNearbyDeviceTest : MobileScreenFixture() {
     }
 
     @Test
-    fun retainedNearbyOriginalOpensHistoryWithoutAnotherSaveRequest() {
+    fun matchingHistoricalBodyStillRequiresAnExplicitPeerSaveRequest() {
         val now = System.currentTimeMillis()
         val original = RelayProtocol.decode(
             RelayProtocol.encode("[DRILL] Stored nearby", "[DRILL] Saved original", now),
@@ -87,8 +87,7 @@ class MobileScreenNearbyDeviceTest : MobileScreenFixture() {
             state = state.copy(records = listOf(saved) + state.records)
             nearby = NearbyState(
                 NearbyStatus.RECEIVE_ONLY,
-                listOf(original),
-                mapOf(original.root to saved.id)
+                listOf(original)
             )
         }
         compose.onNodeWithTag("destination-1").performClick()
@@ -98,7 +97,7 @@ class MobileScreenNearbyDeviceTest : MobileScreenFixture() {
             .performScrollToNode(hasTestTag("save-nearby"))
         compose.onNodeWithTag("save-nearby").performClick()
         compose.onNodeWithTag("history-detail").assertIsDisplayed()
-        compose.runOnIdle { assertEquals(0, nearbySaves) }
+        compose.runOnIdle { assertEquals(1, nearbySaves) }
     }
 
     @Test

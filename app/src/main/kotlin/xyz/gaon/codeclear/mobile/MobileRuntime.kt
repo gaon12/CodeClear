@@ -50,7 +50,7 @@ class MobileRuntime(context: Context) {
         private set
     val detailLanguages = OriginalLanguageIdentifier()
     val speech = SpeechPlayback(context)
-    val nearby: NearbySharing = NearbySharing(context, retain = ::retainNearby)
+    val nearby: NearbySharing = NearbySharing(context)
     private val notifications = ResultNotifications(context)
     internal val alertWindow = DeferredAlertWindow(::notificationStrings)
     internal val alertPresenter = DeferredAlertPresenter(application, alertWindow)
@@ -257,14 +257,6 @@ class MobileRuntime(context: Context) {
             val language = request.languages.singleOrNull() ?: return closeModelDownload()
             models.prepareModel(language, true, request.checkUpdates, modelInventory.downloaded)
         }
-    }
-
-    private fun retainNearby(
-        original: xyz.gaon.codeclear.nearby.NearbyOriginal,
-        allowed: () -> Boolean,
-        complete: (Long?) -> Unit
-    ) {
-        controller.saveNearby(original, allowed, translate = false, complete = complete)
     }
 
     fun configure(options: MobileOptions) {

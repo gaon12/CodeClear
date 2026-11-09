@@ -146,7 +146,7 @@
     <string name="mobile_nearby_allow">Teilen in der Nähe erlauben</string>
     <string name="mobile_nearby_disclosure">Neu erfasste Originale werden mit Nutzern in der Nähe geteilt. Herkunft und Echtheit empfangener Nachrichten sind ungeprüft. Sie bleiben automatisch im privaten Verlauf, bis Sie sie löschen, und werden nicht weitergeleitet.</string>
     <string name="mobile_nearby_foreground">Bluetooth kann mit einer dauerhaften Statusmeldung im Hintergrund weiterlaufen. Stoppen Sie es hier oder in der Meldung. GPS-Koordinaten und Server werden nicht verwendet. Falls Android die App stoppt, öffnen Sie sie erneut.</string>
-    <string name="mobile_nearby_unverified">Aus der Nähe · Herkunft ungeprüft</string>
+    <string name="mobile_nearby_unverified">Nachrichten anderer Geräte sind unbestätigt; eine offizielle Herkunft ist nicht nachgewiesen. Sie bleiben bis zum bewussten Speichern in diesem Posteingang. Keine automatische Übersetzung, Sprachausgabe oder Weiterleitung. Gleiche Texte werden 15 Minuten unterdrückt. Prüfen Sie vor dem Handeln die offiziellen Hinweise.</string>
     <string name="mobile_nearby_inbox">Postfach aus der Nähe</string>
     <plurals name="mobile_nearby_count">
         <item quantity="one">%1$d kürzlich empfangene Nachricht</item>

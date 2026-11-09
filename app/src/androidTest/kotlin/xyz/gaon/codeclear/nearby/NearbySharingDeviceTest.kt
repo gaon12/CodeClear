@@ -157,18 +157,17 @@ class NearbySharingDeviceTest {
     }
 
     @Test
-    fun retentionFailurePreservesTheOriginalAndTurningSharingOffClearsItsNotice() {
+    fun receiptStaysQuarantinedAndCannotPublishOrCreateAHistoryEntry() {
         lateinit var connection: FakeRadio
         val original = original()
         val owner = onMain {
             NearbySharing(
                 instrumentation.targetContext,
-                sender = false,
-                availability = { NearbyStatus.RECEIVE_ONLY },
+                sender = true,
+                availability = { NearbyStatus.LISTENING },
                 factory = NearbyRadioFactory { _, _, receive, _ ->
                     FakeRadio(receive).also { connection = it }
-                },
-                retain = { _, _, complete -> complete(null) }
+                }
             ).also {
                 it.configure(true)
                 it.foreground(true)
@@ -176,12 +175,12 @@ class NearbySharingDeviceTest {
         }
         try {
             onMain { connection.receive(original) }
-            onMain { /* Drain the posted receipt before checking the retention acknowledgment. */ }
             onMain {
-                assertTrue(owner.state.retentionProblem)
-                assertEquals(original, owner.original(original.root))
+                assertEquals(listOf(original), owner.state.originals)
+                owner.offer(42, capture().copy(source = CaptureSource.PEER))
+                assertTrue(connection.published.isEmpty())
                 owner.configure(false)
-                assertFalse(owner.state.retentionProblem)
+                assertTrue(owner.state.originals.isEmpty())
             }
         } finally {
             onMain {
@@ -192,10 +191,8 @@ class NearbySharingDeviceTest {
     }
 
     @Test
-    fun acceptedReceiptIsRetainedAndLateAcknowledgmentCannotRestoreDeletedInbox() {
+    fun explicitSaveAllowanceExpiresOnDismissalAndCannotRestoreAnOldReceipt() {
         lateinit var connection: FakeRadio
-        var acknowledgment: ((Long?) -> Unit)? = null
-        var allowance: (() -> Boolean)? = null
         val original = original()
         val owner = onMain {
             NearbySharing(
@@ -204,11 +201,6 @@ class NearbySharingDeviceTest {
                 availability = { NearbyStatus.RECEIVE_ONLY },
                 factory = NearbyRadioFactory { _, _, receive, _ ->
                     FakeRadio(receive).also { connection = it }
-                },
-                retain = { received, allowed, complete ->
-                    assertEquals(original, received)
-                    allowance = allowed
-                    acknowledgment = complete
                 }
             ).also {
                 it.configure(true)
@@ -218,17 +210,19 @@ class NearbySharingDeviceTest {
         try {
             onMain { connection.receive(original) }
             onMain {
-                assertTrue(allowance!!())
-                acknowledgment!!(42)
+                val allowance = owner.saveAllowance(original.root)
+                assertTrue(allowance())
+                owner.dismiss(original.root)
+                assertFalse(allowance())
+                connection.receive(
+                    original.copy(
+                        root = "a".repeat(64),
+                        capturedAt =
+                            original.capturedAt + 1
+                    )
+                )
             }
-            onMain {
-                assertEquals(42L, owner.state.retainedIds[original.root])
-                assertTrue(connection.published.isEmpty())
-                owner.deleted(null)
-                assertFalse(allowance!!())
-                acknowledgment!!(42)
-            }
-            onMain { assertTrue(owner.state.retainedIds.isEmpty()) }
+            onMain { assertTrue(owner.state.originals.isEmpty()) }
         } finally {
             onMain {
                 owner.configure(false)

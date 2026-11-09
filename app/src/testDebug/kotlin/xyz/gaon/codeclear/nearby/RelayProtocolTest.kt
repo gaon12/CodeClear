@@ -78,13 +78,17 @@ class RelayProtocolTest {
         assertTrue(inbox.accept(first, now, 1))
         inbox.remove(first.root)
         assertFalse(inbox.accept(first, now, 2))
-        repeat(7) { assertTrue(inbox.accept(RelayProtocol.decode(packet(), now)!!, now, 3)) }
+        repeat(7) {
+            assertTrue(
+                inbox.accept(RelayProtocol.decode(packet("[DRILL] Batch $it"), now)!!, now, 3)
+            )
+        }
         assertFalse(inbox.accept(RelayProtocol.decode(packet(), now)!!, now, 4))
         repeat(3) { minute ->
-            repeat(8) {
+            repeat(8) { index ->
                 assertTrue(
                     inbox.accept(
-                        RelayProtocol.decode(packet(), now)!!,
+                        RelayProtocol.decode(packet("[DRILL] Batch $minute/$index"), now)!!,
                         now,
                         (minute + 1) * 60010L
                     )
@@ -92,7 +96,7 @@ class RelayProtocolTest {
             }
         }
         assertEquals(31, inbox.originals(190000).size)
-        assertTrue(inbox.accept(RelayProtocol.decode(packet(), now)!!, now, 240040))
+        assertTrue(inbox.accept(RelayProtocol.decode(packet("[DRILL] Last"), now)!!, now, 240040))
         assertFalse(inbox.accept(RelayProtocol.decode(packet(), now)!!, now, 240041))
         assertEquals(32, inbox.originals(RelayProtocol.LIFETIME + 240041).size)
         inbox.clear()
@@ -152,6 +156,39 @@ class RelayProtocolTest {
         assertEquals(0L, budget.reserveDelay(31000))
         assertTrue(budget.reserveDelay(31000) > 0)
         assertEquals(0L, budget.reserveDelay(62000))
+    }
+
+    @Test
+    fun changedNonceTitleAndTimeCannotReplayTheSameBodyAfterDismissal() {
+        val inbox = RelayInbox()
+        val first = RelayProtocol.decode(packet(), now)!!
+        assertTrue(inbox.accept(first, now, 1))
+        inbox.remove(first.root)
+        val replay = RelayProtocol.decode(
+            RelayProtocol.encode("Forged title", first.body, now + 1),
+            now
+        )!!
+        assertNotEquals(first.root, replay.root)
+        assertFalse(inbox.accept(replay, now, 2))
+        assertTrue(inbox.originals(2).isEmpty())
+        val later = replay.copy(capturedAt = now + RelayProtocol.LIFETIME)
+        assertTrue(inbox.accept(later, now + RelayProtocol.LIFETIME, RelayProtocol.LIFETIME + 2))
+    }
+
+    @Test
+    fun directReceiptBoundaryRejectsMalformedAndImpossibleTimeClaims() {
+        val first = RelayProtocol.decode(packet(), now)!!
+        for (invalid in listOf(
+            first.copy(root = "invalid"),
+            first.copy(body = " "),
+            first.copy(title = "x".repeat(257)),
+            first.copy(body = "x".repeat(8193)),
+            first.copy(capturedAt = 0),
+            first.copy(capturedAt = Long.MAX_VALUE),
+            first.copy(capturedAt = now - RelayProtocol.LIFETIME)
+        )) {
+            assertFalse(RelayInbox().accept(invalid, now, 1))
+        }
     }
 
     private fun resign(bytes: ByteArray): ByteArray {
