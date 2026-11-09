@@ -329,4 +329,8 @@
     <string name="mobile_issuer_rule_notice">根據原文格式推測，可能有誤。傳送者身分未經認證。</string>
     <string name="mobile_issuer_unknown">無法從原文識別發布機構。</string>
     <string name="mobile_issuer_evidence">原文依據：%1$s</string>
+    <string name="mobile_notification_banners">通知橫幅</string>
+    <string name="mobile_notification_banner_quiet">僅顯示於通知欄</string>
+    <string name="mobile_notification_banner_guidance">若要允許橫幅，請在Android通知設定中啟用彈出通知或高重要性。勿擾模式或裝置設定可能阻止橫幅顯示。</string>
+    <string name="mobile_notification_banner_high">高重要性</string>
 </resources>

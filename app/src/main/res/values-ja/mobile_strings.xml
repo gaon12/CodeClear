@@ -329,4 +329,8 @@
     <string name="mobile_issuer_rule_notice">原文の形式から推定した名称です。誤りの可能性があり、送信者の身元は認証されていません。</string>
     <string name="mobile_issuer_unknown">原文から発信機関を特定できません。</string>
     <string name="mobile_issuer_evidence">原文の該当箇所：%1$s</string>
+    <string name="mobile_notification_banners">通知バナー</string>
+    <string name="mobile_notification_banner_quiet">通知欄のみ</string>
+    <string name="mobile_notification_banner_guidance">バナーを表示するにはAndroidの通知設定でポップアップまたは高い重要度を許可してください。サイレントモードや端末の設定により、バナーが表示されない場合があります。</string>
+    <string name="mobile_notification_banner_high">高い重要度</string>
 </resources>

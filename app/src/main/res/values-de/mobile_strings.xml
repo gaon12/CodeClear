@@ -330,4 +330,8 @@
     <string name="mobile_issuer_rule_notice">Aus dem Nachrichtenformat geschätzt. Der Name kann falsch sein. Die Absenderidentität ist unbestätigt.</string>
     <string name="mobile_issuer_unknown">Die herausgebende Stelle konnte im Original nicht ermittelt werden.</string>
     <string name="mobile_issuer_evidence">Originalausschnitt: %1$s</string>
+    <string name="mobile_notification_banners">Benachrichtigungsbanner</string>
+    <string name="mobile_notification_banner_quiet">Nur im Benachrichtigungsfeld</string>
+    <string name="mobile_notification_banner_guidance">Erlauben Sie Pop-up-Benachrichtigungen oder hohe Wichtigkeit in den Android-Benachrichtigungseinstellungen. Nicht stören und Geräteeinstellungen können Banner unterdrücken.</string>
+    <string name="mobile_notification_banner_high">Hohe Wichtigkeit</string>
 </resources>

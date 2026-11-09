@@ -1,6 +1,7 @@
 package xyz.gaon.codeclear
 
 import android.Manifest
+import android.app.NotificationManager
 import android.content.ActivityNotFoundException
 import android.content.ClipboardManager
 import android.content.Intent
@@ -486,7 +487,13 @@ class MainActivity : AppCompatActivity() {
         ) {
             notificationRequest.launch(Manifest.permission.POST_NOTIFICATIONS)
         } else {
-            openSettings(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+            openSettings(
+                if (getSystemService(NotificationManager::class.java).areNotificationsEnabled()) {
+                    Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS
+                } else {
+                    Settings.ACTION_APP_NOTIFICATION_SETTINGS
+                }
+            )
         }
     }
 
@@ -500,9 +507,13 @@ class MainActivity : AppCompatActivity() {
                 Uri.fromParts("package", packageName, null)
         }
         if (action ==
-            Settings.ACTION_APP_NOTIFICATION_SETTINGS
+            Settings.ACTION_APP_NOTIFICATION_SETTINGS || action ==
+            Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS
         ) {
             intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+        }
+        if (action == Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS) {
+            intent.putExtra(Settings.EXTRA_CHANNEL_ID, ResultNotifications.CHANNEL)
         }
         try {
             startActivity(intent)

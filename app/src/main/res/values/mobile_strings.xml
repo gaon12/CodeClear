@@ -330,4 +330,8 @@
     <string name="mobile_issuer_rule_notice">Estimated from the message format. It may be wrong. The sender’s identity is unverified.</string>
     <string name="mobile_issuer_unknown">The issuing organization could not be identified from the original.</string>
     <string name="mobile_issuer_evidence">Original excerpt: %1$s</string>
+    <string name="mobile_notification_banners">Notification banners</string>
+    <string name="mobile_notification_banner_quiet">Notification shade only</string>
+    <string name="mobile_notification_banner_guidance">To allow banners, open Android notification settings and enable pop-up notifications or high importance. Android may suppress banners during Do Not Disturb or because of device settings.</string>
+    <string name="mobile_notification_banner_high">High importance</string>
 </resources>

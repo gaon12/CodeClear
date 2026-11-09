@@ -1,5 +1,6 @@
 package xyz.gaon.codeclear.mobile
 
+import android.app.NotificationManager
 import android.graphics.Bitmap
 import android.provider.Settings
 import android.view.WindowManager
@@ -37,6 +38,30 @@ import xyz.gaon.codeclear.translation.TranslationTarget
 
 /** Settings navigation, appearance, app information, Labs, and themed previews. */
 class MobileScreenSettingsDeviceTest : MobileScreenFixture() {
+    @Test
+    fun quietNotificationChannelsOfferSystemBannerSettingsAndRefreshAfterReturning() {
+        compose.runOnIdle {
+            presentationAccess = presentationAccess.copy(
+                notificationImportance = NotificationManager.IMPORTANCE_LOW
+            )
+            fontScale = 1.8f
+        }
+        openSettingsPage(SettingsPage.NOTIFICATIONS)
+        compose.onNodeWithText(text(R.string.mobile_notification_banner_quiet))
+            .performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_notification_banners))
+            .performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(1, notificationRequests)
+            presentationAccess = presentationAccess.copy(
+                notificationImportance = NotificationManager.IMPORTANCE_HIGH
+            )
+        }
+        compose.onNodeWithText(text(R.string.mobile_notification_banner_high))
+            .performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_notification_banner_quiet)).assertDoesNotExist()
+    }
+
     @Test
     fun settingsShowSelectedRadioChoicesAndKeepNotificationPermissionSystemControlled() {
         openSettingsPage(SettingsPage.APPEARANCE)

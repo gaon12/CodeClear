@@ -1,5 +1,6 @@
 package xyz.gaon.codeclear.mobile
 
+import android.app.NotificationManager
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
@@ -17,6 +18,29 @@ import xyz.gaon.codeclear.R
 internal fun PresentationSettings(options: MobileOptions, actions: MobileActions) {
     var disclosure by remember { mutableStateOf(false) }
     val access = actions.presentationAccess
+    SettingsGroup(
+        footer = stringResource(R.string.mobile_notification_banner_guidance),
+        tag = "notification-banner-group"
+    ) {
+        SettingRow(
+            stringResource(R.string.mobile_notification_banners),
+            stringResource(
+                when {
+                    !actions.notificationsAllowed -> R.string.mobile_off
+
+                    access.notificationImportance >= NotificationManager.IMPORTANCE_HIGH ->
+                        R.string.mobile_notification_banner_high
+
+                    access.notificationImportance == NotificationManager.IMPORTANCE_UNSPECIFIED ->
+                        R.string.mobile_compat_unknown
+
+                    else -> R.string.mobile_notification_banner_quiet
+                }
+            ),
+            onClick = actions.notificationPermission,
+            navigation = true
+        )
+    }
     SettingsGroup(
         footer = stringResource(R.string.mobile_deferred_popup_summary),
         tag = "popup-control-group"

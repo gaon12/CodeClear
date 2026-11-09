@@ -30,6 +30,22 @@ internal fun boundedNotificationBody(body: String): String {
     return body.take(end) + "…"
 }
 
+/** Existing channel choices belong to Android and the user; creating it again cannot raise them. */
+internal fun prepareResultChannel(
+    context: Context,
+    channelId: String = ResultNotifications.CHANNEL
+): NotificationChannel {
+    val manager = context.getSystemService(NotificationManager::class.java)
+    manager.createNotificationChannel(
+        NotificationChannel(
+            channelId,
+            context.getString(R.string.result_channel),
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply { setShowBadge(false) }
+    )
+    return checkNotNull(manager.getNotificationChannel(channelId))
+}
+
 /** Show bounded alert contents with a redacted public version and identifier-only deep links. */
 class ResultNotifications(private val context: Context) {
     private val manager = context.getSystemService(NotificationManager::class.java)
@@ -46,6 +62,10 @@ class ResultNotifications(private val context: Context) {
     private var cancellationTask: Runnable? = null
     private var cancellationRevision = 0L
 
+    init {
+        prepareResultChannel(context)
+    }
+
     @Synchronized
     fun post(
         id: Long,
@@ -57,14 +77,7 @@ class ResultNotifications(private val context: Context) {
         require(id > 0 && target in HistoryText.targets)
         require(body.length in 1..16384 && body.isNotBlank())
         if (!allowed()) return
-        manager.createNotificationChannel(
-            NotificationChannel(
-                CHANNEL,
-                strings.getString(R.string.result_channel),
-                NotificationManager.IMPORTANCE_LOW
-            )
-                .apply { setShowBadge(false) }
-        )
+        prepareResultChannel(strings)
         val tag = PREFIX + id
         cancelled.remove(tag)
         restorePosted()
@@ -117,7 +130,7 @@ class ResultNotifications(private val context: Context) {
             .setStyle(Notification.BigTextStyle().bigText(display))
             .setContentIntent(action)
             .setGroup(GROUP)
-            .setGroupAlertBehavior(Notification.GROUP_ALERT_SUMMARY)
+            .setGroupAlertBehavior(Notification.GROUP_ALERT_CHILDREN)
             .setVisibility(Notification.VISIBILITY_PRIVATE)
             .setPublicVersion(publicView)
             .setCategory(Notification.CATEGORY_MESSAGE)
