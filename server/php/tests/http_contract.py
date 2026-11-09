@@ -220,6 +220,7 @@ try {
         "source_sha256": hashlib.sha256(TEXT.encode()).hexdigest(),
     }
     cases = [
+        ({"body": json.dumps({"text": TEXT, "response_version": "3"}).encode()}, 400),
         ({"token": None, "body": b""}, 401),
         ({"token": "synthetic-unrecognized-client-aaaaaaaa", "body": b""}, 401),
         ({"method": "GET", "body": None}, 405),
@@ -234,6 +235,15 @@ try {
         status, result, _ = request(server.url, **arguments)
         assert status == expected, (status, expected)
         assert set(result) == {"error"}
+    status, current, _ = request(
+        server.url,
+        body=json.dumps(
+            {"text": TEXT, "target_lang": "en", "response_version": "2"}
+        ).encode(),
+    )
+    assert status == 200 and current == dict(
+        response, issuer={"original": "", "translated": "", "evidence": ""}
+    )
     status, result, _ = request(server.url, method="DELETE", body=b"")
     assert status == 200 and result == {"cleared": True}
     assert request(server.url, token=OTHER)[0] == 200

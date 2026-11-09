@@ -270,11 +270,12 @@ final readonly class TranslationRequest
     public string $text;
     public string $target;
     public string $sourceHash;
+    public string $responseVersion;
 
     public function __construct(string $json)
     {
         $values = stringObject($json, MAX_REQUEST_BYTES);
-        if (array_diff(array_keys($values), ['text', 'target_lang']) !== [] || !isset($values['text'])) {
+        if (array_diff(array_keys($values), ['text', 'target_lang', 'response_version']) !== [] || !isset($values['text'])) {
             throw new ApiFailure(400, 'invalid_fields');
         }
         $this->text = $values['text'];
@@ -289,6 +290,10 @@ final readonly class TranslationRequest
             throw new ApiFailure(400, 'unsupported_target');
         }
         $this->sourceHash = hash('sha256', $this->text);
+        $this->responseVersion = $values['response_version'] ?? '1';
+        if (!in_array($this->responseVersion, ['1', '2'], true)) {
+            throw new ApiFailure(400, 'unsupported_response_version');
+        }
     }
 }
 
@@ -736,10 +741,32 @@ final class TranslationService
 
     private function response(array $result, TranslationRequest $request): array
     {
+        $issuer = ['original' => $result['issuer_original'], 'translated' => $result['issuer_translated']];
+        if ($request->responseVersion === '2') {
+            // Old cached translations remain reusable; unusable metadata stays unknown without another inference.
+            if (!safeIssuerEstimate($result, $request->text)) {
+                $issuer = ['original' => '', 'translated' => ''];
+            }
+            $issuer['evidence'] = $issuer['original'] === '' ? '' : $result['issuer_evidence'];
+        }
         return ['translated_text' => $result['translated_text'],
-            'issuer' => ['original' => $result['issuer_original'], 'translated' => $result['issuer_translated']],
+            'issuer' => $issuer,
             'target_lang' => $request->target, 'source_sha256' => $request->sourceHash];
     }
+}
+
+/** Text-derived attribution is never proof of source authenticity or permission to use the service. */
+function safeIssuerEstimate(array $result, string $original): bool
+{
+    $name = $result['issuer_original'];
+    $translated = $result['issuer_translated'];
+    $evidence = $result['issuer_evidence'];
+    return $name !== '' && trim($name) !== '' && trim($translated) !== '' &&
+        strlen($name) <= 512 && strlen($translated) <= 1024 && strlen($evidence) <= 2048 &&
+        mb_strlen($name, 'UTF-8') <= 256 && mb_strlen($translated, 'UTF-8') <= 256 &&
+        !preg_match('/[\x00-\x1f\x7f\x{202a}-\x{202e}\x{2066}-\x{2069}]/u', $name . $translated) &&
+        !preg_match('/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f\x{202a}-\x{202e}\x{2066}-\x{2069}]/u', $evidence) &&
+        str_contains($original, $evidence) && str_contains($evidence, $name);
 }
 
 function isRuntimeCompatible(int $version): bool

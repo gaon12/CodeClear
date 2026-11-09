@@ -78,8 +78,8 @@ were reviewed on 2026-11-02.
 
 ## HTTP contract
 
-Send `POST /api.php` with `Authorization: Bearer <client-token>` and
-`Content-Type: application/json`:
+Send `POST /api.php` with an installation header or a legacy Bearer credential
+as described above, plus `Content-Type: application/json`:
 
 ```json
 { "text": "[DRILL] Gate 3, call 112.", "target_lang": "en" }
@@ -103,6 +103,19 @@ Successful responses contain only:
 
 The client must match the digest and target to its pending original before
 attaching the result. Missing or uncertain issuers remain empty strings.
+
+Updated clients can add `"response_version":"2"` to receive the exact source
+excerpt as `issuer.evidence`. The other fields stay the same; version 1 remains
+the default for existing installed clients. Both versions reuse the same cached
+inference, including already-stored issuer evidence. No prompt/model change or
+extra request is required just for attribution. Unsupported versions are rejected
+before provider work. Unsafe or oversized cached issuer metadata becomes empty
+in version 2 while the saved translation remains reusable.
+
+An organization appearing in a message can be forged. Even a literal excerpt and
+a plausible LLM extraction cannot establish who actually transmitted the message.
+Do not use this metadata to authorize the API, label an alert official, assign a
+severity, trust a peer or promote text into a shared public cache.
 Nonempty issuers require a verbatim source excerpt and a literal issuer
 substring. They remain **text-derived, unverified claims**; these checks do
 not authenticate an organization or prove translation accuracy. Strict field,

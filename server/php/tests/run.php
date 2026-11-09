@@ -607,6 +607,51 @@ $test('failed anonymous provider work consumes its network day allowance', stati
     check($h->calls === 1);
 });
 
+$test('versioned issuer evidence reuses the existing translation without changing legacy responses', static function () use ($fixture): void {
+    $h = $fixture();
+    $original = '[DRILL] Issued by Agency X. Gate 3.';
+    $h->provider = static fn (): array => envelope(['translated_text' => $original,
+        'issuer_original' => 'Agency X', 'issuer_translated' => '기관 X',
+        'issuer_evidence' => 'Issued by Agency X.']);
+    $legacy = $h->request($original);
+    check(array_keys($legacy['issuer']) === ['original', 'translated']);
+    $current = $h->service->handle(
+        'POST',
+        'Bearer ' . Harness::TOKEN,
+        'application/json',
+        encode(['text' => $original, 'target_lang' => 'en', 'response_version' => '2'])
+    );
+    check($current['issuer'] === ['original' => 'Agency X', 'translated' => '기관 X',
+        'evidence' => 'Issued by Agency X.']);
+    check($h->request($original) === $legacy && $h->calls === 1);
+    foreach (['0', '3', 'true'] as $version) {
+        rejected(fn () => $h->service->handle(
+            'POST',
+            'Bearer ' . Harness::TOKEN,
+            'application/json',
+            encode(['text' => $original, 'response_version' => $version])
+        ), 400);
+    }
+    check($h->calls === 1);
+});
+
+$test('unsafe cached issuer fields become unknown in version two without another provider call', static function () use ($fixture): void {
+    $h = $fixture();
+    $original = '[DRILL] Issued by Agency X. Gate 3.';
+    $h->provider = static fn (): array => envelope(['translated_text' => $original,
+        'issuer_original' => 'Agency X', 'issuer_translated' => "Agency\u{202e}X",
+        'issuer_evidence' => 'Issued by Agency X.']);
+    $h->request($original);
+    $response = $h->service->handle(
+        'POST',
+        'Bearer ' . Harness::TOKEN,
+        'application/json',
+        encode(['text' => $original, 'response_version' => '2', 'target_lang' => 'en'])
+    );
+    check($response['issuer'] === ['original' => '', 'translated' => '', 'evidence' => '']);
+    check($response['translated_text'] === $original && $h->calls === 1);
+});
+
 $failed = 0;
 $total = count($tests);
 try {
