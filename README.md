@@ -61,6 +61,14 @@ Japanese, French, German, Simplified Chinese, and Traditional Chinese.
   saves one. They are never automatically translated, spoken or forwarded. Same-body
   peer replays with changed occurrence IDs are suppressed for 15 minutes. These
   controls do not authenticate a sender or prove official origin.
+- Alert details label issuing organizations as estimates and show their source
+  excerpt. The CodeClear service can extract a name with AI; other paths use a
+  bounded local rule for reviewed agency labels at the start or end of the text.
+  Unknown and ambiguous cases remain unknown. Both methods can be wrong, and a
+  forged original can name a real authority. These estimates never establish
+  sender identity, official severity or peer trust, and are excluded from speech.
+  Saved service estimates follow the translation's cache, retry and deletion
+  lifecycle; displaying one does not request another inference.
 - Alert history stays in app-private storage until deletion. App backup and device
   transfer are disabled. Remote permission covers automatic captured-alert
   translation and requested historical/peer-original translations. Nearby sharing
@@ -72,6 +80,9 @@ Japanese, French, German, Simplified Chinese, and Traditional Chinese.
   revision, coordinating concurrent misses with a single lease. Results expire
   within 30 days without extending on reuse. Installation, network, service-wide
   and provider limits bound anonymous work. See [private builds](tools/PRIVATE_BUILDS.md).
+  Anonymous provider misses also have a network-peer daily budget that survives
+  installation rotation and private-cache deletion. Shared networks can exhaust
+  this budget together; it does not authenticate callers or stop distributed abuse.
   Arbitrary provider endpoints and provider-key integration remain out of scope.
 
 [Google Play materials](distribution/play/README.md) include localized listing

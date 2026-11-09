@@ -112,6 +112,13 @@ extra request is required just for attribution. Unsupported versions are rejecte
 before provider work. Unsafe or oversized cached issuer metadata becomes empty
 in version 2 while the saved translation remains reusable.
 
+Deploy this compatible server update before distributing the updated Android
+client, which requests version 2. Older servers reject its additional request
+field; the app does not silently retry a different contract or provider. A legacy
+response without evidence can supply a translation, but the updated app ignores
+its issuer fields. No live deployment or provider-quality validation is implied
+by the repository's synthetic tests.
+
 An organization appearing in a message can be forged. Even a literal excerpt and
 a plausible LLM extraction cannot establish who actually transmitted the message.
 Do not use this metadata to authorize the API, label an alert official, assign a
