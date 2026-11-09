@@ -508,15 +508,17 @@ final class CacheStore
             }
             $this->execute('DELETE FROM scopes WHERE scope IN (SELECT s.scope FROM scopes s
                 WHERE updated_ms<? AND NOT EXISTS
-                (SELECT 1 FROM cache WHERE cache.scope=s.scope) LIMIT 100)', [$now - 2592000000]);
+                (SELECT 1 FROM cache WHERE cache.scope=s.scope) LIMIT 100)', [$now - 300000]);
             $existing = $this->execute('SELECT generation FROM scopes WHERE scope=?', [$scope])->fetchColumn();
             if ($existing === false && (int) $this->execute('SELECT COUNT(*) FROM scopes')->fetchColumn() >= 10000) {
                 throw new ApiFailure(503, 'scope_capacity_reached', 60);
             }
-            $this->execute('INSERT INTO scopes(scope,generation,updated_ms) VALUES(?,0,?)
-                ON CONFLICT(scope) DO UPDATE SET updated_ms=excluded.updated_ms', [$scope, $now]);
+            // An expired empty scope must never reuse the generation of a delayed admitted request.
+            $generation = $existing === false ? random_int(1, PHP_INT_MAX >> 1) : (int) $existing;
+            $this->execute('INSERT INTO scopes(scope,generation,updated_ms) VALUES(?,?,?)
+                ON CONFLICT(scope) DO UPDATE SET updated_ms=excluded.updated_ms', [$scope, $generation, $now]);
             $this->budget('client:' . $scope . ':' . $minute, $config->clientPerMinute, ($minute + 2) * 60000);
-            return $existing === false ? 0 : (int) $existing;
+            return $generation;
         });
     }
 

@@ -542,6 +542,28 @@ $test('anonymous opt-out and concurrent deletion prevent late cache restoration'
     }
 });
 
+$test('empty scope rotation is reclaimed without reviving a delayed admitted request', static function () use ($fixture): void {
+    $h = $fixture(['CODECLEAR_ALLOW_ANONYMOUS' => 'true']);
+    $id = str_repeat('a', 64);
+    $scope = $h->config->authenticate('', $id);
+    $old = $h->store->admit($scope, $h->config, $h->now);
+    for ($index = 0; $index < 30; $index++) {
+        $h->store->admit(hash('sha256', 'synthetic-scope-' . $index), $h->config, $h->now);
+    }
+    $h->now += 300001;
+    $fresh = $h->store->admit($scope, $h->config, $h->now);
+    check($fresh !== $old);
+    $db = new PDO('sqlite:' . $h->path);
+    check((int) $db->query('SELECT COUNT(*) FROM scopes')->fetchColumn() === 1);
+    $db = null;
+    $request = new TranslationRequest(encode(['text' => '[DRILL] Gate 3.', 'target_lang' => 'en']));
+    $key = $h->store->key($scope, $request, $h->config);
+    rejected(fn () => $h->store->claim($key, $scope, $request, $h->config, $h->now, $old), 409, 'translation_cancelled');
+    check($h->rows() === [] && $h->calls === 0);
+    $h->store->claim($key, $scope, $request, $h->config, $h->now, $fresh);
+    check(count($h->rows()) === 1);
+});
+
 $failed = 0;
 $total = count($tests);
 try {
