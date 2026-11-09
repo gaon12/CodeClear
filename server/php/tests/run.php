@@ -564,6 +564,20 @@ $test('empty scope rotation is reclaimed without reviving a delayed admitted req
     check(count($h->rows()) === 1);
 });
 
+$test('anonymous identities cannot collide with a legacy installation-labelled client', static function () use ($fixture): void {
+    $digest = hash('sha256', Harness::TOKEN);
+    $h = $fixture(['CODECLEAR_ALLOW_ANONYMOUS' => 'true',
+        'CODECLEAR_CLIENT_TOKENS' => encode(['installation' => $digest])]);
+    $body = encode(['text' => '[DRILL] Gate 3, call 112.', 'target_lang' => 'en']);
+    check($h->config->authenticate('Bearer ' . Harness::TOKEN) !== $h->config->authenticate('', $digest));
+    $legacy = $h->service->handle('POST', 'Bearer ' . Harness::TOKEN, 'application/json', $body);
+    $h->service->handle('POST', '', 'application/json', $body, $digest);
+    check($h->calls === 2 && count($h->rows()) === 2);
+    $h->service->handle('DELETE', '', '', '', $digest);
+    check($h->service->handle('POST', 'Bearer ' . Harness::TOKEN, 'application/json', $body) === $legacy);
+    check($h->calls === 2 && count($h->rows()) === 1);
+});
+
 $failed = 0;
 $total = count($tests);
 try {

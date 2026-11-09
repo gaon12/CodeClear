@@ -216,7 +216,7 @@ final readonly class Configuration
     {
         if ($authorization === '' && $this->allowAnonymous &&
             preg_match('/^[a-f0-9]{64}$/D', $installation) === 1) {
-            return hash_hmac('sha256', "installation\0" . $installation, $this->cacheSecret);
+            return hash_hmac('sha256', "installation\0v1\0" . $installation, $this->cacheSecret);
         }
         if ($installation !== '') {
             throw new ApiFailure(401, 'unauthorized');
