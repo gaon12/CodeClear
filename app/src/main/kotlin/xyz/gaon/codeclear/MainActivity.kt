@@ -86,6 +86,7 @@ class MainActivity : AppCompatActivity() {
         notificationRequested = savedInstanceState?.getBoolean("notification_requested") ?: false
         systemSettingsOpened = savedInstanceState?.getBoolean("system_settings_opened") ?: false
         mobileRuntime.resumeProduct()
+        mobileRuntime.automaticSpeech.foreground(hasWindowFocus())
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         openDestination(intent)
         enableEdgeToEdge()
@@ -234,10 +235,10 @@ class MainActivity : AppCompatActivity() {
                             speechState = runtime.speech.state,
                             readAloud = { key, body, language ->
                                 if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
-                                    runtime.speech.speak(key, body, language)
+                                    runtime.automaticSpeech.speak(key, body, language)
                                 }
                             },
-                            stopReading = runtime.speech::stop,
+                            stopReading = runtime.automaticSpeech::stop,
                             modelInventory = runtime.modelInventory,
                             modelPreparation = runtime.preparation,
                             refreshModels = runtime.inventory::refresh,
@@ -333,6 +334,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         mobileRuntime.resumeProduct()
+        mobileRuntime.automaticSpeech.foreground(hasWindowFocus())
         refreshAccess()
         mobileRuntime.nearby.foreground(true)
         mobileRuntime.nearby.recheckAccess()
@@ -349,12 +351,17 @@ class MainActivity : AppCompatActivity() {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
+        mobileRuntime.automaticSpeech.foreground(
+            hasFocus && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED) &&
+                !isFinishing && !isDestroyed
+        )
         mobileRuntime.alertWindow.focus(this, hasFocus)
         if (hasFocus && !isFinishing && !isDestroyed) refreshAccess()
     }
 
     override fun onPause() {
         systemSettingsRequest++
+        mobileRuntime.automaticSpeech.foreground(false)
         mobileRuntime.alertPresenter.activityChanged()
         mobileRuntime.alertWindow.focus(this, false)
         super.onPause()
@@ -364,7 +371,7 @@ class MainActivity : AppCompatActivity() {
         mobileRuntime.alertWindow.stopped(this)
         mobileRuntime.alertPresenter.activityChanged()
         contentResolver.unregisterContentObserver(accessObserver)
-        mobileRuntime.speech.stop()
+        mobileRuntime.automaticSpeech.foreground(false)
         mobileRuntime.nearby.foreground(false)
         super.onStop()
     }
@@ -438,7 +445,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun openDestination(intent: Intent) {
         ResultNotifications.destination(intent.data)?.let {
-            mobileRuntime.speech.stop()
+            mobileRuntime.automaticSpeech.stop()
             mobileRuntime.controller.openDetail(it.id, it.target, it.engine)
             intent.data = null
         }

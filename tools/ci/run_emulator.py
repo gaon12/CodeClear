@@ -18,6 +18,7 @@ def _require(condition, message="Emulator validation condition failed"):
 # Exclude live providers, model downloads, installed voices, radios, and owner-granted access tests.
 FIXTURES = {
     "mobile.SettingsDetailLayoutDeviceTest": 3,
+    "mobile.AutomaticSpeechDeviceTest": 3,
     "mobile.MobileNavigationLayoutDeviceTest": 3,
     "mobile.StandardTranslationDeviceTest": 8,
     "mobile.StandardTranslationScreenDeviceTest": 1,
@@ -29,7 +30,7 @@ FIXTURES = {
     "mobile.ObservationGroupsDeviceTest": 8,
     "mobile.ContentHistoryDeviceTest": 6,
     "mobile.MobileRuntimeDeviceTest": 1,
-    "mobile.MobileOptionsStorageDeviceTest": 9,
+    "mobile.MobileOptionsStorageDeviceTest": 10,
     "nearby.NearbySharingDeviceTest": 5,
     "mobile.DeferredAlertPresentationDeviceTest": 3,
     "capture.SourcePayloadDeviceTest": 10,
@@ -39,7 +40,7 @@ FIXTURES = {
     "capture.CaptureServiceComponentsDeviceTest": 2,
     "capture.SourceWindowVisibilityDeviceTest": 4,
     "mobile.MobileScreenAccessDeviceTest": 10,
-    "mobile.MobileScreenModelSpeechDeviceTest": 6,
+    "mobile.MobileScreenModelSpeechDeviceTest": 7,
     "mobile.MobileScreenAlertDetailDeviceTest": 15,
     "mobile.MobileScreenNearbyDeviceTest": 4,
     "mobile.MobileScreenHistoryDeviceTest": 12,

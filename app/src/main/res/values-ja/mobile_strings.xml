@@ -321,4 +321,7 @@
     <string name="mobile_settings_background_group">バックグラウンド動作</string>
     <string name="mobile_settings_project_group">プロジェクト</string>
     <string name="mobile_remote_priority">MyMemoryが有効な間はMyMemoryを優先します。オフにすると、既に送信を許可した場合のみCodeClearサービスを選択します。エラーや上限超過による自動切替はありません。</string>
+    <string name="mobile_automatic_speech">新しい翻訳を自動読み上げ</string>
+    <string name="mobile_automatic_speech_description">初期設定はオフです。このアプリが表示され操作対象の間、新しく取得した警報の新しい翻訳をインストール済みのオフライン音声で読み上げます。アプリを離れる、システム警告、他の音声による中断で停止し待機列を消去します。履歴や近くのメッセージは自動では読みません。メディア音量を使い、音声の自動ダウンロードやネットワーク音声は使いません。</string>
+    <string name="mobile_automatic_speech_unavailable">自動読み上げができませんでした。オフライン音声と音声設定を確認してください。他のアプリやシステム警告で中断する場合があります。</string>
 </resources>

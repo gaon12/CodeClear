@@ -21,6 +21,25 @@ import xyz.gaon.codeclear.translation.TranslationTarget
 
 /** Explicit translation model downloads and speech playback of the displayed message. */
 class MobileScreenModelSpeechDeviceTest : MobileScreenFixture() {
+    @Test fun automaticSpeechOptInIsSeparateFromTranslationAndDoesNotRequestModels() {
+        openSettingsPage(SettingsPage.TRANSLATION)
+        compose.onNodeWithText(
+            text(R.string.mobile_automatic_speech)
+        ).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertTrue(state.options.automaticSpeechEnabled)
+            assertTrue(requestedModels.isEmpty())
+            assertEquals(0, serverAllows)
+        }
+        compose.onNodeWithText(
+            text(R.string.mobile_automatic_speech)
+        ).performScrollTo().performClick()
+        compose.runOnIdle {
+            assertEquals(false, state.options.automaticSpeechEnabled)
+            assertTrue(requestedModels.isEmpty())
+        }
+    }
+
     @Test
     fun modelManagementShowsInstalledStateAndOnlyDownloadsAfterAnExplicitAction() {
         compose.runOnIdle { inventory = inventory.copy(downloaded = setOf("ko", "es")) }

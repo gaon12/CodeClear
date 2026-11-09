@@ -32,13 +32,15 @@ interface SpeechAudioFocus {
     fun release()
 }
 
-/** One optional voice client, one worker and one replaceable request; playback is always user-started. */
+/** One optional offline voice client, one worker and one replaceable playback request. */
 class SpeechPlayback(
     context: Context,
     private val factory: ((String, Boolean) -> Unit) -> SpeechBackend = {
         AndroidSpeechBackend(context.applicationContext, it)
     },
-    private val audioFocus: SpeechAudioFocus = AndroidSpeechAudioFocus(context)
+    private val audioFocus: SpeechAudioFocus = AndroidSpeechAudioFocus(context),
+    private val changed: (SpeechState) -> Unit = {},
+    private val interrupted: () -> Unit = {}
 ) : AutoCloseable {
     private data class Request(
         val generation: Long,
@@ -58,8 +60,13 @@ class SpeechPlayback(
     private var closed = false
     private var deadline: Runnable? = null
     private var initializationTimeout: Runnable? = null
-    var state by mutableStateOf(SpeechState())
-        private set
+    private var currentState by mutableStateOf(SpeechState())
+    var state: SpeechState
+        get() = currentState
+        private set(value) {
+            currentState = value
+            changed(value)
+        }
     private val releaseIdle = object : Runnable {
         override fun run() {
             if (working || pending != null) {
@@ -140,7 +147,11 @@ class SpeechPlayback(
         if (!ready || working || closed) return
         val request = pending ?: return
         pending = null
-        if (!audioFocus.acquire(::stop)) {
+        if (!audioFocus.acquire {
+                interrupted()
+                stop()
+            }
+        ) {
             unavailable(request.key)
             return
         }

@@ -29,7 +29,8 @@ data class MobileOptions(
     val deferredOverlayEnabled: Boolean = false,
     val ownedServerAllowed: Boolean = false,
     val ownedServerCredentialId: String = "",
-    val labsUnlocked: Boolean = false
+    val labsUnlocked: Boolean = false,
+    val automaticSpeechEnabled: Boolean = false
 ) {
     val labsVisible: Boolean get() = labsUnlocked
 
@@ -139,6 +140,9 @@ class MobileOptionsStorage(
                 ownedId.isNotEmpty() && saved.getInt("owned_disclosure_version", 0) == 3 &&
                 saved.getBoolean("owned_server_allowed", false),
             ownedServerCredentialId = ownedId,
+            automaticSpeechEnabled = currentDisclosure &&
+                saved.getInt("automatic_speech_disclosure_version", 0) == 1 &&
+                saved.getBoolean("automatic_speech_enabled", false),
             messageViewMode = MessageViewMode.entries.firstOrNull {
                 it.name == saved.getString("message_view_mode", null)
             } ?: MessageViewMode.SWITCH
@@ -153,6 +157,8 @@ class MobileOptionsStorage(
             .putBoolean("notification_consent", options.notificationConsent)
             .putBoolean("accessibility_consent", options.accessibilityConsent)
             .putBoolean("local_consent", options.localConsent)
+            .putInt("automatic_speech_disclosure_version", 1)
+            .putBoolean("automatic_speech_enabled", options.automaticSpeechEnabled)
             .putInt("remote_disclosure_version", 1)
             .putInt("overlay_disclosure_version", 1)
             .putBoolean("deferred_overlay_enabled", options.deferredOverlayEnabled)

@@ -120,6 +120,29 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                 }
             }
         }
+        SettingsGroup(
+            footer = stringResource(R.string.mobile_automatic_speech_description),
+            tag = "automatic-speech-group"
+        ) {
+            SettingSwitchRow(
+                stringResource(R.string.mobile_automatic_speech),
+                stringResource(
+                    if (options.automaticSpeechEnabled) R.string.mobile_on else R.string.mobile_off
+                ),
+                checked = options.automaticSpeechEnabled,
+                onCheckedChange = { actions.configure(options.copy(automaticSpeechEnabled = it)) }
+            )
+            if (actions.speechState.phase in setOf(SpeechPhase.PREPARING, SpeechPhase.PLAYING)) {
+                SettingDivider()
+                SettingRow(
+                    stringResource(R.string.mobile_stop_reading),
+                    onClick = actions.stopReading
+                )
+            }
+            if (actions.speechState.phase == SpeechPhase.UNAVAILABLE) {
+                SettingNote(stringResource(R.string.mobile_automatic_speech_unavailable))
+            }
+        }
         if (availability.platformSupported || options.engine == TranslationEngineKind.SYSTEM) {
             SettingsGroup {
                 SettingRow(

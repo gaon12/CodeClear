@@ -49,7 +49,8 @@ class MobileRuntime(context: Context) {
     var modelDownload by mutableStateOf<ModelDownloadRequest?>(null)
         private set
     val detailLanguages = OriginalLanguageIdentifier()
-    val speech = SpeechPlayback(context)
+    internal val automaticSpeech = AutomaticSpeech(context)
+    val speech: SpeechPlayback get() = automaticSpeech.playback
     val nearby: NearbySharing = NearbySharing(context)
     private val notifications = ResultNotifications(context)
     internal val alertWindow = DeferredAlertWindow(::notificationStrings)
@@ -85,6 +86,7 @@ class MobileRuntime(context: Context) {
         engine,
         changed = {
             state = it
+            syncSpeechAuthorization()
             if (!it.loaded || it.storageError || it.options != presentationOptions ||
                 diagnosticOwners > 0
             ) {
@@ -112,13 +114,16 @@ class MobileRuntime(context: Context) {
         translated = { id, target, producer, body ->
             notifications.post(id, target, notificationStrings(), producer, body)
             alertPresenter.translated(id, target, producer, body)
+            automaticSpeech.translated(id, target, producer, body)
         },
         deleted = {
+            automaticSpeech.deleted(it)
             alertPresenter.clear()
             notifications.cancel(it)
             nearby.deleted(it)
         },
         releaseEngine = {
+            automaticSpeech.close()
             alertPresenter.authorize(null)
             mlKit.close()
             systemEngine.close()
@@ -132,6 +137,7 @@ class MobileRuntime(context: Context) {
         },
         captured = { id, capture ->
             nearby.offer(id, capture)
+            automaticSpeech.captured(id, capture)
             notifications.post(
                 id,
                 state.options.target.languageTag,
@@ -142,6 +148,7 @@ class MobileRuntime(context: Context) {
         },
         optionsReady = {
             presentationOptions = it
+            syncSpeechAuthorization()
             if (diagnosticOwners == 0) alertPresenter.authorize(it)
             myMemory.authorize(
                 it.engine == TranslationEngineKind.MY_MEMORY && it.translationAllowed
@@ -157,6 +164,7 @@ class MobileRuntime(context: Context) {
             alertPresenter.clear()
             notifications.cancel(ids)
             ids.forEach(nearby::deleted)
+            ids.forEach(automaticSpeech::deleted)
         }
     )
 
@@ -285,6 +293,7 @@ class MobileRuntime(context: Context) {
             ownedServer.authorize(false, "")
         }
         presentationOptions = null
+        automaticSpeech.authorize(null, false)
         alertPresenter.authorize(null)
         if (options.serverAllowed != state.options.serverAllowed ||
             options.engine != state.options.engine ||
@@ -347,6 +356,15 @@ class MobileRuntime(context: Context) {
             !access.busy && access.revision == revision && (!requireReady || access.ready)
     }
 
+    private fun syncSpeechAuthorization() {
+        val ready = state.loaded && !state.storageError && diagnosticOwners == 0 &&
+            state.options == presentationOptions
+        automaticSpeech.authorize(
+            state.options.takeIf { ready },
+            ready && state.options.automaticSpeechEnabled
+        )
+    }
+
     private fun syncServerAuthorization() {
         val options = state.options
         val allowed = state.loaded && !state.storageError && diagnosticOwners == 0 &&
@@ -364,6 +382,7 @@ class MobileRuntime(context: Context) {
         check(BuildConfig.DEBUG && Looper.myLooper() == Looper.getMainLooper())
         val generation = diagnosticGeneration
         if (diagnosticOwners++ == 0) {
+            automaticSpeech.authorize(null, false)
             alertPresenter.authorize(null)
             ownedServer.authorize(false, "")
             controller.pauseCapture(true)
@@ -402,6 +421,7 @@ class MobileRuntime(context: Context) {
     }
 
     private fun restorePresentation() {
+        syncSpeechAuthorization()
         syncServerAuthorization()
         alertPresenter.authorize(
             presentationOptions?.takeIf {

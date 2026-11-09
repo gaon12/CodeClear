@@ -14,6 +14,26 @@ import xyz.gaon.codeclear.translation.TranslationEngineKind
 import xyz.gaon.codeclear.translation.TranslationTarget
 
 class MobileOptionsStorageDeviceTest {
+    @Test fun automaticSpeechDefaultsOffAndOnlyItsVersionedChoicePersists() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val name = "speech-options-${UUID.randomUUID()}"
+        try {
+            val store = MobileOptionsStorage(context, name)
+            assertFalse(store.load().automaticSpeechEnabled)
+            store.save(MobileOptions(automaticSpeechEnabled = true))
+            assertTrue(store.load().automaticSpeechEnabled)
+            assertFalse(store.load().translationAllowed)
+            assertFalse(store.load().serverAllowed)
+            context.getSharedPreferences(name, 0).edit()
+                .putInt("automatic_speech_disclosure_version", 0).commit()
+            assertFalse(store.load().automaticSpeechEnabled)
+            store.save(MobileOptions(automaticSpeechEnabled = false))
+            assertFalse(store.load().automaticSpeechEnabled)
+        } finally {
+            context.deleteSharedPreferences(name)
+        }
+    }
+
     @Test
     fun legacyExperimentFlagsCannotRevealLabsOrRestoreRemotePermission() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext

@@ -321,4 +321,7 @@
     <string name="mobile_settings_background_group">백그라운드 동작</string>
     <string name="mobile_settings_project_group">프로젝트</string>
     <string name="mobile_remote_priority">MyMemory를 켜면 원격 번역에 MyMemory를 우선 사용합니다. 끄면 이미 전송을 허용한 경우에만 CodeClear 서비스로 전환합니다. 오류나 할당량 초과 시에는 제공자를 자동 전환하지 않습니다.</string>
+    <string name="mobile_automatic_speech">새 번역 자동 읽기</string>
+    <string name="mobile_automatic_speech_description">기본값은 꺼짐입니다. 이 앱을 보고 있을 때 새로 수집한 알림의 새 번역을 설치된 오프라인 음성으로 읽습니다. 앱을 떠나거나 시스템 경고·다른 오디오가 끼어들면 읽기를 중단하고 대기열을 비웁니다. 과거 기록과 주변 메시지는 자동으로 읽지 않습니다. 미디어 음량을 사용하며 음성을 자동 다운로드하거나 네트워크 음성을 사용하지 않습니다.</string>
+    <string name="mobile_automatic_speech_unavailable">자동으로 읽지 못했습니다. 오프라인 음성과 오디오 설정을 확인하세요. 다른 앱이나 시스템 경고가 재생을 중단할 수 있습니다.</string>
 </resources>

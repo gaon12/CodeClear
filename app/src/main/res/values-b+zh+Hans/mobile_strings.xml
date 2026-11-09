@@ -321,4 +321,7 @@
     <string name="mobile_settings_background_group">后台运行</string>
     <string name="mobile_settings_project_group">项目</string>
     <string name="mobile_remote_priority">启用MyMemory时优先使用MyMemory。关闭后，仅在您已允许CodeClear服务时才选择该服务。错误或配额不足不会自动切换提供方。</string>
+    <string name="mobile_automatic_speech">自动朗读新译文</string>
+    <string name="mobile_automatic_speech_description">默认关闭。仅在本应用可见且处于操作焦点时，使用已安装的离线语音朗读刚在本机采集的警报的新译文。离开应用、系统警告或其他音频中断会停止朗读并清空队列。历史记录和附近消息不会自动朗读。使用媒体音量，不会自动下载语音或使用网络语音。</string>
+    <string name="mobile_automatic_speech_unavailable">无法自动朗读。请检查离线语音及音频设置。其他应用或系统警告可能中断播放。</string>
 </resources>

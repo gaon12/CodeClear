@@ -323,4 +323,7 @@
     <string name="mobile_settings_background_group">Activité en arrière-plan</string>
     <string name="mobile_settings_project_group">Projet</string>
     <string name="mobile_remote_priority">MyMemory est prioritaire lorsqu’il est activé. Sa désactivation sélectionne CodeClear uniquement si ce service est déjà autorisé. Une erreur ou un quota ne change jamais automatiquement de fournisseur.</string>
+    <string name="mobile_automatic_speech">Lire automatiquement les nouvelles traductions</string>
+    <string name="mobile_automatic_speech_description">Désactivé par défaut. Quand cette application est visible et active, les nouvelles traductions d’alertes locales récentes sont lues avec une voix hors ligne installée. Quitter l’application, une alerte système ou une interruption audio arrête la lecture et vide la file. Aucun historique ni message voisin lu automatiquement. Volume multimédia ; aucun téléchargement automatique ni voix réseau.</string>
+    <string name="mobile_automatic_speech_unavailable">Lecture automatique impossible. Vérifiez la voix hors ligne et les réglages audio. Une autre application ou alerte système peut interrompre la lecture.</string>
 </resources>
