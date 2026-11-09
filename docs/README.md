@@ -1,7 +1,11 @@
 # Public privacy pages
 
 GitHub Pages serves this directory. The English and Korean policies under
-`privacy/` take effect on November 3, 2026, as authorized by the publisher.
+`privacy/` have an effective date of November 5, 2026, and were updated on
+November 9 for installation-private service access, explicit peer-message saving
+and optional foreground automatic speech. Older builds can retain their legacy
+access-code flow. These source changes do not publish a mobile release or deploy
+the translation endpoint.
 Keep the in-app disclosure, Play declarations and published policy consistent.
 
 The policy distinguishes active translation-cache expiry from infrastructure

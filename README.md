@@ -48,13 +48,30 @@ Japanese, French, German, Simplified Chinese, and Traditional Chinese.
   private builds can also expose the fixed CodeClear translation service. Each
   remote service requires its own default-off permission and retention/quota
   disclosure. There is no silent remote fallback.
+- Updated service builds prepare an encrypted installation identity automatically;
+  users do not enter a service access token. MyMemory takes priority while enabled.
+  Turning it off selects the CodeClear service only when that service already has
+  permission. Errors and exhausted quotas never switch providers automatically.
+- Automatic reading is a separate, default-off translation setting. It reads new
+  translations of fresh local captures only while the app is visible and focused,
+  using installed offline voices and normal media volume/audio focus. Leaving the
+  app, losing audio focus, deletion or permission/selection changes cancel pending
+  automatic work. Opening history or returning to the app does not replay it.
+- Nearby messages stay in a bounded, explicitly unverified inbox until the user
+  saves one. They are never automatically translated, spoken or forwarded. Same-body
+  peer replays with changed occurrence IDs are suppressed for 15 minutes. These
+  controls do not authenticate a sender or prove official origin.
 - Alert history stays in app-private storage until deletion. App backup and device
   transfer are disabled. Remote permission covers automatic captured-alert
   translation and requested historical/peer-original translations. Nearby sharing
   has its own disclosure and permission for peer exchange.
 - The optional owned backend is in `server/php`; the owner deploys it separately.
-  Private builds inject only its route, while the client token is stored through
-  Android Keystore-backed encryption. See [private builds](tools/PRIVATE_BUILDS.md).
+  Private builds inject only its route; the installation identity is protected with
+  Android Keystore-backed encryption. Its existing SQLite DB reuses validated
+  translations for the same installation, exact text, target, model and prompt
+  revision, coordinating concurrent misses with a single lease. Results expire
+  within 30 days without extending on reuse. Installation, network, service-wide
+  and provider limits bound anonymous work. See [private builds](tools/PRIVATE_BUILDS.md).
   Arbitrary provider endpoints and provider-key integration remain out of scope.
 
 [Google Play materials](distribution/play/README.md) include localized listing
@@ -159,12 +176,18 @@ clean checkout on standard Linux runners and runs an explicit software-fixture
 allowlist on disposable AOSP API 30, 31, and 35 emulators. Each emulator uses two
 cores and 2 GiB of guest RAM. This is the default `baseline` group; `extended`
 selects AOSP API 32, 33, 34, 36, and 37 plus the Google API 37 16 KiB profile.
+
 The `all` group or an individual profile can also be selected. The 16 KiB guest
 must report actual 16384-byte pages and uses a bounded 4 GiB data partition.
 The default software-fixture path does not use
 provider keys, download translation models, grant capture access, or test physical reception. Live-provider,
 Bluetooth, installed-voice, prepared-model, and owner-granted capture tests require separate
 environments. No APK or test artifact is published by the workflow.
+
+Optional public-source candidates accept base64 or `gzip:`-prefixed base64,
+bounded to 60,000 encoded characters and 120,000 expanded bytes. They require the
+exact checkout revision and the reviewed source/resource allowlist. Never put
+credentials or private content in workflow inputs.
 
 Its separate `system_receiver` option resets only the disposable emulator's app
 data, enables capture through the app disclosures and ordinary Android Settings

@@ -82,7 +82,7 @@ Send `POST /api.php` with `Authorization: Bearer <client-token>` and
 `Content-Type: application/json`:
 
 ```json
-{"text":"[DRILL] Gate 3, call 112.","target_lang":"en"}
+{ "text": "[DRILL] Gate 3, call 112.", "target_lang": "en" }
 ```
 
 Targets are `en`, `ko`, `ja`, `fr`, `de`, `zh-Hans` and `zh-Hant`. The previous
@@ -94,10 +94,10 @@ Successful responses contain only:
 
 ```json
 {
-  "translated_text": "[DRILL] Gate 3, call 112.",
-  "issuer": {"original": "", "translated": ""},
-  "target_lang": "en",
-  "source_sha256": "<SHA-256 of the exact original UTF-8 text>"
+    "translated_text": "[DRILL] Gate 3, call 112.",
+    "issuer": { "original": "", "translated": "" },
+    "target_lang": "en",
+    "source_sha256": "<SHA-256 of the exact original UTF-8 text>"
 }
 ```
 
@@ -117,7 +117,7 @@ work), 429 (request/provider budget), 502 (provider/validation failure), and
 503 (temporary storage/capacity/configuration failure). Honor bounded
 `Retry-After` headers; do not retry indefinitely or silently switch providers.
 
-Authenticated `DELETE /api.php` with an empty body clears only that client's
+Scoped `DELETE /api.php` with an empty body clears only that client's or installation's
 private cached content, including pending leases. A late worker cannot
 recreate cleared content. It cannot recall source text already sent to Groq.
 Request budgets are retained so clearing cannot bypass abuse limits. Revoking
@@ -152,6 +152,12 @@ Behind a proxy, requests share the proxy's budget unless its trusted server
 configuration supplies the actual peer address. Carrier/NAT users can also share
 a budget. Configure edge limits before exposing the service; these bounds limit
 work and cost but do not authenticate senders or eliminate denial of service.
+
+Empty scopes become eligible for bounded cleanup after five inactive minutes,
+so identifier rotation cannot retain empty admission records for the content TTL.
+Recreated scopes receive unpredictable generations; an old admitted request
+cannot acquire a lease after its scope was removed and recreated. Scopes holding
+cached data retain the existing content/deletion rules.
 
 The `cache` table contains the exact original, target, prompt version,
 requested/actual model, validated result JSON (translation, original and

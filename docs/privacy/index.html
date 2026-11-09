@@ -14,7 +14,10 @@
                 <a href="index.html" aria-current="page" lang="en">English</a
                 ><a href="ko.html" lang="ko">한국어</a>
             </nav>
-            <p>Effective date and last updated: November 5, 2026.</p>
+            <p>
+                Effective date: November 5, 2026. Last updated: November 9,
+                2026.
+            </p>
         </header>
         <main>
             <p class="notice">
@@ -115,23 +118,28 @@
             </p>
             <p>
                 <strong>CodeClear service and Groq.</strong> Configured builds
-                can offer a fixed CodeClear service that requires a separately
-                supplied service access code. The service receives the original,
-                target language and authorization credential, then forwards
-                inference requests to Groq. The device protects the saved access
-                code using Android Keystore-backed encryption. It is not a Groq
-                provider key.
+                offer a fixed service with separate, default-off sending
+                permission. Updated builds automatically create a random
+                installation identifier, protected with Android Keystore-backed
+                encryption. No access code entry is required; older builds may
+                use a separately supplied code. The service receives the
+                original, target language and installation identifier or legacy
+                credential, then forwards inference to Groq. Provider keys
+                remain on the server. Enabled MyMemory takes priority; disabling
+                it selects CodeClear only with existing service permission.
+                Provider errors or quotas never trigger automatic fallback.
             </p>
             <p>
-                The service cache is scoped to the authenticated client, rather
-                than a public translation archive. It stores the original,
-                validated translation and issuer fields, model and prompt
-                information, measured processing time, bounded usage metadata
-                and creation/expiry information. Cache reuse avoids repeated
-                provider requests. Results expire within 30 days of creation,
-                without extending expiry on a cache hit. Body-free rate-limit
-                and deletion-generation records serve abuse prevention and
-                prevent stale requests from restoring cleared cache entries.
+                The service cache is private to its installation or legacy
+                client, rather than a public translation archive. It stores the
+                original, validated translation and issuer fields, model and
+                prompt information, measured processing time, bounded usage
+                metadata and creation/expiry information. Cache reuse avoids
+                repeated provider requests. Results expire within 30 days of
+                creation, without extending expiry on a cache hit. Body-free
+                rate-limit and deletion-generation records serve abuse
+                prevention and prevent stale requests from restoring cleared
+                cache entries.
             </p>
             <p>
                 Hosting and network infrastructure process IP addresses and
@@ -142,17 +150,21 @@
                 time. Such records are used for service operation, security,
                 abuse prevention and applicable legal obligations. Contact the
                 privacy email for information about these copies or to request
-                access or deletion; do not include access codes in your message.
+                access or deletion; do not include private identifiers or access
+                codes in your message.
             </p>
             <p>
-                Use the app’s separate server-cache clear action while its
-                access code is still available to request deletion of that
-                authenticated cache scope. Pausing the engine, deleting local
-                history or removing the code does not clear the server cache.
-                Devices sharing the same service credential can share a cache
-                scope. If you cannot access the deletion action, contact the
-                privacy email without sending the access code. Deleting a
-                CodeClear cache cannot delete copies already processed by Groq.
+                Use the separate server-cache clear action before resetting the
+                private connection, clearing app storage or uninstalling. It
+                clears only that connection’s scope, including pending result
+                leases. Turning sending off, deleting local history or resetting
+                the connection does not erase existing server data. A new
+                identity cannot clear the previous identity’s cache; old results
+                expire within 30 days. New installations do not share cache
+                scopes. Legacy devices using the same credential may share a
+                scope. Contact the privacy email for help without sending
+                identifiers, access codes or alert bodies. CodeClear cache
+                deletion cannot recall copies already processed by Groq.
             </p>
             <p>
                 Groq says inference inputs/outputs are not retained by default,
@@ -174,16 +186,20 @@
                 a temporary random occurrence identifier. These broadcasts are
                 intended to be readable by nearby users and are not a
                 confidential messaging channel. Received messages have
-                unverified origin, are saved in private nearby history until
-                deleted, and are not forwarded again. CodeClear does not collect
-                location coordinates or determine your location. Android 11
-                requires foreground location permission and system location for
-                Bluetooth discovery while the app is visible. Sharing pauses
-                when you leave the app. CodeClear does not request background
-                location permission. Android 12 and later use Nearby devices
-                permission and can continue sharing with a persistent,
-                user-stoppable foreground-service notification. Android may stop
-                background operation; reopen the app to resume.
+                unverified origin and remain in a bounded temporary inbox until
+                you explicitly save them. They are never automatically
+                translated, spoken or forwarded. Same-body replays are
+                suppressed for 15 minutes; this does not authenticate a sender.
+                Explicitly saved peer originals stay in private device history
+                until deletion. CodeClear does not collect location coordinates
+                or determine your location. Android 11 requires foreground
+                location permission and system location for Bluetooth discovery
+                while the app is visible. Sharing pauses when you leave the app.
+                CodeClear does not request background location permission.
+                Android 12 and later use Nearby devices permission and can
+                continue sharing with a persistent, user-stoppable
+                foreground-service notification. Android may stop background
+                operation; reopen the app to resume.
             </p>
             <p>
                 Result notifications and optional app overlays can show alert
@@ -193,10 +209,15 @@
                 handles the content under its own practices.
             </p>
             <p>
-                Speech is user-started and passes the chosen text to the
-                selected installed speech service. CodeClear selects installed
-                voices reported as requiring no network and does not fall back
-                to a network-only voice. The speech-service provider remains
+                Manual speech passes the chosen text to the installed speech
+                service. Updated builds also offer a separate, default-off
+                option to read new translations of fresh local captures while
+                the app is visible and focused. Leaving the app or losing audio
+                focus stops playback and clears pending automatic work. History
+                and nearby messages are not automatically read. CodeClear
+                selects installed voices reported as requiring no network, never
+                downloads voices automatically and does not fall back to a
+                network-only voice. The speech-service provider remains
                 responsible for its own implementation and privacy practices.
             </p>
             <h2>Support, security and your choices</h2>

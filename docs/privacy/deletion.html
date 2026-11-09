@@ -18,9 +18,9 @@
         </header>
         <main>
             <p class="notice">
-                You can delete local history and the authenticated CodeClear
-                server cache separately. Removing the app or its access token
-                does not delete existing server data.
+                You can delete local history and the private CodeClear server
+                cache separately. Removing the app or resetting its private
+                connection does not delete existing server data.
             </p>
             <h2>Delete on your device</h2>
             <p>
@@ -32,8 +32,8 @@
             <h2>Delete the CodeClear service cache</h2>
             <ol>
                 <li>
-                    Keep your saved access token until cache deletion is
-                    complete.
+                    Keep the current private connection until deletion is
+                    complete; do not reset it or clear app storage first.
                 </li>
                 <li>
                     Open Settings → Labs → CodeClear server and choose the
@@ -41,12 +41,12 @@
                 </li>
                 <li>
                     Confirm the request and wait for its result. This deletes
-                    the cache scope authenticated by that token, including
-                    stored originals and translated results.
+                    only the current installation or legacy client scope,
+                    including stored originals and translated results.
                 </li>
                 <li>
-                    You may then turn the service off or remove the token. Your
-                    device history is separate.
+                    You may then turn the service off or reset the connection.
+                    Your device history is separate.
                 </li>
             </ol>
             <h2>Request help or deletion by email</h2>
@@ -58,9 +58,9 @@
                 >
                 with the subject “CodeClear data deletion”. State whether you
                 need help with the CodeClear service cache or support
-                correspondence. Do not send access tokens, provider keys or
-                alert bodies. We may need to verify the relevant service access
-                before acting on a request.
+                correspondence. Do not send installation identifiers, access
+                tokens, provider keys or alert bodies. We may need to verify the
+                relevant service access before acting on a request.
             </p>
             <h2>What may be retained</h2>
             <p>
