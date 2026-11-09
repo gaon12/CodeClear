@@ -285,19 +285,19 @@
     <string name="mobile_hint_missing">Alerte disparition</string>
     <string name="mobile_hint_test">Alerte de test</string>
     <string name="mobile_owned_server">Serveur CodeClear</string>
-    <string name="mobile_owned_description">Service CodeClear · Internet · Autorisation distincte requise</string>
+    <string name="mobile_owned_description">Service CodeClear · Groq · Aucun code requis · Internet</string>
     <string name="mobile_owned_permission">Autoriser la traduction CodeClear</string>
-    <string name="mobile_owned_disclosure">Envoyez le texte original et la langue cible au service CodeClear, qui transmet la demande à Groq. Les résultats en cache expirent sous 30 jours ; les journaux et sauvegardes ont une conservation distincte décrite dans la politique de confidentialité. Groq peut conserver des données pour la fiabilité ou les enquêtes sur les abus. Des quotas peuvent interrompre la traduction. Désactiver l’envoi ou supprimer le code ne supprime pas les données du serveur. Videz séparément le cache avant de retirer le code. Aucun autre moteur n’est choisi automatiquement.</string>
+    <string name="mobile_owned_disclosure">Les originaux, la langue cible et un identifiant aléatoire sont envoyés au service CodeClear, qui demande la traduction à Groq. Aucun code à saisir. Le cache privé expire sous 30 jours ; journaux et sauvegardes suivent la politique de confidentialité. Groq peut conserver des données pour la fiabilité ou les enquêtes sur les abus. Les quotas peuvent interrompre la traduction. Désactiver l’envoi n’efface pas les données ; utilisez l’effacement du cache serveur. Aucun repli automatique vers un autre fournisseur.</string>
     <string name="mobile_owned_access">Jeton d’accès</string>
-    <string name="mobile_owned_access_saved">Enregistré de façon sécurisée</string>
-    <string name="mobile_owned_access_missing">Jeton d’accès requis</string>
+    <string name="mobile_owned_access_saved">Connexion privée prête</string>
+    <string name="mobile_owned_access_missing">Connexion privée indisponible</string>
     <string name="mobile_owned_access_hint">32 à 256 caractères. Utilisez le jeton du service, pas une clé API Groq.</string>
     <string name="mobile_owned_access_save">Enregistrer le jeton</string>
-    <string name="mobile_owned_access_remove">Supprimer le jeton</string>
-    <string name="mobile_owned_access_remove_review">Supprimer le jeton et suspendre la traduction serveur ? Le cache existant ne sera pas supprimé.</string>
-    <string name="mobile_owned_access_failed">Impossible de modifier le jeton. Réessayez.</string>
+    <string name="mobile_owned_access_remove">Réinitialiser la connexion privée</string>
+    <string name="mobile_owned_access_remove_review">Créer une nouvelle identité et suspendre la traduction du service ? L’historique local est conservé. Effacez d’abord le cache serveur si possible. La nouvelle identité ne peut pas effacer l’ancien cache, qui expire sous 30 jours.</string>
+    <string name="mobile_owned_access_failed">Impossible de préparer la connexion privée. Vous pouvez la réinitialiser puis autoriser à nouveau l’envoi.</string>
     <string name="mobile_owned_cache_clear">Vider le cache serveur</string>
-    <string name="mobile_owned_cache_review">Vider le cache de ce jeton et suspendre la traduction serveur ? L’historique local est conservé. De nouvelles demandes pourront remplir le cache après réactivation.</string>
+    <string name="mobile_owned_cache_review">Effacer le cache de cette connexion et suspendre la traduction du service ? L’historique local reste enregistré. Réactiver la traduction peut recréer le cache.</string>
     <string name="mobile_owned_cache_cleared">Cache serveur vidé. Traduction serveur suspendue.</string>
     <string name="mobile_owned_cache_failed">Impossible de vider le cache. Vérifiez le jeton et la connexion.</string>
     <string name="mobile_owned_terms">Traitement des données par Groq</string>
@@ -322,4 +322,5 @@
     <string name="mobile_settings_translation_group">Options de traduction</string>
     <string name="mobile_settings_background_group">Activité en arrière-plan</string>
     <string name="mobile_settings_project_group">Projet</string>
+    <string name="mobile_remote_priority">MyMemory est prioritaire lorsqu’il est activé. Sa désactivation sélectionne CodeClear uniquement si ce service est déjà autorisé. Une erreur ou un quota ne change jamais automatiquement de fournisseur.</string>
 </resources>

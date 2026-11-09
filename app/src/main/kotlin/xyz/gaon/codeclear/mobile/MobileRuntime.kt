@@ -274,7 +274,8 @@ class MobileRuntime(context: Context) {
         )
     }
 
-    private fun configureVerified(options: MobileOptions) {
+    private fun configureVerified(requestedOptions: MobileOptions) {
+        val options = requestedOptions.withMyMemoryPriority()
         if (options.ownedServerAllowed != state.options.ownedServerAllowed ||
             options.ownedServerCredentialId != state.options.ownedServerCredentialId ||
             options.engine != state.options.engine ||
@@ -321,7 +322,7 @@ class MobileRuntime(context: Context) {
     }
 
     fun removeServerAccess(revision: Long) {
-        if (serverActionMatches(revision, true) &&
+        if (serverActionMatches(revision, false) &&
             ownedServer.removeAccess()
         ) {
             pauseServerTranslation()

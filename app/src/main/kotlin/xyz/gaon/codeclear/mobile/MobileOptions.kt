@@ -42,6 +42,25 @@ data class MobileOptions(
 
         else -> localConsent
     }
+
+    fun withMyMemoryPriority(): MobileOptions = if (
+        labsEnabled && serverAllowed && engine == TranslationEngineKind.OWNED_SERVER
+    ) {
+        copy(engine = TranslationEngineKind.MY_MEMORY)
+    } else {
+        this
+    }
+
+    fun withoutMyMemory(): MobileOptions = copy(
+        serverAllowed = false,
+        engine = if (engine == TranslationEngineKind.MY_MEMORY && labsEnabled &&
+            ownedServerAllowed && ownedServerCredentialId.matches(serverCredentialPattern)
+        ) {
+            TranslationEngineKind.OWNED_SERVER
+        } else {
+            engine
+        }
+    )
 }
 
 fun defaultTarget(
@@ -113,17 +132,17 @@ class MobileOptionsStorage(
                 saved.getInt("overlay_disclosure_version", 0) == 1 &&
                 saved.getBoolean("deferred_overlay_enabled", false),
             serverAllowed =
-                currentDisclosure && labsEnabled && engine == TranslationEngineKind.MY_MEMORY &&
+                currentDisclosure && labsEnabled &&
                     saved.getInt("remote_disclosure_version", 0) == 1 &&
                     saved.getBoolean("server_allowed", false),
             ownedServerAllowed = currentDisclosure && labsEnabled && ownedConfigured &&
-                ownedId.isNotEmpty() && saved.getInt("owned_disclosure_version", 0) == 2 &&
+                ownedId.isNotEmpty() && saved.getInt("owned_disclosure_version", 0) == 3 &&
                 saved.getBoolean("owned_server_allowed", false),
             ownedServerCredentialId = ownedId,
             messageViewMode = MessageViewMode.entries.firstOrNull {
                 it.name == saved.getString("message_view_mode", null)
             } ?: MessageViewMode.SWITCH
-        )
+        ).withMyMemoryPriority()
     }
 
     override fun save(options: MobileOptions) {
@@ -138,7 +157,7 @@ class MobileOptionsStorage(
             .putInt("overlay_disclosure_version", 1)
             .putBoolean("deferred_overlay_enabled", options.deferredOverlayEnabled)
             .putBoolean("server_allowed", options.serverAllowed && options.labsEnabled)
-            .putInt("owned_disclosure_version", 2)
+            .putInt("owned_disclosure_version", 3)
             .putBoolean(
                 "owned_server_allowed",
                 options.ownedServerAllowed && options.labsEnabled &&

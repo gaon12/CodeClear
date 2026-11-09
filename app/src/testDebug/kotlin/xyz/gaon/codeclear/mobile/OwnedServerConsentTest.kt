@@ -1,5 +1,6 @@
 package xyz.gaon.codeclear.mobile
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -7,6 +8,27 @@ import xyz.gaon.codeclear.translation.TranslationEngineKind
 import xyz.gaon.codeclear.translation.TranslationTarget
 
 class OwnedServerConsentTest {
+    @Test
+    fun enabledMyMemoryTakesRemotePriorityAndDeliberateDisableRequiresExistingOwnedConsent() {
+        val both = options.copy(labsEnabled = true, serverAllowed = true, ownedServerAllowed = true)
+        assertEquals(TranslationEngineKind.MY_MEMORY, both.withMyMemoryPriority().engine)
+        assertTrue(both.withMyMemoryPriority().translationAllowed)
+        val disabled = both.withMyMemoryPriority().withoutMyMemory()
+        assertEquals(TranslationEngineKind.OWNED_SERVER, disabled.engine)
+        assertFalse(disabled.serverAllowed)
+        assertTrue(disabled.translationAllowed)
+        assertFalse(
+            both.copy(ownedServerAllowed = false).withMyMemoryPriority()
+                .withoutMyMemory().translationAllowed
+        )
+        assertFalse(
+            both.copy(ownedServerCredentialId = "").withMyMemoryPriority()
+                .withoutMyMemory().translationAllowed
+        )
+        val local = both.copy(engine = TranslationEngineKind.ML_KIT, localConsent = true)
+        assertEquals(TranslationEngineKind.ML_KIT, local.withMyMemoryPriority().engine)
+    }
+
     private val options = MobileOptions(
         target = TranslationTarget.ENGLISH,
         engine = TranslationEngineKind.OWNED_SERVER,

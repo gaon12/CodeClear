@@ -40,7 +40,7 @@ internal fun ServerTranslationSettings(options: MobileOptions, actions: MobileAc
                     disclosure = true
                 } else {
                     actions.configure(
-                        options.copy(serverAllowed = false)
+                        options.withoutMyMemory()
                     )
                 }
             }
@@ -59,6 +59,7 @@ internal fun ServerTranslationSettings(options: MobileOptions, actions: MobileAc
             value = true
         )
         ProviderTermsLink()
+        SettingNote(stringResource(R.string.mobile_remote_priority))
     }
     if (targetPicker) {
         ChoiceDialog(

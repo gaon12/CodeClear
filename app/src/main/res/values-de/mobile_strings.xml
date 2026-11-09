@@ -284,19 +284,19 @@
     <string name="mobile_hint_missing">Vermisstenmeldung</string>
     <string name="mobile_hint_test">Testwarnung</string>
     <string name="mobile_owned_server">CodeClear-Server</string>
-    <string name="mobile_owned_description">CodeClear-Dienst · Internet · Separate Zustimmung erforderlich</string>
+    <string name="mobile_owned_description">CodeClear-Dienst · Groq · Kein Zugangscode nötig · Internet</string>
     <string name="mobile_owned_permission">Übersetzung über CodeClear erlauben</string>
-    <string name="mobile_owned_disclosure">Senden Sie Warnungsoriginal und Zielsprache an den CodeClear-Dienst, der die Anfrage an Groq weiterleitet. Cache-Ergebnisse laufen innerhalb von 30 Tagen ab; Betriebsprotokolle und Sicherungen haben eine eigene, in der Datenschutzerklärung beschriebene Aufbewahrung. Groq kann Daten für Zuverlässigkeit oder Missbrauchsuntersuchungen speichern. Kontingente können die Übersetzung stoppen. Das Ausschalten oder Entfernen des Zugangscodes löscht keine vorhandenen Serverdaten. Leeren Sie den Servercache vor dem Entfernen des Codes gesondert. Andere Engines werden nie automatisch gewählt.</string>
+    <string name="mobile_owned_disclosure">Originale, Zielsprache und eine zufällige Installationskennung werden an CodeClear gesendet; der Dienst beauftragt Groq. Kein Zugangscode nötig. Der private Cache verfällt innerhalb von 30 Tagen; für Protokolle und Sicherungen gelten eigene Fristen laut Datenschutzerklärung. Groq kann Daten für Zuverlässigkeit oder Missbrauchsuntersuchungen aufbewahren. Kontingente können die Übersetzung stoppen. Ausschalten löscht keine Serverdaten; verwenden Sie die Cachelöschung. Kein automatischer Anbieterwechsel bei Fehlern.</string>
     <string name="mobile_owned_access">Zugangstoken</string>
-    <string name="mobile_owned_access_saved">Sicher gespeichert</string>
-    <string name="mobile_owned_access_missing">Zugangstoken erforderlich</string>
+    <string name="mobile_owned_access_saved">Private Verbindung bereit</string>
+    <string name="mobile_owned_access_missing">Private Verbindung nicht verfügbar</string>
     <string name="mobile_owned_access_hint">32–256 Zeichen. Verwenden Sie das Diensttoken, keinen Groq-API-Schlüssel.</string>
     <string name="mobile_owned_access_save">Zugangstoken speichern</string>
-    <string name="mobile_owned_access_remove">Zugangstoken entfernen</string>
-    <string name="mobile_owned_access_remove_review">Gespeichertes Token entfernen und Serverübersetzung pausieren? Der Servercache wird nicht gelöscht.</string>
-    <string name="mobile_owned_access_failed">Token konnte nicht aktualisiert werden. Versuchen Sie es erneut.</string>
+    <string name="mobile_owned_access_remove">Private Verbindung zurücksetzen</string>
+    <string name="mobile_owned_access_remove_review">Neue Installationskennung erstellen und Dienstübersetzung pausieren? Lokaler Verlauf bleibt erhalten. Löschen Sie möglichst zuerst den Servercache. Mit der neuen Kennung kann der alte Cache nicht gelöscht werden; er verfällt innerhalb von 30 Tagen.</string>
+    <string name="mobile_owned_access_failed">Private Verbindung konnte nicht vorbereitet werden. Sie können sie zurücksetzen und das Senden erneut erlauben.</string>
     <string name="mobile_owned_cache_clear">Servercache leeren</string>
-    <string name="mobile_owned_cache_review">Cache dieses Zugangstokens leeren und Serverübersetzung pausieren? Der lokale Verlauf bleibt erhalten. Nach erneuter Aktivierung können neue Anfragen den Cache wieder füllen.</string>
+    <string name="mobile_owned_cache_review">Cache dieser privaten Verbindung löschen und Dienstübersetzung pausieren? Lokaler Verlauf bleibt erhalten. Erneutes Aktivieren kann den Cache wieder füllen.</string>
     <string name="mobile_owned_cache_cleared">Servercache geleert. Serverübersetzung ist pausiert.</string>
     <string name="mobile_owned_cache_failed">Servercache konnte nicht geleert werden. Prüfen Sie Token und Verbindung.</string>
     <string name="mobile_owned_terms">Groq-Datenverarbeitung</string>
@@ -321,4 +321,5 @@
     <string name="mobile_settings_translation_group">Übersetzungsoptionen</string>
     <string name="mobile_settings_background_group">Hintergrundaktivität</string>
     <string name="mobile_settings_project_group">Projekt</string>
+    <string name="mobile_remote_priority">Aktiviertes MyMemory hat Vorrang. Ausschalten wählt CodeClear nur, wenn dieser Dienst bereits erlaubt wurde. Fehler und Kontingente lösen keinen automatischen Anbieterwechsel aus.</string>
 </resources>

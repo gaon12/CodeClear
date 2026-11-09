@@ -1,7 +1,6 @@
 package xyz.gaon.codeclear.mobile
 
 import android.view.WindowManager
-import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -17,7 +16,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performTextInput
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -31,6 +29,39 @@ import xyz.gaon.codeclear.translation.TranslationTarget
 
 /** Translation engine selection, remote consent, owned service access, and system pairs. */
 class MobileScreenEngineDeviceTest : MobileScreenFixture() {
+    @Test
+    fun myMemoryStaysSelectedWhenOwnedPermissionIsGrantedAndOffSelectsOnlyAnAllowedService() {
+        compose.runOnIdle {
+            serverAccess = ServerAccessState(
+                configured = true,
+                loaded = true,
+                ready = true,
+                credentialId = "a".repeat(64)
+            )
+            state = state.copy(
+                options = state.options.copy(
+                    engine = TranslationEngineKind.MY_MEMORY,
+                    serverAllowed = true,
+                    labsEnabled = true
+                )
+            )
+        }
+        openSettingsPage(SettingsPage.OWNED_SERVER)
+        switchControl(text(R.string.mobile_owned_permission)).performClick()
+        compose.onNodeWithTag("owned-server-confirm").performClick()
+        compose.runOnIdle {
+            assertTrue(state.options.ownedServerAllowed)
+            assertEquals(TranslationEngineKind.MY_MEMORY, state.options.engine)
+        }
+        openSettingsPage(SettingsPage.SERVER)
+        switchControl(text(R.string.mobile_server_permission)).performClick()
+        compose.runOnIdle {
+            assertFalse(state.options.serverAllowed)
+            assertEquals(TranslationEngineKind.OWNED_SERVER, state.options.engine)
+            assertTrue(state.options.translationAllowed)
+        }
+    }
+
     @Test
     fun ownedServiceStaysHiddenWithoutBuildConfigurationAndMyMemoryCannotAuthorizeIt() {
         openSettingsPage(SettingsPage.LABS)
@@ -50,31 +81,24 @@ class MobileScreenEngineDeviceTest : MobileScreenFixture() {
     }
 
     @Test
-    fun accessTokenDialogMasksValidatesAndForgetsInputWithoutEnablingTranslation() {
-        compose.runOnIdle { serverAccess = ServerAccessState(configured = true, loaded = true) }
-        openSettingsPage(SettingsPage.OWNED_SERVER)
-        compose.onNodeWithText(text(R.string.mobile_owned_access)).performClick()
-        compose.onNodeWithTag("owned-server-token-save").assertIsNotEnabled()
-        val synthetic = "synthetic-client-token-aaaaaaaaaaaaaaaa"
-        compose.onNodeWithTag("owned-server-token").performTextInput(synthetic)
-        assertTrue(
-            compose.onNodeWithTag("owned-server-token").fetchSemanticsNode()
-                .config.contains(SemanticsProperties.Password)
-        )
-        compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
-        compose.onNodeWithText(text(R.string.mobile_owned_access)).performClick()
-        assertEquals(
-            "",
-            compose.onNodeWithTag("owned-server-token").fetchSemanticsNode()
-                .config[SemanticsProperties.EditableText].text
-        )
-        compose.onNodeWithTag("owned-server-token").performTextInput(synthetic)
-        compose.onNodeWithTag("owned-server-token-save").performClick()
-        compose.onNodeWithText(text(R.string.mobile_owned_access_saved)).assertIsDisplayed()
+    fun privateConnectionNeedsNoTokenEntryAndStillRequiresSeparateSendingConsent() {
         compose.runOnIdle {
-            assertEquals(listOf(synthetic), serverTokens)
+            serverAccess = ServerAccessState(
+                configured = true,
+                loaded = true,
+                ready = true,
+                credentialId = "a".repeat(64)
+            )
+        }
+        openSettingsPage(SettingsPage.OWNED_SERVER)
+        compose.onNodeWithText(text(R.string.mobile_owned_access_saved)).assertIsDisplayed()
+        compose.onNodeWithTag("owned-server-token").assertDoesNotExist()
+        compose.onNodeWithTag("owned-server-token-save").assertDoesNotExist()
+        switchControl(text(R.string.mobile_owned_permission)).assertIsOff()
+        compose.runOnIdle {
+            assertTrue(serverTokens.isEmpty())
             assertFalse(state.options.ownedServerAllowed)
-            assertEquals(TranslationEngineKind.ML_KIT, state.options.engine)
+            assertEquals(0, serverAllows)
         }
     }
 
@@ -123,7 +147,7 @@ class MobileScreenEngineDeviceTest : MobileScreenFixture() {
                 credentialId = "a".repeat(64)
             )
             state =
-                state.copy(options = state.options.copy(labsEnabled = true, serverAllowed = true))
+                state.copy(options = state.options.copy(labsEnabled = true, serverAllowed = false))
         }
         openSettingsPage(SettingsPage.TRANSLATION)
         compose.onNodeWithText(text(R.string.mobile_engine_title)).performClick()
@@ -178,10 +202,14 @@ class MobileScreenEngineDeviceTest : MobileScreenFixture() {
             compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
             savePreview("owned-server-settings-${theme.name.lowercase()}")
         }
-        compose.onNodeWithText(text(R.string.mobile_owned_cache_clear)).performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_owned_cache_clear)
+        ).performScrollTo().performClick()
         compose.onNodeWithText(text(R.string.mobile_cancel)).performClick()
         compose.runOnIdle { assertEquals(0, serverCacheClears) }
-        compose.onNodeWithText(text(R.string.mobile_owned_cache_clear)).performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_owned_cache_clear)
+        ).performScrollTo().performClick()
         compose.onNodeWithTag("owned-server-confirm").performClick()
         compose.onNodeWithText(text(R.string.mobile_owned_cache_cleared))
             .performScrollTo().assertIsDisplayed()
@@ -190,7 +218,9 @@ class MobileScreenEngineDeviceTest : MobileScreenFixture() {
             assertFalse(state.options.ownedServerAllowed)
             assertTrue(serverAccess.ready)
         }
-        compose.onNodeWithText(text(R.string.mobile_owned_access_remove)).performClick()
+        compose.onNodeWithText(
+            text(R.string.mobile_owned_access_remove)
+        ).performScrollTo().performClick()
         compose.onNodeWithTag("owned-server-confirm").performClick()
         compose.runOnIdle {
             assertEquals(1, serverRemovals)

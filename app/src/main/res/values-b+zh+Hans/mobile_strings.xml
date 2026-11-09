@@ -283,19 +283,19 @@
     <string name="mobile_hint_missing">失踪人员警报</string>
     <string name="mobile_hint_test">测试警报</string>
     <string name="mobile_owned_server">CodeClear 服务器</string>
-    <string name="mobile_owned_description">CodeClear 服务 · 互联网 · 需单独授权</string>
+    <string name="mobile_owned_description">CodeClear服务 · Groq · 无需输入访问码 · 互联网</string>
     <string name="mobile_owned_permission">允许 CodeClear 服务器翻译</string>
-    <string name="mobile_owned_disclosure">将警报原文和目标语言发送到CodeClear服务，再由服务向Groq请求推理。缓存结果在30天内到期；运行日志和备份的保留规则在隐私政策中另行说明。Groq可能为可靠性或滥用调查保留数据。配额可能导致翻译停止。关闭发送或移除访问码不会删除已有服务器数据。移除访问码前请单独清空服务器缓存。不会自动切换到其他引擎。</string>
+    <string name="mobile_owned_disclosure">警报原文、目标语言和随机安装标识将发送至CodeClear服务，由该服务向Groq请求翻译，无需输入访问码。私人缓存将在30天内过期；日志和备份遵循隐私政策中的其他保留期限。Groq可能因可靠性或滥用调查保留数据。配额可能导致翻译停止。关闭发送不会删除服务器数据，请使用清除服务器缓存功能。失败时不会自动切换提供方。</string>
     <string name="mobile_owned_access">访问令牌</string>
-    <string name="mobile_owned_access_saved">已安全保存</string>
-    <string name="mobile_owned_access_missing">需要访问令牌</string>
+    <string name="mobile_owned_access_saved">私人连接已就绪</string>
+    <string name="mobile_owned_access_missing">私人连接不可用</string>
     <string name="mobile_owned_access_hint">32～256个字符。请输入服务访问令牌，而非 Groq API 密钥。</string>
     <string name="mobile_owned_access_save">保存访问令牌</string>
-    <string name="mobile_owned_access_remove">删除访问令牌</string>
-    <string name="mobile_owned_access_remove_review">删除已保存的令牌并暂停服务器翻译？已有服务器缓存不会被删除。</string>
-    <string name="mobile_owned_access_failed">无法更新访问令牌，请重试。</string>
+    <string name="mobile_owned_access_remove">重置私人连接</string>
+    <string name="mobile_owned_access_remove_review">创建新的安装标识并暂停服务翻译？本地历史记录会保留。请尽可能先清除当前服务器缓存。新标识无法清除旧缓存，旧缓存将在30天内过期。</string>
+    <string name="mobile_owned_access_failed">无法准备私人连接。您可以重置后重新允许发送。</string>
     <string name="mobile_owned_cache_clear">清空服务器缓存</string>
-    <string name="mobile_owned_cache_review">清空此令牌的服务器缓存并暂停服务器翻译？手机上的记录会保留。重新允许翻译后，新请求可能再次写入缓存。</string>
+    <string name="mobile_owned_cache_review">清除此私人连接的缓存并暂停服务翻译？本地历史记录会保留。重新启用翻译后可能再次生成缓存。</string>
     <string name="mobile_owned_cache_cleared">服务器缓存已清空。服务器翻译已暂停。</string>
     <string name="mobile_owned_cache_failed">无法清空服务器缓存。请检查访问令牌和网络。</string>
     <string name="mobile_owned_terms">Groq 数据处理说明</string>
@@ -320,4 +320,5 @@
     <string name="mobile_settings_translation_group">翻译选项</string>
     <string name="mobile_settings_background_group">后台运行</string>
     <string name="mobile_settings_project_group">项目</string>
+    <string name="mobile_remote_priority">启用MyMemory时优先使用MyMemory。关闭后，仅在您已允许CodeClear服务时才选择该服务。错误或配额不足不会自动切换提供方。</string>
 </resources>

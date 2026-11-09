@@ -30,7 +30,7 @@ class OwnedServerConsentDeviceTest {
             assertFalse(restored.serverAllowed)
             assertEquals(granted.ownedServerCredentialId, restored.ownedServerCredentialId)
             storage.save(granted.copy(ownedServerAllowed = false, serverAllowed = true))
-            assertFalse(storage.load().translationAllowed)
+            assertEquals(TranslationEngineKind.MY_MEMORY, storage.load().engine)
         } finally {
             context.deleteSharedPreferences(name)
         }
@@ -58,7 +58,7 @@ class OwnedServerConsentDeviceTest {
         try {
             val storage = MobileOptionsStorage(context, name, ownedConfigured = true)
             val preferences = context.getSharedPreferences(name, 0)
-            for (oldVersion in listOf(0, 1)) {
+            for (oldVersion in listOf(0, 1, 2)) {
                 storage.save(
                     granted.copy(
                         notificationConsent = true,

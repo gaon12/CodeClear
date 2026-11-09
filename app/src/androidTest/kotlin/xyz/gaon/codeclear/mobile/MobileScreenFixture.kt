@@ -230,7 +230,7 @@ abstract class MobileScreenFixture {
                                         engine = TranslationEngineKind.OWNED_SERVER,
                                         ownedServerAllowed = true,
                                         ownedServerCredentialId = id
-                                    )
+                                    ).withMyMemoryPriority()
                                 state = state.copy(options = configured!!)
                             }
                         },

@@ -45,7 +45,8 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
     val access = actions.serverAccess
     val ownedSelectable = options.labsEnabled && options.ownedServerAllowed &&
         access.configured && access.loaded && access.ready && !access.busy &&
-        access.credentialId == options.ownedServerCredentialId
+        access.credentialId == options.ownedServerCredentialId &&
+        !(options.engine == TranslationEngineKind.MY_MEMORY && options.serverAllowed)
     LaunchedEffect(Unit) { actions.refreshSystem(false) }
     Column(verticalArrangement = Arrangement.spacedBy(24.dp)) {
         SettingsGroup(tag = "translation-control-group") {
@@ -272,7 +273,7 @@ fun LocalTranslationSettings(options: MobileOptions, actions: MobileActions) {
                                     ) {
                                         request.enable || options.serverAllowed
                                     } else {
-                                        options.serverAllowed
+                                        false
                                     }
                                 )
                             )

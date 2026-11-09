@@ -283,19 +283,19 @@
     <string name="mobile_hint_missing">行方不明者の警報</string>
     <string name="mobile_hint_test">試験警報</string>
     <string name="mobile_owned_server">CodeClear サーバー</string>
-    <string name="mobile_owned_description">CodeClear サービス · インターネット · 個別の許可が必要</string>
+    <string name="mobile_owned_description">CodeClearサービス · Groq · アクセスコード入力不要 · インターネット</string>
     <string name="mobile_owned_permission">CodeClear サーバー翻訳を許可</string>
-    <string name="mobile_owned_disclosure">警報の原文と翻訳先言語をCodeClearサービスに送信し、Groqに推論を依頼します。キャッシュ結果は30日以内に期限切れとなります。運用ログとバックアップの保持はプライバシーポリシーで別途説明しています。Groqは信頼性や不正利用の調査のためにデータを保持する場合があります。利用制限で翻訳が停止することがあります。送信停止やアクセスコード削除では既存のサーバーデータは消えません。コードを削除する前にサーバーキャッシュを別途消去してください。他のエンジンには自動で切り替わりません。</string>
+    <string name="mobile_owned_disclosure">警報原文、翻訳先言語、ランダムなインストール識別子をCodeClearサービスに送り、サービスがGroqに翻訳を依頼します。アクセスコード入力は不要です。専用キャッシュは30日以内に期限切れとなり、ログとバックアップはプライバシーポリシーの別の保持条件に従います。Groqは信頼性や不正調査のためデータを保持する場合があります。上限により翻訳が停止することがあります。送信をオフにしてもサーバーデータは消えません。サーバーキャッシュ削除を使ってください。失敗時に他社へ自動切替しません。</string>
     <string name="mobile_owned_access">接続トークン</string>
-    <string name="mobile_owned_access_saved">安全に保存済み</string>
-    <string name="mobile_owned_access_missing">接続トークンが必要</string>
+    <string name="mobile_owned_access_saved">専用接続の準備完了</string>
+    <string name="mobile_owned_access_missing">専用接続を利用できません</string>
     <string name="mobile_owned_access_hint">32～256文字。Groq API キーではなく、サービスの接続トークンを入力してください。</string>
     <string name="mobile_owned_access_save">接続トークンを保存</string>
-    <string name="mobile_owned_access_remove">接続トークンを削除</string>
-    <string name="mobile_owned_access_remove_review">保存した接続トークンを削除し、サーバー翻訳を停止しますか？既存のサーバーキャッシュは削除されません。</string>
-    <string name="mobile_owned_access_failed">接続トークンを更新できませんでした。もう一度お試しください。</string>
+    <string name="mobile_owned_access_remove">専用接続をリセット</string>
+    <string name="mobile_owned_access_remove_review">新しいインストール識別子を作成し、サービス翻訳を停止しますか？端末の履歴は保持します。可能なら先に現在のサーバーキャッシュを削除してください。新しい識別子では古いキャッシュを削除できず、30日以内に期限切れとなります。</string>
+    <string name="mobile_owned_access_failed">専用接続を準備できませんでした。接続をリセットし、送信を再許可できます。</string>
     <string name="mobile_owned_cache_clear">サーバーキャッシュを消去</string>
-    <string name="mobile_owned_cache_review">この接続トークンのキャッシュを消去し、サーバー翻訳を停止しますか？端末の履歴は残ります。翻訳を再び許可すると、新しい要求がキャッシュに保存される場合があります。</string>
+    <string name="mobile_owned_cache_review">この専用接続のキャッシュを削除し、サービス翻訳を停止しますか？端末の履歴は保持します。翻訳を再度有効にするとキャッシュが作成される場合があります。</string>
     <string name="mobile_owned_cache_cleared">サーバーキャッシュを消去しました。サーバー翻訳は停止中です。</string>
     <string name="mobile_owned_cache_failed">キャッシュを消去できませんでした。接続トークンと通信を確認してください。</string>
     <string name="mobile_owned_terms">Groq のデータ取り扱い</string>
@@ -320,4 +320,5 @@
     <string name="mobile_settings_translation_group">翻訳オプション</string>
     <string name="mobile_settings_background_group">バックグラウンド動作</string>
     <string name="mobile_settings_project_group">プロジェクト</string>
+    <string name="mobile_remote_priority">MyMemoryが有効な間はMyMemoryを優先します。オフにすると、既に送信を許可した場合のみCodeClearサービスを選択します。エラーや上限超過による自動切替はありません。</string>
 </resources>

@@ -283,19 +283,19 @@
     <string name="mobile_hint_missing">失蹤人口警報</string>
     <string name="mobile_hint_test">測試警報</string>
     <string name="mobile_owned_server">CodeClear 伺服器</string>
-    <string name="mobile_owned_description">CodeClear 服務 · 網際網路 · 需個別授權</string>
+    <string name="mobile_owned_description">CodeClear服務 · Groq · 無需輸入存取碼 · 網際網路</string>
     <string name="mobile_owned_permission">允許 CodeClear 伺服器翻譯</string>
-    <string name="mobile_owned_disclosure">將警報原文和目標語言傳送至CodeClear服務，再由服務向Groq請求推論。快取結果會在30天內到期；執行紀錄和備份的保留規則在隱私權政策中另行說明。Groq可能因可靠性或濫用調查保留資料。配額可能導致翻譯停止。關閉傳送或移除存取碼不會刪除既有伺服器資料。移除存取碼前請另外清空伺服器快取。不會自動切換至其他引擎。</string>
+    <string name="mobile_owned_disclosure">警報原文、目標語言和隨機安裝識別碼將傳送至CodeClear服務，由該服務向Groq請求翻譯，無需輸入存取碼。私人快取將於30天內到期；紀錄和備份遵循隱私權政策的其他保存期限。Groq可能因可靠性或濫用調查保留資料。配額可能導致翻譯停止。關閉傳送不會刪除伺服器資料，請使用清除伺服器快取功能。失敗時不會自動切換提供者。</string>
     <string name="mobile_owned_access">存取權杖</string>
-    <string name="mobile_owned_access_saved">已安全儲存</string>
-    <string name="mobile_owned_access_missing">需要存取權杖</string>
+    <string name="mobile_owned_access_saved">私人連線已就緒</string>
+    <string name="mobile_owned_access_missing">私人連線無法使用</string>
     <string name="mobile_owned_access_hint">32～256個字元。請輸入服務存取權杖，而非 Groq API 金鑰。</string>
     <string name="mobile_owned_access_save">儲存存取權杖</string>
-    <string name="mobile_owned_access_remove">刪除存取權杖</string>
-    <string name="mobile_owned_access_remove_review">刪除已儲存的權杖並暫停伺服器翻譯？既有伺服器快取不會被刪除。</string>
-    <string name="mobile_owned_access_failed">無法更新存取權杖，請重試。</string>
+    <string name="mobile_owned_access_remove">重設私人連線</string>
+    <string name="mobile_owned_access_remove_review">建立新的安裝識別碼並暫停服務翻譯？本機歷史紀錄會保留。請盡可能先清除目前的伺服器快取。新識別碼無法清除舊快取，舊快取將於30天內到期。</string>
+    <string name="mobile_owned_access_failed">無法準備私人連線。您可以重設後重新允許傳送。</string>
     <string name="mobile_owned_cache_clear">清空伺服器快取</string>
-    <string name="mobile_owned_cache_review">清空此權杖的伺服器快取並暫停伺服器翻譯？手機上的紀錄會保留。重新允許翻譯後，新請求可能再次寫入快取。</string>
+    <string name="mobile_owned_cache_review">清除此私人連線的快取並暫停服務翻譯？本機歷史紀錄會保留。重新啟用翻譯後可能再次產生快取。</string>
     <string name="mobile_owned_cache_cleared">伺服器快取已清空。伺服器翻譯已暫停。</string>
     <string name="mobile_owned_cache_failed">無法清空伺服器快取。請檢查存取權杖與網路。</string>
     <string name="mobile_owned_terms">Groq 資料處理說明</string>
@@ -320,4 +320,5 @@
     <string name="mobile_settings_translation_group">翻譯選項</string>
     <string name="mobile_settings_background_group">背景執行</string>
     <string name="mobile_settings_project_group">專案</string>
+    <string name="mobile_remote_priority">啟用MyMemory時優先使用MyMemory。關閉後，僅在您已允許CodeClear服務時才選擇該服務。錯誤或配額不足不會自動切換提供者。</string>
 </resources>

@@ -3,11 +3,8 @@ package xyz.gaon.codeclear.mobile
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -20,8 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import xyz.gaon.codeclear.R
 import xyz.gaon.codeclear.translation.ServerCacheClearResult
@@ -38,7 +33,6 @@ internal fun OwnedServerSettings(options: MobileOptions, actions: MobileActions)
     val access = actions.serverAccess
     if (!access.configured || !options.labsEnabled) return
     var pending by remember { mutableStateOf<PendingServerDecision?>(null) }
-    var tokenRevision by remember { mutableStateOf<Long?>(null) }
     val ready = access.loaded && access.ready && !access.busy
     val permitted = options.ownedServerAllowed && options.ownedServerCredentialId.isNotEmpty()
     SettingsGroup {
@@ -64,32 +58,28 @@ internal fun OwnedServerSettings(options: MobileOptions, actions: MobileActions)
             }
         )
         SettingDivider()
-        SettingRow(
-            stringResource(R.string.mobile_owned_access),
+        SettingNote(
             stringResource(
                 if (access.ready) {
                     R.string.mobile_owned_access_saved
                 } else {
                     R.string.mobile_owned_access_missing
                 }
-            ),
-            enabled = access.loaded && !access.busy,
-            onClick = { tokenRevision = access.revision }
-        )
-        if (access.ready) {
-            SettingRow(
-                stringResource(R.string.mobile_owned_access_remove),
-                enabled = ready,
-                onClick = {
-                    pending =
-                        PendingServerDecision(
-                            ServerDecision.REMOVE,
-                            access.revision,
-                            access.credentialId
-                        )
-                }
             )
-        }
+        )
+        SettingNote(stringResource(R.string.mobile_remote_priority))
+        SettingRow(
+            stringResource(R.string.mobile_owned_access_remove),
+            enabled = access.loaded && !access.busy,
+            onClick = {
+                pending =
+                    PendingServerDecision(
+                        ServerDecision.REMOVE,
+                        access.revision,
+                        access.credentialId
+                    )
+            }
+        )
         SettingDivider()
         SettingRow(
             stringResource(R.string.mobile_owned_cache_clear),
@@ -119,20 +109,13 @@ internal fun OwnedServerSettings(options: MobileOptions, actions: MobileActions)
         SettingNote(stringResource(R.string.mobile_server_translation_notice))
         OwnedProviderTermsLink()
     }
-    tokenRevision?.let { revision ->
-        ServerAccessDialog(
-            enabled = access.loaded && !access.busy && access.revision == revision,
-            dismiss = { tokenRevision = null },
-            save = { value ->
-                tokenRevision = null
-                actions.saveServerAccess(value, revision)
-            }
-        )
-    }
     pending?.let { decision ->
         val enabled =
-            ready && access.revision == decision.revision &&
-                access.credentialId == decision.credentialId
+            access.loaded && !access.busy && access.revision == decision.revision &&
+                (
+                    decision.kind == ServerDecision.REMOVE ||
+                        (ready && access.credentialId == decision.credentialId)
+                    )
         val title = when (decision.kind) {
             ServerDecision.ALLOW -> R.string.mobile_owned_server
             ServerDecision.REMOVE -> R.string.mobile_owned_access_remove
@@ -199,58 +182,6 @@ internal fun OwnedServerSettings(options: MobileOptions, actions: MobileActions)
             }
         )
     }
-}
-
-@Composable
-private fun ServerAccessDialog(enabled: Boolean, dismiss: () -> Unit, save: (String) -> Unit) {
-    // Access codes deliberately do not enter saveable state or survive activity recreation.
-    var code by remember { mutableStateOf("") }
-    val valid = code.matches(Regex("[A-Za-z0-9._~-]{32,256}"))
-    MobileConfirmationDialog(
-        onDismissRequest = {
-            code = ""
-            dismiss()
-        },
-        title = { Text(stringResource(R.string.mobile_owned_access)) },
-        text = {
-            OutlinedTextField(
-                code,
-                onValueChange = { if (it.length <= 1024) code = it },
-                modifier = Modifier.fillMaxWidth().testTag("owned-server-token"),
-                singleLine = true,
-                enabled = enabled,
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                label = { Text(stringResource(R.string.mobile_owned_access)) },
-                supportingText = { Text(stringResource(R.string.mobile_owned_access_hint)) },
-                isError =
-                    code.length > 256 ||
-                        code.any {
-                            it !in
-                                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._~-"
-                        }
-            )
-        },
-        confirmButton = {
-            TextButton(
-                enabled = enabled && valid,
-                modifier = Modifier.testTag(
-                    "owned-server-token-save"
-                ),
-                onClick = {
-                    val value = code
-                    code = ""
-                    if (enabled && valid) save(value)
-                }
-            ) { Text(stringResource(R.string.mobile_owned_access_save)) }
-        },
-        dismissButton = {
-            TextButton(onClick = {
-                code = ""
-                dismiss()
-            }) { Text(stringResource(R.string.mobile_cancel)) }
-        }
-    )
 }
 
 @Composable

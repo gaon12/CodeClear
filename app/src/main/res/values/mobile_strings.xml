@@ -284,19 +284,19 @@
     <string name="mobile_hint_missing">Missing-person alert</string>
     <string name="mobile_hint_test">Test alert</string>
     <string name="mobile_owned_server">CodeClear server</string>
-    <string name="mobile_owned_description">CodeClear service · Internet · Separate permission required</string>
+    <string name="mobile_owned_description">CodeClear service · Groq · No access code needed · Internet</string>
     <string name="mobile_owned_permission">Allow CodeClear server translation</string>
-    <string name="mobile_owned_disclosure">Send alert originals and the target language to the CodeClear service, which forwards inference to Groq. Cached results expire within 30 days; operational logs and backups have separate retention described in the privacy policy. Groq may retain data for reliability or abuse investigations. Quotas may stop translation. Turning sending off or removing the access code does not erase existing server data. Clear the server cache separately before removing the code. Other engines are never selected automatically.</string>
+    <string name="mobile_owned_disclosure">Send alert originals, the target language and a random installation identifier to the CodeClear service, which forwards inference to Groq. No access code entry is needed. Private cached results expire within 30 days; logs and backups have separate retention in the privacy policy. Groq may retain data for reliability or abuse investigations. Quotas may stop translation. Turning sending off does not erase server data; use Clear server cache. There is no automatic provider fallback.</string>
     <string name="mobile_owned_access">Access token</string>
-    <string name="mobile_owned_access_saved">Saved securely</string>
-    <string name="mobile_owned_access_missing">Access token required</string>
+    <string name="mobile_owned_access_saved">Private connection ready</string>
+    <string name="mobile_owned_access_missing">Private connection unavailable</string>
     <string name="mobile_owned_access_hint">32–256 characters. Use the service access token, not a Groq API key.</string>
     <string name="mobile_owned_access_save">Save access token</string>
-    <string name="mobile_owned_access_remove">Remove access token</string>
-    <string name="mobile_owned_access_remove_review">Remove the saved access token and pause server translation? Existing server cache is not deleted.</string>
-    <string name="mobile_owned_access_failed">Could not update the access token. Try again.</string>
+    <string name="mobile_owned_access_remove">Reset private connection</string>
+    <string name="mobile_owned_access_remove_review">Create a new private installation identity and pause service translation? Local history is kept. Clear the current server cache first if available. The old cache cannot be cleared with the new identity and expires within 30 days.</string>
+    <string name="mobile_owned_access_failed">Could not prepare the private connection. You can reset it and grant sending permission again.</string>
     <string name="mobile_owned_cache_clear">Clear server cache</string>
-    <string name="mobile_owned_cache_review">Clear cached results for this access token and pause server translation? Your local history stays saved. New requests can refill the cache if you enable translation again.</string>
+    <string name="mobile_owned_cache_review">Clear cached results for this private connection and pause service translation? Local history stays saved. Enabling service translation again can refill the cache.</string>
     <string name="mobile_owned_cache_cleared">Server cache cleared. Server translation is paused.</string>
     <string name="mobile_owned_cache_failed">Could not clear server cache. Check your access token and connection.</string>
     <string name="mobile_owned_terms">Groq data handling</string>
@@ -321,4 +321,5 @@
     <string name="mobile_settings_translation_group">Translation options</string>
     <string name="mobile_settings_background_group">Background activity</string>
     <string name="mobile_settings_project_group">Project</string>
+    <string name="mobile_remote_priority">While MyMemory is enabled, remote translation uses MyMemory. Turning it off selects the CodeClear service only if you already allowed that service. Failures and quotas never switch providers automatically.</string>
 </resources>
