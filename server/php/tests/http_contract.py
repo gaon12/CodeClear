@@ -186,7 +186,12 @@ $tokens = ($argv[2] ?? '') === 'race' ? ['synthetic-http-client-aaaaaaaaaaaaaaaa
     ['synthetic-http-client-aaaaaaaaaaaaaaaa', 'synthetic-http-client-bbbbbbbbbbbbbbbb'];
 try {
     foreach ($tokens as $token) {
-        $service->handle('POST', 'Bearer '.$token, 'application/json', $body);
+        if (($argv[2] ?? '') === 'anonymous') {
+            $installation = $token === $tokens[0] ? str_repeat('a', 64) : str_repeat('b', 64);
+            $service->handle('POST', '', 'application/json', $body, $installation, '::1');
+        } else {
+            $service->handle('POST', 'Bearer '.$token, 'application/json', $body);
+        }
     }
     echo '200';
 } catch (CodeClear\\ApiFailure $error) {
@@ -248,6 +253,52 @@ try {
     assert request(unauthenticated.url, token=None, body=b"")[0] == 401
     assert not unauth_path.exists()
 
+    anonymous_env = dict(
+        env,
+        CODECLEAR_ALLOW_ANONYMOUS="true",
+        CODECLEAR_CLIENT_TOKENS="{}",
+        CODECLEAR_DB_PATH=str(root / "anonymous.sqlite3"),
+    )
+    subprocess.run(
+        [PHP, str(bootstrap), str(API), "anonymous"],
+        input=BODY,
+        env=anonymous_env,
+        check=True,
+        capture_output=True,
+        timeout=15,
+    )
+    anonymous = Server(root, anonymous_env)
+    servers.append(anonymous)
+    first_id = {"X-CodeClear-Installation": "a" * 64}
+    other_id = {"X-CodeClear-Installation": "b" * 64}
+    for identifier in [first_id, first_id, other_id]:
+        status, result, _ = request(anonymous.url, token=None, extra=identifier)
+        assert status == 200 and result == response
+    assert request(anonymous.url, token=None, body=b"")[0] == 401
+    assert request(anonymous.url, extra=first_id)[0] == 401
+    assert (
+        request(
+            anonymous.url, token=None, extra={"X-CodeClear-Installation": "A" * 64}
+        )[0]
+        == 401
+    )
+    limited = Server(root, dict(anonymous_env, CODECLEAR_NETWORK_RPM="1"))
+    servers.append(limited)
+    # The actual loopback peer is the same; rotating IDs and forwarded addresses cannot evade it.
+    assert (
+        request(
+            limited.url,
+            token=None,
+            extra=dict(other_id, **{"X-Forwarded-For": "192.0.2.2"}),
+        )[0]
+        == 429
+    )
+    assert (
+        request(anonymous.url, method="DELETE", body=b"", token=None, extra=first_id)[0]
+        == 200
+    )
+    assert request(anonymous.url, token=None, extra=other_id)[0] == 200
+
     race_env = dict(env, CODECLEAR_DB_PATH=str(root / "race.sqlite3"))
     arguments = [PHP, str(bootstrap), str(API), "race"]
     first = subprocess.Popen(
@@ -291,7 +342,7 @@ try {
             first.kill()
             first.wait(timeout=5)
     print(
-        "15 HTTP boundary checks and a separate-process lease race passed; no provider requests were made."
+        "Authenticated and anonymous HTTP boundaries and a separate-process lease race passed; no provider requests were made."
     )
 except Exception:
     for server in servers:

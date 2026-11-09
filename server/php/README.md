@@ -2,7 +2,7 @@
 
 This standalone endpoint translates through the fixed Groq HTTPS API. Provider
 keys stay on the server. SQLite reuses validated results for identical text,
-target, model, prompt version and authenticated client. No live alerts or paid
+target, model, prompt version and private client/installation scope. No live alerts or paid
 provider calls are needed for the supplied tests.
 
 ## Deployment
@@ -40,12 +40,13 @@ codeclear/
    outside the document root remains supported. Process environment variables
    override file values. `CODECLEAR_ENV_FILE` can select a different private
    external file. Never commit populated configuration, databases or backups.
-3. Run `php api.php generate-token` for each client. Put the returned
-   64-character SHA-256 digest in `CODECLEAR_CLIENT_TOKENS`; give the token
-   itself only to that client. Custom tokens may be 32-256 ASCII characters
-   from `A-Z`, `a-z`, `0-9`, `.`, `_`, `~`, `-`. A token is not a provider API
-   key. Public mobile distribution needs deliberate per-client provisioning;
-   do not embed an administrator token in an APK.
+3. For mobile access without manual token entry, set `CODECLEAR_ALLOW_ANONYMOUS=true`
+   and `CODECLEAR_CLIENT_TOKENS='{}'`, as in the example. The app generates a
+   random installation identifier; it supplies `X-CodeClear-Installation` instead
+   of an Authorization header. Existing deployments default to anonymous access
+   disabled until explicitly configured. Optional legacy clients can still use
+   `php api.php generate-token` and register its SHA-256 digest in
+   `CODECLEAR_CLIENT_TOKENS`. Never embed a provider or administrator key in an APK.
 4. Run `php api.php config-check` as the same user/environment as the web
    process. This checks runtime/configuration/storage without calling Groq.
    CLI failures identify the configuration category without printing secrets;
@@ -126,6 +127,32 @@ replacement or a controlled process restart.
 
 ## SQLite data and maintenance
 
+### Access without manual client tokens
+
+Anonymous installations supply exactly 64 lowercase hexadecimal characters,
+generated from 32 cryptographically random bytes. This identifier is a private
+cache/deletion capability, not proof of an official client or genuine alert.
+Protect it like other private app state and exclude the header from logs. A
+caller cannot claim verified public provenance or upload translated cache entries.
+Supplying both access mechanisms is rejected; invalid Bearer credentials never
+fall back to anonymous access. POST and bodyless DELETE use the same scope.
+
+The server HMACs the installation identifier into a separate private scope.
+Identical requests reuse a result within that scope; another installation cannot
+read or clear it. Missing or expired results alone can consume provider budget.
+Concurrent misses retain the existing unique lease, so they cannot start duplicate
+provider work. There is no cross-installation shared alert cache or enumeration API.
+
+Anonymous requests additionally consume `CODECLEAR_NETWORK_RPM` (default 30) and
+service-wide `CODECLEAR_ANONYMOUS_RPM` (default 120), including cache hits and DELETE.
+Rotating identifiers cannot bypass these limits or the provider/day/concurrency
+limits. Network counters use a keyed hash of the web server's actual peer address,
+never a caller-supplied forwarding header; raw addresses are not stored in SQLite.
+Behind a proxy, requests share the proxy's budget unless its trusted server
+configuration supplies the actual peer address. Carrier/NAT users can also share
+a budget. Configure edge limits before exposing the service; these bounds limit
+work and cost but do not authenticate senders or eliminate denial of service.
+
 The `cache` table contains the exact original, target, prompt version,
 requested/actual model, validated result JSON (translation, original and
 translated issuer, source evidence), measured `inference_ms`, bounded token
@@ -136,7 +163,7 @@ stored as a translation. `budgets` contains body-free admission counters.
 The bounded `scopes` table records body-free deletion generations so work
 admitted before a clear cannot acquire a new lease afterward.
 
-All content is private to the authenticated client. The server does not
+All content is private to its authenticated client or anonymous installation. The server does not
 infer public provenance from client assertions or share unverified messages
 between clients. Cache keys are server-keyed HMACs. Rotating provider keys,
 models, client tokens or the cache secret changes the appropriate scope or
@@ -184,6 +211,8 @@ It never sends a cache miss to the real provider. Real hosting, HTTPS proxy
 configuration, account permissions, quotas and live model quality still need
 verification after deployment and before release.
 
+The HTTP harness covers both Bearer and installation-header access, opt-in,
+cache reuse, cross-installation deletion isolation, and forwarding-header abuse.
 The HTTP harness uses loopback IPv6 when available and the platform `curl.exe`
 on Windows. It also starts two independent PHP processes against one SQLite
 database to verify that an identical concurrent miss consumes one provider

@@ -478,6 +478,70 @@ $test('environment files are data and cannot execute expansion', static function
     unlink($file);
 });
 
+$test('anonymous installations reuse only their private validated results and deletion scope', static function () use ($fixture): void {
+    $h = $fixture(['CODECLEAR_ALLOW_ANONYMOUS' => 'true', 'CODECLEAR_CLIENT_TOKENS' => '{}']);
+    $body = encode(['text' => '[DRILL] Gate 3, call 112.', 'target_lang' => 'en']);
+    $first = str_repeat('a', 64);
+    $other = str_repeat('b', 64);
+    $request = fn (string $installation): array => $h->service->handle('POST', '', 'application/json', $body, $installation);
+    check($request($first) === $request($first));
+    check($h->calls === 1);
+    $request($other);
+    check($h->calls === 2 && count($h->rows()) === 2);
+    check($h->service->handle('DELETE', '', '', '', $first) === ['cleared' => true]);
+    $request($other);
+    check($h->calls === 2 && count($h->rows()) === 1);
+    $request($first);
+    check($h->calls === 3);
+});
+
+$test('anonymous access requires explicit configuration and an exact installation identifier', static function () use ($fixture): void {
+    $closed = $fixture();
+    rejected(fn () => $closed->config->authenticate('', str_repeat('a', 64)), 401);
+    $h = $fixture(['CODECLEAR_ALLOW_ANONYMOUS' => 'true']);
+    foreach (['', str_repeat('a', 63), str_repeat('A', 64), str_repeat('a', 65), '127.0.0.1'] as $id) {
+        rejected(fn () => $h->config->authenticate('', $id), 401);
+    }
+    rejected(fn () => $h->config->authenticate('Bearer invalid', str_repeat('a', 64)), 401);
+    rejected(fn () => $h->config->authenticate('Bearer ' . Harness::TOKEN, str_repeat('a', 64)), 401);
+    rejected(fn () => $h->service->handle('DELETE', '', '', '', str_repeat('a', 64), 'forwarded-by-client'), 400);
+    check($h->calls === 0 && $h->rows() === []);
+});
+
+$test('rotating anonymous identities cannot bypass network and global request limits', static function () use ($fixture): void {
+    foreach (['CODECLEAR_NETWORK_RPM', 'CODECLEAR_ANONYMOUS_RPM'] as $limit) {
+        $h = $fixture(['CODECLEAR_ALLOW_ANONYMOUS' => 'true', $limit => '2']);
+        $body = encode(['text' => '[DRILL] Gate 3.', 'target_lang' => 'en']);
+        foreach (['a', 'b'] as $id) {
+            $h->service->handle('POST', '', 'application/json', $body, str_repeat($id, 64));
+        }
+        $ip = $limit === 'CODECLEAR_NETWORK_RPM' ? '127.0.0.1' : '192.0.2.2';
+        rejected(fn () => $h->service->handle('POST', '', 'application/json', $body, str_repeat('c', 64), $ip), 429);
+        check($h->calls === 2);
+        $h->now += 60000;
+        $h->service->handle('POST', '', 'application/json', $body, str_repeat('c', 64), $ip);
+        check($h->calls === 3);
+    }
+});
+
+$test('anonymous opt-out and concurrent deletion prevent late cache restoration', static function () use ($fixture): void {
+    foreach (['withdraw', 'delete'] as $action) {
+        $h = $fixture(['CODECLEAR_ALLOW_ANONYMOUS' => 'true']);
+        $id = str_repeat('a', 64);
+        $h->provider = static function (array $payload) use ($h, $action, $id): array {
+            if ($action === 'delete') {
+                $h->service->handle('DELETE', '', '', '', $id);
+            } else {
+                $h->current = new Configuration(array_replace(Harness::values($h->path), ['CODECLEAR_ALLOW_ANONYMOUS' => 'false']));
+            }
+            return envelope(result($payload['messages'][1]['content']));
+        };
+        $body = encode(['text' => '[DRILL] Gate 3.', 'target_lang' => 'en']);
+        rejected(fn () => $h->service->handle('POST', '', 'application/json', $body, $id), $action === 'delete' ? 409 : 401);
+        check($h->calls === 1 && $h->rows() === []);
+    }
+});
+
 $failed = 0;
 $total = count($tests);
 try {

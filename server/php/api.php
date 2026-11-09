@@ -121,6 +121,9 @@ final readonly class Configuration
     public string $cacheSecret;
     public string $databasePath;
     public array $clients;
+    public bool $allowAnonymous;
+    public int $anonymousPerMinute;
+    public int $networkPerMinute;
     public int $ttlMillis;
     public int $maxEntries;
     public int $clientPerMinute;
@@ -146,9 +149,16 @@ final readonly class Configuration
             preg_match('~^(?:/|[A-Za-z]:[/\\\\])~', $this->databasePath) !== 1) {
             throw new RuntimeException('Database path must be absolute');
         }
+        $anonymous = $values['CODECLEAR_ALLOW_ANONYMOUS'] ?? 'false';
+        if (!in_array($anonymous, ['true', 'false'], true)) {
+            throw new RuntimeException('Invalid anonymous access configuration');
+        }
+        $this->allowAnonymous = $anonymous === 'true';
+        $this->anonymousPerMinute = $this->integer($values, 'CODECLEAR_ANONYMOUS_RPM', 120, 1, 1200);
+        $this->networkPerMinute = $this->integer($values, 'CODECLEAR_NETWORK_RPM', 30, 1, 120);
         $this->clients = stringObject($values['CODECLEAR_CLIENT_TOKENS'] ?? '{}', 16384);
-        if (count($this->clients) < 1 || count($this->clients) > 100) {
-            throw new RuntimeException('Provision at least one client');
+        if ((!$this->allowAnonymous && count($this->clients) < 1) || count($this->clients) > 100) {
+            throw new RuntimeException('Provision clients or explicitly enable anonymous access');
         }
         foreach ($this->clients as $label => $digest) {
             if (!is_string($label) || preg_match('/^[A-Za-z][A-Za-z0-9_-]{0,63}$/D', $label) !== 1 ||
@@ -192,7 +202,8 @@ final readonly class Configuration
         foreach (['GROQ_API_KEY', 'GROQ_MODEL', 'CODECLEAR_CACHE_SECRET', 'CODECLEAR_DB_PATH',
             'CODECLEAR_CLIENT_TOKENS', 'CODECLEAR_CACHE_DAYS', 'CODECLEAR_CACHE_ENTRIES',
             'CODECLEAR_CLIENT_RPM', 'CODECLEAR_PROVIDER_RPM', 'CODECLEAR_PROVIDER_RPD',
-            'CODECLEAR_PROVIDER_CONCURRENCY', 'CODECLEAR_REQUIRE_HTTPS'] as $key) {
+            'CODECLEAR_PROVIDER_CONCURRENCY', 'CODECLEAR_REQUIRE_HTTPS', 'CODECLEAR_ALLOW_ANONYMOUS',
+            'CODECLEAR_ANONYMOUS_RPM', 'CODECLEAR_NETWORK_RPM'] as $key) {
             $value = getenv($key);
             if ($value !== false) {
                 $values[$key] = $value;
@@ -201,8 +212,15 @@ final readonly class Configuration
         return new self($values);
     }
 
-    public function authenticate(string $authorization): string
+    public function authenticate(string $authorization, string $installation = ''): string
     {
+        if ($authorization === '' && $this->allowAnonymous &&
+            preg_match('/^[a-f0-9]{64}$/D', $installation) === 1) {
+            return hash_hmac('sha256', "installation\0" . $installation, $this->cacheSecret);
+        }
+        if ($installation !== '') {
+            throw new ApiFailure(401, 'unauthorized');
+        }
         if (preg_match('/^Bearer ([A-Za-z0-9._~-]{32,256})$/D', $authorization, $match) !== 1) {
             throw new ApiFailure(401, 'unauthorized');
         }
@@ -478,10 +496,16 @@ final class CacheStore
             ON CONFLICT(bucket) DO UPDATE SET used=used+1', [$bucket, $expires]);
     }
 
-    public function admit(string $scope, Configuration $config, int $now): int
+    public function admit(string $scope, Configuration $config, int $now, ?string $networkScope = null): int
     {
-        return $this->transaction(function () use ($scope, $config, $now): int {
+        return $this->transaction(function () use ($scope, $config, $now, $networkScope): int {
             $this->execute('DELETE FROM budgets WHERE expires_ms<=?', [$now]);
+            $minute = intdiv($now, 60000);
+            if ($networkScope !== null) {
+                // Rotating an installation ID cannot bypass the network or service-wide budget.
+                $this->budget('anonymous:' . $minute, $config->anonymousPerMinute, ($minute + 2) * 60000);
+                $this->budget('network:' . $networkScope . ':' . $minute, $config->networkPerMinute, ($minute + 2) * 60000);
+            }
             $this->execute('DELETE FROM scopes WHERE scope IN (SELECT s.scope FROM scopes s
                 WHERE updated_ms<? AND NOT EXISTS
                 (SELECT 1 FROM cache WHERE cache.scope=s.scope) LIMIT 100)', [$now - 2592000000]);
@@ -491,7 +515,6 @@ final class CacheStore
             }
             $this->execute('INSERT INTO scopes(scope,generation,updated_ms) VALUES(?,0,?)
                 ON CONFLICT(scope) DO UPDATE SET updated_ms=excluded.updated_ms', [$scope, $now]);
-            $minute = intdiv($now, 60000);
             $this->budget('client:' . $scope . ':' . $minute, $config->clientPerMinute, ($minute + 2) * 60000);
             return $existing === false ? 0 : (int) $existing;
         });
@@ -609,11 +632,25 @@ final class TranslationService
         $this->clock = $clock ?? static fn (): int => (int) floor(microtime(true) * 1000);
     }
 
-    public function handle(string $method, string $authorization, string $contentType, string $body): array
-    {
-        $scope = $this->config->authenticate($authorization);
+    public function handle(
+        string $method,
+        string $authorization,
+        string $contentType,
+        string $body,
+        string $installation = '',
+        string $remoteAddress = '127.0.0.1',
+    ): array {
+        $scope = $this->config->authenticate($authorization, $installation);
+        $networkScope = null;
+        if ($installation !== '') {
+            if (filter_var($remoteAddress, FILTER_VALIDATE_IP) === false) {
+                throw new ApiFailure(400, 'invalid_network_address');
+            }
+            // Use only the web server's peer address; untrusted forwarding headers are ignored.
+            $networkScope = hash_hmac('sha256', inet_pton($remoteAddress), $this->config->cacheSecret);
+        }
         $now = ($this->clock)();
-        $generation = $this->store->admit($scope, $this->config, $now);
+        $generation = $this->store->admit($scope, $this->config, $now, $networkScope);
         if ($method === 'DELETE') {
             if ($body !== '') {
                 throw new ApiFailure(400, 'delete_body_not_allowed');
@@ -650,7 +687,7 @@ final class TranslationService
             $result = validateTranslation($message['content'], $request);
             $current = ($this->reload)();
             if ($current->epoch() !== $this->config->epoch() ||
-                $current->authenticate($authorization) !== $scope) {
+                $current->authenticate($authorization, $installation) !== $scope) {
                 throw new ApiFailure(409, 'configuration_changed');
             }
             $usage = [];
@@ -768,7 +805,8 @@ function main(): never
             throw new ApiFailure(405, 'method_not_allowed');
         }
         $authorization = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-        $config->authenticate($authorization);
+        $installation = $_SERVER['HTTP_X_CODECLEAR_INSTALLATION'] ?? '';
+        $config->authenticate($authorization, $installation);
         $store = new CacheStore($config);
         $body = file_get_contents('php://input', false, null, 0, MAX_REQUEST_BYTES + 1);
         if ($body === false) {
@@ -778,7 +816,14 @@ function main(): never
             throw new ApiFailure(413, 'body_too_large');
         }
         $service = new TranslationService($config, $store);
-        send(200, $service->handle($method, $authorization, $_SERVER['CONTENT_TYPE'] ?? '', $body));
+        send(200, $service->handle(
+            $method,
+            $authorization,
+            $_SERVER['CONTENT_TYPE'] ?? '',
+            $body,
+            $installation,
+            $_SERVER['REMOTE_ADDR'] ?? '',
+        ));
     } catch (ApiFailure $failure) {
         send($failure->status, ['error' => $failure->reason], $failure->retryAfter);
     } catch (Throwable $error) {
