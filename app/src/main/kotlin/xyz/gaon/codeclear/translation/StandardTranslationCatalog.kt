@@ -54,6 +54,11 @@ object StandardTranslationCatalog {
         )
     )
     private val names by lazy { StandardNameCatalog(preparedNames()) }
+    internal val issuerLabels: Set<String> by lazy {
+        preparedNames().filter { it.kind == StandardSlotKind.AGENCY }.flatMap {
+            listOf(it.nativeName) + it.aliases + it.translations.values
+        }.toSet()
+    }
     val templates: List<StandardMessageTemplate> by lazy {
         koreanStandardTemplates() +
             internationalStandardTemplates()

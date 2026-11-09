@@ -2,7 +2,7 @@ package xyz.gaon.codeclear.translation
 
 import xyz.gaon.codeclear.reception.normalizeCountry
 
-/** A future response contract only. No transport or server engine consumes alert text. */
+/** Correlation and unverified issuer data; neither establishes source authenticity. */
 data class ServerTranslationDraft(
     val originalDigest: String,
     val sourceLanguage: String,
@@ -23,13 +23,14 @@ data class ServerTranslationDraft(
 }
 
 /** Even a structured claim needs independent source verification before it can be called official. */
-enum class IssuerBasis { STRUCTURED_SOURCE_CLAIM, EXTRACTED_FROM_TEXT }
+enum class IssuerBasis { STRUCTURED_SOURCE_CLAIM, EXTRACTED_FROM_TEXT, TEXT_PATTERN_ESTIMATE }
 
 data class IssuerClaim(
     val originalName: String,
     val translatedName: String?,
     val basis: IssuerBasis,
-    val countryIso: String? = null
+    val countryIso: String? = null,
+    val sourceExcerpt: String? = null
 ) {
     init {
         require(originalName.isNotBlank() && originalName.length <= 256)
@@ -37,6 +38,12 @@ data class IssuerClaim(
             translatedName == null || (translatedName.isNotBlank() && translatedName.length <= 256)
         )
         require(countryIso == null || normalizeCountry(countryIso) == countryIso)
+        require(
+            sourceExcerpt == null || (
+                sourceExcerpt.isNotBlank() && sourceExcerpt.length <= 2048 &&
+                    sourceExcerpt.contains(originalName)
+                )
+        )
     }
 }
 
