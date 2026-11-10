@@ -13,7 +13,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.provider.Settings
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
@@ -88,7 +87,6 @@ class MainActivity : AppCompatActivity() {
         systemSettingsOpened = savedInstanceState?.getBoolean("system_settings_opened") ?: false
         mobileRuntime.resumeProduct()
         mobileRuntime.automaticSpeech.foreground(hasWindowFocus())
-        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         openDestination(intent)
         enableEdgeToEdge()
         setContent {

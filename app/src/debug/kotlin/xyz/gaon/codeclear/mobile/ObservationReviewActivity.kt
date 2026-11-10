@@ -1,11 +1,9 @@
 package xyz.gaon.codeclear.mobile
 
 import android.os.Bundle
-import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,7 +36,6 @@ class ObservationReviewActivity : ComponentActivity() {
             return
         }
         diagnosticScope = mobileRuntime.pauseForDiagnostics()
-        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         enableEdgeToEdge()
         val alert = reviewAlert()
         val actions = MobileActions(
