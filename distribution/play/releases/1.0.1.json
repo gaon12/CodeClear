@@ -1,0 +1,13 @@
+{
+    "versionName": "1.0.1",
+    "versionCode": 6,
+    "releaseNotes": {
+        "en-US": "Estimate senders locally from more source patterns, including older saved alerts. Estimates remain unverified.\nRead new translations aloud while the app is in use.\nUse the CodeClear translation service without an access code, with private installation caches.\nImprove collection history, alert banners, post-alert popups and recent-app previews.\nKeep nearby messages in an unverified inbox without automatic saving, reading or forwarding.",
+        "ko-KR": "발신기관 추정 규칙을 늘리고, 이전에 저장한 재난문자에도 적용합니다. 추정 결과는 실제 발신 여부를 보증하지 않습니다.\n앱을 보고 있을 때 새 번역을 자동으로 읽을 수 있습니다.\n접근 코드 입력 없이 CodeClear 번역 서비스를 이용하며, 설치별로 캐시를 분리합니다.\n수집 이력, 알림 배너, 시스템 경보를 닫은 뒤 표시하는 팝업과 최근 앱 미리보기를 개선했습니다.\n주변에서 받은 메시지를 미확인 수신함에 두고 자동 저장·읽기·재전파하지 않습니다.",
+        "ja-JP": "発信元の推定ルールを増やし、以前に保存した警報にも適用します。実際の発信元を保証するものではありません。\nアプリを見ている間、新しい翻訳を自動で読み上げられます。\nアクセスコードなしでCodeClear翻訳サービスを利用でき、キャッシュはインストールごとに分離されます。\n収集履歴、通知バナー、システム警報を閉じた後のポップアップ、最近使ったアプリのプレビューを改善しました。\n周辺から受信したメッセージは未確認受信箱に分離し、自動保存・読み上げ・再転送しません。",
+        "fr-FR": "Plus de règles locales pour estimer l’émetteur, y compris sur les anciennes alertes. Ces estimations restent non vérifiées.\nLecture automatique des nouvelles traductions lorsque l’application est visible.\nService CodeClear sans code d’accès, avec cache privé par installation.\nAmélioration de l’historique, des notifications, des fenêtres après les alertes et des aperçus récents.\nMessages de proximité isolés, sans enregistrement, lecture ni transfert automatiques.",
+        "de-DE": "Mehr lokale Regeln zur Absenderschätzung, auch für ältere Warnungen. Die Angaben bleiben ungeprüft.\nNeue Übersetzungen bei sichtbarer App automatisch vorlesen.\nCodeClear-Übersetzung ohne Zugangscode, mit privatem Cache je Installation.\nVerlauf, Benachrichtigungen, Pop-ups nach Systemwarnungen und App-Vorschauen verbessert.\nNachrichten aus der Nähe bleiben in einem ungeprüften Posteingang, ohne automatisches Speichern, Vorlesen oder Weiterleiten.",
+        "zh-CN": "增加本地发送机构推测规则，旧版已保存的警报也可使用。推测不代表已核实真实发送方。\n查看应用时可自动朗读新译文。\n无需输入访问码即可使用CodeClear翻译服务，缓存按安装实例隔离。\n改进采集历史、通知横幅、关闭系统警报后的弹窗和最近任务预览。\n附近收到的消息保留在未确认收件箱，不自动保存、朗读或转发。",
+        "zh-TW": "增加本機發送機關推測規則，舊版已儲存的警報也可使用。推測不代表已核實實際發送者。\n查看應用程式時可自動朗讀新譯文。\n無須輸入存取碼即可使用CodeClear翻譯服務，快取依安裝實例隔離。\n改善收集歷史、通知橫幅、關閉系統警報後的彈出視窗及最近任務預覽。\n附近收到的訊息保留在未確認收件匣，不自動儲存、朗讀或轉傳。"
+    }
+}

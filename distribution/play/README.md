@@ -5,6 +5,14 @@ The first published release uses version code 5. The listing JSON files retain
 the localized submission sources for future updates. Saving a future Console
 draft does not submit it for review or establish production readiness.
 
+## Prepared 1.0.1 update
+
+The next bundle uses version code 6. [Localized release notes](releases/1.0.1.json)
+describe local issuer estimates for existing history, foreground automatic speech,
+private installation-scoped translation access, unverified nearby receipts and
+presentation improvements. This source file does not establish an upload,
+review submission or published update; verify those states in Play Console.
+
 ## Localized listings
 
 Each file contains a title, short description and full description for its
@@ -21,7 +29,7 @@ remote-translation permission are stated in every language.
 ## Future submission checklist
 
 - Confirm the Play application identity, existing releases and signing state.
-  The package is `xyz.gaon.codeclear`; the release version name is `1.0.0`.
+  The package is `xyz.gaon.codeclear`; the prepared version name is `1.0.1`.
   Sign the optimized bundle with the protected upload key and verify it before
   uploading. An unsigned bundle is not upload-ready.
 - Complete the applicable optimized-runtime and capture validation gates. Do not
@@ -77,8 +85,9 @@ validation application's private `cache/play-assets` directory: four JPEG
 screens per application locale, a 512-pixel native icon and a 1024 by 500 pixel
 feature graphic. Export with ADB `run-as` for that validation package, retain
 the original pixels, verify file dimensions, and inspect each locale before
-uploading. Only the synthetic fixture activity clears its protected-window
-flag; the production application keeps its protection.
+uploading. The fixture clears its own protected-window flag for synthetic exports.
+Product screens allow task previews and owner screenshots; raw capture diagnostic
+windows retain their separate protection.
 
 ### Accessibility review recording
 
@@ -86,9 +95,9 @@ flag; the production application keeps its protection.
 session for the real `MainActivity` consent and settings flows. It accepts only
 a debug validation package on reviewed emulator hardware. Use a disposable
 emulator containing synthetic alerts; never instrument or record owner history.
-The session temporarily makes that synthetic activity recordable, restores its
-protected-window flag on exit, and times out after three minutes. Release
-packages do not contain the session or an option to disable protection.
+The session makes the synthetic activity available for a controlled recording
+and times out after three minutes. Release packages do not contain the session
+or its ready/stop markers.
 
 An external reviewer drives ordinary controls, including refusal, reopening the
 separate accessibility explanation, consent, Android's grant screen and the
