@@ -1,6 +1,7 @@
 """Run a reviewed fixture allowlist on a disposable, resource-bounded Linux AVD."""
 
 import argparse
+import base64
 import json
 import os
 import re
@@ -43,7 +44,7 @@ FIXTURES = {
     "mobile.MobileScreenModelSpeechDeviceTest": 7,
     "mobile.MobileScreenAlertDetailDeviceTest": 17,
     "mobile.MobileScreenNearbyDeviceTest": 4,
-    "mobile.MobileScreenHistoryDeviceTest": 12,
+    "mobile.MobileScreenHistoryDeviceTest": 13,
     "mobile.MobileScreenSettingsDeviceTest": 15,
     "mobile.MobileScreenEngineDeviceTest": 16,
     "mobile.NotificationContentDeviceTest": 1,
@@ -72,6 +73,36 @@ FIXTURES = {
     "translation.LocalEngineDeviceTest#chineseScriptConversionRunsOnTheDeviceAndPreservesNumbers": 1,
     "translation.LocalEngineDeviceTest#platformChineseConversionPreservesNumbersPunctuationAndOtherScriptsInBothDirections": 1,
 }
+
+SYNTHETIC_PREVIEWS = (
+    "observation-history-light-synthetic.png",
+    "observation-history-dark-synthetic.png",
+    "observation-history-large-synthetic.png",
+)
+
+
+def export_synthetic_previews(device):
+    """Export only named fixture-window images from this disposable AVD for visual review."""
+    for name in SYNTHETIC_PREVIEWS:
+        encoded = device(
+            "shell",
+            "run-as",
+            "xyz.gaon.codeclear",
+            "base64",
+            "-w",
+            "0",
+            "cache/" + name,
+            timeout=10,
+        )
+        _require(len(encoded) <= 524288, "Synthetic preview exceeds the review limit")
+        try:
+            data = base64.b64decode(encoded, validate=True)
+        except ValueError as error:
+            raise RuntimeError("Invalid synthetic preview encoding") from error
+        _require(
+            data.startswith(b"\x89PNG\r\n\x1a\n"), "Synthetic preview is not a PNG"
+        )
+        print("SYNTHETIC_PREVIEW " + name + " " + encoded, flush=True)
 
 
 def command(*args, timeout=120, **kwargs):
@@ -587,6 +618,16 @@ def main():
             else:
                 # Every selected fixture is synthetic and runs only on this owned AVD.
                 print("Incomplete instrumentation tail: " + output[-6000:], flush=True)
+            if args.api == 35:
+                try:
+                    export_synthetic_previews(device)
+                except RuntimeError:
+                    if passed:
+                        raise
+                    print(
+                        "Synthetic fixture preview is unavailable after a failing run.",
+                        flush=True,
+                    )
             if args.system_receiver:
                 from system_receiver import BODIES, validate
 

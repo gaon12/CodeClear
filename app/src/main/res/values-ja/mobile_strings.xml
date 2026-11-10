@@ -333,4 +333,9 @@
     <string name="mobile_notification_banner_quiet">通知欄のみ</string>
     <string name="mobile_notification_banner_guidance">バナーを表示するにはAndroidの通知設定でポップアップまたは高い重要度を許可してください。サイレントモードや端末の設定により、バナーが表示されない場合があります。</string>
     <string name="mobile_notification_banner_high">高い重要度</string>
+    <string name="mobile_observation_total">%1$d件</string>
+    <string name="mobile_expand">展開</string>
+    <string name="mobile_collapse">折りたたむ</string>
+    <string name="mobile_expanded">展開中</string>
+    <string name="mobile_collapsed">折りたたみ中</string>
 </resources>

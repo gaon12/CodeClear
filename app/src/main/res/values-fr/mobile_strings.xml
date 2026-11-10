@@ -335,4 +335,9 @@
     <string name="mobile_notification_banner_quiet">Volet des notifications uniquement</string>
     <string name="mobile_notification_banner_guidance">Pour autoriser les bannières, activez les notifications contextuelles ou une importance élevée dans les réglages Android. Le mode Ne pas déranger ou les réglages de l’appareil peuvent masquer les bannières.</string>
     <string name="mobile_notification_banner_high">Importance élevée</string>
+    <string name="mobile_observation_total">%1$d entrées</string>
+    <string name="mobile_expand">Développer</string>
+    <string name="mobile_collapse">Réduire</string>
+    <string name="mobile_expanded">Développé</string>
+    <string name="mobile_collapsed">Réduit</string>
 </resources>

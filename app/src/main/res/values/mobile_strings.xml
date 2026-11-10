@@ -334,4 +334,9 @@
     <string name="mobile_notification_banner_quiet">Notification shade only</string>
     <string name="mobile_notification_banner_guidance">To allow banners, open Android notification settings and enable pop-up notifications or high importance. Android may suppress banners during Do Not Disturb or because of device settings.</string>
     <string name="mobile_notification_banner_high">High importance</string>
+    <string name="mobile_observation_total">%1$d entries</string>
+    <string name="mobile_expand">Expand</string>
+    <string name="mobile_collapse">Collapse</string>
+    <string name="mobile_expanded">Expanded</string>
+    <string name="mobile_collapsed">Collapsed</string>
 </resources>

@@ -5,6 +5,8 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
@@ -19,18 +21,128 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.test.swipeUp
+import androidx.compose.ui.text.TextLayoutResult
+import java.text.DateFormat
+import java.util.Date
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import xyz.gaon.codeclear.R
 
 /** History rows, row actions, grouping, search, and history navigation. */
 class MobileScreenHistoryDeviceTest : MobileScreenFixture() {
+    @Test
+    fun observationTimelineGroupsDatesKeepsDetailsOptionalAndWrapsAtLargeText() {
+        compose.runOnIdle {
+            context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            previewLanguage = "ko"
+            val saved = record(1).copy(
+                observationCount = 4,
+                observations = listOf(
+                    HistoryObservation(
+                        12,
+                        CaptureSource.NOTIFICATION,
+                        1700000002000,
+                        1700000001000,
+                        1699999999000
+                    ),
+                    HistoryObservation(11, CaptureSource.DIALOG, 1700000000000, null, null),
+                    HistoryObservation(
+                        10,
+                        CaptureSource.ORIGINAL_NOTIFICATION,
+                        1699913600000,
+                        null,
+                        1699913599000
+                    ),
+                    HistoryObservation(
+                        9,
+                        CaptureSource.NOTIFICATION,
+                        1699913599000,
+                        1699913598000,
+                        null
+                    )
+                )
+            )
+            state = state.copy(records = listOf(saved), latest = saved)
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performClick()
+        compose.onNodeWithTag("observation-history").assertDoesNotExist()
+        compose.onNodeWithTag("observation-history-toggle").performScrollTo().performClick()
+        compose.onNodeWithTag("observation-date-12").assertExists()
+        compose.onNodeWithTag("observation-date-11").assertDoesNotExist()
+        compose.onNodeWithTag("observation-date-10").assertExists()
+        compose.onNodeWithTag("observation-date-9").assertDoesNotExist()
+        compose.onNodeWithTag("observation-times-12").assertDoesNotExist()
+        compose.onNodeWithTag("observation-toggle-12").assertHasClickAction()
+        compose.onNodeWithTag("observation-toggle-11").assertHasNoClickAction()
+        val full = DateFormat.getDateTimeInstance(
+            DateFormat.MEDIUM,
+            DateFormat.MEDIUM,
+            fixtureResources.configuration.locales[0]
+        )
+        val time = DateFormat.getTimeInstance(
+            DateFormat.MEDIUM,
+            fixtureResources.configuration.locales[0]
+        )
+        compose.onNodeWithTag("observation-time-12", useUnmergedTree = true).assertTextEquals(
+            text(R.string.mobile_captured, time.format(Date(1700000002000)))
+        )
+        for (theme in listOf(ThemeChoice.LIGHT, ThemeChoice.DARK)) {
+            compose.runOnIdle { state = state.copy(options = state.options.copy(theme = theme)) }
+            alignObservationHeader()
+            savePreview("observation-history-${theme.name.lowercase()}-synthetic")
+        }
+        compose.runOnIdle { fontScale = 2f }
+        compose.onNodeWithTag("observation-toggle-12").performScrollTo().performClick()
+        compose.onNodeWithTag("observation-times-12").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_received, full.format(Date(1699999999000))))
+            .assertExists()
+        compose.onNodeWithText(text(R.string.mobile_posted, full.format(Date(1700000001000))))
+            .assertExists()
+        compose.onNodeWithTag("observation-times-11").assertDoesNotExist()
+        val layouts = mutableListOf<TextLayoutResult>()
+        compose.onNodeWithTag("observation-time-12", useUnmergedTree = true)
+            .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+        compose.onNodeWithTag("observation-toggle-12").performScrollTo()
+        savePreview("observation-history-large-synthetic")
+        val layout = layouts.single()
+        assertFalse(
+            "Captured label overflow: measured=${layout.size} " +
+                "paragraph=${layout.multiParagraph.width}x${layout.multiParagraph.height} " +
+                "lines=${layout.lineCount} width=${layout.didOverflowWidth} height=${layout.didOverflowHeight}",
+            layout.hasVisualOverflow
+        )
+        compose.onNodeWithTag("observation-toggle-12").performClick()
+        compose.onNodeWithTag("observation-times-12").assertDoesNotExist()
+        compose.onNodeWithTag("observation-history-toggle").performScrollTo().performClick()
+        compose.onNodeWithTag("observation-history").assertDoesNotExist()
+        compose.runOnIdle {
+            assertEquals(0, olderObservationRequests)
+            assertEquals(0, newestObservationRequests)
+            assertEquals(0, prepared)
+        }
+    }
+
+    private fun alignObservationHeader() {
+        compose.onNodeWithTag("observation-history-toggle").performScrollTo()
+        val top = compose.onNodeWithTag(
+            "observation-history-toggle"
+        ).fetchSemanticsNode().boundsInRoot.top
+        val viewport = compose.onNodeWithTag(
+            "history-detail-body"
+        ).fetchSemanticsNode().boundsInRoot.top
+        compose.onNodeWithTag("history-detail-body")
+            .performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, top - viewport) }
+    }
+
     @Test
     fun swipingRevealsTwoActionsWithoutDeletingAndSharingClosesTheRow() {
         compose.runOnIdle { context.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE) }

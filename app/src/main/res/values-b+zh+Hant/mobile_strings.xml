@@ -333,4 +333,9 @@
     <string name="mobile_notification_banner_quiet">僅顯示於通知欄</string>
     <string name="mobile_notification_banner_guidance">若要允許橫幅，請在Android通知設定中啟用彈出通知或高重要性。勿擾模式或裝置設定可能阻止橫幅顯示。</string>
     <string name="mobile_notification_banner_high">高重要性</string>
+    <string name="mobile_observation_total">%1$d筆</string>
+    <string name="mobile_expand">展開</string>
+    <string name="mobile_collapse">收合</string>
+    <string name="mobile_expanded">已展開</string>
+    <string name="mobile_collapsed">已收合</string>
 </resources>

@@ -1,10 +1,13 @@
 """Exercise startup races without launching an emulator or waiting on real time."""
 
+import base64
 import subprocess
 import unittest
 from unittest.mock import Mock, patch
 
 from tools.ci.run_emulator import (
+    SYNTHETIC_PREVIEWS,
+    export_synthetic_previews,
     guest_diagnostics,
     image_for_profile,
     install_fixture,
@@ -17,6 +20,49 @@ from tools.ci.run_emulator import (
     wait_for_package_manager,
     wait_for_unlock,
 )
+
+
+class SyntheticPreviewTest(unittest.TestCase):
+    @patch("builtins.print")
+    def test_export_reads_only_explicit_synthetic_fixture_windows(self, output):
+        encoded = base64.b64encode(b"\x89PNG\r\n\x1a\nsynthetic").decode()
+        device = Mock(return_value=encoded)
+        export_synthetic_previews(device)
+        self.assertEqual(3, device.call_count)
+        self.assertEqual(3, output.call_count)
+        for call, name in zip(device.call_args_list, SYNTHETIC_PREVIEWS):
+            self.assertEqual(
+                (
+                    "shell",
+                    "run-as",
+                    "xyz.gaon.codeclear",
+                    "base64",
+                    "-w",
+                    "0",
+                    "cache/" + name,
+                ),
+                call.args,
+            )
+            self.assertEqual({"timeout": 10}, call.kwargs)
+
+    @patch("builtins.print")
+    def test_oversized_preview_is_not_decoded_or_logged(self, output):
+        with self.assertRaisesRegex(RuntimeError, "review limit"):
+            export_synthetic_previews(Mock(return_value="A" * 524289))
+        output.assert_not_called()
+
+    @patch("builtins.print")
+    def test_non_png_and_invalid_encodings_are_not_logged(self, output):
+        for encoded in ("not base64!", base64.b64encode(b"private text").decode()):
+            with self.subTest(encoded=encoded), self.assertRaises(RuntimeError):
+                export_synthetic_previews(Mock(return_value=encoded))
+        output.assert_not_called()
+
+    def test_missing_review_images_fail_instead_of_silently_skipping_visual_checks(
+        self,
+    ):
+        with self.assertRaisesRegex(RuntimeError, "missing fixture"):
+            export_synthetic_previews(Mock(side_effect=RuntimeError("missing fixture")))
 
 
 class NotificationDumpTest(unittest.TestCase):

@@ -333,4 +333,9 @@
     <string name="mobile_notification_banner_quiet">仅显示在通知栏</string>
     <string name="mobile_notification_banner_guidance">要允许横幅，请在Android通知设置中启用弹出通知或高重要性。勿扰模式或设备设置可能会阻止横幅显示。</string>
     <string name="mobile_notification_banner_high">高重要性</string>
+    <string name="mobile_observation_total">%1$d条</string>
+    <string name="mobile_expand">展开</string>
+    <string name="mobile_collapse">收起</string>
+    <string name="mobile_expanded">已展开</string>
+    <string name="mobile_collapsed">已收起</string>
 </resources>

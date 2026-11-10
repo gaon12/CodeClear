@@ -333,4 +333,9 @@
     <string name="mobile_notification_banner_quiet">알림창에만 표시</string>
     <string name="mobile_notification_banner_guidance">배너를 보려면 Android 알림 설정에서 팝업 표시 또는 높은 중요도를 허용하세요. 방해 금지나 기기 설정에 따라 배너가 표시되지 않을 수 있습니다.</string>
     <string name="mobile_notification_banner_high">높은 중요도</string>
+    <string name="mobile_observation_total">%1$d건</string>
+    <string name="mobile_expand">펼치기</string>
+    <string name="mobile_collapse">접기</string>
+    <string name="mobile_expanded">펼쳐짐</string>
+    <string name="mobile_collapsed">접힘</string>
 </resources>
