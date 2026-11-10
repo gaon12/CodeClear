@@ -1,8 +1,15 @@
 # CodeClear
 
-CodeClear is an Android app for preserving emergency-alert originals and showing
-translations alongside them. It targets Android 11 (API 30) and later smartphones
-and tablets, with on-device translation as the default.
+**Emergency alerts in your language. Even offline.**
+
+CodeClear translates the alerts your Android phone already receives, right on
+your device. No account. No location tracking.
+
+Download your language models once, then translate without an internet connection.
+On-device translation is the default; online translation is optional.
+
+For Android 11 (API 30) and later smartphones and tablets. Automatic collection
+depends on support for the device's emergency alert app.
 
 ## Download
 
@@ -27,8 +34,8 @@ translation engine does not establish capture support for every alert source and
 firmware profile.
 
 Home, searchable history, original/translation details, model management, speech
-playback, and settings are implemented. The interface supports English, Korean,
-Japanese, French, German, Simplified Chinese, and Traditional Chinese.
+playback, and settings are implemented. The interface and translation targets
+support English, Korean, Japanese, French, German, Simplified Chinese, and Traditional Chinese.
 
 ## Capture and translation boundaries
 
@@ -71,10 +78,11 @@ Japanese, French, German, Simplified Chinese, and Traditional Chinese.
   saves one. They are never automatically translated, spoken or forwarded. Same-body
   peer replays with changed occurrence IDs are suppressed for 15 minutes. These
   controls do not authenticate a sender or prove official origin.
-- Alert details label issuing organizations as estimates and show their source
-  excerpt. The CodeClear service can extract a name with AI; other paths use a
-  bounded local rule for reviewed agency labels at the start or end of the text.
-  Unknown and ambiguous cases remain unknown. Both methods can be wrong, and a
+- Alert details first estimate issuing organizations from bounded local patterns
+  in the stored original, including alerts saved before the update, and show the
+  source excerpt. Saved
+  source-backed AI estimates are a fallback when local rules find no estimate.
+  Rules do not choose between conflicting claims. Both methods can be wrong, and a
   forged original can name a real authority. These estimates never establish
   sender identity, official severity or peer trust, and are excluded from speech.
   Saved service estimates follow the translation's cache, retry and deletion
