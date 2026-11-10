@@ -448,9 +448,9 @@ def main():
                 "2",
                 "-gpu",
                 "swiftshader",
-                # Use GLES for newer and 16 KiB guests with unstable compositor readback.
-                # The tested app does not require Vulkan; keep all window-copy fixtures.
-                *(["-feature", "-Vulkan"] if args.api >= 37 or sixteen_k else []),
+                # Use GLES for this app's UI while investigating newer guest
+                # compositor crashes; the tested app does not require Vulkan.
+                *(["-feature", "-Vulkan"] if args.api >= 37 else []),
                 "-no-window",
                 "-no-audio",
                 "-no-snapshot",
