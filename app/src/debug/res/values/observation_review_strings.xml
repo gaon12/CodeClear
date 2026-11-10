@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="observation_review_notice">Sample data for UI review. These entries are separate from your real collected alerts.</string>
+</resources>

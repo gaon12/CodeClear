@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="observation_review_notice">UI確認用のサンプルデータです。実際に収集した警報の履歴とは別のものです。</string>
+</resources>

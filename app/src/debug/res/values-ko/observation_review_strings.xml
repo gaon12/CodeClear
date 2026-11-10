@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="observation_review_notice">UI 검토용 샘플 데이터입니다. 실제 수집된 재난문자 기록과는 별개입니다.</string>
+</resources>

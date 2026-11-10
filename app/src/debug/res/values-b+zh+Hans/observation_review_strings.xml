@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="observation_review_notice">用于界面检查的示例数据，与实际采集的警报记录分开。</string>
+</resources>

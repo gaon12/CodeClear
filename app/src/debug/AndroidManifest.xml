@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools">
     <application>
         <activity
+            android:name="xyz.gaon.codeclear.mobile.ObservationReviewActivity"
+            android:exported="true"
+            android:permission="android.permission.DUMP" />
+        <activity
             android:name="xyz.gaon.codeclear.mobile.MobileFixtureActivity"
             android:exported="false" />
         <service
