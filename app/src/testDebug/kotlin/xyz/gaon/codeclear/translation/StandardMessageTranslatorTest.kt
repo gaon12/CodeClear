@@ -1,5 +1,6 @@
 package xyz.gaon.codeclear.translation
 
+import java.text.Normalizer
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertEquals
@@ -93,10 +94,38 @@ class StandardMessageTranslatorTest {
 
     @Test
     fun onlyReviewedWhitespaceChangesAreNormalized() {
+        val matcher = translator()
+        val expected = matcher.translate(original, TranslationTarget.ENGLISH)
+        for (separator in listOf(" ", "\t", "\r", "\n", "\r\n\t  ")) {
+            assertEquals(
+                expected,
+                matcher.translate(
+                    "\t" + original.replace(" ", separator) + "\r\n",
+                    TranslationTarget.ENGLISH
+                )
+            )
+        }
         assertEquals(
-            translator().translate(original, TranslationTarget.ENGLISH),
-            translator().translate(original.replace(" ", "\r\n\t "), TranslationTarget.ENGLISH)
+            expected,
+            matcher.translate(
+                Normalizer.normalize(original, Normalizer.Form.NFD),
+                TranslationTarget.ENGLISH
+            )
         )
+        for (separator in listOf(
+            "\u00a0",
+            "\u2000",
+            "\u2009",
+            "\u2028",
+            "\u2029",
+            "\u000b",
+            "\u000c"
+        )) {
+            assertNull(
+                matcher.translate(original.replace(" ", separator), TranslationTarget.ENGLISH)
+            )
+        }
+        assertNull(matcher.translate(" \t\r\n ", TranslationTarget.ENGLISH))
         assertNull(
             translator().translate(original.replace("서울", "서\u200B울"), TranslationTarget.ENGLISH)
         )

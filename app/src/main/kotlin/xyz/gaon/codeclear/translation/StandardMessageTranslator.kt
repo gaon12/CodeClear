@@ -164,7 +164,6 @@ class StandardMessageTranslator(
             ('Ⅰ'..'Ⅻ').map(Char::toString)
         val languages = TranslationTarget.entries.map { it.languageTag }.toSet()
         val variable = Regex("\\{([a-z][a-z0-9_]*)\\}")
-        val spaces = Regex("[ \\t\\r\\n]+")
         val time = DateTimeFormatter.ofPattern(
             "HH:mm",
             Locale.ROOT
@@ -180,8 +179,21 @@ class StandardMessageTranslator(
             ) {
                 return null
             }
-            return spaces.replace(Normalizer.normalize(body, Normalizer.Form.NFC), " ")
-                .trim(' ').takeIf { it.isNotEmpty() }
+            val normalized = Normalizer.normalize(body, Normalizer.Form.NFC)
+            val output = StringBuilder(normalized.length)
+            var pendingSpace = false
+            for (character in normalized) {
+                if (character == ' ' || character == '\t' || character == '\r' ||
+                    character == '\n'
+                ) {
+                    pendingSpace = output.isNotEmpty()
+                } else {
+                    if (pendingSpace) output.append(' ')
+                    output.append(character)
+                    pendingSpace = false
+                }
+            }
+            return output.takeIf { it.isNotEmpty() }?.toString()
         }
 
         fun slotExpression(kind: StandardSlotKind): String = when (kind) {

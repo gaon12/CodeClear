@@ -1,6 +1,7 @@
 package xyz.gaon.codeclear.mobile
 
 import android.database.sqlite.SQLiteDatabase
+import android.os.Bundle
 import android.os.SystemClock
 import androidx.test.platform.app.InstrumentationRegistry
 import java.util.UUID
@@ -296,7 +297,15 @@ class StandardTranslationDeviceTest {
             )
         }
         val elapsed = SystemClock.elapsedRealtime() - start
-        println("Standard matcher: 100 long synthetic near-matches in $elapsed ms")
-        assertTrue("100 synthetic near-matches exceeded 2 seconds", elapsed < 2000)
+        instrumentation.sendStatus(
+            0,
+            Bundle().apply {
+                putString(
+                    "stream",
+                    "Time: standard matcher, 100 synthetic near-matches = $elapsed ms\n"
+                )
+            }
+        )
+        assertTrue("100 synthetic near-matches exceeded 2 seconds ($elapsed ms)", elapsed < 2000)
     }
 }
