@@ -33,6 +33,64 @@ import xyz.gaon.codeclear.translation.evidencedIssuer
 
 /** Alert modal and detail presentation: message views, actions, categories, and languages. */
 class MobileScreenAlertDetailDeviceTest : MobileScreenFixture() {
+    @Test fun olderOriginalsEstimateIssuerWithoutTranslationOrNetworkWork() {
+        val original = "[DRILL] Gate 3. 【경주시】"
+        compose.runOnIdle {
+            val saved = record(1).let {
+                it.copy(capture = it.capture.copy(original = original), translation = null)
+            }
+            state = state.copy(records = listOf(saved), latest = saved)
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performClick()
+        for (translation in listOf(null, record(1).translation)) {
+            compose.runOnIdle {
+                state = state.copy(detail = state.detail!!.copy(translation = translation))
+            }
+            compose.onNodeWithTag("issuer-name").performScrollTo().assertTextContains("경주시")
+            compose.onNodeWithTag("issuer-evidence").performScrollTo().assertTextContains(
+                text(R.string.mobile_issuer_evidence, "【경주시】")
+            )
+            compose.onNodeWithText(
+                text(R.string.mobile_issuer_rule_notice)
+            ).performScrollTo().assertIsDisplayed()
+        }
+        compose.runOnIdle {
+            assertEquals(0, retried)
+            assertEquals(0, serverAllows)
+            assertTrue(requestedModels.isEmpty())
+        }
+    }
+
+    @Test fun sourcePatternTakesPrecedenceOverAlreadySavedModelAttribution() {
+        val original = "[강남구청] [DRILL] Gate 3."
+        compose.runOnIdle {
+            val saved = record(1).let {
+                it.copy(
+                    capture = it.capture.copy(original = original),
+                    translation = it.translation!!.copy(
+                        engine = TranslationEngineKind.OWNED_SERVER,
+                        issuer = evidencedIssuer(
+                            original,
+                            "강남구청",
+                            "Test district office",
+                            "[강남구청]",
+                            IssuerBasis.EXTRACTED_FROM_TEXT
+                        )
+                    )
+                )
+            }
+            state = state.copy(records = listOf(saved), latest = saved)
+        }
+        compose.onNodeWithTag("destination-1").performClick()
+        compose.onNodeWithTag("history-row-1").performClick()
+        compose.onNodeWithTag("issuer-name").performScrollTo().assertTextContains("강남구청")
+        compose.onNodeWithText(text(R.string.mobile_issuer_rule_notice))
+            .performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText(text(R.string.mobile_issuer_ai_notice)).assertDoesNotExist()
+        compose.onNodeWithText("Test district office").assertDoesNotExist()
+    }
+
     @Test fun aiIssuerShowsItsFallibleBasisAndExactSourceAtLargeText() {
         val original = "[DRILL] Issued by Agency X."
         compose.runOnIdle {

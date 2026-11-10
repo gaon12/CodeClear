@@ -42,7 +42,7 @@ FIXTURES = {
     "capture.SourceWindowVisibilityDeviceTest": 5,
     "mobile.MobileScreenAccessDeviceTest": 10,
     "mobile.MobileScreenModelSpeechDeviceTest": 7,
-    "mobile.MobileScreenAlertDetailDeviceTest": 17,
+    "mobile.MobileScreenAlertDetailDeviceTest": 19,
     "mobile.MobileScreenNearbyDeviceTest": 4,
     "mobile.MobileScreenHistoryDeviceTest": 13,
     "mobile.MobileScreenSettingsDeviceTest": 15,

@@ -25,6 +25,7 @@ import xyz.gaon.codeclear.reception.ReceptionCountry
 import xyz.gaon.codeclear.translation.IssuerBasis
 import xyz.gaon.codeclear.translation.IssuerClaim
 import xyz.gaon.codeclear.translation.TranslationEngineKind
+import xyz.gaon.codeclear.translation.estimateIssuer
 import xyz.gaon.codeclear.translation.evidencedIssuer
 
 class AlertHistoryStoreDeviceTest {
@@ -71,7 +72,8 @@ class AlertHistoryStoreDeviceTest {
     }
 
     @Test fun versionSevenMigrationKeepsTranslationsWithoutInventingIssuerMetadata() {
-        val id = store.insert(capture("[DRILL] Migration original."))!!
+        val original = "[DRILL] Migration original. [강남구청]"
+        val id = store.insert(capture(original))!!
         assertTrue(
             store.finishTranslation(store.beginTranslation(id, "en")!!, ready("Saved translation"))
         )
@@ -106,10 +108,17 @@ class AlertHistoryStoreDeviceTest {
         }
         store = AlertHistoryStore(context, name)
         val saved = store.find(id, "en")!!
-        assertEquals("[DRILL] Migration original.", saved.capture.original)
+        assertEquals(original, saved.capture.original)
         assertEquals("Saved translation", saved.translation?.text)
         assertEquals(TranslationPhase.READY, saved.translation?.phase)
         assertNull(saved.translation?.issuer)
+        assertEquals("강남구청", estimateIssuer(saved.capture.original)?.originalName)
+        store.close()
+        store = AlertHistoryStore(context, name)
+        val reopened = store.find(id, "en")!!
+        assertEquals("강남구청", estimateIssuer(reopened.capture.original)?.originalName)
+        assertEquals(saved.translation, reopened.translation)
+        assertNull(store.nextQueued("en"))
     }
 
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext

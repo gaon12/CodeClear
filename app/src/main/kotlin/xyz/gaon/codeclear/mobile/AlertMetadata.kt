@@ -86,6 +86,7 @@ private fun IssuerAttribution(alert: SavedAlert) {
     val translation = alert.translation
     val original = alert.capture.original
     val claim = remember(original, translation?.issuer, translation?.phase, translation?.engine) {
+        val local = estimateIssuer(original)
         val supplied = translation?.issuer?.takeIf {
             translation.engine == TranslationEngineKind.OWNED_SERVER &&
                 translation.phase == TranslationPhase.READY &&
@@ -101,7 +102,7 @@ private fun IssuerAttribution(alert: SavedAlert) {
             )
                 ?.takeIf { validated -> validated == supplied }
         }
-        evidenced ?: estimateIssuer(original)
+        local ?: evidenced
     }
     SettingsGroup(tag = "issuer-attribution") {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
